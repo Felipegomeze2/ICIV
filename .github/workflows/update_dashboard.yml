@@ -41,7 +41,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e "iciv/[dev]"
-          pip install statsmodels scikit-learn pydantic
+          pip install statsmodels scikit-learn pydantic matplotlib
 
       # ── Fetch de datos frescos (solo si fetch_data=true o si es lunes ──────
       - name: Fetch datos de alta frecuencia (FRED, EIA, Guardian, IMF)

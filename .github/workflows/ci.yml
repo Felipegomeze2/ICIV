@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e "iciv/[dev]"
-          pip install statsmodels scikit-learn pydantic
+          pip install statsmodels scikit-learn pydantic matplotlib
 
       - name: Run tests
         run: |
