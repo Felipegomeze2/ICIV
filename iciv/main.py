@@ -2083,7 +2083,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <div class="nav-wrap">
   <div class="nav-top">
     <a class="nav-brand" href="#" onclick="event.preventDefault();showSection('portada')" title="Ir a portada">ICIV</a>
-    <a href="#" data-block="portada" class="nav-top-active">Portada</a>
     <a href="#" data-block="inicio">Inicio</a>
     <a href="#" data-block="historia">Historia</a>
     <a href="#" data-block="diagnostico">Diagnóstico</a>
@@ -2128,8 +2127,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <!-- Hero block -->
   <div style="padding:48px 40px 40px;background:linear-gradient(135deg,rgba(0,212,170,.04) 0%,rgba(52,152,219,.03) 50%,transparent 100%);border-bottom:1px solid var(--border)">
-    <div style="font-size:.68rem;color:var(--muted);margin-bottom:18px;letter-spacing:.3px">
-      Tesis de Especialización · Big Data e Inteligencia de Negocios &nbsp;·&nbsp; {generated_at}
+    <div style="margin-bottom:18px">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px">Felipe Gómez Espinal</div>
+      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.3px">Tesis de Especialización · Big Data e Inteligencia de Negocios · EAFIT &nbsp;·&nbsp; {generated_at}</div>
     </div>
     <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:10px">
       <span style="font-size:3.2rem;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-1px">ICIV</span>
