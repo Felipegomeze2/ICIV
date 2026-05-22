@@ -1,5 +1,10 @@
 # ICIV — Indicador de Clima de Inversión Venezuela
 
+[![CI Tests](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml)
+[![Dashboard](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml)
+
+**🌐 [Ver Dashboard en Vivo →](https://felipegomeze2.github.io/ICIV/)**
+
 > **Tesis de Posgrado** · Especialización en Big Data e Inteligencia de Negocios  
 > **Autor:** Felipe Gómez Espinal  
 > **Institución:** EAFIT  

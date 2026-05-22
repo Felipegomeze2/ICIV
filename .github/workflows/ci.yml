@@ -1,0 +1,47 @@
+name: CI — Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} — pytest
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e "iciv/[dev]"
+          pip install statsmodels scikit-learn pydantic
+
+      - name: Run tests
+        run: |
+          cd iciv
+          pytest tests/ -v --tb=short
+
+      - name: Verify pipeline imports
+        run: |
+          cd iciv
+          python -c "
+          import sys; sys.path.insert(0, 'src')
+          from iciv.index.dimensions import DIMENSIONS
+          from iciv.index.aggregator import ICIVAggregator
+          from iciv.satv.engine import SATVEngine
+          print(f'OK — {len(DIMENSIONS)} dimensiones cargadas')
+          "

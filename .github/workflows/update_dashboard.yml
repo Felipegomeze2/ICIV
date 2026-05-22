@@ -1,0 +1,137 @@
+name: Actualizar Dashboard ICIV
+
+on:
+  # Ejecución automática: todos los lunes a las 7am UTC (2am Venezuela)
+  schedule:
+    - cron: '0 7 * * 1'
+
+  # Ejecución manual desde GitHub → Actions → "Run workflow"
+  workflow_dispatch:
+    inputs:
+      fetch_data:
+        description: '¿Descargar datos frescos? (true = fetch completo, false = usar CSVs del repo)'
+        required: false
+        default: 'false'
+        type: boolean
+
+# Permisos para escribir al repo (commit del dashboard actualizado)
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  update:
+    name: Regenerar dashboard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          pip install --upgrade pip
+          pip install -e "iciv/[dev]"
+          pip install statsmodels scikit-learn pydantic
+
+      # ── Fetch de datos frescos (solo si fetch_data=true o si es lunes ──────
+      - name: Fetch datos de alta frecuencia (FRED, EIA, Guardian, IMF)
+        if: ${{ github.event.inputs.fetch_data == 'true' || github.event_name == 'schedule' }}
+        working-directory: iciv
+        env:
+          EIA_API_KEY:      ${{ secrets.EIA_API_KEY }}
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+        run: |
+          echo "Descargando datos frescos de fuentes de alta frecuencia..."
+          # FRED — datos públicos, sin API key
+          python scripts/fetch_fred.py         || echo "WARN: fetch_fred falló (continuando)"
+          python scripts/fetch_fred_monthly.py || echo "WARN: fetch_fred_monthly falló (continuando)"
+          # EIA — requiere EIA_API_KEY en secrets
+          python scripts/fetch_eia.py          || echo "WARN: fetch_eia falló (continuando)"
+          python scripts/fetch_eia_monthly.py  || echo "WARN: fetch_eia_monthly falló (continuando)"
+          # Guardian — requiere GUARDIAN_API_KEY en secrets
+          python scripts/fetch_guardian.py          || echo "WARN: fetch_guardian falló (continuando)"
+          python scripts/fetch_guardian_monthly.py  || echo "WARN: fetch_guardian_monthly falló (continuando)"
+          # IMF — datos públicos, sin API key
+          python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"
+          # UNHCR — datos públicos
+          python scripts/fetch_unhcr.py        || echo "WARN: fetch_unhcr falló (continuando)"
+          echo "Fetch completado."
+
+      # ── Ejecutar pipeline (genera nuevo iciv_dashboard.html) ─────────────
+      - name: Ejecutar pipeline ICIV
+        working-directory: iciv
+        run: |
+          python main.py --no-fetch --no-open
+          echo "Pipeline completado. Dashboard generado."
+
+      # ── Verificar que el dashboard se generó correctamente ──────────────
+      - name: Verificar dashboard
+        run: |
+          if [ -f "iciv_dashboard.html" ]; then
+            SIZE=$(du -k "iciv_dashboard.html" | cut -f1)
+            echo "OK iciv_dashboard.html generado — ${SIZE} KB"
+            if [ "$SIZE" -lt 100 ]; then
+              echo "ERROR: Dashboard demasiado pequeño (${SIZE} KB). Algo falló."
+              exit 1
+            fi
+          else
+            echo "ERROR: iciv_dashboard.html no encontrado"
+            exit 1
+          fi
+
+      # ── Commit del dashboard actualizado de vuelta al repo ───────────────
+      - name: Commit dashboard actualizado
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Añadir dashboard y datos crudos actualizados (si hubo fetch)
+          git add iciv_dashboard.html
+          git add iciv/data/raw/ || true
+
+          # Solo hacer commit si hay cambios
+          if git diff --quiet --cached; then
+            echo "Sin cambios — dashboard ya estaba actualizado."
+          else
+            FECHA=$(date +'%Y-%m-%d')
+            git commit -m "chore: auto-update dashboard ${FECHA} [Actions]"
+            git push
+            echo "Dashboard actualizado y publicado."
+          fi
+
+  # ── Deploy a GitHub Pages (corre después del commit) ────────────────────
+  deploy-pages:
+    name: Deploy a GitHub Pages
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout (con el commit más reciente)
+        uses: actions/checkout@v4
+        with:
+          ref: main  # Asegura que toma el commit del paso anterior
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'   # Sube toda la raíz del repo (incluye index.html + iciv_dashboard.html)
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
