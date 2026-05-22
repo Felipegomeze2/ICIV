@@ -1,0 +1,344 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ICIV — Configuración del Modelo y Fuentes de Datos
+#
+# Este archivo controla TODOS los parámetros clave sin tocar código Python:
+#   - Serie temporal y país
+#   - Fuentes de datos (URLs, indicadores, API keys)
+#   - Pesos del índice y variables
+#   - Normalización e imputación
+#   - Categorías de riesgo
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── Serie temporal ────────────────────────────────────────────────────────────
+serie:
+  start_year: 2000
+  end_year:   2026
+  country_wb:  "VEN"   # código World Bank
+  country_imf: "VEN"   # código IMF DataMapper
+  country_name: "Venezuela"
+
+# ── Fuentes de datos ──────────────────────────────────────────────────────────
+# Todos los parámetros de cada API viven aquí.
+# Los scripts en scripts/ leen este bloque y no tienen variables hardcodeadas.
+
+sources:
+
+  wdi:
+    description: "World Development Indicators — Banco Mundial"
+    base_url: "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}"
+    params:
+      format: "json"
+      per_page: 100
+      mrv: 30           # max recent values
+    # indicador_api: nombre_columna_iciv
+    indicators:
+      NY.GDP.MKTP.CD:   pib_nominal_usd
+      NY.GDP.MKTP.KD.ZG: pib_crecimiento_real_pct
+      NY.GDP.PCAP.CD:   pib_per_capita_usd
+      BX.KLT.DINV.CD.WD: ied_neta_usd
+      FI.RES.TOTL.CD:   reservas_internacionales_usd
+      NE.EXP.GNFS.ZS:   exportaciones_pct_pib
+      EG.ELC.ACCS.ZS:   acceso_electricidad_pct
+      FP.CPI.TOTL.ZG:   inflacion_ipc_pct
+      PA.NUS.FCRF:       tipo_cambio_oficial_lcu_usd
+      SE.ADT.LITR.ZS:    tasa_alfabetizacion_adulta_pct
+      BX.TRF.PWKR.CD.DT: remesas_recibidas_usd   # remesas personales recibidas (USD)
+
+  wgi:
+    description: "World Governance Indicators — Banco Mundial"
+    base_url: "https://api.worldbank.org/v2/sources/3/country/{country}/series/{indicator}/metadata"
+    data_url: "https://databank.worldbank.org/data/download/WGI_CSV.zip"
+    indicators:
+      - GOV_WGI_CC.SC   # Control de Corrupción
+      - GOV_WGI_GE.SC   # Efectividad del Gobierno
+      - GOV_WGI_PV.SC   # Estabilidad Política
+      - GOV_WGI_RL.SC   # Estado de Derecho
+      - GOV_WGI_RQ.SC   # Calidad Regulatoria
+      - GOV_WGI_VA.SC   # Voz y Rendición de Cuentas
+    output_column: wgi_promedio_sc
+
+  eia:
+    description: "Energy Information Administration — EIA International"
+    base_url: "https://api.eia.gov/v2/international/data/"
+    api_key: "ma2bIpCpa3HqVDPTnTsimbfIl1BxwQJavWrtklOz"
+    api_key_env: "EIA_API_KEY"    # variable de entorno tiene prioridad si está definida
+    frequency: "annual"
+    # serie_eia: nombre_columna_iciv
+    series:
+      "INTL.57-1-VEN-TBPD.A":  petroleo_crudo_produccion_tbpd
+      "INTL.26-1-VEN-BCF.A":   gas_natural_produccion_bcf
+      "INTL.2-12-VEN-BKWH.A":  electricidad_generacion_bkwh
+
+  imf:
+    description: "IMF DataMapper API"
+    base_url: "https://www.imf.org/external/datamapper/api/v1"
+    # concepto_imf: nombre_columna_iciv
+    indicators:
+      PCPIPCH:    inflacion_deflactor_pib_pct   # CPI inflation rate % — 27 años reales (NGDP_D devuelve 0 años para Venezuela)
+      LUR:        desempleo_pct
+      BCA_NGDPD:  cuenta_corriente_pct_pib
+      NGDP_RPCH:  pib_crecimiento_imf_pct       # Real GDP growth % — IMF WEO projections/estimates 2025-2026
+
+  fred:
+    description: "Federal Reserve Bank of St. Louis (FRED) — Series macroeconómicas globales"
+    base_url: "https://fred.stlouisfed.org/graph/fredgraph.csv"
+    notes: >
+      Sin autenticación requerida. Descarga directa de CSV por serie.
+      Usamos promedios anuales de series diarias/mensuales.
+    series:
+      DCOILWTICO:    wti_precio_usd         # Precio WTI del petróleo (USD/barril) — DIARIO
+      FEDFUNDS:      tasa_fed_funds_pct      # Tasa fondos federales EE.UU. (%) — MENSUAL
+      DCOILBRENTEU:  brent_precio_usd        # Precio Brent oil (USD/bbl) — DIARIO
+      DTWEXBGS:      usd_index_broad          # Trade-weighted USD index (Broad) — DIARIO
+      VIXCLS:        vix_volatility           # VIX Volatility Index — DIARIO
+      DGS10:         ust_10y_yield_pct        # US Treasury 10Y yield (%) — DIARIO
+
+  freedom_house:
+    description: "Freedom House — Freedom in the World Index"
+    download_url: "https://freedomhouse.org/report/freedom-world"
+    notes: >
+      Datos estáticos históricos Venezuela 2000-2024.
+      Aggregate Score (0-100, mayor = más libre).
+      Fuente académica citada en literatura de riesgo político.
+    indicator_name: "freedom_house_score"
+
+  ofac:
+    description: "OFAC — Office of Foreign Assets Control (US Treasury)"
+    sdn_csv_url: "https://www.treasury.gov/ofac/downloads/sdn.csv"
+    notes: >
+      Lista SDN actual descargada programáticamente.
+      Conteo de entidades venezolanas (Venezuela / VENEZUELA / VEN).
+      Datos históricos 2000-2023 basados en registro cronológico de designaciones.
+    indicator_name: "ofac_sanciones_count"
+
+  unhcr:
+    description: "UNHCR / R4V — Refugiados y migrantes venezolanos"
+    api_url: "https://api.unhcr.org/population/v1/population/"
+    r4v_url: "https://www.r4v.info/en/situations/platform"
+    notes: >
+      Datos combinados UNHCR + R4V para flujo migratorio venezolano.
+      Serie histórica 2000-2024 en millones de personas.
+      Pre-2015 estimado desde censos nacionales; 2015-2024 de R4V.
+    indicator_name: "migrantes_vzla_millones"
+
+  viirs:
+    description: "Li et al. (2020/2024) — Harmonized DMSP+VIIRS Nighttime Lights"
+    figshare_doi: "10.6084/m9.figshare.9828827.v10"
+    figshare_api: "https://api.figshare.com/v2/articles/9828827"
+    download_base: "https://ndownloader.figshare.com/files/{file_id}"
+    notes: >
+      Dataset armonizado DMSP+VIIRS 1992-2024 por Li et al. (Scientific Data 2020).
+      Acceso publico sin autenticacion via Figshare.
+      2000-2013: calDMSP (DMSP-OLS calibrado); 2014-2024: simVIIRS (escala armonica).
+      Ambas series en la misma escala DN 0-63 — serie temporal continua.
+      Venezuela bbox: [-73.4, 0.6, -59.8, 12.2]. Media de pixeles > 0 (excluye oceano/nubes).
+      El Gran Apagon Nacional de marzo 2019 es visible como minimo historico.
+      NOTA: NOAA EOG (eogdata.mines.edu) migro a Keycloak propio y ya no usa NASA Earthdata.
+    indicator_name: "luminosidad_nocturna_idx"
+    cite: "Li, X., Zhou, Y., Zhao, M., & Gao, X. (2020). Scientific Data, 7(1), 168."
+
+  gtrends:
+    description: "Google Trends — Interés de búsqueda relativo"
+    notes: >
+      Requiere 'pip install pytrends'. Datos relativos (0-100).
+      Consultas: 'invertir Venezuela', 'Venezuela inversión', 'Venezuela economy'.
+      Proxy de percepción/interés global en Venezuela como destino inversor.
+    queries:
+      - "Venezuela inversión"
+      - "invertir Venezuela"
+      - "Venezuela economy"
+    indicator_name: "google_trends_vzla"
+    geo: ""   # global
+
+  gdelt:
+    description: "GDELT Project — Global Database of Events, Language and Tone"
+    base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
+    notes: >
+      Sin autenticación. Cubre 2015-2024 con la DOC 2.0 API.
+      Proporciona tono promedio y volumen de cobertura internacional sobre Venezuela.
+    query: "Venezuela"
+    # Columnas de salida
+    col_tone:   gdelt_tono_noticias    # promedio anual del tono (-100..+100)
+    col_volume: gdelt_cobertura_vol    # total anual de artículos indexados
+
+  guardian:
+    description: "The Guardian — noticias internacionales de referencia"
+    base_url: "https://content.guardianapis.com/search"
+    api_key: "9d4cf6fc-8864-4693-adda-987c76fc7476"
+    api_key_env: "GUARDIAN_API_KEY"   # env var tiene prioridad si está definida
+    query: "Venezuela"
+    notes: >
+      API abierta gratuita. Artículos desde 1999.
+      Proporciona conteo anual y tono VADER de los primeros 50 titulares.
+    col_articles: guardian_articulos_venezuela
+    col_tone:     guardian_tono_titulares
+
+  pts:
+    description: "Political Terror Scale — Gibney et al. (2024)"
+    url: "https://www.politicalterrorscale.org/Data/Files/PTS-2024.csv"
+    notes: >
+      Descarga directa CSV. Sin autenticación requerida.
+      Escala 1-5: promedio de PTS_A (Amnesty Intl), PTS_H (HRW), PTS_S (State Dept).
+      Cobertura Venezuela: 2000-2023 (24 años).
+    indicator_name: "pts_terror_politico"
+
+  who:
+    description: "WHO Global Health Observatory (GHO) — OData API"
+    base_url: "https://ghoapi.azureedge.net/api"
+    notes: >
+      API pública sin autenticación. Filtra SpatialDim=VEN.
+      Indicadores: WHOSIS_000001 (esperanza de vida), MDG_0000000001 (mortalidad infantil).
+      Cobertura Venezuela: 22-24 años según indicador.
+    indicators:
+      WHOSIS_000001:    esperanza_vida_anos
+      MDG_0000000001:   mortalidad_infantil_x1000
+
+  # ── Fuentes estáticas (descarga manual, no hay API pública gratuita) ─────
+  cpi:
+    description: "Corruption Perceptions Index — Transparency International"
+    download_url: "https://www.transparency.org/en/cpi"
+    notes: "Descarga manual desde el portal. Formato: año|indicador|valor|pais|fuente"
+    indicator_name: "cpi_score"
+
+  ief:
+    description: "Index of Economic Freedom — Heritage Foundation"
+    download_url: "https://www.heritage.org/index/download"
+    notes: "Descarga manual del Excel anual. Formato: año|indicador|valor|pais|fuente"
+    indicator_name: "ief_overall_score"
+
+  hdi:
+    description: "Human Development Index — PNUD / UNDP"
+    download_url: "https://hdr.undp.org/data-center/documentation-and-downloads"
+    notes: "Descarga manual del CSV histórico. Formato: año|indicador|valor|pais|fuente"
+    indicator_name: "hdi"
+
+# ── Dimensiones e indicadores ─────────────────────────────────────────────────
+# iciv_weight: peso de la dimensión en el índice (deben sumar 1.0)
+# dim_weight:  peso de la variable dentro de su dimensión (deben sumar 1.0 por dim)
+
+dimensions:
+  # iciv_weight: 0.25+0.20+0.20+0.15+0.10+0.10 = 1.00
+
+  D1_macro:
+    name: "Estabilidad Macroeconómica"
+    iciv_weight: 0.25
+    variables:
+      inflacion_deflactor_pib_pct:   {dim_weight: 0.28, direction: negative}
+      pib_crecimiento_real_pct:      {dim_weight: 0.22, direction: positive}
+      reservas_internacionales_usd:  {dim_weight: 0.18, direction: positive}
+      tipo_cambio_oficial_lcu_usd:   {dim_weight: 0.12, direction: negative}
+      wti_precio_usd:                {dim_weight: 0.12, direction: positive}
+      tasa_fed_funds_pct:            {dim_weight: 0.08, direction: negative}
+
+  D2_energia:
+    name: "Sector Energético y Petróleo"
+    iciv_weight: 0.20
+    variables:
+      petroleo_crudo_produccion_tbpd: {dim_weight: 0.45, direction: positive}
+      gas_natural_produccion_bcf:     {dim_weight: 0.25, direction: positive}
+      electricidad_generacion_bkwh:   {dim_weight: 0.15, direction: positive}
+      luminosidad_nocturna_idx:       {dim_weight: 0.15, direction: positive}
+
+  D3_institucional:
+    name: "Entorno Institucional y Legal"
+    iciv_weight: 0.20
+    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
+    variables:
+      cpi_score:            {dim_weight: 0.14, direction: positive}
+      wgi_promedio_sc:      {dim_weight: 0.14, direction: positive}
+      ief_overall_score:    {dim_weight: 0.11, direction: positive}
+      freedom_house_score:  {dim_weight: 0.10, direction: positive}
+      vdem_libdem_index:    {dim_weight: 0.10, direction: positive}
+      wjp_rule_of_law:      {dim_weight: 0.09, direction: positive}
+      fragile_states_index: {dim_weight: 0.08, direction: negative}
+      pts_terror_politico:  {dim_weight: 0.07, direction: negative}
+      ofac_sanciones_count: {dim_weight: 0.05, direction: negative}
+      rsf_press_freedom:    {dim_weight: 0.04, direction: positive}
+      bti_governance_index: {dim_weight: 0.04, direction: positive}
+      basel_aml_index:      {dim_weight: 0.03, direction: negative}
+      ucdp_conflicto_idx:   {dim_weight: 0.01, direction: negative}
+
+  D4_comercial:
+    name: "Apertura Comercial y Financiera"
+    iciv_weight: 0.15
+    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
+    variables:
+      ied_neta_usd:                   {dim_weight: 0.28, direction: positive}
+      exportaciones_pct_pib:          {dim_weight: 0.22, direction: positive}
+      desempleo_pct:                  {dim_weight: 0.16, direction: negative}
+      migrantes_vzla_millones:        {dim_weight: 0.14, direction: negative}
+      lsci_conectividad_maritima:     {dim_weight: 0.10, direction: positive}
+      remesas_recibidas_usd:          {dim_weight: 0.06, direction: positive}
+      vuelos_aerolineas_int_count:    {dim_weight: 0.04, direction: positive}
+
+  D5_capital_humano:
+    name: "Capital Humano e Infraestructura Social"
+    iciv_weight: 0.10
+    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
+    variables:
+      hdi:                            {dim_weight: 0.24, direction: positive}
+      esperanza_vida_anos:            {dim_weight: 0.16, direction: positive}
+      mortalidad_infantil_x1000:      {dim_weight: 0.14, direction: negative}
+      tasa_alfabetizacion_adulta_pct: {dim_weight: 0.14, direction: positive}
+      acceso_electricidad_pct:        {dim_weight: 0.14, direction: positive}
+      ghi_score:                      {dim_weight: 0.08, direction: negative}
+      fao_calorias_per_capita:        {dim_weight: 0.06, direction: positive}
+      ilo_empleo_informal_pct:        {dim_weight: 0.04, direction: negative}
+
+  D6_percepcion:
+    name: "Percepción Internacional"
+    iciv_weight: 0.10
+    variables:
+      guardian_tono_titulares:       {dim_weight: 0.45, direction: positive}
+      guardian_articulos_venezuela:  {dim_weight: 0.25, direction: negative}
+      google_trends_vzla:            {dim_weight: 0.30, direction: positive}
+
+# ── Normalización ─────────────────────────────────────────────────────────────
+normalization:
+  method: "minmax"         # "minmax" | "zscore"
+  output_min: 0
+  output_max: 100
+  clip_outliers: true
+
+# ── Agregación ────────────────────────────────────────────────────────────────
+aggregation:
+  method: "linear"         # "linear" | "geometric"
+  use_fixed_weights: true  # false = usar PCA
+
+# ── Imputación ────────────────────────────────────────────────────────────────
+imputation:
+  default_strategy: "interpolate"
+  max_gap_to_impute: 4
+  # REGLA: limit_area="inside" en GapImputer — solo rellena gaps INTERNOS entre
+  # dos datos reales. Nunca extrapola extremos de serie (trailing/leading NaN).
+  # "none" = sin imputacion (NaN honesto cuando no hay dato real en el rango).
+  column_overrides:
+    # ── Variables con gaps extremos no imputables ──────────────────────────────
+    reservas_internacionales_usd:   "none"          # Venezuela no reporta al WB desde 2018
+    tipo_cambio_oficial_lcu_usd:    "none"          # lag WDI 2025-2026 → NaN honesto
+    cuenta_corriente_pct_pib:       "none"          # suspendió reporte al FMI
+    ofac_sanciones_count:           "none"          # solo 1 año real (snapshot SDN)
+    google_trends_vzla:             "none"          # rate limit frecuente → NaN si falla
+    vuelos_aerolineas_int_count:    "none"          # OpenSky sin cobertura histórica
+    # ── Variables con gaps internos imputables ────────────────────────────────
+    cpi_score:                      "interpolate"   # gaps internos cortos (~2 años)
+    ief_overall_score:              "interpolate"   # gaps internos 2001-2004
+    hdi:                            "interpolate"   # quinquenal → interpolación válida
+    wti_precio_usd:                 "interpolate"   # serie completa, sin gaps esperados
+    tasa_fed_funds_pct:             "interpolate"   # serie completa FRED
+    freedom_house_score:            "interpolate"   # cobertura 2000-2024 con 2 gaps
+    migrantes_vzla_millones:        "interpolate"   # 1 gap interno
+    luminosidad_nocturna_idx:       "interpolate"   # 2 gaps internos (transición DMSP→VIIRS)
+    esperanza_vida_anos:            "interpolate"   # años intermedios WHO
+    # ── Forward-fill solo para indicadores cuasi-estáticos ───────────────────
+    tasa_alfabetizacion_adulta_pct: "forward_fill"  # cambia muy lento
+    pts_terror_politico:            "forward_fill"  # PTS anual, gaps menores
+    mortalidad_infantil_x1000:      "forward_fill"  # IGME estima cada 2-3 años
+
+# ── Categorías de riesgo del ICIV ─────────────────────────────────────────────
+risk_categories:
+  - {min: 0,  max: 30,  label: "Alto Riesgo",          signal: "red"}
+  - {min: 31, max: 50,  label: "Riesgo Moderado-Alto", signal: "orange"}
+  - {min: 51, max: 65,  label: "Riesgo Moderado",      signal: "yellow"}
+  - {min: 66, max: 80,  label: "Bajo Riesgo",          signal: "green"}
+  - {min: 81, max: 100, label: "Muy Bajo Riesgo",      signal: "dark_green"}

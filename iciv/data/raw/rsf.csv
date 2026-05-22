@@ -1,0 +1,14 @@
+﻿año,indicador,valor,pais,fuente
+2013,rsf_press_freedom,65.56,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=34.44 invertido (100-34.44=65.56). Reporters Without Borders World Press Freedom Index.
+2014,rsf_press_freedom,64.63,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=35.37 invertido (100-35.37=64.63). Reporters Without Borders World Press Freedom Index.
+2015,rsf_press_freedom,59.39,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=40.61 invertido (100-40.61=59.39). Reporters Without Borders World Press Freedom Index.
+2016,rsf_press_freedom,55.23,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=44.77 invertido (100-44.77=55.23). Reporters Without Borders World Press Freedom Index.
+2017,rsf_press_freedom,57.06,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=42.94 invertido (100-42.94=57.06). Reporters Without Borders World Press Freedom Index.
+2018,rsf_press_freedom,53.97,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=46.03 invertido (100-46.03=53.97). Reporters Without Borders World Press Freedom Index.
+2019,rsf_press_freedom,50.9,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=49.10 invertido (100-49.10=50.90). Reporters Without Borders World Press Freedom Index.
+2020,rsf_press_freedom,54.34,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=45.66 invertido (100-45.66=54.34). Reporters Without Borders World Press Freedom Index.
+2021,rsf_press_freedom,52.4,Venezuela,RSF/OWID press-freedom-rsf.csv pre-2022 — violations_score=47.60 invertido (100-47.60=52.40). Reporters Without Borders World Press Freedom Index.
+2022,rsf_press_freedom,37.78,Venezuela,"RSF World Press Freedom Index 2022 (nueva metodologia 0-100, mayor=mas libre). https://www.statista.com/statistics/955803/press-freedom-index-venezuela/"
+2023,rsf_press_freedom,36.99,Venezuela,"RSF World Press Freedom Index 2023 (nueva metodologia 0-100, mayor=mas libre). https://www.statista.com/statistics/955803/press-freedom-index-venezuela/"
+2024,rsf_press_freedom,33.06,Venezuela,"RSF World Press Freedom Index 2024 (nueva metodologia 0-100, mayor=mas libre). https://www.statista.com/statistics/955803/press-freedom-index-venezuela/"
+2025,rsf_press_freedom,29.21,Venezuela,"RSF World Press Freedom Index 2025 (nueva metodologia 0-100, mayor=mas libre). https://www.statista.com/statistics/955803/press-freedom-index-venezuela/"

@@ -1,0 +1,546 @@
+{
+  "info": {
+    "name": "ICIV Venezuela — Verificación de APIs",
+    "description": "Colección completa para probar todas las APIs del proyecto ICIV. Importa también el ambiente 'ICIV_Ambiente.postman_environment.json' para usar las variables.\n\n⛔ REGLA: Solo datos reales. Si la API no responde → la variable queda NaN. No se inventan datos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 — World Bank WDI",
+      "description": "Banco Mundial — World Development Indicators. Sin autenticación.",
+      "item": [
+        {
+          "name": "WDI — PIB crecimiento real (NY.GDP.MKTP.KD.ZG)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.worldbank.org/v2/country/{{pais_wb}}/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=30",
+              "host": ["api.worldbank.org"],
+              "path": ["v2", "country", "{{pais_wb}}", "indicator", "NY.GDP.MKTP.KD.ZG"],
+              "query": [
+                {"key": "format", "value": "json"},
+                {"key": "per_page", "value": "30"}
+              ]
+            },
+            "description": "Crecimiento real del PIB %. Esperado: ~25 años para Venezuela. Respuesta JSON: array[0]=metadata, array[1]=datos"
+          },
+          "response": []
+        },
+        {
+          "name": "WDI — Reservas internacionales (FI.RES.TOTL.CD)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.worldbank.org/v2/country/{{pais_wb}}/indicator/FI.RES.TOTL.CD?format=json&per_page=30",
+              "host": ["api.worldbank.org"],
+              "path": ["v2", "country", "{{pais_wb}}", "indicator", "FI.RES.TOTL.CD"],
+              "query": [
+                {"key": "format", "value": "json"},
+                {"key": "per_page", "value": "30"}
+              ]
+            },
+            "description": "Reservas totales USD. Venezuela dejó de reportar ~2018. Esperado: ~18 años con datos."
+          },
+          "response": []
+        },
+        {
+          "name": "WDI — LSCI conectividad marítima (IS.SHP.GCNW.XQ)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.worldbank.org/v2/country/{{pais_wb}}/indicator/IS.SHP.GCNW.XQ?format=json&per_page=30",
+              "host": ["api.worldbank.org"],
+              "path": ["v2", "country", "{{pais_wb}}", "indicator", "IS.SHP.GCNW.XQ"],
+              "query": [
+                {"key": "format", "value": "json"},
+                {"key": "per_page", "value": "30"}
+              ]
+            },
+            "description": "Liner Shipping Connectivity Index. Reemplazó al UNCTAD API (404). Esperado: 16 años (2006-2021)."
+          },
+          "response": []
+        },
+        {
+          "name": "WDI — IED neta USD (BX.KLT.DINV.CD.WD)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.worldbank.org/v2/country/{{pais_wb}}/indicator/BX.KLT.DINV.CD.WD?format=json&per_page=30",
+              "host": ["api.worldbank.org"],
+              "path": ["v2", "country", "{{pais_wb}}", "indicator", "BX.KLT.DINV.CD.WD"],
+              "query": [
+                {"key": "format", "value": "json"},
+                {"key": "per_page", "value": "30"}
+              ]
+            },
+            "description": "Inversión Extranjera Directa neta en USD."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2 — World Bank WGI",
+      "description": "Governance Indicators — descarga ZIP bulk.",
+      "item": [
+        {
+          "name": "WGI — Verificar ZIP disponible",
+          "request": {
+            "method": "HEAD",
+            "url": {
+              "raw": "https://databank.worldbank.org/data/download/WGI_CSV.zip",
+              "host": ["databank.worldbank.org"],
+              "path": ["data", "download", "WGI_CSV.zip"]
+            },
+            "description": "Verifica que el ZIP existe. Respuesta 200 = OK. 404 = cambio de URL (verificar mayúsculas CSV vs csv)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3 — IMF DataMapper",
+      "description": "International Monetary Fund DataMapper API. Sin autenticación.",
+      "item": [
+        {
+          "name": "IMF — Inflación CPI Venezuela (PCPIPCH) ✅ 27 años",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.imf.org/external/datamapper/api/v1/PCPIPCH/VEN",
+              "host": ["www.imf.org"],
+              "path": ["external", "datamapper", "api", "v1", "PCPIPCH", "VEN"]
+            },
+            "description": "CPI inflation rate %. Reemplazó NGDP_D que daba 0 años para Venezuela. Esperado: 27 años (2000-2026)."
+          },
+          "response": []
+        },
+        {
+          "name": "IMF — Desempleo LUR Venezuela (19 años)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.imf.org/external/datamapper/api/v1/LUR/VEN",
+              "host": ["www.imf.org"],
+              "path": ["external", "datamapper", "api", "v1", "LUR", "VEN"]
+            },
+            "description": "Unemployment rate %. Venezuela dejó de reportar ~2019. Esperado: ~19 años."
+          },
+          "response": []
+        },
+        {
+          "name": "IMF — Cuenta corriente % PIB (BCA_NGDPD)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.imf.org/external/datamapper/api/v1/BCA_NGDPD/VEN",
+              "host": ["www.imf.org"],
+              "path": ["external", "datamapper", "api", "v1", "BCA_NGDPD", "VEN"]
+            },
+            "description": "Current account balance % GDP. Esperado: 27 años."
+          },
+          "response": []
+        },
+        {
+          "name": "IMF — NGDP_D ❌ (devuelve 0 años para Venezuela — NO USAR)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.imf.org/external/datamapper/api/v1/NGDP_D/VEN",
+              "host": ["www.imf.org"],
+              "path": ["external", "datamapper", "api", "v1", "NGDP_D", "VEN"]
+            },
+            "description": "❌ GDP deflator. Venezuela dejó de reportar esto al IMF. Devuelve array vacío. REEMPLAZADO POR PCPIPCH."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4 — EIA (Energía)",
+      "description": "Energy Information Administration API v2. Requiere API key.",
+      "item": [
+        {
+          "name": "EIA — Producción petróleo Venezuela (TBPD)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.eia.gov/v2/international/data/?api_key={{eia_api_key}}&frequency=annual&data[]=value&facets[productId][]=57&facets[activityId][]=1&facets[countryRegionId][]=VEN&facets[unit][]=TBPD&start=2000&end=2026",
+              "host": ["api.eia.gov"],
+              "path": ["v2", "international", "data", ""],
+              "query": [
+                {"key": "api_key", "value": "{{eia_api_key}}"},
+                {"key": "frequency", "value": "annual"},
+                {"key": "data[]", "value": "value"},
+                {"key": "facets[productId][]", "value": "57"},
+                {"key": "facets[activityId][]", "value": "1"},
+                {"key": "facets[countryRegionId][]", "value": "VEN"},
+                {"key": "facets[unit][]", "value": "TBPD"},
+                {"key": "start", "value": "2000"},
+                {"key": "end", "value": "2026"}
+              ]
+            },
+            "description": "Producción crudo Venezuela en miles de barriles/día. Esperado: ~26 años. Nota: usa facets v2, NO el formato legacy ?seriesId=."
+          },
+          "response": []
+        },
+        {
+          "name": "EIA — Producción gas natural Venezuela (BCF)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.eia.gov/v2/international/data/?api_key={{eia_api_key}}&frequency=annual&data[]=value&facets[productId][]=26&facets[activityId][]=1&facets[countryRegionId][]=VEN&facets[unit][]=BCF&start=2000&end=2026",
+              "host": ["api.eia.gov"],
+              "path": ["v2", "international", "data", ""],
+              "query": [
+                {"key": "api_key", "value": "{{eia_api_key}}"},
+                {"key": "frequency", "value": "annual"},
+                {"key": "data[]", "value": "value"},
+                {"key": "facets[productId][]", "value": "26"},
+                {"key": "facets[activityId][]", "value": "1"},
+                {"key": "facets[countryRegionId][]", "value": "VEN"},
+                {"key": "facets[unit][]", "value": "BCF"},
+                {"key": "start", "value": "2000"},
+                {"key": "end", "value": "2026"}
+              ]
+            },
+            "description": "Gas natural Venezuela en billones de pies cúbicos."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5 — FRED (Federal Reserve)",
+      "description": "St. Louis Federal Reserve. Descarga directa CSV, sin autenticación.",
+      "item": [
+        {
+          "name": "FRED — Precio WTI petróleo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILWTICO",
+              "host": ["fred.stlouisfed.org"],
+              "path": ["graph", "fredgraph.csv"],
+              "query": [{"key": "id", "value": "DCOILWTICO"}]
+            },
+            "description": "Crude Oil Prices: West Texas Intermediate (WTI) — diario, se promedia anualmente en el script."
+          },
+          "response": []
+        },
+        {
+          "name": "FRED — Tasa Fed Funds",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS",
+              "host": ["fred.stlouisfed.org"],
+              "path": ["graph", "fredgraph.csv"],
+              "query": [{"key": "id", "value": "FEDFUNDS"}]
+            },
+            "description": "Effective Federal Funds Rate mensual."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6 — The Guardian",
+      "description": "API de noticias. Requiere API key (gratis).",
+      "item": [
+        {
+          "name": "Guardian — Artículos Venezuela 2024",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://content.guardianapis.com/search?q=Venezuela&from-date=2024-01-01&to-date=2024-12-31&api-key={{guardian_api_key}}&page-size=50&show-fields=headline",
+              "host": ["content.guardianapis.com"],
+              "path": ["search"],
+              "query": [
+                {"key": "q", "value": "Venezuela"},
+                {"key": "from-date", "value": "2024-01-01"},
+                {"key": "to-date", "value": "2024-12-31"},
+                {"key": "api-key", "value": "{{guardian_api_key}}"},
+                {"key": "page-size", "value": "50"},
+                {"key": "show-fields", "value": "headline"}
+              ]
+            },
+            "description": "Artículos sobre Venezuela en 2024. Se usa VADER para calcular el tono de los titulares."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7 — UNHCR Population",
+      "description": "Datos de refugiados y desplazados. Sin autenticación.",
+      "item": [
+        {
+          "name": "UNHCR — Venezolanos desplazados (coo=VEN) ✅",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.unhcr.org/population/v1/population/?coo=VEN&yearFrom=2000&yearTo=2025&limit=100",
+              "host": ["api.unhcr.org"],
+              "path": ["population", "v1", "population", ""],
+              "query": [
+                {"key": "coo", "value": "VEN"},
+                {"key": "yearFrom", "value": "2000"},
+                {"key": "yearTo", "value": "2025"},
+                {"key": "limit", "value": "100"}
+              ]
+            },
+            "description": "coo=VEN = Country of Origin Venezuela = venezolanos EN EL EXTERIOR. Esperado: 26 años de datos reales."
+          },
+          "response": []
+        },
+        {
+          "name": "UNHCR — ❌ Parámetro incorrecto (countries=VEN — solo 1 año)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.unhcr.org/population/v1/population/?countries=VEN&year=2000:2025&limit=100",
+              "host": ["api.unhcr.org"],
+              "path": ["population", "v1", "population", ""],
+              "query": [
+                {"key": "countries", "value": "VEN"},
+                {"key": "year", "value": "2000:2025"},
+                {"key": "limit", "value": "100"}
+              ]
+            },
+            "description": "❌ INCORRECTO — devuelve personas refugiadas EN Venezuela (≈1 año). NO usar. El correcto es coo=VEN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8 — WHO GHO",
+      "description": "World Health Organization Global Health Observatory. Sin autenticación.",
+      "item": [
+        {
+          "name": "WHO — Esperanza de vida Venezuela",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://ghoapi.azureedge.net/api/WHOSIS_000001?$filter=SpatialDim eq 'VEN'",
+              "host": ["ghoapi.azureedge.net"],
+              "path": ["api", "WHOSIS_000001"],
+              "query": [
+                {"key": "$filter", "value": "SpatialDim eq 'VEN'"}
+              ]
+            },
+            "description": "Life expectancy at birth. Esperado: ~22 años (2000-2021)."
+          },
+          "response": []
+        },
+        {
+          "name": "WHO — Mortalidad infantil Venezuela",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://ghoapi.azureedge.net/api/MDG_0000000001?$filter=SpatialDim eq 'VEN'",
+              "host": ["ghoapi.azureedge.net"],
+              "path": ["api", "MDG_0000000001"],
+              "query": [
+                {"key": "$filter", "value": "SpatialDim eq 'VEN'"}
+              ]
+            },
+            "description": "Child mortality rate x1000 live births. Esperado: ~24 años (2000-2023)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9 — PTS (Political Terror Scale)",
+      "description": "Political Terror Scale — Gibney et al. Descarga directa CSV, sin autenticación.",
+      "item": [
+        {
+          "name": "PTS — Descargar CSV 2024",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.politicalterrorscale.org/Data/Files/PTS-2024.csv",
+              "host": ["www.politicalterrorscale.org"],
+              "path": ["Data", "Files", "PTS-2024.csv"]
+            },
+            "description": "Escala de terror político 1-5. Venezuela 2000-2023. Se promedian PTS_A (Amnesty), PTS_H (HRW), PTS_S (State Dept)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10 — OFAC SDN",
+      "description": "US Treasury — Specially Designated Nationals list.",
+      "item": [
+        {
+          "name": "OFAC — Descargar lista SDN actual",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.treasury.gov/ofac/downloads/sdn.csv",
+              "host": ["www.treasury.gov"],
+              "path": ["ofac", "downloads", "sdn.csv"]
+            },
+            "description": "Lista SDN completa en CSV. El script filtra por 'Venezuela/VENEZUELA/VEN' para contar entidades venezolanas. Actualmente: ~203 entidades."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11 — NOAA EOG (VIIRS Luminosidad Nocturna) 🔐",
+      "description": "REQUIERE CUENTA NASA EARTHDATA. Ver bitacora/06_guia_viirs_luminosidad_nocturna.md",
+      "item": [
+        {
+          "name": "NOAA EOG — Índice directorio estadísticas 2023 (requiere auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://eogdata.mines.edu/nighttime_light/annual/v22/2023/0_global_statistics/",
+              "host": ["eogdata.mines.edu"],
+              "path": ["nighttime_light", "annual", "v22", "2023", "0_global_statistics", ""]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {"key": "username", "value": "{{nasa_earthdata_user}}", "type": "string"},
+                {"key": "password", "value": "{{nasa_earthdata_pass}}", "type": "string"}
+              ]
+            },
+            "description": "⚠️ REQUIERE AUTH — Primero crea cuenta en https://urs.earthdata.nasa.gov/users/new\nLuego pon tu usuario/password en el ambiente Postman.\nSi devuelve HTML con listado de archivos → acceso OK.\nSi devuelve 401 → credenciales incorrectas."
+          },
+          "response": []
+        },
+        {
+          "name": "NOAA EOG — API JSON estadísticas (devuelve vacío sin auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://eogdata.mines.edu/wwwdata/viirs_products/vnl_v2/0_global_statistics/VNL_v2_npp_statistics.json",
+              "host": ["eogdata.mines.edu"],
+              "path": ["wwwdata", "viirs_products", "vnl_v2", "0_global_statistics", "VNL_v2_npp_statistics.json"]
+            },
+            "description": "⚠️ Devuelve HTTP 200 con body VACÍO sin autenticación. Es el bug conocido. Para datos reales usar el request con Basic Auth."
+          },
+          "response": []
+        },
+        {
+          "name": "NOAA EOG — Descargar stats 2023 (requiere auth)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://eogdata.mines.edu/nighttime_light/annual/v22/2023/0_global_statistics/VNL_v22_npp_2023_global_vcmslcfg_c202404021200.average_masked.dat.gz",
+              "host": ["eogdata.mines.edu"],
+              "path": ["nighttime_light", "annual", "v22", "2023", "0_global_statistics", "VNL_v22_npp_2023_global_vcmslcfg_c202404021200.average_masked.dat.gz"]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {"key": "username", "value": "{{nasa_earthdata_user}}", "type": "string"},
+                {"key": "password", "value": "{{nasa_earthdata_pass}}", "type": "string"}
+              ]
+            },
+            "description": "⚠️ El nombre del archivo puede variar. Primero usa el request anterior para listar los archivos disponibles y confirmar el nombre exacto."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12 — UNCTAD (verificación — API está muerta)",
+      "description": "Endpoint UNCTAD Stat devuelve HTTP 404. Documentado aquí para referencia.",
+      "item": [
+        {
+          "name": "UNCTAD LSCI ❌ (API 404 — NO USAR)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://unctadstat.unctad.org/api/v1/en/data/MT_TMS_LSCI_I/VEN",
+              "host": ["unctadstat.unctad.org"],
+              "path": ["api", "v1", "en", "data", "MT_TMS_LSCI_I", "VEN"]
+            },
+            "description": "❌ Devuelve HTTP 404. REEMPLAZADO por WB WDI IS.SHP.GCNW.XQ en fetch_unctad.py."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "13 — Verificaciones de estado",
+      "description": "Requests rápidos para verificar que cada API sigue respondiendo.",
+      "item": [
+        {
+          "name": "✅ WB WDI — Test ping",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.worldbank.org/v2/country/VEN?format=json",
+              "host": ["api.worldbank.org"],
+              "path": ["v2", "country", "VEN"],
+              "query": [{"key": "format", "value": "json"}]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "✅ IMF DataMapper — Test ping",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://www.imf.org/external/datamapper/api/v1/info",
+              "host": ["www.imf.org"],
+              "path": ["external", "datamapper", "api", "v1", "info"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "✅ WHO GHO — Test ping",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://ghoapi.azureedge.net/api/$metadata",
+              "host": ["ghoapi.azureedge.net"],
+              "path": ["api", "$metadata"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "✅ PTS CSV — Test ping",
+          "request": {
+            "method": "HEAD",
+            "url": {
+              "raw": "https://www.politicalterrorscale.org/Data/Files/PTS-2024.csv",
+              "host": ["www.politicalterrorscale.org"],
+              "path": ["Data", "Files", "PTS-2024.csv"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "✅ UNHCR API — Test ping",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://api.unhcr.org/population/v1/population/?coo=VEN&yearFrom=2024&yearTo=2024&limit=5",
+              "host": ["api.unhcr.org"],
+              "path": ["population", "v1", "population", ""],
+              "query": [
+                {"key": "coo", "value": "VEN"},
+                {"key": "yearFrom", "value": "2024"},
+                {"key": "yearTo", "value": "2024"},
+                {"key": "limit", "value": "5"}
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ICIV — Validacion del Modelo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117;--card:#1c2128;--border:#30363d;
+  --text:#e6edf3;--muted:#8b949e;--accent:#00d4aa;
+  --red:#e05c5c;--orange:#e67e22;--yellow:#f1c40f;--green:#2ecc71;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:100;background:#161b22;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:0;padding:0 32px;height:48px}
+.nav a{color:var(--muted);text-decoration:none;font-size:.8rem;font-weight:500;
+        padding:0 16px;height:48px;display:flex;align-items:center;border-bottom:2px solid transparent;
+        transition:color .2s,border-color .2s}
+.nav a:hover{color:var(--text);border-bottom-color:var(--accent)}
+.nav-brand{color:var(--accent);font-weight:700;font-size:.9rem;margin-right:24px}
+
+/* header */
+.header{padding:36px 40px 28px;background:linear-gradient(135deg,#161b22 0%,#1c2128 100%);
+         border-bottom:1px solid var(--border)}
+.header h1{font-size:1.7rem;font-weight:700}
+.header h1 span{color:var(--accent)}
+.header .sub{color:var(--muted);font-size:.85rem;margin-top:6px}
+
+/* section */
+.section{padding:32px 40px;border-bottom:1px solid var(--border)}
+.section-header{margin-bottom:20px}
+.section-title{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.section-h2{font-size:1.15rem;font-weight:700;margin-top:4px}
+.section-sub{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+/* grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card.wide{grid-column:span 2}
+.ct{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.cs{font-size:.7rem;color:var(--muted);margin-bottom:16px}
+
+/* stats */
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;flex:1;min-width:120px}
+.stat-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stat-val{font-size:1.5rem;font-weight:700}
+.stat-sub{font-size:.7rem;color:var(--muted);margin-top:3px}
+.c-accent{color:var(--accent)}
+.c-green{color:var(--green)}
+.c-orange{color:var(--orange)}
+.c-red{color:var(--red)}
+
+/* alerts */
+.alert{border-radius:8px;padding:14px 18px;margin-bottom:18px;border:1px solid}
+.alert-good{background:#00d4aa15;border-color:#00d4aa40;color:#00d4aa}
+.alert-warn{background:#e67e2215;border-color:#e67e2240;color:#e67e22}
+.alert-bad{background:#e05c5c15;border-color:#e05c5c40;color:#e05c5c}
+.alert-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.alert-body{font-size:.84rem;color:var(--text);line-height:1.5}
+
+/* tables */
+.vtable{width:100%;border-collapse:collapse;font-size:.82rem}
+.vtable th{text-align:left;padding:8px 12px;font-size:.66rem;color:var(--muted);
+            text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.vtable td{padding:8px 12px;border-bottom:1px solid #21262d;vertical-align:middle}
+.vtable tr:last-child td{border-bottom:none}
+.vtable tbody tr:hover{background:rgba(255,255,255,.02)}
+
+/* badge */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.7rem;font-weight:600}
+
+/* footer */
+.footer{text-align:center;padding:24px;font-size:.72rem;color:var(--muted);border-top:1px solid var(--border)}
+
+@media(max-width:900px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .card.wide{grid-column:span 1}
+  .section{padding:22px 18px}
+  .header{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">ICIV · Validacion</span>
+  <a href="#sensibilidad">Sensibilidad</a>
+  <a href="#correlacion">Correlacion IED</a>
+  <a href="#metodos">Lineal vs Geometrico</a>
+  <a href="#ponderacion">AHP vs PCA</a>
+</nav>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>ICIV — <span>Validacion del Modelo</span></h1>
+  <p class="sub">Paso 7 de la metodologia · OCDE Handbook on Constructing Composite Indicators (2008) · 21 de May de 2026 · 19:16</p>
+</div>
+
+<!-- ===== 1. SENSIBILIDAD ===== -->
+<section class="section" id="sensibilidad">
+  <div class="section-header">
+    <div class="section-title">Analisis 1 de 4</div>
+    <div class="section-h2">Analisis de Sensibilidad de Pesos AHP</div>
+    <div class="section-sub">Perturbacion de +/-5%, +/-10%, +/-20% en cada peso de dimension · Redistribucion proporcional</div>
+  </div>
+
+  <div class="alert alert-good">
+    <div class="alert-title">Conclusion de robustez</div>
+    <div class="alert-body">ROBUSTO: el ICIV es estable ante cambios de pesos (SI < 0.08) — Indice de Sensibilidad (SI) = 0.0408</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Indice de Sensibilidad (SI)</div>
+      <div class="stat-val c-accent">0.0408</div>
+      <div class="stat-sub">SI = Rango medio / ICIV medio</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Rango medio de variacion</div>
+      <div class="stat-val c-accent">2.21 pts</div>
+      <div class="stat-sub">Promedio de (ICIV_max - ICIV_min) por ano</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Rango maximo observado</div>
+      <div class="stat-val c-orange">5.43 pts</div>
+      <div class="stat-sub">En el ano mas sensible</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Escenarios evaluados</div>
+      <div class="stat-val c-accent">36</div>
+      <div class="stat-sub">6 dimensiones × 6 perturbaciones</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card wide">
+      <div class="ct">Corredor de sensibilidad del ICIV</div>
+      <div class="cs">Area sombreada = rango posible ante perturbaciones de pesos · Linea central = AHP base</div>
+      <div style="height:340px;position:relative">
+        <canvas id="cSensEnvelope"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Impacto por dimension</div>
+      <div class="cs">Variacion media absoluta del ICIV al perturbar cada dimension</div>
+      <div style="height:280px;position:relative">
+        <canvas id="cSensImpact"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Interpretacion del Indice de Sensibilidad</div>
+      <div class="cs">Referencia: Saisana & Tarantola (2002), OCDE Handbook (2008)</div>
+      <table class="vtable" style="margin-top:8px">
+        <thead><tr><th>SI</th><th>Clasificacion</th><th>Interpretacion</th></tr></thead>
+        <tbody>
+          <tr><td>0.00 – 0.08</td><td><span class="badge" style="background:#00d4aa22;color:#00d4aa">Robusto</span></td><td>Pesos tienen efecto marginal</td></tr>
+          <tr><td>0.08 – 0.15</td><td><span class="badge" style="background:#e67e2222;color:#e67e22">Moderado</span></td><td>Cierta dependencia de los pesos</td></tr>
+          <tr><td>&gt; 0.15</td><td><span class="badge" style="background:#e05c5c22;color:#e05c5c">Sensible</span></td><td>Resultado dependiente de pesos</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:#0d1117;border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">ICIV obtenido en este analisis</div>
+        <div style="font-size:1.1rem;font-weight:700;color:var(--accent)">SI = 0.0408
+          <span style="font-size:.78rem;color:var(--muted);font-weight:400;margin-left:8px">
+            Robusto
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 2. CORRELACION IED ===== -->
+<section class="section" id="correlacion">
+  <div class="section-header">
+    <div class="section-title">Analisis 2 de 4</div>
+    <div class="section-h2">Correlacion ICIV vs Inversion Extranjera Directa (IED)</div>
+    <div class="section-sub">Validacion: si el ICIV captura el clima de inversion real, deberia correlacionar con los flujos de IED</div>
+  </div>
+
+  <div class="stats-row"><div class="stat"><div class="stat-label">Pearson r</div><div class="stat-val c-accent">0.4598</div><div class="stat-sub">Moderada · p < 0.05 *</div></div><div class="stat"><div class="stat-label">Spearman rho</div><div class="stat-val c-accent">0.5223</div><div class="stat-sub">Moderada · p < 0.01 **</div></div><div class="stat"><div class="stat-label">Observaciones (n)</div><div class="stat-val c-accent">25</div><div class="stat-sub">anos con ambas variables</div></div></div><div class="grid-2"><div class="card"><div class="ct">Scatter: ICIV vs IED normalizada</div><div class="cs">Cada punto = un ano · Linea roja = regresion lineal</div><div style="height:300px;position:relative"><canvas id="cCorrScatter"></canvas></div></div><div class="card"><div class="ct">Serie temporal comparada</div><div class="cs">ICIV (eje izq.) vs IED normalizada (eje der.)</div><div style="height:300px;position:relative"><canvas id="cCorrTime"></canvas></div></div></div>
+</section>
+
+<!-- ===== 3. LINEAL vs GEOMETRICO ===== -->
+<section class="section" id="metodos">
+  <div class="section-header">
+    <div class="section-title">Analisis 3 de 4</div>
+    <div class="section-h2">Comparacion: Agregacion Lineal vs Geometrica</div>
+    <div class="section-sub">Mismos pesos AHP — diferente funcion de agregacion · Ref: OCDE Handbook (2008), Cap. 6</div>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-title">Interpretacion</div>
+    <div class="alert-body">
+      La agregacion geometrica penaliza dimensiones extremadamente bajas (no permite compensacion plena).
+      Para Venezuela, valores muy bajos en D1 (macro) o D3 (institucional) reducen mas el ICIV geometrico.
+      Una diferencia media peqena (MAD &lt; 3 pts) indica que ambos metodos son intercambiables.
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">MAD (Desv. Absoluta Media)</div>
+      <div class="stat-val c-orange">3.173 pts</div>
+      <div class="stat-sub">Diferencia promedio entre metodos</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Correlacion L-G</div>
+      <div class="stat-val c-accent">0.9900</div>
+      <div class="stat-sub">Pearson entre series</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Media Lineal</div>
+      <div class="stat-val c-accent">54.11</div>
+      <div class="stat-sub">Promedio historico</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Media Geometrica</div>
+      <div class="stat-val c-orange">50.93</div>
+      <div class="stat-sub">Promedio historico</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card wide">
+      <div class="ct">ICIV Lineal vs Geometrico</div>
+      <div class="cs">Area sombreada = diferencia entre metodos</div>
+      <div style="height:320px;position:relative"><canvas id="cMethodsLine"></canvas></div>
+    </div>
+    <div class="card wide">
+      <div class="ct">Delta (Geometrico - Lineal)</div>
+      <div class="cs">Diferencia puntual por ano · Negativo = geometrico penaliza mas</div>
+      <div style="height:220px;position:relative"><canvas id="cMethodsDelta"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. AHP vs PCA ===== -->
+<section class="section" id="ponderacion">
+  <div class="section-header">
+    <div class="section-title">Analisis 4 de 4</div>
+    <div class="section-h2">Comparacion de Estrategias de Ponderacion: AHP vs PCA</div>
+    <div class="section-sub">AHP = juicio experto (Saaty 1980) · PCA = varianza estadistica (OCDE 2008, Cap. 6)</div>
+  </div>
+
+  <div class="stats-row"><div class="stat"><div class="stat-label">PC1 varianza explicada</div><div class="stat-val c-accent">56.5%</div><div class="stat-sub">Del total de varianza dimensional</div></div><div class="stat"><div class="stat-label">MAD (AHP vs PCA)</div><div class="stat-val c-accent">1.577 pts</div><div class="stat-sub">Diferencia promedio en ICIV</div></div><div class="stat"><div class="stat-label">Correlacion AHP-PCA</div><div class="stat-val c-accent">0.9938</div><div class="stat-sub">Pearson entre series</div></div></div><div class="grid-2"><div class="card"><div class="ct">Tabla de pesos: AHP vs PCA</div><div class="cs">PC1 varianza explicada = 56.5%</div><table class="vtable"><thead><tr><th>Dimension</th><th>Peso AHP</th><th>Peso PCA</th><th>Diferencia</th></tr></thead><tbody><tr><td>Estabilidad Macroeconómica</td><td>0.2540 (25.4%)</td><td>0.1522 (15.2%)</td><td style="color:#e05c5c;font-weight:600">-0.1018</td></tr>
+<tr><td>Sector Energético y Petróleo</td><td>0.1952 (19.5%)</td><td>0.2093 (20.9%)</td><td style="color:#00d4aa;font-weight:600">+0.0141</td></tr>
+<tr><td>Entorno Institucional y Legal</td><td>0.1952 (19.5%)</td><td>0.2122 (21.2%)</td><td style="color:#00d4aa;font-weight:600">+0.0169</td></tr>
+<tr><td>Apertura Comercial y Financiera</td><td>0.1743 (17.4%)</td><td>0.1901 (19.0%)</td><td style="color:#00d4aa;font-weight:600">+0.0159</td></tr>
+<tr><td>Capital Humano e Infraestructura Social</td><td>0.0906 (9.1%)</td><td>0.1358 (13.6%)</td><td style="color:#e67e22;font-weight:600">+0.0451</td></tr>
+<tr><td>Percepción Internacional</td><td>0.0906 (9.1%)</td><td>0.1004 (10.0%)</td><td style="color:#00d4aa;font-weight:600">+0.0098</td></tr>
+</tbody></table></div><div class="card"><div class="ct">Pesos por dimension: AHP vs PCA</div><div class="cs">Comparativa visual de ponderaciones</div><div style="height:260px;position:relative"><canvas id="cWeightsBar"></canvas></div></div><div class="card wide"><div class="ct">ICIV resultante: AHP vs PCA</div><div class="cs">Mismo metodo de agregacion (lineal) — distinta ponderacion</div><div style="height:300px;position:relative"><canvas id="cWeightsLine"></canvas></div></div></div>
+</section>
+
+<footer class="footer">
+  ICIV · Validacion del Modelo · Tesis de Posgrado — Especializacion en Big Data e Inteligencia de Negocios<br>
+  Referencias: Saaty (1980) · OCDE Handbook on Constructing Composite Indicators (2008) · Saisana & Tarantola (2002)
+</footer>
+
+<script>
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+// ── Data ────────────────────────────────────────────────────────────────────
+const sYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const sBase     = [69.61, 69.2, 61.15, 61.97, 66.89, 67.5, 69.43, 68.25, 69.4, 63.24, 63.91, 66.6, 71.92, 66.63, 64.21, 63.36, 52.24, 42.97, 36.19, 31.13, 25.81, 34.34, 41.14, 34.82, 33.79, 30.83, 34.31];
+const sEnvMin   = [68.31, 68.3, 60.33, 61.19, 66.28, 66.87, 68.71, 67.6, 68.12, 62.35, 63.02, 65.6, 70.71, 65.85, 63.31, 62.22, 51.13, 42.04, 35.36, 29.93, 25.08, 33.15, 39.42, 33.63, 32.0, 28.89, 31.53];
+const sEnvMax   = [70.91, 70.1, 61.96, 62.74, 67.51, 68.13, 70.16, 68.91, 70.67, 64.13, 64.81, 67.6, 73.12, 67.41, 65.11, 64.5, 53.36, 43.9, 37.02, 32.33, 26.53, 35.53, 42.86, 36.01, 35.58, 32.78, 36.96];
+const sImpLbls  = ["Estabilidad Macroecon\u00f3mica", "Sector Energ\u00e9tico y Petr\u00f3leo", "Entorno Institucional y Legal", "Apertura Comercial y Financiera", "Capital Humano e Infraestructura Social", "Percepci\u00f3n Internacional"];
+const sImpVals  = [0.323, 0.148, 0.308, 0.058, 0.018, 0.068];
+
+const cYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
+const cIciv     = [69.61, 69.2, 61.15, 61.97, 66.89, 67.5, 69.43, 68.25, 69.4, 63.24, 63.91, 66.6, 71.92, 66.63, 64.21, 63.36, 52.24, 42.97, 36.19, 31.13, 25.81, 34.34, 41.14, 34.82, 33.79];
+const cIed      = [83.52, 69.24, 27.15, 38.76, 37.56, 51.3, 19.09, 78.59, 46.05, 0.0, 38.9, 100.0, 87.57, 46.94, 32.49, 58.54, 38.96, 11.99, 25.16, 24.33, 37.77, 33.61, 49.86, 16.45, 39.61];
+const cRegX     = [25.81, 71.92];
+const cRegY     = [21.58, 55.62];
+
+const mYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const mLin      = [69.61, 69.2, 61.15, 61.97, 66.89, 67.5, 69.43, 68.25, 69.4, 63.24, 63.91, 66.6, 71.92, 66.63, 64.21, 63.36, 52.24, 42.97, 36.19, 31.13, 25.81, 34.34, 41.14, 34.82, 33.79, 30.83, 34.31];
+const mGeom     = [67.93, 67.78, 60.17, 60.4, 66.4, 67.08, 69.16, 67.68, 68.2, 61.77, 62.87, 65.01, 70.26, 65.79, 62.84, 61.53, 50.26, 40.78, 33.85, 27.45, 22.07, 28.47, 34.1, 29.78, 21.85, 14.32, 27.38];
+const mDeltas   = [-1.68, -1.42, -0.98, -1.57, -0.49, -0.42, -0.27, -0.57, -1.2, -1.47, -1.04, -1.59, -1.66, -0.84, -1.37, -1.83, -1.98, -2.19, -2.34, -3.68, -3.74, -5.87, -7.04, -5.04, -11.94, -16.51, -6.93];
+
+const wYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const wAhp      = [69.61, 69.2, 61.15, 61.97, 66.89, 67.5, 69.43, 68.25, 69.4, 63.24, 63.91, 66.6, 71.92, 66.63, 64.21, 63.36, 52.24, 42.97, 36.19, 31.13, 25.81, 34.34, 41.14, 34.82, 33.79, 30.83, 34.31];
+const wPca      = [70.08, 69.51, 61.42, 61.22, 65.25, 66.07, 68.02, 67.16, 67.27, 62.21, 62.9, 65.12, 71.04, 66.4, 64.19, 64.86, 53.36, 43.25, 38.4, 33.06, 26.39, 32.47, 38.22, 33.11, 29.42, 26.18, 29.03];
+const wDeltas   = [0.47, 0.31, 0.27, -0.75, -1.64, -1.43, -1.41, -1.09, -2.13, -1.03, -1.01, -1.48, -0.88, -0.23, -0.02, 1.5, 1.12, 0.28, 2.21, 1.93, 0.58, -1.87, -2.92, -1.71, -4.37, -4.65, -5.28];
+const wLbls     = ["Estabilidad Macroecon\u00f3mica", "Sector Energ\u00e9tico y Petr\u00f3leo", "Entorno Institucional y Legal", "Apertura Comercial y Financiera", "Capital Humano e Infraestructura Social", "Percepci\u00f3n Internacional"];
+const wAhpArr   = [0.254, 0.1952, 0.1952, 0.1743, 0.0906, 0.0906];
+const wPcaArr   = [0.1522, 0.2093, 0.2122, 0.1901, 0.1358, 0.1004];
+
+// ── 1a. Sensibilidad — Corredor ──────────────────────────────────────────────
+new Chart(document.getElementById('cSensEnvelope'), {
+  data: {
+    labels: sYears,
+    datasets: [
+      {
+        type: 'line',
+        label: 'ICIV max (escenario)',
+        data: sEnvMax,
+        borderColor: '#e67e22',
+        borderWidth: 1,
+        borderDash: [3,3],
+        pointRadius: 0,
+        fill: false,
+      },
+      {
+        type: 'line',
+        label: 'ICIV AHP (base)',
+        data: sBase,
+        borderColor: '#00d4aa',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: '#00d4aa',
+        fill: false,
+        tension: 0.3,
+      },
+      {
+        type: 'line',
+        label: 'ICIV min (escenario)',
+        data: sEnvMin,
+        borderColor: '#e05c5c',
+        borderWidth: 1,
+        borderDash: [3,3],
+        pointRadius: 0,
+        backgroundColor: 'rgba(230,126,34,0.08)',
+        fill: 1,
+      },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { min: 0, max: 100, grid: { color: '#21262d' }, ticks: { stepSize: 10 } },
+      x: { grid: { color: '#21262d' } }
+    }
+  }
+});
+
+// ── 1b. Sensibilidad — Impacto por dimension ─────────────────────────────────
+new Chart(document.getElementById('cSensImpact'), {
+  type: 'bar',
+  data: {
+    labels: sImpLbls,
+    datasets: [{
+      label: 'Impacto medio (pts)',
+      data: sImpVals,
+      backgroundColor: ['#3498db99','#e67e2299','#9b59b699','#1abc9c99','#e74c3c99','#f39c1299'],
+      borderColor:     ['#3498db',  '#e67e22',  '#9b59b6',  '#1abc9c',  '#e74c3c',  '#f39c12'],
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#21262d' }, title: { display: true, text: 'Variacion media absoluta (pts)' } },
+      y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ── 2a. Correlacion — Scatter ─────────────────────────────────────────────────
+if (document.getElementById('cCorrScatter')) {
+  new Chart(document.getElementById('cCorrScatter'), {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Ano (ICIV, IED)',
+          data: cIciv.map((v, i) => ({ x: v, y: cIed[i] })),
+          backgroundColor: '#00d4aa99',
+          borderColor: '#00d4aa',
+          pointRadius: 6,
+        },
+        {
+          type: 'line',
+          label: 'Regresion',
+          data: cRegX.map((v, i) => ({ x: v, y: cRegY[i] })),
+          borderColor: '#e05c5c',
+          borderWidth: 1.5,
+          borderDash: [4,3],
+          pointRadius: 0,
+          fill: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' }, tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const i = ctx.dataIndex;
+            return `${cYears[i]}: ICIV=${cIciv[i]}, IED=${cIed[i]}`;
+          }
+        }
+      } },
+      scales: {
+        x: { title: { display: true, text: 'ICIV (AHP)' }, grid: { color: '#21262d' } },
+        y: { title: { display: true, text: 'IED normalizada (0-100)' }, grid: { color: '#21262d' } }
+      }
+    }
+  });
+
+  // ── 2b. Correlacion — Serie temporal ────────────────────────────────────────
+  new Chart(document.getElementById('cCorrTime'), {
+    type: 'line',
+    data: {
+      labels: cYears,
+      datasets: [
+        {
+          label: 'ICIV (AHP)',
+          data: cIciv,
+          borderColor: '#00d4aa',
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.3,
+          yAxisID: 'y',
+        },
+        {
+          label: 'IED normalizada',
+          data: cIed,
+          borderColor: '#e67e22',
+          borderWidth: 2,
+          borderDash: [4,3],
+          pointRadius: 3,
+          tension: 0.3,
+          yAxisID: 'y2',
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y:  { min: 0, max: 100, grid: { color: '#21262d' }, title: { display: true, text: 'ICIV' } },
+        y2: { min: 0, max: 100, position: 'right', grid: { display: false }, title: { display: true, text: 'IED (norm)' } },
+        x:  { grid: { color: '#21262d' } }
+      }
+    }
+  });
+}
+
+// ── 3a. Metodos — Lineas ─────────────────────────────────────────────────────
+new Chart(document.getElementById('cMethodsLine'), {
+  type: 'line',
+  data: {
+    labels: mYears,
+    datasets: [
+      {
+        label: 'Lineal',
+        data: mLin,
+        borderColor: '#00d4aa',
+        borderWidth: 2,
+        pointRadius: 3,
+        tension: 0.3,
+        fill: false,
+      },
+      {
+        label: 'Geometrico',
+        data: mGeom,
+        borderColor: '#e67e22',
+        borderWidth: 2,
+        borderDash: [5,3],
+        pointRadius: 3,
+        tension: 0.3,
+        fill: false,
+      },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { min: 0, max: 100, grid: { color: '#21262d' } },
+      x: { grid: { color: '#21262d' } }
+    }
+  }
+});
+
+// ── 3b. Metodos — Delta ───────────────────────────────────────────────────────
+new Chart(document.getElementById('cMethodsDelta'), {
+  type: 'bar',
+  data: {
+    labels: mYears,
+    datasets: [{
+      label: 'Delta (Geom - Lin)',
+      data: mDeltas,
+      backgroundColor: mDeltas.map(v => v >= 0 ? 'rgba(0,212,170,0.5)' : 'rgba(224,92,92,0.5)'),
+      borderColor:     mDeltas.map(v => v >= 0 ? '#00d4aa' : '#e05c5c'),
+      borderWidth: 1,
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: '#21262d' }, title: { display: true, text: 'pts' } },
+      x: { grid: { color: '#21262d' } }
+    }
+  }
+});
+
+// ── 4a. Ponderacion — Barras comparativas ────────────────────────────────────
+if (document.getElementById('cWeightsBar')) {
+  new Chart(document.getElementById('cWeightsBar'), {
+    type: 'bar',
+    data: {
+      labels: wLbls,
+      datasets: [
+        {
+          label: 'Peso AHP',
+          data: wAhpArr,
+          backgroundColor: '#00d4aa66',
+          borderColor: '#00d4aa',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+        {
+          label: 'Peso PCA',
+          data: wPcaArr,
+          backgroundColor: '#e67e2266',
+          borderColor: '#e67e22',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { min: 0, grid: { color: '#21262d' }, ticks: { format: { style: 'percent' } } },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+      }
+    }
+  });
+
+  // ── 4b. Ponderacion — Series ICIV ────────────────────────────────────────────
+  new Chart(document.getElementById('cWeightsLine'), {
+    type: 'line',
+    data: {
+      labels: wYears,
+      datasets: [
+        {
+          label: 'ICIV (AHP)',
+          data: wAhp,
+          borderColor: '#00d4aa',
+          borderWidth: 2.5,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: false,
+        },
+        {
+          label: 'ICIV (PCA)',
+          data: wPca,
+          borderColor: '#e67e22',
+          borderWidth: 2,
+          borderDash: [5,3],
+          pointRadius: 3,
+          tension: 0.3,
+          fill: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { min: 0, max: 100, grid: { color: '#21262d' } },
+        x: { grid: { color: '#21262d' } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

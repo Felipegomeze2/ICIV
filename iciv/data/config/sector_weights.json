@@ -1,0 +1,230 @@
+{
+  "_comentario": "Configuración del Investment Entry Radar Sectorial (IERS). Pesos por dimensión deben sumar 1.0. Para agregar un sector nuevo: copiar un bloque existente con nuevo key.",
+  "version": "1.0",
+  "dimensiones": ["D1_macro", "D2_energia", "D3_institucional", "D4_comercial", "D5_capital_humano", "D6_percepcion"],
+  "sectores": {
+    "energia_oil_gas": {
+      "label": "Energía / Oil & Gas",
+      "label_corto": "Oil & Gas",
+      "pesos": {
+        "D1_macro": 0.10,
+        "D2_energia": 0.35,
+        "D3_institucional": 0.30,
+        "D4_comercial": 0.10,
+        "D5_capital_humano": 0.05,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "alta",
+        "capex": "alta",
+        "demanda_defensiva": "baja"
+      },
+      "riesgos_candidatos": ["sancionatorio", "institucional / contractual", "infraestructura operacional"],
+      "descripcion_sector": "extracción, producción y exportación petrolera"
+    },
+    "consumo_masivo": {
+      "label": "Consumo masivo",
+      "label_corto": "Consumo",
+      "pesos": {
+        "D1_macro": 0.30,
+        "D2_energia": 0.05,
+        "D3_institucional": 0.15,
+        "D4_comercial": 0.25,
+        "D5_capital_humano": 0.15,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "baja",
+        "capex": "baja",
+        "demanda_defensiva": "alta"
+      },
+      "riesgos_candidatos": ["cambiario / inflación", "logístico de importación", "poder adquisitivo"],
+      "descripcion_sector": "bienes de consumo diario, alimentos procesados y distribución"
+    },
+    "salud_farmaceutico": {
+      "label": "Salud / Farmacéutico",
+      "label_corto": "Salud",
+      "pesos": {
+        "D1_macro": 0.20,
+        "D2_energia": 0.05,
+        "D3_institucional": 0.20,
+        "D4_comercial": 0.20,
+        "D5_capital_humano": 0.25,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "baja",
+        "capex": "media",
+        "demanda_defensiva": "alta"
+      },
+      "riesgos_candidatos": ["logístico de importación", "cambiario / inflación", "regulatorio sanitario"],
+      "descripcion_sector": "medicamentos, dispositivos médicos y servicios de salud"
+    },
+    "telecomunicaciones": {
+      "label": "Telecomunicaciones",
+      "label_corto": "Telecomunicaciones",
+      "pesos": {
+        "D1_macro": 0.20,
+        "D2_energia": 0.15,
+        "D3_institucional": 0.20,
+        "D4_comercial": 0.15,
+        "D5_capital_humano": 0.20,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "media",
+        "capex": "alta",
+        "demanda_defensiva": "media"
+      },
+      "riesgos_candidatos": ["infraestructura eléctrica", "regulatorio de espectro", "cambiario / inflación"],
+      "descripcion_sector": "telecomunicaciones fijas, móviles e internet"
+    },
+    "banca_fintech": {
+      "label": "Banca / Fintech",
+      "label_corto": "Banca / Fintech",
+      "pesos": {
+        "D1_macro": 0.25,
+        "D2_energia": 0.00,
+        "D3_institucional": 0.35,
+        "D4_comercial": 0.15,
+        "D5_capital_humano": 0.05,
+        "D6_percepcion": 0.20
+      },
+      "ajustadores": {
+        "sancion": "alta",
+        "capex": "baja",
+        "demanda_defensiva": "baja"
+      },
+      "riesgos_candidatos": ["sancionatorio", "legal y regulatorio", "reputacional"],
+      "descripcion_sector": "servicios financieros, bancarios y tecnología financiera"
+    },
+    "infraestructura": {
+      "label": "Infraestructura / Construcción",
+      "label_corto": "Infraestructura",
+      "pesos": {
+        "D1_macro": 0.20,
+        "D2_energia": 0.15,
+        "D3_institucional": 0.30,
+        "D4_comercial": 0.15,
+        "D5_capital_humano": 0.15,
+        "D6_percepcion": 0.05
+      },
+      "ajustadores": {
+        "sancion": "alta",
+        "capex": "alta",
+        "demanda_defensiva": "baja"
+      },
+      "riesgos_candidatos": ["institucional / contractual", "financiamiento de proyecto", "cambiario / inflación"],
+      "descripcion_sector": "obras civiles, construcción pesada e ingeniería de proyecto"
+    },
+    "logistica_comercio": {
+      "label": "Logística / Comercio exterior",
+      "label_corto": "Logística",
+      "pesos": {
+        "D1_macro": 0.20,
+        "D2_energia": 0.10,
+        "D3_institucional": 0.20,
+        "D4_comercial": 0.30,
+        "D5_capital_humano": 0.10,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "media",
+        "capex": "media",
+        "demanda_defensiva": "media"
+      },
+      "riesgos_candidatos": ["apertura comercial", "infraestructura portuaria", "cambiario / inflación"],
+      "descripcion_sector": "transporte, almacenamiento y comercio exterior"
+    },
+    "tecnologia_digital": {
+      "label": "Tecnología / Servicios digitales",
+      "label_corto": "Tech / Digital",
+      "pesos": {
+        "D1_macro": 0.15,
+        "D2_energia": 0.05,
+        "D3_institucional": 0.20,
+        "D4_comercial": 0.20,
+        "D5_capital_humano": 0.30,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "baja",
+        "capex": "baja",
+        "demanda_defensiva": "media"
+      },
+      "riesgos_candidatos": ["infraestructura eléctrica", "conectividad", "cambiario / inflación"],
+      "descripcion_sector": "software, servicios digitales y tecnología de la información"
+    },
+    "retail": {
+      "label": "Retail",
+      "label_corto": "Retail",
+      "pesos": {
+        "D1_macro": 0.30,
+        "D2_energia": 0.05,
+        "D3_institucional": 0.15,
+        "D4_comercial": 0.25,
+        "D5_capital_humano": 0.15,
+        "D6_percepcion": 0.10
+      },
+      "ajustadores": {
+        "sancion": "baja",
+        "capex": "baja",
+        "demanda_defensiva": "alta"
+      },
+      "riesgos_candidatos": ["cambiario / inflación", "poder adquisitivo", "logístico de importación"],
+      "descripcion_sector": "comercio minorista organizado y distribución al consumidor"
+    },
+    "agroindustria": {
+      "label": "Agroindustria",
+      "label_corto": "Agroindustria",
+      "pesos": {
+        "D1_macro": 0.25,
+        "D2_energia": 0.10,
+        "D3_institucional": 0.20,
+        "D4_comercial": 0.20,
+        "D5_capital_humano": 0.20,
+        "D6_percepcion": 0.05
+      },
+      "ajustadores": {
+        "sancion": "baja",
+        "capex": "media",
+        "demanda_defensiva": "alta"
+      },
+      "riesgos_candidatos": ["institucional / contractual", "infraestructura eléctrica", "cambiario / inflación"],
+      "descripcion_sector": "agricultura comercial, ganadería e industria agroalimentaria"
+    }
+  },
+  "parametros_ajustadores": {
+    "sancion": {
+      "alta": 9,
+      "media": 4,
+      "baja": 1
+    },
+    "capex": {
+      "alta": 7,
+      "media": 3,
+      "baja": 0,
+      "iciv_umbral": 50
+    },
+    "demanda_defensiva": {
+      "alta": 7,
+      "media": 3,
+      "baja": 0
+    }
+  },
+  "categorias": [
+    {"min": 0,  "max": 35,  "label": "No entrar",                          "color": "RED",          "hex": "#e05c5c", "short": "NO ENTRAR"},
+    {"min": 36, "max": 50,  "label": "No entrar todavía",                   "color": "ORANGE",       "hex": "#e67e22", "short": "ESPERAR"},
+    {"min": 51, "max": 65,  "label": "Entrada piloto / monitoreo",          "color": "YELLOW",       "hex": "#f1c40f", "short": "PILOTO"},
+    {"min": 66, "max": 80,  "label": "Entrada recomendada con mitigantes",  "color": "GREEN",        "hex": "#2ecc71", "short": "ENTRADA"},
+    {"min": 81, "max": 100, "label": "Entrada prioritaria",                 "color": "STRONG_GREEN", "hex": "#00d4aa", "short": "PRIORITARIA"}
+  ],
+  "mapa_riesgo_dimension": {
+    "D1_macro":           "Riesgo cambiario / inflación",
+    "D2_energia":         "Riesgo de infraestructura energética",
+    "D3_institucional":   "Riesgo institucional / contractual",
+    "D4_comercial":       "Riesgo de apertura comercial",
+    "D5_capital_humano":  "Riesgo de capital humano",
+    "D6_percepcion":      "Riesgo reputacional / percepción"
+  }
+}

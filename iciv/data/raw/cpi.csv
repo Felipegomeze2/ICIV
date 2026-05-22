@@ -1,0 +1,27 @@
+año,indicador,valor,pais,fuente
+2000,cpi_score,27.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2001,cpi_score,25.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2002,cpi_score,25.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2003,cpi_score,23.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2004,cpi_score,23.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2005,cpi_score,23.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2006,cpi_score,23.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2007,cpi_score,20.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2008,cpi_score,19.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2009,cpi_score,19.0,Venezuela,Transparency International CPI (escala 0-10 convertida a 0-100)
+2010,cpi_score,20.0,Venezuela,Transparency International CPI (histórico oficial)
+2011,cpi_score,19.0,Venezuela,Transparency International CPI (histórico oficial)
+2012,cpi_score,19.0,Venezuela,Transparency International CPI (histórico oficial)
+2013,cpi_score,20.0,Venezuela,Transparency International CPI (histórico oficial)
+2014,cpi_score,19.0,Venezuela,Transparency International CPI (histórico oficial)
+2015,cpi_score,17.0,Venezuela,Transparency International CPI (histórico oficial)
+2016,cpi_score,17.0,Venezuela,Transparency International CPI (histórico oficial)
+2017,cpi_score,18.0,Venezuela,Transparency International CPI (histórico oficial)
+2018,cpi_score,18.0,Venezuela,Transparency International CPI (histórico oficial)
+2019,cpi_score,16.0,Venezuela,Transparency International CPI (histórico oficial)
+2020,cpi_score,15.0,Venezuela,Transparency International CPI
+2021,cpi_score,14.0,Venezuela,Transparency International CPI
+2022,cpi_score,14.0,Venezuela,Transparency International CPI
+2023,cpi_score,13.0,Venezuela,Transparency International CPI
+2024,cpi_score,10.0,Venezuela,Transparency International CPI 2024 (https://www.transparency.org/en/cpi/2024 — OWID verified)
+2025,cpi_score,10.0,Venezuela,Transparency International CPI 2025 — Venezuela score 10/100 (https://www.transparency.org/en/news/cpi-2025-findings-insights-corruption — Americas report confirmed)

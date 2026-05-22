@@ -1,0 +1,77 @@
+# =====================================================================
+# ICIV — Indicador de Clima de Inversión Venezuela
+# .gitignore — mayo 2026
+# =====================================================================
+
+# ── AI / Claude internal (never commit) ──────────────────────────────
+.claude/
+memory/
+
+# ── Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.so
+
+# ── Virtual environments ─────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Secrets / API keys — NUNCA subir ─────────────────────────────────
+.env
+*.key
+secrets.yaml
+.env.*
+!.env.example
+
+# ── Jupyter ──────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ── Testing / Coverage ───────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+iciv/.pytest_cache/
+
+# ── IDEs ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.code-workspace
+
+# ── OS ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Pipeline outputs — generados automáticamente (no commitear) ──────
+# El dashboard HTML SÍ se incluye (es el entregable del proyecto)
+iciv/data/processed/*.csv
+iciv/data/processed/*.xlsx
+iciv/data/processed/_test_script.js
+
+# ── Archivos grandes / binarios ───────────────────────────────────────
+*.zip
+*.tar.gz
+*.tif
+*.tiff
+*.h5
+*.hdf5
+
+# ── Logs ─────────────────────────────────────────────────────────────
+*.log
+logs/
+iciv/logs/
+
+# ── Datos de trabajo interno / bitácoras privadas ────────────────────
+# bitacora/ se incluye (historial técnico del proyecto)
+# postman/ se incluye (colección de tests de API)
