@@ -54,7 +54,7 @@ def sample_normalized_df() -> pd.DataFrame:
         "petroleo_crudo_produccion_tbpd": np.random.uniform(0, 100, n),
         "gas_natural_produccion_bcf": np.random.uniform(0, 100, n),
         "electricidad_generacion_bkwh": np.random.uniform(0, 100, n),
-        "cpi_score": [*[np.nan]*10, *np.random.uniform(0, 30, 13), np.nan, np.nan, np.nan, 10.0, np.nan],
+        "cpi_score": [*[np.nan]*10, *np.random.uniform(0, 30, 13), np.nan, np.nan, 10.0, np.nan],
         "wgi_promedio_sc": np.random.uniform(15, 55, n),
         "ief_overall_score": np.random.uniform(24, 48, n),
         "ied_neta_usd": np.random.uniform(0, 100, n),
