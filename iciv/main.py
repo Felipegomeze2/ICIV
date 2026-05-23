@@ -2083,6 +2083,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <div class="nav-sub" data-block="metodologia">
     <a href="#correlacion">Validación / Coherencia</a>
+    <a href="#noticias">Noticias</a>
     <a href="#bibliografia">Bibliografía</a>
   </div>
 </div>
