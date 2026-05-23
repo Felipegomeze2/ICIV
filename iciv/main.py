@@ -1501,17 +1501,26 @@ def fase_dashboard(
             "cobertura":  [round(float(c), 1) for c in _p["cobertura_pct"].tolist()],
             "n_vars":     [int(n) for n in _p["n_vars"].tolist()],
         }
-        # Resumen mes actual (último con cobertura >=70 para confiabilidad)
+        # Resumen dual: último mes disponible + último mes con cobertura alta.
         _p_reliable = _p[_p["cobertura_pct"] >= 70]
-        _p_target = _p_reliable.iloc[-1] if not _p_reliable.empty else _p.iloc[-1]
-        _ps = float(_p_target["pulse_score"]) if pd.notna(_p_target["pulse_score"]) else None
+        _p_latest = _p.iloc[-1]
+        _p_ref = _p_reliable.iloc[-1] if not _p_reliable.empty else _p_latest
+        _ps = float(_p_latest["pulse_score"]) if pd.notna(_p_latest["pulse_score"]) else None
+        _prs = float(_p_ref["pulse_score"]) if pd.notna(_p_ref["pulse_score"]) else None
+        _latest_reliable = bool(float(_p_latest["cobertura_pct"]) >= 70)
         _pulse_summary = {
             "n_meses":      len(_p),
             "score_actual": round(_ps, 2) if _ps is not None else None,
-            "categoria":    _score_to_label(_ps) if _ps is not None else "Sin datos",
-            "color":        _score_to_color(_ps) if _ps is not None else "#8b949e",
-            "fecha_actual": _p_target["mes_str"],
-            "cobertura":    round(float(_p_target["cobertura_pct"]), 1),
+            "categoria":    (_score_to_label(_ps) if _latest_reliable else "Provisional") if _ps is not None else "Sin datos",
+            "color":        (_score_to_color(_ps) if _latest_reliable else "#e6a817") if _ps is not None else "#8b949e",
+            "fecha_actual": _p_latest["mes_str"],
+            "cobertura":    round(float(_p_latest["cobertura_pct"]), 1),
+            "es_confiable": _latest_reliable,
+            "score_confiable": round(_prs, 2) if _prs is not None else None,
+            "categoria_confiable": _score_to_label(_prs) if _prs is not None else "Sin datos",
+            "color_confiable": _score_to_color(_prs) if _prs is not None else "#8b949e",
+            "fecha_confiable": _p_ref["mes_str"],
+            "cobertura_confiable": round(float(_p_ref["cobertura_pct"]), 1),
         }
     pulse_json = json.dumps({"data": _pulse_payload, "summary": _pulse_summary},
                             cls=_NumpyEncoder, ensure_ascii=False)
@@ -1570,11 +1579,9 @@ def fase_dashboard(
         if pulse_data is not None and not pulse_data.empty:
             _pp = pulse_data.dropna(subset=["pulse_score"])
             if not _pp.empty:
-                # La portada y "clima actual" deben evitar meses provisionales:
-                # mayo 2026, por ejemplo, puede subir artificialmente si faltan EIA
-                # y GDELT y el peso se redistribuye hacia variables globales.
                 _pp_reliable = _pp[_pp["cobertura_pct"] >= 70] if "cobertura_pct" in _pp.columns else _pp
-                _pl = _pp_reliable.iloc[-1] if not _pp_reliable.empty else _pp.iloc[-1]
+                _pl = _pp.iloc[-1]
+                _pr = _pp_reliable.iloc[-1] if not _pp_reliable.empty else _pl
                 _prev_base = _pp_reliable if len(_pp_reliable) >= 2 else _pp
                 _ven_hoy["pulse"] = {
                     "score": round(float(_pl["pulse_score"]), 2),
@@ -1587,6 +1594,12 @@ def fase_dashboard(
                              if len(_prev_base) >= 2 else None,
                     "is_reliable": bool(float(_pl.get("cobertura_pct", 100)) >= 70)
                                    if "cobertura_pct" in pulse_data.columns else True,
+                    "reliable_score": round(float(_pr["pulse_score"]), 2),
+                    "reliable_year": int(_pr["año"]),
+                    "reliable_month": int(_pr["mes"]),
+                    "reliable_label_mes": _MONTHS_ES[int(_pr["mes"])],
+                    "reliable_coverage": round(float(_pr.get("cobertura_pct", 0)), 1)
+                                         if "cobertura_pct" in pulse_data.columns else None,
                 }
         # === FRED Monthly (WTI, Brent, VIX, UST10Y, USD Index, Fed Funds) ===
         _fred_path = _ROOT / "data" / "raw" / "fred_monthly.csv"
@@ -2125,6 +2138,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
           <span id="portadaPS" style="font-size:1.5rem;font-weight:700;color:#8b949e">—</span>
           <span id="portadaPF" style="font-size:.75rem;color:var(--muted)">—</span>
         </div>
+        <div id="portadaPR" style="font-size:.68rem;color:var(--muted);margin-top:6px">—</div>
       </div>
     </div>
 
@@ -2238,8 +2252,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       </div>
       <div style="display:flex;gap:20px;font-size:.75rem;color:var(--muted)">
         <span>vs. mes anterior: <strong id="inicioPD" style="color:var(--text)">—</strong></span>
-        <span>cobertura: <strong id="inicioPC" style="color:var(--accent)">—</strong></span>
+        <span>cobertura directa: <strong id="inicioPC" style="color:var(--accent)">—</strong></span>
       </div>
+      <div id="inicioPR" style="font-size:.72rem;color:var(--muted);margin-top:10px">—</div>
       <!-- Sparkline 12 meses (oculta, usada internamente) -->
       <canvas id="cInicioSparkline" style="display:none"></canvas>
       <div style="font-size:.65rem;color:#555;margin-top:16px">11 variables internacionales · FRED macro · EIA petróleo · Guardian y GDELT noticias · cobertura visible por mes</div>
@@ -3048,12 +3063,12 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <!-- Stats Pulse -->
   <div class="stats-row">
     <div class="stat">
-      <div class="stat-label">Pulse mes con cobertura alta</div>
+      <div class="stat-label">Último mes disponible</div>
       <div class="stat-val" id="pulseScoreActual">—</div>
       <div class="stat-sub" id="pulseFechaActual">—</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Categoría</div>
+      <div class="stat-label">Último mes confiable</div>
       <div class="stat-val" id="pulseCategoria" style="font-size:1rem">—</div>
       <div class="stat-sub" id="pulseCobertura">—</div>
     </div>
@@ -5345,16 +5360,17 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     var elN     = document.getElementById('pulseNMeses');
     var elVA    = document.getElementById('pulseVsAnual');
     if (elScore) {{ elScore.textContent = S.score_actual != null ? S.score_actual.toFixed(1) : '—'; elScore.style.color = S.color; }}
-    if (elCat)   {{ elCat.textContent = S.categoria; elCat.style.color = S.color; }}
-    if (elFecha) elFecha.textContent = S.fecha_actual + ' · cobertura ' + S.cobertura + '%';
-    if (elCov)   elCov.textContent = 'Cobertura ' + S.cobertura + '%';
+    if (elCat)   {{ elCat.textContent = S.score_confiable != null ? S.score_confiable.toFixed(1) + ' · ' + S.categoria_confiable : '—'; elCat.style.color = S.color_confiable || '#8b949e'; }}
+    if (elFecha) elFecha.textContent = S.fecha_actual + ' · cobertura directa ' + S.cobertura + '%' + (S.es_confiable ? '' : ' · provisional');
+    if (elCov)   elCov.textContent = S.fecha_confiable + ' · cobertura ' + S.cobertura_confiable + '%';
     if (elN)     elN.textContent = S.n_meses;
 
     // Diferencia vs ICIV Anual del año actual
     if (elVA) {{
       var iciv_actual = {current_score};
-      if (S.score_actual != null) {{
-        var diff = S.score_actual - iciv_actual;
+      var refScore = S.score_confiable != null ? S.score_confiable : S.score_actual;
+      if (refScore != null) {{
+        var diff = refScore - iciv_actual;
         elVA.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1);
         elVA.className = 'stat-val ' + (diff >= 0 ? 'stat-up' : 'stat-down');
       }}
@@ -5923,23 +5939,29 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   if (VH.pulse) {{
     var p = VH.pulse;
     var el;
+    var pColor = p.is_reliable ? _col(p.score) : '#e6a817';
+    var pLabel = p.is_reliable ? _lbl(p.score) : 'Provisional';
     el = document.getElementById('inicioPS');
-    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = _col(p.score); }}
+    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = pColor; }}
     el = document.getElementById('inicioPL');
-    if (el) {{ el.textContent = _lbl(p.score); el.style.color = _col(p.score); }}
+    if (el) {{ el.textContent = pLabel; el.style.color = pColor; }}
     el = document.getElementById('inicioPF');
-    if (el) el.textContent = (p.label_mes || '') + ' ' + (p.year || '');
+    if (el) el.textContent = (p.label_mes || '') + ' ' + (p.year || '') + (p.is_reliable ? '' : ' · provisional');
     el = document.getElementById('inicioPD');
     if (el) el.innerHTML = _deltaStr(p.delta, 1, ' pts');
     el = document.getElementById('inicioPC');
     if (el) el.textContent = p.coverage != null ? p.coverage + '%' : '—';
+    el = document.getElementById('inicioPR');
+    if (el) el.textContent = p.is_reliable ? 'Lectura con cobertura alta.' : 'Último mes confiable: ' + p.reliable_label_mes + ' ' + p.reliable_year + ' · ' + p.reliable_score.toFixed(1) + ' · cobertura ' + p.reliable_coverage + '%';
     // También llena portada (score + color borde dinámico)
     el = document.getElementById('portadaPS');
-    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = _col(p.score); }}
+    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = pColor; }}
     el = document.getElementById('portadaPF');
-    if (el) el.textContent = _lbl(p.score) + ' · ' + (p.label_mes || '') + ' ' + (p.year || '');
+    if (el) el.textContent = pLabel + ' · ' + (p.label_mes || '') + ' ' + (p.year || '') + ' · ' + p.coverage + '% cob.';
+    el = document.getElementById('portadaPR');
+    if (el) el.textContent = p.is_reliable ? 'Lectura con cobertura alta.' : 'Último mes confiable: ' + p.reliable_label_mes + ' ' + p.reliable_year + ' · ' + p.reliable_score.toFixed(1) + ' · ' + p.reliable_coverage + '% cob.';
     el = document.getElementById('portadaPCard');
-    if (el) el.style.borderLeftColor = _col(p.score);
+    if (el) el.style.borderLeftColor = pColor;
   }}
 
   // ── ICIV Anual hero ──
