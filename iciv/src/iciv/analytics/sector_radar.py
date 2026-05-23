@@ -159,7 +159,10 @@ class SectorRadar:
         self.df = df.sort_values("año").reset_index(drop=True)
 
         self.años = self.df["año"].tolist()
-        self.año_actual = self.años[-1]
+        complete_years = self.df.dropna(subset=DIM_COLS)["año"].tolist()
+        # Radar sectorial requiere perfil dimensional completo; no fuerza el
+        # ultimo año provisional si las fuentes anuales aun no publicaron.
+        self.año_actual = complete_years[-1] if complete_years else self.años[-1]
         self.iciv_actual = float(self.df.loc[self.df["año"] == self.año_actual, "iciv_score"].iloc[0])
 
     # ── API pública ───────────────────────────────────────────────────────────

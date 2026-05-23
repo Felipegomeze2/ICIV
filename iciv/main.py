@@ -4,7 +4,7 @@ ICIV -- Orquestador Principal
 Ejecuta el pipeline completo del Indicador de Clima de Inversión Venezuela:
 
   Fase 1 -- Descarga de datos (todas las fuentes)
-  Fase 2 -- Limpieza, imputación y normalización
+  Fase 2 -- Limpieza y normalización
   Fase 3 -- Cálculo del ICIV (pesos fijos + AHP)
   Fase 4 -- Generación del dashboard HTML interactivo
   Fase 5 -- Apertura automática del dashboard en el navegador
@@ -53,7 +53,6 @@ from iciv.data.loaders import ALL_LOADERS
 from iciv.data.catalog import CATALOG
 from iciv.processing.pipeline import Pipeline
 from iciv.processing.transformers.cleaner import DataCleaner
-from iciv.processing.transformers.imputer import GapImputer
 from iciv.processing.transformers.normalizer import MinMaxNormalizer
 from iciv.index.aggregator import ICIVAggregator
 from iciv.index.weighting import AHPWeights, FixedWeights
@@ -94,6 +93,7 @@ def fase_fetch(settings: Settings) -> None:
         ("OWID Extras -- D4/D5 (trade/desempleo)", "scripts.fetch_owid_extras",   "fetch_owid_extras"),
         ("FRED Monthly -- WTI/Brent/Fed/VIX...",   "scripts.fetch_fred_monthly",  "fetch_fred_monthly"),
         ("Guardian Monthly -- VADER mensual",      "scripts.fetch_guardian_monthly", "fetch_guardian_monthly"),
+        ("GDELT Monthly -- tono/cobertura global", "scripts.fetch_gdelt_monthly", "fetch_gdelt_monthly"),
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
         ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "build_freedom_house"),
@@ -137,6 +137,7 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_owid_extras":   settings.paths.raw_owid_extras,
                 "fetch_fred_monthly":  settings.paths.raw_fred_monthly,
                 "fetch_guardian_monthly": settings.paths.raw_guardian_monthly,
+                "fetch_gdelt_monthly": settings.paths.raw_gdelt_monthly,
                 "fetch_guardian":      settings.paths.raw_guardian,
                 "fetch_fred":          settings.paths.raw_fred,
                 "build_freedom_house": settings.paths.raw_freedom_house,
@@ -173,7 +174,7 @@ def fase_fetch(settings: Settings) -> None:
             logger.warning("      FAIL Error: %s", exc)
 
     logger.info("\n  [i] CPI / IEF / HDI se usan desde archivos existentes en data/raw/")
-    logger.info("      (requieren descarga manual -- ver FUENTES_DE_DATOS.md)")
+    logger.info("      (requieren descarga manual -- ver docs/FUENTES_Y_VARIABLES.md)")
 
 
 # =============================================================================
@@ -182,7 +183,7 @@ def fase_fetch(settings: Settings) -> None:
 
 def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
     logger.info("\n" + "-" * 60)
-    logger.info("  FASE 2 -- Limpieza, imputación y normalización")
+    logger.info("  FASE 2 -- Limpieza y normalización")
     logger.info("-" * 60)
 
     # Carga
@@ -204,71 +205,10 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
 
     logger.info("\n  Maestro: %d años × %d variables", len(master), len(master.columns) - 1)
 
-    # ── Rellenar pib_crecimiento_real_pct con estimado IMF WEO donde WDI es NaN ──
-    # WDI tiene lag de ~18 meses; IMF DataMapper publica proyecciones para años recientes
-    # en el World Economic Outlook (WEO). Solo se usa como fallback donde WDI tiene NaN.
-    # Fuente: IMF DataMapper NGDP_RPCH — https://www.imf.org/external/datamapper/NGDP_RPCH
-    if "pib_crecimiento_real_pct" in master.columns and "pib_crecimiento_imf_pct" in master.columns:
-        mask_nan = master["pib_crecimiento_real_pct"].isna()
-        n_filled = mask_nan.sum()
-        if n_filled > 0:
-            master.loc[mask_nan, "pib_crecimiento_real_pct"] = master.loc[mask_nan, "pib_crecimiento_imf_pct"]
-            logger.info("  PIB crecimiento: %d años rellenados con estimado IMF WEO (WDI era NaN)", n_filled)
-        master.drop(columns=["pib_crecimiento_imf_pct"], inplace=True, errors="ignore")
-
-    # ── Fill D4/D5 con OWID Extras (datasets redistribuidos más actualizados) ──
-    # OWID redistribuye WB/IMF/UN bajo licencia abierta; sus updates suelen ser más
-    # recientes que los APIs originales para algunos indicadores clave.
-    # Fuentes: trade-as-share-of-gdp, unemployment-rate (IMF WEO), life-expectancy, infant-mortality
-    if hasattr(settings.paths, "raw_owid_extras") and settings.paths.raw_owid_extras.exists():
-        try:
-            _owid_ex = pd.read_csv(settings.paths.raw_owid_extras)
-            _owid_filled = 0
-            for _ind in _owid_ex["indicador"].unique():
-                if _ind not in master.columns:
-                    continue
-                _sub = _owid_ex[_owid_ex["indicador"] == _ind]
-                for _, _row in _sub.iterrows():
-                    _yr = int(_row["año"])
-                    _val = float(_row["valor"])
-                    _mask = (master["año"] == _yr) & (master[_ind].isna())
-                    if _mask.any():
-                        master.loc[_mask, _ind] = _val
-                        _owid_filled += int(_mask.sum())
-            if _owid_filled > 0:
-                logger.info("  OWID Extras: %d valores rellenados en D4/D5", _owid_filled)
-        except Exception as exc:
-            logger.warning("  OWID Extras fill falló: %s", exc)
-
-    # ── Fill petroleo_crudo_produccion_tbpd con EIA Monthly (nowcast) ──────────
-    # EIA International API publica datos MENSUALES con ~3-4 meses de lag.
-    # Permite "nowcast" del año en curso (promedio de meses disponibles) y
-    # refuerza años recientes con datos más finos que la serie anual EIA estándar.
-    # Es un agregado monthly→annual de la MISMA fuente EIA (US gov, internacional).
-    if "petroleo_crudo_produccion_tbpd" in master.columns:
-        try:
-            _eia_m_path = settings.paths.raw_eia_monthly if hasattr(settings.paths, "raw_eia_monthly") else None
-            if _eia_m_path and _eia_m_path.exists():
-                _eia_m = pd.read_csv(_eia_m_path)
-                # Filtrar producto 53 (Total petroleum and liquids) y promediar por año
-                _eia_m = _eia_m[_eia_m["productId"] == 53].dropna(subset=["valor"])
-                _agg = _eia_m.groupby("año").agg(
-                    valor=("valor", "mean"),
-                    n_meses=("mes", "count"),
-                ).reset_index()
-
-                _filled = 0
-                for _, _row in _agg.iterrows():
-                    _yr = int(_row["año"])
-                    _val = float(_row["valor"])
-                    _mask = (master["año"] == _yr) & (master["petroleo_crudo_produccion_tbpd"].isna())
-                    if _mask.any():
-                        master.loc[_mask, "petroleo_crudo_produccion_tbpd"] = _val
-                        _filled += int(_mask.sum())
-                if _filled > 0:
-                    logger.info("  Petróleo crudo: %d años rellenados con EIA Monthly nowcast", _filled)
-        except Exception as exc:
-            logger.warning("  EIA Monthly fill falló: %s", exc)
+    # IMF and OWID auxiliary series remain available to their own loaders. The
+    # core panel does not patch missing annual observations from alternate files:
+    # missing publication is carried into coverage.
+    master.drop(columns=["pib_crecimiento_imf_pct"], inplace=True, errors="ignore")
 
     # ── Reconversión monetaria + log10 para tipo_cambio_oficial_lcu_usd ─────────
     # El WDI mezcla 3 denominaciones históricas sin convertir:
@@ -315,17 +255,9 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
             start_year=settings.series.start_year,
             end_year=settings.series.end_year,
         )),
-        ("impute",    GapImputer(default_strategy="interpolate", limit=4)),
         ("normalize", MinMaxNormalizer()),
     ])
     df_norm = pipeline.fit_transform(master)
-
-    # Log de imputaciones
-    imputer: GapImputer = pipeline.get_step("impute")  # type: ignore
-    if imputer.imputation_log_:
-        logger.info("\n  Valores imputados:")
-        for col, n in sorted(imputer.imputation_log_.items(), key=lambda x: -x[1]):
-            logger.info("    %-45s %d valores", col, n)
 
     # Guardar normalizado
     catalog_cols = ["año"] + [c for c in CATALOG if c in df_norm.columns]
@@ -430,39 +362,43 @@ def fase_pulse(settings: Settings) -> pd.DataFrame:
 
 
 # =============================================================================
-# FASE 3a-ter -- ML FORECAST (SARIMA Pulse + Nowcast Anual)
+# FASE 3a-ter -- FORECAST MENSUAL PULSE
 # =============================================================================
 
 def fase_ml_forecast(pulse_df: pd.DataFrame, annual_df: pd.DataFrame) -> dict:
     """
-    Entrena modelos ML sobre el ICIV Pulse:
-    1. SARIMA univariado para forecast 6 meses
-    2. Regresión OLS Pulse → ICIV Anual (nowcast del año en curso)
+    Ajusta el forecast publico del Pulse:
+    SARIMA univariado a seis meses sobre la serie mensual observada.
     """
     if pulse_df is None or pulse_df.empty:
         return {}
     from iciv.ml.pulse_forecast import PulseForecaster
     logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3a-ter -- ML Forecast (SARIMA + Nowcast)")
+    logger.info("  FASE 3a-ter -- Forecast Pulse (SARIMA)")
     logger.info("-" * 60)
     annual_for_ml = annual_df[["año", "iciv_score"]].dropna()
     forecaster = PulseForecaster(pulse_df, annual_for_ml)
-    return forecaster.compute_all()
+    return forecaster.compute_forecast()
 
 
 # =============================================================================
 # FASE 3b -- SATV (Sistema de Alertas Tempranas Venezuela)
 # =============================================================================
 
-def fase_satv(df_norm: pd.DataFrame, df_scores: pd.DataFrame) -> dict:
-    """Computa alertas SATV. Solo lee datos ya calculados — no toca el pipeline."""
-    from iciv.satv.engine import SATVEngine
+def fase_satv(settings: Settings, pulse_df: pd.DataFrame) -> dict:
+    """Computa alertas SATV mensuales desde Pulse y sus componentes reales."""
+    from iciv.satv.pulse_engine import PulseSATVEngine
     logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3b -- SATV · Sistema de Alertas Tempranas")
+    logger.info("  FASE 3b -- SATV · Alertas mensuales Pulse")
     logger.info("-" * 60)
-    satv = SATVEngine(df_norm, df_scores).compute_all()
+    comp_path = settings.paths.data_processed / "iciv_pulse_components.csv"
+    if pulse_df.empty or not comp_path.exists():
+        logger.warning("  SATV Pulse vacío — no hay componentes mensuales suficientes")
+        return {}
+    components = pd.read_csv(comp_path)
+    satv = PulseSATVEngine(pulse_df, components).compute_all()
     r = satv["resumen"]
-    logger.info("  Dimensiones: %d críticas · %d precaución · %d normal",
+    logger.info("  Señales: %d críticas · %d precaución · %d normal",
                 r["dims_criticas"], r["dims_precaucion"], r["dims_normales"])
     logger.info("  Alertas activas: %d críticas · %d precaución · %d positivas",
                 r["alertas_criticas"], r["alertas_precaucion"], r["alertas_positivas"])
@@ -966,8 +902,9 @@ def fase_sector_radar(df_ahp: pd.DataFrame, sanciones_data: dict | None = None) 
         engine = SectorRadar(df_ahp, sanciones_count=n_sanc)
         result = engine.compute_all()
         for r in result["ranking"]:
-            logger.info("  %2d. %-30s  score=%5.1f  [%s]",
-                        r["rank"], r["label"], r["score"], r["recomendacion_short"])
+            score_txt = f"{r['score']:.1f}" if r["score"] is not None else "N/D"
+            logger.info("  %2d. %-30s  score=%5s  [%s]",
+                        r["rank"], r["label"], score_txt, r["recomendacion_short"])
         return result
     except Exception as exc:
         logger.error("  ERROR SectorRadar: %s", exc, exc_info=True)
@@ -1070,24 +1007,35 @@ def fase_dashboard(
         }
     score_by_year_json = json.dumps(_sya, ensure_ascii=False)
 
+    # Default annual reference: keep provisional recent years selectable, but
+    # make the headline annual card start from the latest defensible coverage.
+    if "cobertura_pct" in df_plot.columns:
+        _reference_years = df_plot[df_plot["cobertura_pct"] >= 70.0]
+    else:
+        _reference_years = df_plot
+    _current_row = _reference_years.iloc[-1] if not _reference_years.empty else df_plot.iloc[-1]
+
     # Year selector buttons (horizontal scrollable bar)
     _score_years = [int(y) for y in df_plot["año"].tolist()]
     year_tabs_html = '<div class="score-year-tabs" id="scoreYearTabs">\n'
     for _syr in _score_years:
-        _syr_cls = " score-yr-active" if _syr == int(df_plot.iloc[-1]["año"]) else ""
+        _syr_cls = " score-yr-active" if _syr == int(_current_row["año"]) else ""
         year_tabs_html += f'  <button class="score-yr-btn{_syr_cls}" onclick="selectScoreYear({_syr})">{_syr}</button>\n'
     year_tabs_html += "</div>"
 
-    # SIEMPRE mostrar el año más reciente como año actual — el usuario necesita ver 2026.
-    # La cobertura se muestra como contexto, no como filtro.
-    current_score    = float(df_plot.iloc[-1]["iciv_score"])
-    current_year_val = int(df_plot.iloc[-1]["año"])
+    current_score    = float(_current_row["iciv_score"])
+    current_year_val = int(_current_row["año"])
     current_label    = _score_to_label(current_score)
     current_color    = _score_to_color(current_score)
 
-    current_coverage = float(df_plot.iloc[-1]["cobertura_pct"]) \
+    current_coverage = float(_current_row["cobertura_pct"]) \
         if "cobertura_pct" in df_plot.columns else 100.0
     is_low_coverage  = current_coverage < _COVERAGE_THRESHOLD
+    _prev_current_rows = df_plot[df_plot["año"] < current_year_val]
+    prev_score = (
+        float(_prev_current_rows.iloc[-1]["iciv_score"])
+        if not _prev_current_rows.empty else current_score
+    )
 
     # ── Tier de cobertura (para etiquetas académicas) ──────────────────────────
     # ≥85%       → Histórico  (verde)     — series completas, publicación oficial
@@ -1109,7 +1057,7 @@ def fase_dashboard(
 
     # Para el radar de dimensiones: usar el último año con algún dato en dimensiones
     # (puede ser que 2026 tenga NaN en todas las dims excepto D1/D6)
-    last_row  = df_plot.iloc[-1]
+    last_row  = _current_row
     dim_vals  = [round(float(last_row.get(d, 0) or 0), 2) if not pd.isna(last_row.get(d)) else 0.0
                  for d in available_dims]
     dim_lbls  = [dim_names.get(d, d) for d in available_dims]
@@ -1398,15 +1346,17 @@ def fase_dashboard(
     escenarios_json = json.dumps(_esc, ensure_ascii=False)
 
     # ── Datos del Simulador — pesos AHP y scores actuales por dimensión ───────
+    _sim_dim_cols = [d_id.value for d_id in DIMENSIONS]
+    _sim_complete = df_plot.dropna(subset=[c for c in _sim_dim_cols if c in df_plot.columns])
+    _sim_base_row = _sim_complete.iloc[-1] if not _sim_complete.empty else df_plot.iloc[-1]
+    sim_base_year = int(_sim_base_row["año"])
     _sim_dims: list[dict] = []
     for _d_id, _d in DIMENSIONS.items():
         _key = _d_id.value
         _hist_vals = [round(float(v), 2) if v is not None and str(v) != "nan" else None
                       for v in df_plot[_key].tolist()] if _key in df_plot.columns else []
-        # Use last non-NaN value as starting point for sliders
-        # (avoids sliders starting at 0 when 2026 dimension has no data yet)
-        _valid_vals = [v for v in _hist_vals if v is not None]
-        _cur = round(float(_valid_vals[-1]), 1) if _valid_vals else 0.0
+        _cur_raw = _sim_base_row.get(_key)
+        _cur = round(float(_cur_raw), 1) if _cur_raw is not None and not pd.isna(_cur_raw) else 0.0
         _sim_dims.append({
             "id":      _key,
             "label":   _d.name,
@@ -1600,14 +1550,19 @@ def fase_dashboard(
         # === ICIV Anual ===
         _dfa_nn = df_ahp.dropna(subset=["iciv_score"])
         if not _dfa_nn.empty:
-            _vi = _dfa_nn.iloc[-1]
+            _dfa_reliable = (
+                _dfa_nn[_dfa_nn["cobertura_pct"] >= 70]
+                if "cobertura_pct" in _dfa_nn.columns else _dfa_nn
+            )
+            _vi = _dfa_reliable.iloc[-1] if not _dfa_reliable.empty else _dfa_nn.iloc[-1]
+            _prev_annual_base = _dfa_reliable if len(_dfa_reliable) >= 2 else _dfa_nn
             _ven_hoy["iciv"] = {
                 "score": round(float(_vi["iciv_score"]), 2),
                 "year": int(_vi["año"]),
                 "label": _score_to_label(float(_vi["iciv_score"])),
                 "color": _score_to_color(float(_vi["iciv_score"])),
-                "delta": round(float(_vi["iciv_score"]) - float(_dfa_nn.iloc[-2]["iciv_score"]), 2)
-                         if len(_dfa_nn) >= 2 else None,
+                "delta": round(float(_vi["iciv_score"]) - float(_prev_annual_base.iloc[-2]["iciv_score"]), 2)
+                         if len(_prev_annual_base) >= 2 else None,
                 "coverage": round(float(_vi.get("cobertura_pct", 100)), 1)
                             if "cobertura_pct" in _dfa_nn.columns else None,
             }
@@ -1615,7 +1570,12 @@ def fase_dashboard(
         if pulse_data is not None and not pulse_data.empty:
             _pp = pulse_data.dropna(subset=["pulse_score"])
             if not _pp.empty:
-                _pl = _pp.iloc[-1]
+                # La portada y "clima actual" deben evitar meses provisionales:
+                # mayo 2026, por ejemplo, puede subir artificialmente si faltan EIA
+                # y GDELT y el peso se redistribuye hacia variables globales.
+                _pp_reliable = _pp[_pp["cobertura_pct"] >= 70] if "cobertura_pct" in _pp.columns else _pp
+                _pl = _pp_reliable.iloc[-1] if not _pp_reliable.empty else _pp.iloc[-1]
+                _prev_base = _pp_reliable if len(_pp_reliable) >= 2 else _pp
                 _ven_hoy["pulse"] = {
                     "score": round(float(_pl["pulse_score"]), 2),
                     "year": int(_pl["año"]),
@@ -1623,8 +1583,10 @@ def fase_dashboard(
                     "label_mes": _MONTHS_ES[int(_pl["mes"])],
                     "coverage": round(float(_pl.get("cobertura_pct", 0)), 1)
                                 if "cobertura_pct" in pulse_data.columns else None,
-                    "delta": round(float(_pl["pulse_score"]) - float(_pp.iloc[-2]["pulse_score"]), 2)
-                             if len(_pp) >= 2 else None,
+                    "delta": round(float(_pl["pulse_score"]) - float(_prev_base.iloc[-2]["pulse_score"]), 2)
+                             if len(_prev_base) >= 2 else None,
+                    "is_reliable": bool(float(_pl.get("cobertura_pct", 100)) >= 70)
+                                   if "cobertura_pct" in pulse_data.columns else True,
                 }
         # === FRED Monthly (WTI, Brent, VIX, UST10Y, USD Index, Fed Funds) ===
         _fred_path = _ROOT / "data" / "raw" / "fred_monthly.csv"
@@ -1765,7 +1727,10 @@ def fase_dashboard(
     ]
     _table_rows_html = ""
     for r in _sector_ranking:
-        bar = (f'<div style="width:{r["score"]:.1f}%;max-width:100%;height:6px;'
+        score = r.get("score")
+        score_label = f"{score:.1f}" if score is not None else "N/D"
+        bar_width = f"{score:.1f}%" if score is not None else "0"
+        bar = (f'<div style="width:{bar_width};max-width:100%;height:6px;'
                f'background:{r["hex"]};border-radius:3px;margin-top:3px"></div>')
         _table_rows_html += (
             f'<tr style="border-bottom:1px solid var(--border);cursor:pointer" '
@@ -1773,7 +1738,7 @@ def fase_dashboard(
             f'<td style="padding:10px 14px;color:var(--muted);font-size:.72rem">{r["rank"]}</td>'
             f'<td style="padding:10px 14px;color:var(--text);font-weight:600">{r["label"]}</td>'
             f'<td style="padding:10px 14px;text-align:center">'
-            f'<div style="font-size:1.05rem;font-weight:700;color:{r["hex"]}">{r["score"]:.1f}</div>'
+            f'<div style="font-size:1.05rem;font-weight:700;color:{r["hex"]}">{score_label}</div>'
             f'{bar}</td>'
             f'<td style="padding:10px 14px">'
             f'<span style="background:{r["hex"]}22;color:{r["hex"]};border:1px solid {r["hex"]}55;'
@@ -2112,8 +2077,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 
   <div class="nav-sub" data-block="proyeccion">
-    <a href="#proyecciones">Escenarios 2027–2030</a>
-    <a href="#forecast-ml">Forecast 6 meses</a>
+    <a href="#forecast-ml">Predicción Pulse</a>
+    <a href="#proyecciones">Laboratorio</a>
   </div>
 
   <div class="nav-sub" data-block="metodologia">
@@ -2136,10 +2101,10 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <span style="font-size:1.3rem;font-weight:300;color:var(--text);line-height:1.2;letter-spacing:-.2px">Indicador de Clima de Inversión Venezuela</span>
     </div>
     <p style="font-size:.88rem;color:var(--muted);max-width:700px;line-height:1.7;margin:0 0 26px">
-      El único indicador mensual de clima de inversión para Venezuela construido
-      enteramente con datos satelitales e internacionales auditables — sin ningún dato del
-      gobierno venezolano — con 25 años de historia continua (2000–{settings.series.end_year}) y nowcasting
-      mensual de alta frecuencia desde 2010.
+      Un indicador reproducible del clima de inversión para Venezuela construido
+      con datos satelitales e internacionales auditables, sin fuentes originadas en Venezuela.
+      El ICIV anual describe la trayectoria estructural 2000–{settings.series.end_year}; el Pulse
+      mensual monitorea señales de alta frecuencia desde 2010.
     </p>
 
     <!-- Scores actuales -->
@@ -2184,8 +2149,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="portada-pillar-bar" style="background:#3498db"></div>
       <div class="portada-pillar-title">Frecuencia mensual — ICIV Pulse</div>
       <div class="portada-pillar-body">
-        197 meses desde enero 2010. 12 variables internacionales de alta frecuencia
-        (FRED · EIA · Guardian) actualizadas mensualmente. Nowcasting entre publicaciones anuales.
+        Señales mensuales desde enero 2010. El Pulse combina variables reales de
+        FRED, EIA, Guardian y GDELT para leer el tramo entre publicaciones anuales.
       </div>
     </div>
     <div class="portada-pillar">
@@ -2210,7 +2175,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="portada-stat-lbl">meses Pulse mensual</div>
     </div>
     <div class="portada-stat">
-      <div class="portada-stat-num" style="color:var(--text)">40</div>
+      <div class="portada-stat-num" style="color:var(--text)">26</div>
       <div class="portada-stat-lbl">variables · 6 dimensiones</div>
     </div>
     <div class="portada-stat">
@@ -2236,7 +2201,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px">Metodología y temporalidad</div>
       <div style="display:flex;flex-direction:column;gap:12px;font-size:.8rem;color:var(--muted)">
         <div><span style="color:var(--text);font-weight:600">ICIV Anual (oficial):</span> Datos 2000–{settings.series.end_year} · Pesos AHP (CR=0.008) · Normalización Min-Max · Score 0–100</div>
-        <div><span style="color:var(--text);font-weight:600">ICIV Pulse (mensual):</span> 2010–{settings.series.end_year} · 12 variables high-freq · Pesos AHP renormalizados · Stock &amp; Watson (2002)</div>
+        <div><span style="color:var(--text);font-weight:600">ICIV Pulse (mensual):</span> 2010–{settings.series.end_year} · 11 variables mensuales · Pesos renormalizados según cobertura real · Stock &amp; Watson (2002)</div>
         <div><span style="color:var(--text);font-weight:600">Forecast:</span> SARIMA(1,1,2)(1,1,1,12) · 6 meses horizon · IC 80%/95%</div>
         <div><span style="color:var(--text);font-weight:600">VIIRS NTL:</span> Li et al. (2020) Figshare · bbox Venezuela + 25 estados · Extracción raster real</div>
         <div style="margin-top:4px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem">
@@ -2276,7 +2241,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       </div>
       <!-- Sparkline 12 meses (oculta, usada internamente) -->
       <canvas id="cInicioSparkline" style="display:none"></canvas>
-      <div style="font-size:.65rem;color:#555;margin-top:16px">12 variables internacionales · WTI · Brent · Fed · USD · VIX · UST10Y · Petróleo VEN · OFAC · Migrantes · Guardian</div>
+      <div style="font-size:.65rem;color:#555;margin-top:16px">11 variables internacionales · FRED macro · EIA petróleo · Guardian y GDELT noticias · cobertura visible por mes</div>
     </div>
 
     <!-- ICIV Anual: contexto estructural -->
@@ -2584,18 +2549,17 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <!-- ===== SECTION 6: SATV ===== -->
 <section class="section tab-section" id="alertas">
   <div class="section-header">
-    <span class="section-title">SATV — Sistema de Alertas Tempranas</span>
-    <span class="section-sub">Monitoreo multidimensional · Umbrales · Tendencias · Backtesting histórico</span>
+    <span class="section-title">SATV — Alertas del Pulse</span>
+    <span class="section-sub">Señales mensuales · Cobertura · Umbrales · Tendencias recientes</span>
   </div>
 
   <div class="alert alert-info" style="margin-bottom:20px">
     <div class="alert-title">Cómo leer esta sección</div>
     <div class="alert-body">
-      El SATV combina tres capas de análisis: <strong>semáforo por dimensión</strong> (estado actual vs umbrales),
-      <strong>tendencia</strong> (variación a 1, 3 y 5 años) y <strong>alertas compuestas</strong> (reglas que
-      combinan múltiples señales). La tabla de <em>variables críticas</em> muestra los indicadores con peor
-      score normalizado. El <em>timeline histórico</em> es un backtesting: demuestra cuándo el sistema habría
-      activado cada alerta en el pasado — validando que habría detectado la crisis 2016–2020 con anticipación.
+      El SATV se pega al Pulse para no mezclar alertas de frecuencia anual y mensual.
+      Resume tres grupos de señales observadas: macro global, energía y noticias internacionales;
+      marca cobertura parcial, Pulse bajo y deterioros de tres meses. La alerta es un monitor
+      operacional, no una predicción ni una validación retrospectiva del ICIV anual.
     </div>
   </div>
 
@@ -2608,22 +2572,22 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
   <div id="satvAlertas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px"></div>
 
-  <!-- Semáforo de dimensiones -->
+  <!-- Semáforo de señales -->
   <div class="section-header" style="margin-top:0;margin-bottom:12px">
-    <span class="section-title" style="font-size:1rem">Estado por dimensión</span>
+    <span class="section-title" style="font-size:1rem">Estado por grupo de señales</span>
   </div>
   <div id="satvDims" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px"></div>
 
   <!-- Variables críticas + Timeline -->
   <div class="charts-grid" style="margin-bottom:0">
     <div class="chart-card">
-      <div class="ct">Variables con score más bajo</div>
-      <div class="cs">Año más reciente · ordenadas de peor a mejor</div>
+      <div class="ct">Señales con score más bajo</div>
+      <div class="cs">Último mes disponible · ordenadas de peor a mejor</div>
       <div id="satvVarTable" style="margin-top:12px"></div>
     </div>
     <div class="chart-card">
-      <div class="ct">Timeline histórico de alertas</div>
-      <div class="cs">Cuándo cada umbral se habría activado (2000–{settings.series.end_year})</div>
+      <div class="ct">Timeline Pulse de alertas</div>
+      <div class="cs">Meses con Pulse en zona crítica desde 2010</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="cSatvTimeline"></canvas>
       </div>
@@ -2683,87 +2647,24 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </p>
 </section>
 
-<!-- ===== SECTION 8: ESCENARIOS 2027–2030 ===== -->
+<!-- ===== SECTION 8: LABORATORIO ===== -->
 <section class="section tab-section" id="proyecciones">
   <div class="section-header">
-    <span class="section-title">Proyecciones ICIV 2027–2030</span>
-    <span class="section-sub">Análisis de escenarios condicionales con bandas de confianza · No son predicciones</span>
+    <span class="section-title">Laboratorio ICIV</span>
+    <span class="section-sub">Simulador interactivo para explorar sensibilidad del índice anual</span>
   </div>
 
-  <!-- Sub-tabs: Optimista | Base | Pesimista | Simulador -->
+  <!-- El laboratorio conserva solo el simulador defendible en la vista principal. -->
   <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap">
-    <button class="esc-tab esc-tab-active" data-esc="base"
-      style="background:none;border:none;color:var(--text);font-size:.82rem;font-weight:600;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid #3498db">
-      Base
-    </button>
-    <button class="esc-tab" data-esc="optimista"
+    <button class="esc-tab esc-tab-active" data-esc="simulador"
       style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid transparent">
-      Optimista
-    </button>
-    <button class="esc-tab" data-esc="pesimista"
-      style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid transparent">
-      Pesimista
-    </button>
-    <button class="esc-tab" data-esc="simulador"
-      style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid transparent">
+             padding:8px 20px;cursor:pointer;border-bottom:2px solid var(--accent)">
       Simulador Interactivo
     </button>
-    <button class="esc-tab" data-esc="montecarlo"
-      style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid transparent">
-      Monte Carlo
-    </button>
-  </div>
-
-  <!-- Vista: Escenario Base -->
-  <div class="esc-view" id="escView-base">
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">
-      <strong>Metodología:</strong> {_esc.get('metodologia','—')}<br>
-      Fuentes: Wilson Center (2023); IMF (2024) Article IV; Freedom House (2024); Atlantic Council (2024).
-    </p>
-    <div class="charts-grid single">
-      <div class="chart-card">
-        <div class="ct">Escenario Base — Continuidad del statu quo</div>
-        <div class="cs">Histórico 2000–2026 + proyección 2027–2030 · Banda de confianza ±σ×√n (σ={_esc.get('volatilidad_anual','–')} pts/año)</div>
-        <div class="chart-wrap" style="height:380px"><canvas id="cEscBase"></canvas></div>
-      </div>
-    </div>
-    <div id="escKpiBase" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px"></div>
-    <div id="escSupBase" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px"></div>
-  </div>
-
-  <!-- Vista: Escenario Optimista -->
-  <div class="esc-view" id="escView-optimista" style="display:none">
-    <div class="charts-grid single">
-      <div class="chart-card">
-        <div class="ct">Escenario Optimista — Apertura y reforma</div>
-        <div class="cs">Histórico 2000–2026 + proyección 2027–2030 · Banda de confianza ±σ×√n</div>
-        <div class="chart-wrap" style="height:380px"><canvas id="cEscOpt"></canvas></div>
-      </div>
-    </div>
-    <div id="escKpiOpt" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px"></div>
-    <div id="escSupOpt" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px"></div>
-  </div>
-
-  <!-- Vista: Escenario Pesimista -->
-  <div class="esc-view" id="escView-pesimista" style="display:none">
-    <div class="charts-grid single">
-      <div class="chart-card">
-        <div class="ct">Escenario Pesimista — Agudización de la crisis</div>
-        <div class="cs">Histórico 2000–2026 + proyección 2027–2030 · Banda de confianza ±σ×√n</div>
-        <div class="chart-wrap" style="height:380px"><canvas id="cEscPess"></canvas></div>
-      </div>
-    </div>
-    <div id="escKpiPess" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px"></div>
-    <div id="escSupPess" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:16px"></div>
   </div>
 
   <!-- Vista: Simulador Interactivo -->
-  <div class="esc-view" id="escView-simulador" style="display:none">
+  <div class="esc-view" id="escView-simulador">
     <div class="alert alert-info" style="margin-bottom:16px">
       <div class="alert-title">Simulador de Escenarios ICIV</div>
       <div class="alert-body">
@@ -2781,7 +2682,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
           <span style="font-size:.82rem;font-weight:600">Dimensiones (score 0–100)</span>
           <button id="simReset" style="background:var(--card);border:1px solid var(--border);
             color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-            Restablecer 2026
+            Restablecer {sim_base_year}
           </button>
         </div>
         <div id="simSliders"></div>
@@ -2799,16 +2700,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
               style="background:var(--card);border:1px solid var(--border);color:var(--muted);
                      padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
               Mínimo 2020
-            </button>
-            <button class="sim-preset" data-preset="opt2030"
-              style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                     padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-              Optimista 2030
-            </button>
-            <button class="sim-preset" data-preset="pess2030"
-              style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                     padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-              Pesimista 2030
             </button>
           </div>
         </div>
@@ -2839,53 +2730,30 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
 
-  <!-- Vista: Monte Carlo -->
-  <div class="esc-view" id="escView-montecarlo" style="display:none">
-    <div class="alert alert-info" style="margin-bottom:16px">
-      <div class="alert-title">Proyección Monte Carlo — 10.000 Trayectorias</div>
-      <div class="alert-body">
-        Simulación estocástica sobre 3 variables clave: WTI precio, producción petrolera PDVSA y WGI gobernanza.
-        Las distribuciones están calibradas sobre sus cambios anuales históricos (2018–2026).
-        La mediana (P50) ≈ escenario base OLS. Las bandas representan la incertidumbre acumulada 2027–2030.
-        Referencia: BoE Fan Chart Methodology (2013).
-      </div>
-    </div>
-    <div class="charts-grid single">
-      <div class="chart-card">
-        <div class="ct">Fan Chart Monte Carlo — Distribución de Trayectorias ICIV 2027–2030</div>
-        <div class="cs">Histórico 2000–2026 + 10.000 simulaciones · Bandas P5–P25–P75–P95</div>
-        <div class="chart-wrap" style="height:400px"><canvas id="cMonteCarlo"></canvas></div>
-      </div>
-    </div>
-    <!-- Probabilidades condicionales -->
-    <div id="mcProbCards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px"></div>
-    <!-- Parámetros de simulación -->
-    <div id="mcParamsCard" style="background:var(--card);border:1px solid var(--border);border-radius:10px;
-         padding:16px;margin-top:16px;font-size:.75rem;color:var(--muted);line-height:1.7"></div>
-  </div>
 </section>
 
 <!-- ===== SECTION 9: CORRELACIÓN ICIV → IED ===== -->
 <section class="section tab-section" id="correlacion">
   <div class="section-header">
     <span class="section-title">Validación del Indicador</span>
-    <span class="section-sub">A) Coherencia interna ICIV→IED (exploratoria) · B) Validación externa vs índices · C) Eventos políticos · D) Validaciones internas · E) Metodología AHP</span>
+    <span class="section-sub">A) Outcome externo ICIV→IED · B) Benchmarks internacionales · C) Eventos políticos · D) Validaciones internas · E) Metodología AHP</span>
   </div>
 
   <!-- Sub-encabezado bloque A -->
   <div style="margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid var(--accent);border-radius:6px">
-    <strong style="color:var(--accent);font-size:.85rem">A · Coherencia interna / Exploración — ICIV → IED</strong>
+    <strong style="color:var(--accent);font-size:.85rem">A · Outcome externo — ICIV → IED</strong>
     <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      Análisis exploratorio de la relación ICIV–IED. Pearson · OLS · Causalidad de Granger 2000–2026.
-      <em>Nota: IED es una variable componente del ICIV (D4); este análisis es exploratorio, no validación externa independiente.</em>
+      Análisis exploratorio de la relación entre el ICIV y la IED observada. Pearson · OLS · Causalidad de Granger 2000–2026.
+      <em>IED se reserva fuera del score core para funcionar como outcome económico externo.</em>
     </div>
   </div>
-  <!-- Alerta de circularidad metodológica -->
+  <!-- Nota metodológica IED -->
   <div style="margin-bottom:16px;padding:10px 14px;background:#2d2007;border-left:3px solid #f1c40f;border-radius:6px;font-size:.72rem;color:#f8d775;line-height:1.6">
-    <strong>⚠ Nota metodológica — circularidad parcial:</strong>
-    La variable <code>ied_neta_usd</code> forma parte del ICIV (dimensión D4, peso 0.28 dentro de la dimensión, peso efectivo ~4.2% en el índice total).
-    Por ello, la correlación ICIV–IED refleja en parte coherencia interna del índice, no validación externa independiente.
-    Este análisis se presenta con carácter <strong>exploratorio</strong>. Para validación externa independiente ver Bloque B (correlación con índices no-componentes: WGI, CPI, FH, HDI, V-Dem, WJP, FSI, PTS, RSF).
+    <strong>Nota metodológica — alcance de la IED:</strong>
+    <code>ied_neta_usd</code> no entra al score core. Se conserva como resultado económico
+    externo de interés para preguntar si un mejor clima antecede flujos de inversión más favorables.
+    El tamaño muestral anual, los rezagos de publicación y la dinámica de desinversión en Venezuela
+    obligan a leer este bloque como evidencia exploratoria, no como prueba causal suficiente.
   </div>
 
   <!-- Fila superior: scatter + cross-correlation — imágenes estáticas matplotlib -->
@@ -2968,7 +2836,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       Greene, 2018). La cross-correlación de Pearson para rezagos 0–4 años permite identificar
       el horizonte temporal en que el ICIV anticipa cambios en la IED. La regresión OLS con rezagos
       formales estima el efecto cuantitativo: un punto adicional en el ICIV<sub>t−1</sub> se
-      traduce en β₁ miles de millones USD adicionales de IED al año siguiente. El test de Granger
+      se asocia con β₁ miles de millones USD de IED al año siguiente. El test de Granger
       (H₀: el ICIV no Granger-causa la IED) se aplica sobre primeras diferencias cuando el test ADF
       indica no-estacionariedad (I(1)), preservando la validez asintótica de los estimadores.
       <br><strong>Nota sobre Venezuela:</strong> la IED venezolana es estructuralmente negativa
@@ -2981,9 +2849,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <!-- B · VALIDACIÓN EXTERNA vs índices internacionales -->
   <div style="margin-top:32px;margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid #2ecc71;border-radius:6px">
-    <strong style="color:#2ecc71;font-size:.85rem">B · Validación externa — Correlación con índices internacionales</strong>
+    <strong style="color:#2ecc71;font-size:.85rem">B · Benchmarks — Correlación con índices internacionales</strong>
     <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      ¿El ICIV correlaciona con índices establecidos (HDI, WGI, CPI, FH, V-Dem, WJP, FSI, PTS, RSF)? Pearson + Spearman 2000–2026
+      Comparación con índices establecidos. Algunos benchmarks también aportan variables al modelo, por lo que esta tabla evalúa convergencia y no independencia estricta.
     </div>
   </div>
 
@@ -3162,16 +3030,16 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="pulse">
   <div class="section-header">
     <span class="section-title">ICIV Pulse Mensual</span>
-    <span class="section-sub">Co-indicador high-frequency · 12 variables internacionales mensuales · Stock-Watson (2002) nowcasting</span>
+    <span class="section-sub">Co-indicador high-frequency · 11 variables internacionales mensuales · Stock-Watson (2002)</span>
   </div>
 
   <div class="alert alert-info" style="margin-bottom:20px">
     <div class="alert-title">¿Qué es el ICIV Pulse?</div>
     <div class="alert-body">
-      El <strong>ICIV Pulse</strong> es un <strong>co-indicador mensual</strong> construido con las 12 variables
-      del ICIV que tienen frecuencia ≥mensual. <strong>NO reemplaza el ICIV Anual oficial</strong>:
+      El <strong>ICIV Pulse</strong> es un <strong>co-indicador mensual</strong> construido con 11 señales
+      internacionales de frecuencia mensual. <strong>NO reemplaza el ICIV Anual oficial</strong>:
       lo complementa con señales en tiempo casi real para inversores que necesitan
-      actualización entre publicaciones anuales (WGI, HDI, CPI). Cubre desde enero 2020.
+      actualización entre publicaciones anuales (WGI, HDI, CPI). Cubre desde enero 2010.
       Metodología: agregación lineal con pesos AHP renormalizados (Stock &amp; Watson 2002).
     </div>
   </div>
@@ -3179,7 +3047,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <!-- Stats Pulse -->
   <div class="stats-row">
     <div class="stat">
-      <div class="stat-label">Pulse último mes</div>
+      <div class="stat-label">Pulse mes con cobertura alta</div>
       <div class="stat-val" id="pulseScoreActual">—</div>
       <div class="stat-sub" id="pulseFechaActual">—</div>
     </div>
@@ -3191,7 +3059,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="stat">
       <div class="stat-label">Meses calculados</div>
       <div class="stat-val stat-neu" id="pulseNMeses">—</div>
-      <div class="stat-sub">desde 2020-01</div>
+      <div class="stat-sub">desde 2010-01</div>
     </div>
     <div class="stat">
       <div class="stat-label">vs ICIV Anual {current_year_val}</div>
@@ -3223,11 +3091,11 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
       <strong style="color:var(--text)">Metodología del Pulse:</strong>
       Variables incluidas: WTI, Brent, Fed Funds, USD index, VIX, UST 10Y, producción petrolera Venezuela
-      (EIA International monthly), sanciones OFAC, migrantes UNHCR, artículos The Guardian, tono VADER.
+      (EIA International monthly), volumen y tono Guardian, volumen y tono GDELT.
       No incluye D5 (Capital Humano) porque sus variables son intrínsecamente anuales.
-      Normalización Min-Max sobre rango histórico 2020–presente. Pesos renormalizados
-      sobre subconjunto AHP disponible. Cobertura típica: 75 % (algunos meses pueden bajar
-      a 44 % cuando EIA aún no publica el mes más reciente). Score &lt; 70 % cobertura debe
+      Normalización Min-Max sobre rango histórico mensual disponible. Pesos renormalizados
+      sobre el peso Pulse disponible. Cuando EIA o GDELT aún no publica una observación,
+      la cobertura baja en vez de fabricar continuidad. Score &lt; 70 % cobertura debe
       considerarse provisional.
     </div>
   </div>
@@ -3237,7 +3105,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="pulse-componentes">
   <div class="section-header">
     <span class="section-title">Componentes Pulse — Series mensuales</span>
-    <span class="section-sub">Las 12 variables high-frequency normalizadas (0–100) que alimentan el ICIV Pulse</span>
+    <span class="section-sub">Las 11 variables mensuales normalizadas (0–100) que alimentan el ICIV Pulse cuando cada fuente está disponible</span>
   </div>
 
   <div class="chart-card">
@@ -3265,8 +3133,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="alert-title">¿Por qué un co-indicador mensual?</div>
     <div class="alert-body">
       Las fuentes anuales del ICIV (WGI, HDI, CPI, WDI) tienen un <strong>lag de publicación de 12–18 meses</strong>.
-      El ICIV Pulse cubre esta brecha usando solo las 12 variables del modelo original que tienen
-      frecuencia ≥ mensual. <strong>No reemplaza el ICIV Anual</strong>: lo complementa con señales
+      El ICIV Pulse cubre esta brecha usando variables internacionales con frecuencia mensual,
+      disponibilidad auditable y cobertura visible por mes. <strong>No reemplaza el ICIV Anual</strong>: lo complementa con señales
       en tiempo casi real entre publicaciones anuales. Marco teórico: Aruoba, Diebold &amp; Scotti
       (2009) <em>ADS Business Conditions Index</em>; Stock &amp; Watson (2002) nowcasting.
     </div>
@@ -3274,22 +3142,22 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <!-- Variables incluidas -->
   <div class="card" style="margin-bottom:16px">
-    <div class="ct">Variables incluidas en el Pulse (12 de 29 totales)</div>
-    <div class="cs">Solo variables con frecuencia ≥ mensual y disponibilidad histórica desde 2020</div>
+    <div class="ct">Variables incluidas en el Pulse (11)</div>
+    <div class="cs">Solo series mensuales observadas; los pesos se renormalizan cuando una fuente aún no publicó dato</div>
     <table class="ahp-table" style="margin-top:10px">
       <thead><tr><th>Variable</th><th>Fuente</th><th>Frecuencia</th><th>Dirección</th><th>Peso AHP renorm.</th></tr></thead>
       <tbody>
-        <tr><td>WTI precio (USD/bbl)</td><td>FRED / EIA</td><td>Diaria → Mensual</td><td>Positivo</td><td>~12%</td></tr>
-        <tr><td>Brent precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>~12%</td></tr>
-        <tr><td>Fed Funds Rate (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>~8%</td></tr>
-        <tr><td>USD Index (DXY)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>~7%</td></tr>
-        <tr><td>VIX Volatilidad</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>~9%</td></tr>
-        <tr><td>US Treasury 10Y (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>~7%</td></tr>
-        <tr><td>Producción petróleo VEN (tbpd)</td><td>EIA Monthly</td><td>Mensual</td><td>Positivo</td><td>~15%</td></tr>
-        <tr><td>OFAC sanciones (snapshot)</td><td>OFAC SDN</td><td>Mensual</td><td>Negativo</td><td>~8%</td></tr>
-        <tr><td>Migrantes UNHCR (acum.)</td><td>UNHCR</td><td>Mensual</td><td>Negativo</td><td>~10%</td></tr>
-        <tr><td>Artículos Guardian (VEN)</td><td>Guardian API</td><td>Mensual</td><td>Neutral (vol.)</td><td>~6%</td></tr>
-        <tr><td>Tono noticias Guardian</td><td>Guardian + VADER</td><td>Mensual</td><td>Positivo</td><td>~6%</td></tr>
+        <tr><td>WTI precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>8%</td></tr>
+        <tr><td>Brent precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>5%</td></tr>
+        <tr><td>Fed Funds Rate (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>5%</td></tr>
+        <tr><td>USD Index</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
+        <tr><td>VIX volatilidad</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>7%</td></tr>
+        <tr><td>US Treasury 10Y (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
+        <tr><td>Producción petróleo VEN (tbpd)</td><td>EIA International</td><td>Mensual</td><td>Positivo</td><td>30%</td></tr>
+        <tr><td>Artículos Guardian (VEN)</td><td>Guardian API</td><td>Mensual</td><td>Negativo</td><td>8%</td></tr>
+        <tr><td>Tono titulares Guardian</td><td>Guardian + VADER</td><td>Mensual</td><td>Positivo</td><td>12%</td></tr>
+        <tr><td>Cobertura GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Negativo</td><td>7%</td></tr>
+        <tr><td>Tono GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Positivo</td><td>10%</td></tr>
       </tbody>
     </table>
   </div>
@@ -3318,9 +3186,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         No es directamente comparable al ICIV Anual (diferentes variables y cobertura).<br><br>
         <strong style="color:var(--text)">Limitaciones:</strong>
         <ul style="padding-left:16px;margin:6px 0">
-          <li>Variables VEN gobierno excluidas (BCV, INE, PDVSA) — política del proyecto</li>
+          <li>Fuentes originadas en Venezuela excluidas por política del proyecto</li>
           <li>Cobertura variable mes a mes según disponibilidad de APIs</li>
-          <li>OFAC solo tiene snapshot actual — variable tiene NaN en años históricos</li>
+          <li>GDELT puede rate-limit; si falta, la cobertura baja y no se fabrica una serie sustituta</li>
           <li>WTI/Brent son factores exógenos, no directamente sobre Venezuela</li>
         </ul>
         <strong style="color:var(--text)">Referencias:</strong><br>
@@ -3338,22 +3206,21 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <!-- ===== SECTION: FORECAST ML ===== -->
 <section class="section tab-section" id="forecast-ml">
   <div class="section-header">
-    <span class="section-title">Forecast ML — Predicción Pulse + Nowcast Anual</span>
-    <span class="section-sub">SARIMA univariado (Hyndman-Athanasopoulos 2018) + OLS Pulse→Anual (Stock-Watson 2002)</span>
+    <span class="section-title">Predicción Pulse</span>
+    <span class="section-sub">Forecast mensual univariado sobre la serie Pulse observada</span>
   </div>
 
   <div class="alert alert-info" style="margin-bottom:20px">
     <div class="alert-title">Modelos implementados</div>
     <div class="alert-body">
-      <strong>Modelo A — SARIMA(p,d,q)(P,D,Q,12):</strong> forecast univariado del Pulse mensual
-      para los próximos 6 meses con intervalos de confianza 80 % y 95 %. Auto-selección de orden por AIC.<br>
-      <strong>Modelo B — OLS Pulse → ICIV Anual:</strong> regresión lineal que predice el score
-      ICIV Anual del año en curso usando features agregadas del Pulse (media, min, max, std, tendencia).
-      Validado con Leave-One-Out Cross-Validation.
+      Se expone una sola predicción: <strong>SARIMA(p,d,q)(P,D,Q,12)</strong> sobre el Pulse mensual
+      observado para los próximos 6 meses, con intervalos de confianza 80 % y 95 % y
+      auto-selección de orden por AIC. El simulador queda separado en el laboratorio porque
+      explora sensibilidad del ICIV anual y no pretende pronosticar un escenario político.
     </div>
   </div>
 
-  <!-- Stats ML -->
+  <!-- Stats forecast -->
   <div class="stats-row">
     <div class="stat">
       <div class="stat-label">SARIMA orden</div>
@@ -3361,35 +3228,19 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="stat-sub" id="mlSarimaAic">AIC: —</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Nowcast R² (train)</div>
-      <div class="stat-val stat-neu" id="mlR2Train">—</div>
-      <div class="stat-sub">in-sample</div>
+      <div class="stat-label">Horizonte</div>
+      <div class="stat-val stat-neu" style="font-size:1.2rem">6 meses</div>
+      <div class="stat-sub">una trayectoria media</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Nowcast R² (LOO-CV)</div>
-      <div class="stat-val" id="mlR2LooCv">—</div>
-      <div class="stat-sub">leave-one-out cross-validation</div>
+      <div class="stat-label">Bandas</div>
+      <div class="stat-val stat-neu" style="font-size:1.2rem">80% / 95%</div>
+      <div class="stat-sub">incertidumbre del forecast</div>
     </div>
     <div class="stat">
-      <div class="stat-label">MAE</div>
-      <div class="stat-val stat-neu" id="mlMae">—</div>
-      <div class="stat-sub">puntos ICIV</div>
-    </div>
-  </div>
-
-  <!-- Predicción año actual -->
-  <div class="alert alert-warn" style="margin-top:18px">
-    <div class="alert-title">Nowcast del ICIV Anual del año en curso</div>
-    <div class="alert-body">
-      <strong>ICIV Anual predicho para <span id="mlNowcastYear">—</span>:</strong>
-      <span id="mlNowcastValue" style="font-size:1.4rem;font-weight:700;color:var(--accent)">—</span>
-      <span id="mlNowcastNote" style="color:var(--muted);font-size:.85rem;margin-left:10px">—</span>
-      <br><br>
-      <span style="font-size:.75rem;color:var(--muted)">
-        Este nowcast usa los meses Pulse ya disponibles del año en curso para estimar el ICIV Anual
-        antes de que se publiquen las fuentes anuales (WGI, HDI, WDI). Útil como "previsión inteligente"
-        del score final cuando aún no hay cobertura completa.
-      </span>
+      <div class="stat-label">Uso</div>
+      <div class="stat-val stat-neu" style="font-size:1rem">Monitor</div>
+      <div class="stat-sub">no escenario normativo</div>
     </div>
   </div>
 
@@ -3402,19 +3253,12 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
 
-  <!-- Tabla coeficientes -->
-  <div class="card" style="margin-top:18px">
-    <div class="ct">Coeficientes del nowcast OLS</div>
-    <div class="cs">Cómo cada feature del Pulse contribuye al ICIV Anual predicho</div>
-    <div id="mlCoeffsTable" style="margin-top:10px"></div>
-  </div>
-
   <!-- Metodología compacta inline -->
   <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
     <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
       <strong style="color:var(--text)">Resumen metodológico:</strong>
-      SARIMA auto-selección por AIC (3 candidatos) · OLS Nowcast con LOO-CV ·
-      Ver pestaña <strong>Metodología</strong> para detalle completo.
+      SARIMA auto-selección por AIC entre especificaciones candidatas sobre observaciones
+      Pulse con cobertura suficiente. Ver metodología para supuestos y límites.
     </div>
   </div>
 </section>
@@ -4248,7 +4092,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   const tendLabel = r.iciv_tendencia === 'deterioro' ? '↓ Deterioro'
                   : r.iciv_tendencia === 'recuperacion' ? '↑ Recuperación' : '→ Estable';
   const kpiData = [
-    {{ val: r.dims_criticas,   lbl: 'Dimensiones críticas',   color: '#e05c5c' }},
+    {{ val: r.dims_criticas,   lbl: 'Señales críticas',        color: '#e05c5c' }},
     {{ val: r.dims_precaucion, lbl: 'En precaución',           color: '#e67e22' }},
     {{ val: r.dims_normales,   lbl: 'En zona normal',          color: '#2ecc71' }},
     {{ val: `${{r.iciv_delta_1y > 0 ? '+' : ''}}${{r.iciv_delta_1y}}`, lbl: tendLabel, color: tendColor }},
@@ -4294,9 +4138,9 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         <div class="satv-dim-score" style="color:${{c}}">${{score_display}}</div>
         ${{noData ? `<div style="font-size:.72rem;color:#8b949e;margin-top:4px">Sin datos para ${{typeof CURRENT_YEAR !== 'undefined' ? CURRENT_YEAR : ''}}</div>` : ''}}
         <div class="satv-dim-deltas">
-          ${{!noData ? `<span>Δ1y: <strong style="color:${{d.delta_1y<0?'#e05c5c':'#2ecc71'}}">${{sign}}${{d.delta_1y}}</strong></span>
-          <span>Δ3y: <strong>${{d.delta_3y >= 0 ? '+' : ''}}${{d.delta_3y}}</strong></span>
-          <span>Δ5y: <strong>${{d.delta_5y >= 0 ? '+' : ''}}${{d.delta_5y}}</strong></span>
+          ${{!noData ? `<span>Δ1m: <strong style="color:${{d.delta_1y<0?'#e05c5c':'#2ecc71'}}">${{sign}}${{d.delta_1y}}</strong></span>
+          <span>Δ3m: <strong>${{d.delta_3y >= 0 ? '+' : ''}}${{d.delta_3y}}</strong></span>
+          <span>Δ6m: <strong>${{d.delta_5y >= 0 ? '+' : ''}}${{d.delta_5y}}</strong></span>
           <span style="margin-left:auto">${{d.arrow}} ${{TEND_LABEL[d.tendencia] || d.tendencia}}</span>` : `<span style="color:#8b949e">Ver última tendencia disponible →</span>`}}
         </div>
         <div class="satv-dim-var">
@@ -4312,7 +4156,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   // ── Variables críticas ───────────────────────────────────────────────────────
   document.getElementById('satvVarTable').innerHTML = `
     <table class="satv-var-table">
-      <thead><tr><th>Variable</th><th>Score</th><th>Δ1y</th><th>Dimensión</th></tr></thead>
+      <thead><tr><th>Señal</th><th>Score</th><th>Δ1m</th><th>Grupo</th></tr></thead>
       <tbody>
         ${{SATV.variables_criticas.map(v => {{
           const barW = Math.max(2, v.score);
@@ -4336,20 +4180,16 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
 
   // ── Timeline histórico (Chart.js scatter) ────────────────────────────────────
   const timelineEvents = SATV.timeline_historico || [];
-  const tlYears = [...new Set(timelineEvents.map(e => e.año))].sort();
-
-  // Agrupar por dimensión para el eje Y
-  const dimOrder = ['iciv','D1_macro','D2_energia','D3_institucional','D4_comercial','D5_capital_humano','D6_percepcion'];
+  // Agrupar por monitor para el eje Y.
+  const dimOrder = ['pulse'];
   const dimLabel = {{
-    iciv:'ICIV', D1_macro:'D1 Macro', D2_energia:'D2 Energía',
-    D3_institucional:'D3 Instituc.', D4_comercial:'D4 Comercial',
-    D5_capital_humano:'D5 Capital', D6_percepcion:'D6 Percepción'
+    pulse:'Pulse mensual'
   }};
 
   const datasets = dimOrder.map(dim => {{
     const pts = timelineEvents
       .filter(e => e.dimension === dim)
-      .map(e => ({{ x: e.año, y: dimOrder.indexOf(dim), nivel: e.nivel, evento: e.evento }}));
+      .map(e => ({{ x: e.año + ((e.mes || 1) - 1) / 12, y: dimOrder.indexOf(dim), nivel: e.nivel, evento: e.tipo, mes: e.mes }}));
     return {{
       label: dimLabel[dim] || dim,
       data: pts,
@@ -4369,13 +4209,13 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
       plugins: {{
         legend: {{ display: false }},
         tooltip: {{ callbacks: {{
-          label: ctx => `${{ctx.raw.evento}} (${{ctx.raw.x}})`,
+          label: ctx => `${{ctx.raw.evento}} (${{Math.floor(ctx.raw.x)}}-${{String(ctx.raw.mes || 1).padStart(2,'0')}})`,
           title: () => '',
         }}}}
       }},
       scales: {{
         x: {{
-          min: 2000, max: {settings.series.end_year},
+          min: 2010, max: {settings.series.end_year} + 1,
           grid: {{ color: '#21262d' }},
           ticks: {{ stepSize: 2, font: {{ size: 9 }} }}
         }},
@@ -4923,8 +4763,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
 
 // ── ESCENARIOS 2027–2030 ────────────────────────────────────────────────────
 (function() {{
-  const ESC = {escenarios_json};
-  if (!ESC || !ESC.escenarios) return;
+  const ESC = {escenarios_json} || {{}};
 
   const LABELS = {{ optimista: 'Optimista', base: 'Base', pesimista: 'Pesimista' }};
   const COLORS_MAP = {{ optimista:'#2ecc71', base:'#3498db', pesimista:'#e74c3c' }};
@@ -5338,12 +5177,12 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }};
   }}
 
-  // Init base scenario on page load
-  buildScChart('base');
+  // The public laboratory starts with the interactive simulator.
+  initSimulator();
 
   // Init on hash
   if (window.location.hash === '#proyecciones') {{
-    // base is already built
+    initSimulator();
   }}
 }})();
 
@@ -6384,28 +6223,25 @@ def main() -> None:
     # -- Fase 3: Modelo ---------------------------------------------------------
     df_fixed, df_ahp, ahp = fase_modelo(df_norm, settings)
 
-    # -- Fase 3b: SATV ----------------------------------------------------------
-    satv_data = fase_satv(df_norm, df_ahp)
-
-    # -- Fase 3c: Correlación ICIV → IED ----------------------------------------
-    correlacion_data = fase_correlacion(df_raw, df_ahp)
-
-    # -- Fase 3d: Escenarios 2027–2030 ------------------------------------------
-    escenarios_data = fase_escenarios(df_ahp)
-
-    # -- Fase 3e: Red de Sanciones OFAC -----------------------------------------
-    sanciones_data = fase_ofac_network(settings)
-
-    # -- Fase 3f: Monte Carlo ---------------------------------------------------
-    mc_data = fase_monte_carlo(df_ahp, df_norm, ahp)
-
-    # -- Fase 3g: Radar Sectorial -----------------------------------------------
-    sector_data = fase_sector_radar(df_ahp, sanciones_data)
-
-    # -- Fase 3h: ICIV Pulse Mensual (nowcast) ---------------------------------
+    # -- Fase 3b: ICIV Pulse Mensual (co-indicador) ----------------------------
     pulse_data = fase_pulse(settings)
 
-    # -- Fase 3i: ML Forecast (SARIMA + Nowcast Pulse→Anual) -------------------
+    # -- Fase 3c: SATV Pulse ----------------------------------------------------
+    satv_data = fase_satv(settings, pulse_data)
+
+    # -- Fase 3d: Correlación ICIV → IED ----------------------------------------
+    correlacion_data = fase_correlacion(df_raw, df_ahp)
+
+    # -- Fase 3e: Radar Sectorial -----------------------------------------------
+    # Las proyecciones anuales por escenario, Monte Carlo y red OFAC dejaron de
+    # exponerse en el dashboard principal; el pipeline semanal calcula solo las
+    # piezas defendibles que se usan en la experiencia final.
+    escenarios_data: dict = {}
+    sanciones_data: dict = {}
+    mc_data: dict = {}
+    sector_data = fase_sector_radar(df_ahp, sanciones_data)
+
+    # -- Fase 3f: Forecast mensual Pulse ----------------------------------------
     ml_forecast = fase_ml_forecast(pulse_data, df_ahp)
 
     # -- Fase 4: Dashboard ------------------------------------------------------

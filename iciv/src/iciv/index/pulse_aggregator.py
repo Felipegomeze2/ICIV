@@ -7,7 +7,7 @@ de inversión usando solo las variables disponibles con granularidad ≥mensual.
 NO reemplaza el ICIV Anual oficial — es un nowcasting indicator
 (Stock & Watson, 2002; Aruoba, Diebold & Scotti, 2009).
 
-Variables incluidas (12, todas de fuentes internacionales):
+Variables incluidas (11, todas de fuentes internacionales):
   Macro externo (D1 — 35% peso renormalizado):
     - wti_precio_usd            (FRED, mensual)
     - brent_precio_usd          (FRED, mensual)
@@ -17,13 +17,11 @@ Variables incluidas (12, todas de fuentes internacionales):
     - ust_10y_yield_pct         (FRED, mensual)
   Energía Venezuela (D2 — 25% peso renormalizado):
     - petroleo_crudo_produccion_tbpd (EIA International, mensual)
-  Institucional (D3 — 10% peso):
-    - ofac_sanciones_count      (Treasury, snapshot mensual)
-  Comercial/Migración (D4 — 15% peso):
-    - migrantes_vzla_millones   (UNHCR, mensual donde disponible)
-  Percepción (D6 — 15% peso):
+  Percepción (D6):
     - guardian_articulos_venezuela (Guardian, mensual)
     - guardian_tono_titulares      (Guardian, mensual)
+    - gdelt_cobertura_vol          (GDELT DOC timeline, mensual)
+    - gdelt_tono_noticias          (GDELT DOC timeline, mensual)
 
 NO incluye D5 (capital humano) — todas sus variables son anuales estructuralmente.
 
@@ -54,29 +52,27 @@ PULSE_START_YEAR = 2010
 # ── Pesos renormalizados del Pulse (suman 1.0) ───────────────────────────────
 # Basado en pesos AHP originales pero renormalizando sobre el subconjunto disponible.
 PULSE_WEIGHTS: dict[str, float] = {
-    # D1 Macro externo (35%) — drivers globales
+    # D1 Macro externo (33%) — drivers globales
     "wti_precio_usd":                  0.08,
     "brent_precio_usd":                0.05,
-    "tasa_fed_funds_pct":              0.06,  # NEGATIVO (tasa alta → menos IED EM)
-    "usd_index_broad":                 0.05,  # NEGATIVO (USD fuerte → presión EM)
-    "vix_volatility":                  0.06,  # NEGATIVO (volatilidad alta → riesgo)
-    "ust_10y_yield_pct":               0.05,  # NEGATIVO (yield alto → outflow EM)
-    # D2 Energía VEN (25%) — driver doméstico clave
-    "petroleo_crudo_produccion_tbpd":  0.25,
-    # D3 Institucional (10%)
-    "ofac_sanciones_count":            0.10,  # NEGATIVO
-    # D4 Migración (15%) — proxy de salida de capital humano
-    "migrantes_vzla_millones":         0.15,  # NEGATIVO
-    # D6 Percepción (15%)
-    "guardian_articulos_venezuela":    0.07,  # NEGATIVO (más cobertura → crisis)
-    "guardian_tono_titulares":         0.08,  # POSITIVO (tono positivo es bueno)
+    "tasa_fed_funds_pct":              0.05,  # NEGATIVO (tasa alta → menos IED EM)
+    "usd_index_broad":                 0.04,  # NEGATIVO (USD fuerte → presión EM)
+    "vix_volatility":                  0.07,  # NEGATIVO (volatilidad alta → riesgo)
+    "ust_10y_yield_pct":               0.04,  # NEGATIVO (yield alto → outflow EM)
+    # D2 Energía VEN (30%) — driver doméstico clave
+    "petroleo_crudo_produccion_tbpd":  0.30,
+    # D6 Percepción internacional (37%) — dos sistemas de cobertura
+    "guardian_articulos_venezuela":    0.08,  # NEGATIVO (más cobertura → crisis)
+    "guardian_tono_titulares":         0.12,  # POSITIVO (tono positivo es bueno)
+    "gdelt_cobertura_vol":             0.07,  # NEGATIVO
+    "gdelt_tono_noticias":             0.10,  # POSITIVO
 }
 
 # Variables con dirección negativa (mayor valor = peor clima)
 PULSE_NEGATIVE = {
     "tasa_fed_funds_pct", "usd_index_broad", "vix_volatility",
-    "ust_10y_yield_pct", "ofac_sanciones_count",
-    "migrantes_vzla_millones", "guardian_articulos_venezuela",
+    "ust_10y_yield_pct", "guardian_articulos_venezuela",
+    "gdelt_cobertura_vol",
 }
 
 
@@ -103,6 +99,7 @@ class PulseAggregator:
             "eia_monthly.csv":      "EIA International monthly",
             "fred_monthly.csv":     "FRED monthly aggregation",
             "guardian_monthly.csv": "Guardian monthly + VADER",
+            "gdelt_monthly.csv":    "GDELT DOC timeline monthly",
         }
         frames: list[pd.DataFrame] = []
         for fname, label in sources.items():
@@ -149,18 +146,6 @@ class PulseAggregator:
             wide["año"].astype(str) + "-" + wide["mes"].astype(str).str.zfill(2) + "-01"
         )
         wide = wide.sort_values("fecha").reset_index(drop=True)
-
-        # ── Forward-fill por lag de publicación EIA (máx 2 meses) ────────────
-        # petroleo_crudo_produccion_tbpd tiene lag típico de 2-3 meses en EIA.
-        # Se propaga el último valor conocido hasta 2 meses para evitar que su
-        # ausencia redistribuya el 25% de peso hacia commodities globales y
-        # distorsione el Pulse. No es dato inventado: es el último valor publicado,
-        # pendiente de actualización. Límite de 2 meses para no extrapolar en exceso.
-        if "petroleo_crudo_produccion_tbpd" in wide.columns:
-            wide["petroleo_crudo_produccion_tbpd"] = (
-                wide["petroleo_crudo_produccion_tbpd"]
-                .ffill(limit=4)  # lag típico EIA international: 3-4 meses
-            )
 
         return wide
 

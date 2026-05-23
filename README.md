@@ -1,163 +1,98 @@
-# ICIV — Indicador de Clima de Inversión Venezuela
+# ICIV - Indicador de Clima de Inversion Venezuela
 
-[![CI Tests](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml)
-[![Dashboard](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml)
+ICIV es un proyecto de analitica aplicada para leer el clima de inversion de
+Venezuela sin depender de fuentes originadas en Venezuela. Separa tres piezas
+con funciones distintas:
 
-**🌐 [Ver Dashboard en Vivo →](https://felipegomeze2.github.io/ICIV/)**
-
-> **Tesis de Posgrado** · Especialización en Big Data e Inteligencia de Negocios  
-> **Autor:** Felipe Gómez Espinal  
-> **Institución:** EAFIT  
-> **Período del modelo:** 2000–2026 (27 años)  
-> **Última actualización:** 21 de mayo de 2026
-
----
-
-## ¿Qué es el ICIV?
-
-El **ICIV** (Indicador de Clima de Inversión Venezuela) es el único indicador mensual de clima de inversión para Venezuela construido íntegramente con **datos satelitales e internacionales auditables**, sin ninguna fuente del gobierno venezolano, con 25 años de historia.
-
-| Característica | Valor |
-|---|---|
-| Variables | 41 en 6 dimensiones |
-| Método de ponderación | AHP — Saaty (1980), CR = 0.0081 |
-| Validación externa | Pearson r = 0.46 vs. 9 índices independientes |
-| Sensibilidad | SI = 0.0408 (Robusto, umbral < 0.15) |
-| Score 2024 | **33.8 / 100** · Riesgo Moderado-Alto (78.4% cobertura) |
-| Score 2026 | **34.3 / 100** · Provisional (35.1% cobertura) |
-
----
-
-## Módulos
-
-### 1 · ICIV Anual (índice principal)
-- 41 variables internacionales en 6 dimensiones (D1 Macro, D2 Energía, D3 Institucional, D4 Comercial, D5 Capital Humano, D6 Percepción)
-- Scores 2000–2026, rango histórico 26.2–71.0 (pico 2012, mínimo 2020)
-- Pesos AHP con consistencia validada (CR = 0.0081)
-
-### 2 · ICIV Pulse Mensual (co-indicador)
-- 12 variables de alta frecuencia internacionales (WTI, Brent, Fed, USD, VIX, UST10Y, petróleo VEN, OFAC, migrantes UNHCR, Guardian)
-- 197 meses de historia (2010-01 a 2026-05), rango 31.2–91.4
-- Ninguna fuente del gobierno venezolano
-
-### 3 · SATV — Sistema de Alertas Tempranas Venezuela
-- Semáforo por dimensión (Normal / Precaución / Crítico)
-- Detección de tendencias (deterioro / estabilización / recuperación)
-- 6 alertas compuestas nombradas (Colapso Energético, Contagio Sistémico, etc.)
-
----
-
-## Fuentes (todas internacionales, cero venezolanas)
-
-| Fuente | Variables | Cobertura |
+| Pieza | Frecuencia | Funcion |
 |---|---|---|
-| World Bank WDI | PIB, inflación, IED, exportaciones, tipo cambio… | 25+ años |
-| World Bank WGI | Gobernanza (6 indicadores → promedio) | 24 años |
-| IMF WEO | Inflación, desempleo, cuenta corriente | 27 años |
-| EIA | Producción petróleo/gas, electricidad | 25+ años |
-| FRED | WTI, Fed funds, VIX, USD Index, UST10Y | 27 años |
-| CPI (TI) | Índice de percepción de corrupción | 27 años |
-| IEF (Heritage) | Libertad económica | 20 años |
-| HDI (UNDP) | Índice de desarrollo humano | 15 años |
-| Freedom House | Democracia y libertades civiles | 25 años |
-| V-Dem | Índice de democracia liberal | 26 años |
-| WJP Rule of Law | Estado de derecho | Disponible |
-| Fund for Peace FSI | Fragilidad estatal | 19 años |
-| RSF | Libertad de prensa | 13 años |
-| UNHCR | Migrantes venezolanos | 26 años |
-| The Guardian API | Cobertura mediática | 27 años |
-| Li et al. VIIRS | Luminosidad nocturna (satélite) | 25 años |
+| ICIV anual | 2000-2026 | Indice estructural defendible en seis dimensiones |
+| ICIV Pulse | mensual desde 2010 | Monitor de señales de alta frecuencia entre publicaciones anuales |
+| Laboratorio | interactivo | Simulador de sensibilidad del ICIV anual |
 
----
+El entregable visual es [iciv_dashboard.html](./iciv_dashboard.html). La pagina
+publica se actualiza con GitHub Actions los lunes cuando las fuentes mensuales
+core pasan el control de vigencia.
 
-## Estructura del Repositorio
+## Criterio de datos
 
-```
+- Entran observaciones trazables a fuentes internacionales aprobadas.
+- No entran datos del BCV, INE, PDVSA ni otras fuentes originadas en Venezuela.
+- No se crean series sustitutas cuando una fuente no responde o no ha publicado.
+- La cobertura se conserva como parte del resultado: un score con menor cobertura
+  no debe presentarse con la misma fuerza que un score bien cubierto.
+
+## Diseno actual
+
+El score anual usa 26 variables core. La reduccion evita variables con cobertura
+debil, variables declaradas sin historia verificable y redundancia institucional.
+La IED se excluye del score y se conserva como outcome economico externo para el
+bloque exploratorio de validacion.
+
+El Pulse usa 11 variables mensuales observadas de FRED, EIA International,
+Guardian y GDELT. El componente SATV se alimenta solo de Pulse para que sus
+alertas tengan una frecuencia coherente.
+
+La prediccion visible es una sola trayectoria SARIMA de seis meses sobre Pulse,
+con bandas de incertidumbre. Los escenarios politicos optimista, base y
+pesimista no forman parte de la vista publica principal.
+
+## Documentacion canonica
+
+- [docs/MODEL_CARD.md](./docs/MODEL_CARD.md): ficha metodologica, alcance y limites.
+- [docs/FUENTES_Y_VARIABLES.md](./docs/FUENTES_Y_VARIABLES.md): variables incluidas,
+  variables apartadas, fuentes y politica de cobertura.
+- [docs/GUIA_DECISIONES_ICIV.md](./docs/GUIA_DECISIONES_ICIV.md): plan de mejora y
+  criterios para tomar decisiones antes de defensa o publicacion.
+- [iciv/data/sources/PROVENANCE.md](./iciv/data/sources/PROVENANCE.md): trazabilidad
+  de artefactos de datos mantenida junto al pipeline.
+
+## Repositorio
+
+```text
 ICIV/
-├── README.md                        ← Este archivo
-├── iciv_dashboard.html              ← Dashboard interactivo (entregable)
-├── VARIABLES_MASTER.md              ← Catálogo canónico de 41 variables
-├── PROYECTO_ICIV_MASTER.md          ← Documento maestro del proyecto
-├── FUENTES_DE_DATOS.md              ← Documentación completa de fuentes
-├── CATALOGO_DE_DATOS.md             ← Catálogo técnico de variables
-├── CHECKLIST_DEFENSA.md             ← Lista de verificación para defensa
-├── RESPUESTAS_JURADO.md             ← Respuestas preparadas para el jurado
-├── PLAN_DE_ACCION_REVISION_JURADO_ICIV.md
-│
-└── iciv/                            ← Pipeline Python principal
-    ├── main.py                      ← Punto de entrada
-    ├── pyproject.toml               ← Dependencias del proyecto
-    ├── config/
-    │   └── settings.yaml            ← Configuración y pesos AHP
-    ├── data/
-    │   ├── raw/                     ← Datos fuente (CSV auditables)
-    │   └── processed/               ← Outputs generados (no versionados)
-    ├── scripts/                     ← 29 scripts fetch por fuente
-    ├── src/iciv/                    ← Paquete Python
-    │   ├── data/                    ← Catálogo, loaders, modelos
-    │   ├── processing/              ← Pipeline ETL (Cleaner, Imputer, Normalizer)
-    │   ├── index/                   ← Aggregator AHP, PCA, dimensiones
-    │   ├── satv/                    ← Sistema de Alertas Tempranas
-    │   ├── analytics/               ← Correlación, indicadores líderes
-    │   ├── scenarios/               ← Escenarios 2027–2030
-    │   └── ml/                      ← Forecast SARIMA + Nowcast OLS
-    └── tests/                       ← Suite de tests
+|-- README.md
+|-- docs/
+|-- iciv_dashboard.html
+|-- index.html
+|-- .github/workflows/
+`-- iciv/
+    |-- main.py
+    |-- scripts/
+    |-- src/iciv/
+    |-- tests/
+    `-- data/
 ```
 
----
-
-## Ejecución Rápida
+## Ejecucion local
 
 ```bash
-# Instalar dependencias
 cd iciv
 pip install -e ".[dev]"
-
-# Ejecutar pipeline completo (descarga + procesa + dashboard)
-python main.py
-
-# Solo procesar (sin re-descargar, sin abrir browser)
 python main.py --no-fetch --no-open
 ```
 
-El dashboard se genera en `iciv_dashboard.html` en la raíz del repositorio.
+`main.py` regenera el dashboard y los artefactos procesados. El control semanal
+de fuentes Pulse puede ejecutarse aparte:
 
----
-
-## Scores ICIV (mayo 2026)
-
-| Año | Score | Cobertura | Tier |
-|-----|-------|-----------|------|
-| 2024 | **33.8** | 78.4% | Útil |
-| 2025 | **30.8** | 51.9% | Parcial |
-| 2026 | **34.3** | 35.1% | Provisional |
-
-Escala ICIV: 0 = Riesgo Extremo · 100 = Clima Óptimo
-
----
-
-## Limitaciones Declaradas
-
-1. **Lag estructural** de publicación: WGI 2025 → sep-2026; HDI 2024 → sep-2026
-2. **RSF escala discontinua**: empalme metodológico 2022
-3. **Freedom House 2000–2002**: derivados de PR/CL con fórmula oficial
-4. **OFAC sanciones**: solo snapshot actual, sin histórico verificable
-5. **Google Trends**: HTTP 429 frecuente, cobertura 22%
-6. **Validación Granger ICIV→IED**: parcialmente circular (IED es componente del ICIV)
-7. **AHP**: basado en juicio del investigador, sin panel de expertos externos
-8. **Opacidad estadística venezolana**: cobertura limitada incluso con fuentes internacionales
-9. **Nowcast OLS**: R²_LOO = −5.18 — insuficiente data histórica para generalizar
-
----
-
-## Cita Sugerida
-
-```
-Gómez Espinal, F. (2026). ICIV: Indicador de Clima de Inversión Venezuela
-2000–2026. Tesis de posgrado, Especialización Big Data e Inteligencia de
-Negocios, EAFIT. Pipeline disponible en: https://github.com/Felipegomeze2/ICIV
+```bash
+python scripts/check_pulse_inputs.py
 ```
 
----
+## Modulos que importan en defensa
 
-*Datos 100% internacionales · Sin fuentes del gobierno venezolano · Cero datos artificiales*
+1. El ICIV anual responde la pregunta estructural: como cambia el clima de
+   inversion cuando se combinan macro, energia, institucionalidad, apertura,
+   capital humano y percepcion internacional.
+2. Pulse responde la pregunta operativa: que senales mensuales disponibles se
+   estan moviendo antes de que lleguen las fuentes anuales.
+3. SATV no es un segundo indice: traduce el Pulse en alertas de cobertura,
+   nivel y tendencia reciente.
+4. El mapa satelital no es decoracion: muestra la evidencia subnacional de
+   actividad nocturna que complementa la dimension energetica y la historia.
+
+## Nota de interpretacion
+
+ICIV es un indicador compuesto para analisis y comparacion temporal. No sustituye
+due diligence sectorial, analisis legal de sanciones ni una decision financiera
+particular.

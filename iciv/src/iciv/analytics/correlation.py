@@ -4,13 +4,13 @@ Análisis de Correlación y Causalidad ICIV → IED — Venezuela (2000–2026).
 Metodología:
   1. Cross-correlación de Pearson (rezagos 0–4 años): mide la asociación
      lineal entre ICIV_{t-k} e IED_{t} para cada rezago k.
-     Hipótesis: el ICIV precede (Granger-causa) a los flujos de IED.
+     Pregunta exploratoria: si el ICIV antecede estadísticamente los flujos de IED.
 
   2. Regresión OLS:
        IED_t = β₀ + β₁·ICIV_{t-1} + ε              (modelo con 1 rezago)
        IED_t = β₀ + β₁·ICIV_{t-1} + β₂·ICIV_{t-2} + ε  (2 rezagos)
-     El coeficiente β₁ > 0 con p < 0.05 confirma que una mejora del
-     ICIV predice mayor atracción de IED el año siguiente.
+     El coeficiente β₁ resume la asociación estimada entre ICIV rezagado e IED;
+     por sí solo no prueba causalidad económica.
 
   3. Test de Causalidad de Granger (Granger, 1969):
      H₀: el ICIV no Granger-causa la IED.

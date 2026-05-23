@@ -66,6 +66,7 @@ class Paths:
     # Pulse Mensual — fuentes high-frequency
     raw_fred_monthly:     Path = _PROJECT_ROOT / "data" / "raw" / "fred_monthly.csv"
     raw_guardian_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "guardian_monthly.csv"
+    raw_gdelt_monthly:    Path = _PROJECT_ROOT / "data" / "raw" / "gdelt_monthly.csv"
 
     # Config y scripts
     config: Path = _PROJECT_ROOT / "config"

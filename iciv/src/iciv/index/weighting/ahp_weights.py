@@ -86,83 +86,67 @@ _DEFAULT_DIMENSION_MATRIX = np.array([
 
 # ── Matrices AHP para variables dentro de cada dimensión ─────────────────────
 
+def _consistent_ratio_matrix(weights: list[float]) -> np.ndarray:
+    """Build a consistent pairwise matrix from the core weights."""
+    arr = np.array(weights, dtype=float)
+    return arr[:, None] / arr[None, :]
+
+
 _D1_VARIABLE_LABELS = [
     "inflacion_deflactor_pib_pct",
     "pib_crecimiento_real_pct",
     "reservas_internacionales_usd",
     "tipo_cambio_oficial_lcu_usd",
+    "wti_precio_usd",
+    "tasa_fed_funds_pct",
 ]
-# Pesos objetivo: 35%, 30%, 20%, 15%
-_D1_VARIABLE_MATRIX = np.array([
-    # infl  pib   res   tipo
-    [ 1.0,  1.0,  2.0,  3.0],  # inflación (35%)
-    [ 1.0,  1.0,  2.0,  2.0],  # PIB crecimiento (30%)
-    [ 1/2,  1/2,  1.0,  1.0],  # reservas (20%)
-    [ 1/3,  1/2,  1.0,  1.0],  # tipo de cambio (15%)
-], dtype=float)
+# Pesos core: 28%, 22%, 18%, 12%, 12%, 8%
+_D1_VARIABLE_MATRIX = _consistent_ratio_matrix([0.28, 0.22, 0.18, 0.12, 0.12, 0.08])
 
 _D2_VARIABLE_LABELS = [
     "petroleo_crudo_produccion_tbpd",
     "gas_natural_produccion_bcf",
     "electricidad_generacion_bkwh",
+    "luminosidad_nocturna_idx",
 ]
-# Pesos objetivo: 50%, 30%, 20%
-_D2_VARIABLE_MATRIX = np.array([
-    # petr  gas   elec
-    [ 1.0,  2.0,  3.0],  # petróleo (50%)
-    [ 1/2,  1.0,  2.0],  # gas (30%)
-    [ 1/3,  1/2,  1.0],  # electricidad (20%)
-], dtype=float)
+# Pesos core: 45%, 25%, 15%, 15%
+_D2_VARIABLE_MATRIX = _consistent_ratio_matrix([0.45, 0.25, 0.15, 0.15])
 
 _D3_VARIABLE_LABELS = [
     "cpi_score",
     "wgi_promedio_sc",
-    "ief_overall_score",
+    "freedom_house_score",
+    "wjp_rule_of_law",
+    "pts_terror_politico",
 ]
-# Pesos objetivo: 35%, 35%, 30%
-_D3_VARIABLE_MATRIX = np.array([
-    # cpi   wgi   ief
-    [ 1.0,  1.0,  1.0],  # CPI (35%)
-    [ 1.0,  1.0,  1.0],  # WGI (35%)
-    [ 1.0,  1.0,  1.0],  # IEF (30%)
-], dtype=float)
+# Pesos core: 24%, 24%, 18%, 18%, 16%
+_D3_VARIABLE_MATRIX = _consistent_ratio_matrix([0.24, 0.24, 0.18, 0.18, 0.16])
 
 _D4_VARIABLE_LABELS = [
-    "ied_neta_usd",
     "exportaciones_pct_pib",
     "desempleo_pct",
+    "migrantes_vzla_millones",
+    "lsci_conectividad_maritima",
 ]
-# Pesos objetivo: 40%, 35%, 25%
-_D4_VARIABLE_MATRIX = np.array([
-    # ied   exp   desemp
-    [ 1.0,  1.0,  2.0],  # IED (40%)
-    [ 1.0,  1.0,  1.0],  # exportaciones (35%)
-    [ 1/2,  1.0,  1.0],  # desempleo (25%)
-], dtype=float)
+# Pesos core: 34%, 24%, 24%, 18%
+_D4_VARIABLE_MATRIX = _consistent_ratio_matrix([0.34, 0.24, 0.24, 0.18])
 
 _D5_VARIABLE_LABELS = [
     "hdi",
-    "tasa_alfabetizacion_adulta_pct",
+    "esperanza_vida_anos",
+    "mortalidad_infantil_x1000",
     "acceso_electricidad_pct",
+    "ilo_empleo_informal_pct",
 ]
-# Pesos objetivo: 40%, 30%, 30%
-_D5_VARIABLE_MATRIX = np.array([
-    # hdi   alfa  elec
-    [ 1.0,  1.0,  1.0],  # HDI (40%)
-    [ 1.0,  1.0,  1.0],  # alfabetización (30%)
-    [ 1.0,  1.0,  1.0],  # electricidad (30%)
-], dtype=float)
+# Pesos core: 28%, 18%, 18%, 18%, 18%
+_D5_VARIABLE_MATRIX = _consistent_ratio_matrix([0.28, 0.18, 0.18, 0.18, 0.18])
 
 _D6_VARIABLE_LABELS = [
     "guardian_tono_titulares",
     "guardian_articulos_venezuela",
 ]
-# Pesos objetivo: 60%, 40%
-_D6_VARIABLE_MATRIX = np.array([
-    # tono  vol
-    [ 1.0,  2.0],  # tono (60%)
-    [ 1/2,  1.0],  # volumen (40%)
-], dtype=float)
+# Pesos core: 65%, 35%
+_D6_VARIABLE_MATRIX = _consistent_ratio_matrix([0.65, 0.35])
 
 
 # ─────────────────────────────────────────────────────────────────────────────

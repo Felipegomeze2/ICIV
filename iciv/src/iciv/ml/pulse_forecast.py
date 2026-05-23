@@ -71,8 +71,6 @@ class PulseForecaster:
         )
         df = df.sort_values("fecha")
         ts = df.set_index("fecha")["pulse_score"].asfreq("MS")
-        # Imputar gaps internos pequeños (no extrapolar)
-        ts = ts.interpolate(method="linear", limit=2, limit_area="inside")
         if ts.dropna().empty or len(ts.dropna()) < 24:
             logger.warning("  SARIMA: serie demasiado corta (%d obs)", len(ts.dropna()))
             return self
@@ -304,4 +302,32 @@ class PulseForecaster:
             "validacion":   "Walk-forward cross-validation con últimos 12 meses",
         }
 
+        return result
+
+    def compute_forecast(self) -> dict:
+        """Return only the public monthly Pulse forecast payload."""
+        self.fit_sarima()
+        result: dict = {"sarima": {}, "metodologia": {}}
+
+        if self.sarima_forecast is not None:
+            fc = self.sarima_forecast
+            result["sarima"] = {
+                "fecha": [d.strftime("%Y-%m") for d in fc["fecha"]],
+                "mean": fc["mean"].round(2).tolist(),
+                "lo_80": fc["lo_80"].round(2).tolist(),
+                "hi_80": fc["hi_80"].round(2).tolist(),
+                "lo_95": fc["lo_95"].round(2).tolist(),
+                "hi_95": fc["hi_95"].round(2).tolist(),
+                "order": (
+                    f"SARIMA{self.sarima_best_order[0]}x{self.sarima_best_order[1]}"
+                    if self.sarima_model else ""
+                ),
+                "aic": round(self.sarima_aic, 2) if self.sarima_model else None,
+                "horizonte_meses": FORECAST_HORIZON,
+            }
+
+        result["metodologia"] = {
+            "sarima_ref": "Hyndman & Athanasopoulos (2018) Forecasting: Principles and Practice",
+            "validacion": "Forecast baseline sobre Pulse mensual observado",
+        }
         return result

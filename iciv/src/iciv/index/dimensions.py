@@ -4,13 +4,13 @@ Definición de las 6 dimensiones del ICIV y sus variables.
 Este módulo es la fuente de verdad sobre la arquitectura del índice:
 qué variables componen cada dimensión y qué peso tiene cada una.
 
-Versión ampliada (mayo 2026): 40 variables en 6 dimensiones.
+Version core (mayo 2026): 26 variables en 6 dimensiones.
   D1 Macro:         6 vars  (sum=1.00)
   D2 Energía:       4 vars  (sum=1.00)
-  D3 Institucional: 13 vars (sum=1.00)  ← ampliado con V-Dem, WJP, RSF, BTI, etc.
-  D4 Comercial:     7 vars  (sum=1.00)  ← ampliado con LSCI, vuelos, remesas
-  D5 Capital Humano: 8 vars (sum=1.00)  ← ampliado con salud, GHI, FAO, ILO
-  D6 Percepción:    3 vars  (sum=1.00)  ← sin cambios
+  D3 Institucional: 5 vars  (sum=1.00)
+  D4 Comercial:     4 vars  (sum=1.00)
+  D5 Capital Humano:5 vars  (sum=1.00)
+  D6 Percepción:    2 vars  (sum=1.00)
 
 Nota sobre variables con cobertura parcial (NaN para muchos años):
   El aggregator re-normaliza pesos automáticamente cuando una variable
@@ -69,7 +69,7 @@ class Dimension:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURACIÓN DE LAS 6 DIMENSIONES — VERSIÓN AMPLIADA (40 variables)
+# CONFIGURACION DE LAS 6 DIMENSIONES - VERSION CORE (26 variables)
 # Los iciv_weight deben sumar 1.0: 0.25+0.20+0.20+0.15+0.10+0.10 = 1.00
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -117,35 +117,19 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         name="Entorno Institucional y Legal",
         iciv_weight=0.20,
         description=(
-            "Seguridad jurídica, corrupción, gobernanza, Estado de derecho y "
-            "riesgo político. Ampliada con V-Dem (democracia liberal), WJP (rule "
-            "of law), Fragile States Index, RSF (prensa), BTI (gobernanza), Basel "
-            "AML (cumplimiento financiero) y UCDP (conflicto armado)."
+            "Seguridad juridica, corrupcion, gobernanza, Estado de derecho y "
+            "riesgo politico. El core conserva indicadores internacionales con "
+            "cobertura suficiente y funciones no redundantes."
         ),
         variables=[
             # Fuentes gold-standard de corrupción y gobernanza
-            VariableWeight("cpi_score",            0.14),
-            VariableWeight("wgi_promedio_sc",       0.14),
-            # Libertad económica y democracia
-            VariableWeight("ief_overall_score",     0.11),
-            VariableWeight("freedom_house_score",   0.10),
-            VariableWeight("vdem_libdem_index",     0.10),
-            # Estado de derecho
-            VariableWeight("wjp_rule_of_law",       0.09),
-            # Fragilidad y estabilidad del Estado
-            VariableWeight("fragile_states_index",  0.08),
-            # Terror político y represión
-            VariableWeight("pts_terror_politico",   0.07),
-            # Sanciones internacionales
-            VariableWeight("ofac_sanciones_count",  0.05),
-            # Libertad de prensa
-            VariableWeight("rsf_press_freedom",     0.04),
-            # Gobernanza transformacional
-            VariableWeight("bti_governance_index",  0.04),
-            # Riesgo financiero / lavado de activos
-            VariableWeight("basel_aml_index",       0.03),
-            # Conflicto armado (bajo peso: Venezuela no tiene conflicto formal)
-            VariableWeight("ucdp_conflicto_idx",    0.01),
+            VariableWeight("cpi_score",             0.24),
+            VariableWeight("wgi_promedio_sc",       0.24),
+            # Libertades y estado de derecho
+            VariableWeight("freedom_house_score",   0.18),
+            VariableWeight("wjp_rule_of_law",       0.18),
+            # Represion politica con cobertura historica util
+            VariableWeight("pts_terror_politico",   0.16),
         ],
     ),
 
@@ -154,18 +138,15 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         name="Apertura Comercial y Financiera",
         iciv_weight=0.15,
         description=(
-            "Capacidad operativa en Venezuela: flujos de IED, comercio exterior, "
-            "mercado laboral y conectividad logística. Ampliada con conectividad "
-            "marítima (LSCI), remesas recibidas y vuelos internacionales."
+            "Capacidad operativa en Venezuela: comercio exterior, mercado laboral, "
+            "migracion y conectividad logistica. La IED se reserva como outcome "
+            "externo para validar el indice, no como componente del score."
         ),
         variables=[
-            VariableWeight("ied_neta_usd",               0.28),
-            VariableWeight("exportaciones_pct_pib",      0.22),
-            VariableWeight("desempleo_pct",              0.16),
-            VariableWeight("migrantes_vzla_millones",    0.14),
-            VariableWeight("lsci_conectividad_maritima", 0.10),
-            VariableWeight("remesas_recibidas_usd",      0.06),
-            VariableWeight("vuelos_aerolineas_int_count",0.04),
+            VariableWeight("exportaciones_pct_pib",      0.34),
+            VariableWeight("desempleo_pct",              0.24),
+            VariableWeight("migrantes_vzla_millones",    0.24),
+            VariableWeight("lsci_conectividad_maritima", 0.18),
         ],
     ),
 
@@ -174,19 +155,16 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         name="Capital Humano e Infraestructura Social",
         iciv_weight=0.10,
         description=(
-            "Disponibilidad de fuerza laboral calificada, salud pública y "
-            "condiciones de vida. Ampliada con esperanza de vida, mortalidad "
-            "infantil, seguridad alimentaria (GHI, FAO) y empleo informal (ILO)."
+            "Disponibilidad de fuerza laboral, salud publica, infraestructura "
+            "social y vulnerabilidad laboral con series internacionales de "
+            "cobertura suficiente."
         ),
         variables=[
-            VariableWeight("hdi",                             0.24),
-            VariableWeight("esperanza_vida_anos",             0.16),
-            VariableWeight("mortalidad_infantil_x1000",       0.14),
-            VariableWeight("tasa_alfabetizacion_adulta_pct",  0.14),
-            VariableWeight("acceso_electricidad_pct",         0.14),
-            VariableWeight("ghi_score",                       0.08),
-            VariableWeight("fao_calorias_per_capita",         0.06),
-            VariableWeight("ilo_empleo_informal_pct",         0.04),
+            VariableWeight("hdi",                             0.28),
+            VariableWeight("esperanza_vida_anos",             0.18),
+            VariableWeight("mortalidad_infantil_x1000",       0.18),
+            VariableWeight("acceso_electricidad_pct",         0.18),
+            VariableWeight("ilo_empleo_informal_pct",         0.18),
         ],
     ),
 
@@ -195,14 +173,13 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         name="Percepción Internacional",
         iciv_weight=0.10,
         description=(
-            "Imagen de Venezuela en medios globales y búsquedas de inversión. "
-            "Ampliada con Google Trends como proxy nowcasting de interés global "
-            "en Venezuela como destino económico (Choi & Varian, 2012)."
+            "Imagen de Venezuela en cobertura internacional. El core anual "
+            "usa Guardian por su serie reproducible; otras senales de noticias "
+            "se reservan para el Pulse y el laboratorio."
         ),
         variables=[
-            VariableWeight("guardian_tono_titulares",      0.45),
-            VariableWeight("guardian_articulos_venezuela", 0.25),
-            VariableWeight("google_trends_vzla",           0.30),
+            VariableWeight("guardian_tono_titulares",      0.65),
+            VariableWeight("guardian_articulos_venezuela", 0.35),
         ],
     ),
 }

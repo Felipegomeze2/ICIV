@@ -44,7 +44,7 @@ jobs:
           pip install statsmodels scikit-learn pydantic matplotlib
 
       # ── Fetch de datos frescos (solo si fetch_data=true o si es lunes ──────
-      - name: Fetch datos de alta frecuencia (FRED, EIA, Guardian, IMF)
+      - name: Fetch datos de alta frecuencia (FRED, EIA, Guardian, GDELT, IMF)
         if: ${{ github.event.inputs.fetch_data == 'true' || github.event_name == 'schedule' }}
         working-directory: iciv
         env:
@@ -61,11 +61,18 @@ jobs:
           # Guardian — requiere GUARDIAN_API_KEY en secrets
           python scripts/fetch_guardian.py          || echo "WARN: fetch_guardian falló (continuando)"
           python scripts/fetch_guardian_monthly.py  || echo "WARN: fetch_guardian_monthly falló (continuando)"
+          # GDELT DOC — público, puede rate-limit; el quality gate lo marca como opcional
+          python scripts/fetch_gdelt_monthly.py     || echo "WARN: fetch_gdelt_monthly falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"
           # UNHCR — datos públicos
           python scripts/fetch_unhcr.py        || echo "WARN: fetch_unhcr falló (continuando)"
           echo "Fetch completado."
+
+      - name: Verificar vigencia de fuentes Pulse
+        working-directory: iciv
+        run: |
+          python scripts/check_pulse_inputs.py
 
       # ── Ejecutar pipeline (genera nuevo iciv_dashboard.html) ─────────────
       - name: Ejecutar pipeline ICIV
