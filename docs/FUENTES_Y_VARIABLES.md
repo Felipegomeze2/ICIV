@@ -59,7 +59,7 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | `gdelt_cobertura_vol` | GDELT DOC | 7% | incluir si API entrega datos |
 | `gdelt_tono_noticias` | GDELT DOC | 10% | incluir si API entrega datos |
 
-Pulse no incluye snapshots OFAC ni acumulados migratorios como si fueran
+Pulse no incluye snapshots sanciones externas ni acumulados migratorios como si fueran
 series mensuales de alta frecuencia cuando el pipeline no dispone de una
 historia mensual real y reproducible.
 
@@ -77,7 +77,6 @@ historia mensual real y reproducible.
 | `bti_governance_index` | apartada | periodicidad y redundancia |
 | `ucdp_conflicto_idx` | apartada | aporta poco a clima de inversion Venezuela en core actual |
 | `basel_aml_index` | apartada | historia automatizada no asegurada |
-| `ofac_sanciones_count` | apartada | snapshot sin historia mensual/anual comparable |
 | `tasa_alfabetizacion_adulta_pct` | apartada | actualizacion irregular |
 | `ghi_score` | apartada | cobertura y periodicidad mas debiles que salud/HDI |
 | `fao_calorias_per_capita` | apartada | solape social y menor foco inversion |

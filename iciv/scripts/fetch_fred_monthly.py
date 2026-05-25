@@ -46,7 +46,7 @@ _CFG = yaml.safe_load(_CFG_PATH.read_text(encoding="utf-8"))
 
 # Extendido a 2010: FRED series (WTI, Brent, Fed Funds, VIX, UST10Y) disponibles desde 1986-2006.
 # USD Index (DTWEXBGS broad) disponible desde 2006-01.
-# Pre-2020: cobertura Pulse será menor (sin UNHCR/OFAC) pero pesos se redistribuyen.
+# Pre-2020: cobertura Pulse será menor pero pesos se redistribuyen.
 PULSE_START_YEAR = 2010
 END_YEAR = _CFG["serie"]["end_year"]
 

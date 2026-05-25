@@ -42,6 +42,6 @@ jobs:
           import sys; sys.path.insert(0, 'src')
           from iciv.index.dimensions import DIMENSIONS
           from iciv.index.aggregator import ICIVAggregator
-          from iciv.satv.engine import SATVEngine
+          from iciv.satv.pulse_engine import PulseSATVEngine
           print(f'OK — {len(DIMENSIONS)} dimensiones cargadas')
           "

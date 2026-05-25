@@ -1,5 +1,4 @@
-"""SATV engines for annual diagnostics and monthly Pulse alerts."""
-from .engine import SATVEngine
+"""SATV engine for monthly Pulse alerts."""
 from .pulse_engine import PulseSATVEngine
 
-__all__ = ["SATVEngine", "PulseSATVEngine"]
+__all__ = ["PulseSATVEngine"]

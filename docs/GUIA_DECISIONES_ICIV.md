@@ -45,7 +45,7 @@ de frecuencias.
 |---|---|
 | Reducir el core anual a variables clave | baja redundancia y facilita auditoria |
 | Sacar IED del score | permite usarla como resultado externo |
-| Apartar snapshots OFAC del Pulse | evita fingir alta frecuencia sin historia |
+| Apartar snapshots sanciones externas del Pulse | evita fingir alta frecuencia sin historia |
 | Agregar GDELT como senal mensual opcional | aumenta contraste noticioso sin fabricar datos |
 | No forward-fill mensual EIA | la cobertura informa el rezago real |
 | Mostrar una prediccion SARIMA Pulse | responde a serie mensual observada |
@@ -85,7 +85,7 @@ lista larga con huecos, proxies debiles o pesos redistribuidos casi siempre.
 ### Recortar o dejar secundario
 
 - Escenarios optimista/base/pesimista publicados como si fueran salida central.
-- Monte Carlo si no tiene calibracion y validacion suficientemente defendibles.
+- simulacion probabilistica si no tiene calibracion y validacion suficientemente defendibles.
 - Nowcast anual OLS visible mientras su generalizacion fuera de muestra sea debil.
 - Tablas de validacion llamadas "externas" cuando comparten inputs con el indice.
 - Texto de marketing con afirmaciones absolutas.

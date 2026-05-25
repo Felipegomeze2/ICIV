@@ -4,7 +4,7 @@ Investment Entry Radar Sectorial (IERS)
 Transforma el ICIV macro en una herramienta de decisión empresarial por sector.
 Para cada sector calcula:
   - Score base: promedio ponderado de dimension scores según sensibilidad sectorial
-  - Ajustadores: penalización sancionatoria, penalización CAPEX, bonus demanda defensiva
+  - Ajustadores: penalizacion regulatoria, penalizacion CAPEX, bonus demanda defensiva
   - Recomendación categórica (NO ENTRAR → PRIORITARIA)
   - Riesgo principal dominante
   - Racional ejecutivo (determinístico, basado en plantillas)
@@ -124,14 +124,14 @@ class SectorRadar:
         self,
         df_scores: pd.DataFrame,
         config: dict | None = None,
-        sanciones_count: int = 0,
+        riesgo_regulatorio_count: int = 0,
     ) -> None:
         """
         Parameters
         ----------
         df_scores : DataFrame con columnas [año, D1_macro, …, D6_percepcion, iciv_score]
         config    : dict cargado de sector_weights.json (se carga automáticamente si None)
-        sanciones_count : número de entidades venezolanas en lista SDN-OFAC actual
+        riesgo_regulatorio_count : parametro legado; se mantiene en cero en la version vigente
         """
         if config is None:
             config = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
@@ -140,7 +140,7 @@ class SectorRadar:
         self.params = config["parametros_ajustadores"]
         self.categorias = config["categorias"]
         self.riesgo_dim_map = config["mapa_riesgo_dimension"]
-        self.sanciones_count = sanciones_count
+        self.riesgo_regulatorio_count = riesgo_regulatorio_count
 
         # Asegurar que el DataFrame tenga todas las columnas necesarias
         df = df_scores.copy()
@@ -270,7 +270,7 @@ class SectorRadar:
             "metodologia": (
                 "Investment Entry Radar Sectorial v1.0. "
                 "Score base = Σ DimScore(d) × PesoSectorial(s,d). "
-                "Ajustadores: penalización sancionatoria (OFAC), penalización CAPEX "
+                "Ajustadores: penalizacion regulatoria, penalizacion CAPEX "
                 "(escala con ICIV < 50), bonus de demanda defensiva. "
                 f"ICIV actual: {self.iciv_actual:.1f}/100. "
                 "Umbrales: ≤35 No entrar · 36-50 Esperar · 51-65 Piloto · "
@@ -318,7 +318,7 @@ class SectorRadar:
 
     def _sanction_penalty(self, sector_cfg: dict, d3_score: float) -> float:
         """
-        Penalización por exposición OFAC.
+        Penalizacion por exposicion regulatoria e institucional.
         Se escala con la debilidad institucional (D3 bajo → mayor impacto).
         Máx cuando D3 = 0; mínimo cuando D3 ≥ 80.
         """
@@ -369,7 +369,7 @@ class SectorRadar:
         """
         Identifica el riesgo dominante combinando:
         1. Dimensión con menor contribución ponderada (score × peso)
-        2. Exposición sancionatoria del sector
+        2. Exposicion regulatoria del sector
         3. Candidatos de riesgo propios del sector
         """
         # Forzar riesgo sancionatorio si exposición alta y score bajo

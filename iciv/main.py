@@ -90,7 +90,6 @@ def fase_fetch(settings: Settings) -> None:
         ("WGI  -- Gobernanza (Banco Mundial)",    "scripts.fetch_wgi",           "fetch_wgi"),
         ("EIA  -- Energía (petróleo/gas/elec)",   "scripts.fetch_eia",           "fetch_eia"),
         ("EIA Monthly -- Petróleo nowcast VEN",   "scripts.fetch_eia_monthly",   "fetch_eia_monthly"),
-        ("OWID Extras -- D4/D5 (trade/desempleo)", "scripts.fetch_owid_extras",   "fetch_owid_extras"),
         ("FRED Monthly -- WTI/Brent/Fed/VIX...",   "scripts.fetch_fred_monthly",  "fetch_fred_monthly"),
         ("Guardian Monthly -- VADER mensual",      "scripts.fetch_guardian_monthly", "fetch_guardian_monthly"),
         ("GDELT Monthly -- tono/cobertura global", "scripts.fetch_gdelt_monthly", "fetch_gdelt_monthly"),
@@ -98,26 +97,14 @@ def fase_fetch(settings: Settings) -> None:
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
         ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "build_freedom_house"),
         ("UNHCR/R4V -- Migración venezolana",     "scripts.fetch_unhcr",         "build_unhcr"),
-        ("OFAC -- Sanciones US Treasury",         "scripts.fetch_ofac",          "build_ofac"),
-        ("Google Trends -- Percepción búsquedas", "scripts.fetch_gtrends",       "build_gtrends"),
         ("VIIRS/DMSP   -- Luminosidad nocturna",  "scripts.fetch_viirs",         "build_viirs"),
         ("UNCTAD LSCI -- Conectividad marítima",  "scripts.fetch_unctad",        "fetch_unctad"),
-        ("OpenSky     -- Conectividad aérea",      "scripts.fetch_opensky",       "fetch_opensky"),
         ("VIIRS NTL   -- Luminosidad por estado",  "scripts.fetch_viirs_states",  "build_viirs_states"),
         ("PTS -- Terror Político (Gibney et al.)", "scripts.fetch_pts",           "fetch_pts"),
         ("WHO GHO -- Salud (esperanza/mortalidad)","scripts.fetch_who",           "fetch_who"),
         # ── Fuentes ampliadas (mayo 2026) ─────────────────────────────────────
-        ("V-Dem  -- Democracia Liberal (OWID)",   "scripts.fetch_vdem",          "fetch_vdem"),
-        ("Fragile States Index -- Fund for Peace","scripts.fetch_fragile_states","fetch_fragile_states"),
         ("WJP -- Rule of Law Index",              "scripts.fetch_wjp",           "fetch_wjp"),
-        ("RSF -- Press Freedom Index",            "scripts.fetch_rsf",           "fetch_rsf"),
-        ("BTI -- Bertelsmann Governance Index",   "scripts.fetch_bti",           "fetch_bti"),
-        ("GHI -- Global Hunger Index",            "scripts.fetch_ghi",           "fetch_ghi"),
-        ("ACLED -- Violencia Política (2018+)",   "scripts.fetch_acled",         "fetch_acled"),
         ("ILOSTAT -- Empleo informal (ILO)",      "scripts.fetch_ilostat",       "fetch_ilostat"),
-        ("UCDP -- Conflicto armado (Uppsala)",    "scripts.fetch_ucdp",          "fetch_ucdp"),
-        ("FAO FAOSTAT -- Disponibilidad calórica","scripts.fetch_fao",           "fetch_fao"),
-        ("Basel AML -- Riesgo lavado activos",    "scripts.fetch_basel_aml",     "fetch_basel_aml"),
     ]
 
     for label, module_path, func_name in fetch_scripts:
@@ -134,7 +121,6 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_wgi":           settings.paths.raw_wgi,
                 "fetch_eia":           settings.paths.raw_eia,
                 "fetch_eia_monthly":   settings.paths.raw_eia_monthly,
-                "fetch_owid_extras":   settings.paths.raw_owid_extras,
                 "fetch_fred_monthly":  settings.paths.raw_fred_monthly,
                 "fetch_guardian_monthly": settings.paths.raw_guardian_monthly,
                 "fetch_gdelt_monthly": settings.paths.raw_gdelt_monthly,
@@ -142,26 +128,14 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_fred":          settings.paths.raw_fred,
                 "build_freedom_house": settings.paths.raw_freedom_house,
                 "build_unhcr":         settings.paths.raw_unhcr,
-                "build_ofac":          settings.paths.raw_ofac,
-                "build_gtrends":       settings.paths.raw_gtrends,
                 "build_viirs":         settings.paths.raw_viirs,
                 "fetch_unctad":        settings.paths.raw_unctad,
-                "fetch_opensky":       settings.paths.raw_opensky,
                 "build_viirs_states":  settings.paths.raw_viirs_states,
                 "fetch_pts":           settings.paths.raw_pts,
                 "fetch_who":           settings.paths.raw_who,
                 # Fuentes ampliadas
-                "fetch_vdem":          settings.paths.raw_vdem,
-                "fetch_fragile_states":settings.paths.raw_fragile,
                 "fetch_wjp":           settings.paths.raw_wjp,
-                "fetch_rsf":           settings.paths.raw_rsf,
-                "fetch_bti":           settings.paths.raw_bti,
-                "fetch_ghi":           settings.paths.raw_ghi,
-                "fetch_acled":         settings.paths.raw_acled,
                 "fetch_ilostat":       settings.paths.raw_ilostat,
-                "fetch_ucdp":          settings.paths.raw_ucdp,
-                "fetch_fao":           settings.paths.raw_fao,
-                "fetch_basel_aml":     settings.paths.raw_basel_aml,
             }
             out = output_map[func_name]
             if not df.empty:
@@ -173,7 +147,7 @@ def fase_fetch(settings: Settings) -> None:
         except Exception as exc:
             logger.warning("      FAIL Error: %s", exc)
 
-    logger.info("\n  [i] CPI / IEF / HDI se usan desde archivos existentes en data/raw/")
+    logger.info("\n  [i] CPI / HDI se usan desde archivos existentes en data/raw/")
     logger.info("      (requieren descarga manual -- ver docs/FUENTES_Y_VARIABLES.md)")
 
 
@@ -265,7 +239,73 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
     df_norm_out.to_csv(settings.paths.data_processed / "iciv_normalizado.csv",
                        index=False, encoding="utf-8-sig")
 
+
     return master, df_norm_out
+
+
+def fase_dataset_publico(
+    df_raw: pd.DataFrame,
+    df_norm: pd.DataFrame,
+    settings: Settings,
+) -> tuple[Path, Path]:
+    """Exporta el dataset publico del proyecto en formato ancho y largo."""
+    from iciv.index.dimensions import DIMENSIONS
+
+    out_dir = settings.paths.data_processed
+    core_vars = {v.column for dim in DIMENSIONS.values() for v in dim.variables}
+    pulse_vars = {
+        "wti_precio_usd", "brent_precio_usd", "tasa_fed_funds_pct",
+        "usd_index_broad", "vix_volatility", "ust_10y_yield_pct",
+        "petroleo_crudo_produccion_tbpd", "guardian_articulos_venezuela",
+        "guardian_tono_titulares", "gdelt_cobertura_vol", "gdelt_tono_noticias",
+    }
+
+    year_col_raw = df_raw.columns[0]
+    year_col_norm = df_norm.columns[0] if not df_norm.empty else year_col_raw
+    public_vars = [c for c in CATALOG if c in df_raw.columns]
+    wide = df_raw[[year_col_raw] + public_vars].copy()
+    wide = wide.rename(columns={year_col_raw: "year"})
+    wide_path = out_dir / "iciv_dataset_wide.csv"
+    wide.to_csv(wide_path, index=False, encoding="utf-8-sig")
+
+    rows: list[dict] = []
+    norm_lookup = df_norm.set_index(year_col_norm) if year_col_norm in df_norm.columns else pd.DataFrame()
+    for _, r in wide.iterrows():
+        year = int(r["year"])
+        for var in public_vars:
+            meta = CATALOG.get(var)
+            if meta is None:
+                continue
+            raw_val = r[var]
+            norm_val = None
+            if not norm_lookup.empty and var in norm_lookup.columns and year in norm_lookup.index:
+                nv = norm_lookup.loc[year, var]
+                norm_val = None if pd.isna(nv) else float(nv)
+            if var in core_vars:
+                role = "core_anual"
+            elif var == "ied_neta_usd":
+                role = "outcome_externo"
+            elif var in pulse_vars:
+                role = "pulse_mensual"
+            else:
+                role = "auxiliar"
+            rows.append({
+                "year": year,
+                "variable": var,
+                "valor_crudo": None if pd.isna(raw_val) else raw_val,
+                "valor_normalizado": norm_val,
+                "fuente": meta.source.value,
+                "dimension": meta.dimension.value,
+                "direccion": meta.direction.value,
+                "rol": role,
+                "descripcion": meta.description,
+                "nota": meta.notes,
+            })
+
+    long_path = out_dir / "iciv_dataset_largo.csv"
+    pd.DataFrame(rows).to_csv(long_path, index=False, encoding="utf-8-sig")
+    logger.info("  OK Dataset publico -> %s, %s", wide_path.name, long_path.name)
+    return wide_path, long_path
 
 
 # =============================================================================
@@ -427,61 +467,6 @@ def fase_correlacion(df_raw: pd.DataFrame, df_ahp: pd.DataFrame) -> dict:
         logger.info("  Granger (lag=1): p=%.4f · H₀ %s",
                     gr.get("p_val", 1), "RECHAZADA" if gr.get("reject_h0") else "no rechazada")
     return result
-
-
-# =============================================================================
-# FASE 3d -- ESCENARIOS (Proyecciones 2027–2030)
-# =============================================================================
-
-def fase_escenarios(df_ahp: pd.DataFrame) -> dict:
-    """Proyecta el ICIV bajo 3 escenarios para 2027–2030."""
-    from iciv.scenarios.engine import ScenarioEngine
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3d -- Escenarios · Proyección 2027–2030")
-    logger.info("-" * 60)
-    engine = ScenarioEngine(df_ahp)
-    sc = engine.compute_all()
-    for nombre, datos in sc["escenarios"].items():
-        vals = datos["valores"]
-        logger.info("  %-12s  2027: %.1f  →  2030: %.1f", nombre, vals[0], vals[-1])
-    return sc
-
-
-# =============================================================================
-# FASE 3e -- RED SANCIONES OFAC
-# =============================================================================
-
-def fase_ofac_network(settings: Settings) -> dict:
-    """
-    Construye el grafo de sanciones OFAC sobre Venezuela.
-    Nodos: entidades sancionadas (gobierno, PDVSA, banca, militares, intermediarios).
-    Aristas: relaciones documentadas (control jerárquico, propiedad, coordinación).
-    """
-    import json as _json
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3e -- Red de Sanciones OFAC")
-    logger.info("-" * 60)
-
-    network_path = settings.paths.data_raw / "ofac_network.json"
-    if not network_path.exists():
-        logger.warning("  WARN ofac_network.json no encontrado — red vacía")
-        return {"nodes": [], "links": [], "error": "Datos de red no disponibles. Ejecute scripts/fetch_ofac_network.py"}
-
-    try:
-        data = _json.loads(network_path.read_text(encoding="utf-8"))
-        n_nodes = len(data.get("nodes", []))
-        n_links = len(data.get("links", []))
-        logger.info("  Red: %d nodos · %d aristas", n_nodes, n_links)
-        cats = {}
-        for nd in data.get("nodes", []):
-            c = nd.get("categoria", "Otro")
-            cats[c] = cats.get(c, 0) + 1
-        for cat, cnt in sorted(cats.items(), key=lambda x: -x[1]):
-            logger.info("    %-30s  %d", cat, cnt)
-        return data
-    except Exception as exc:
-        logger.error("  ERROR leyendo ofac_network.json: %s", exc)
-        return {"nodes": [], "links": [], "error": str(exc)}
 
 
 def _generate_corr_charts_b64(corr: dict) -> tuple[str, str]:
@@ -692,70 +677,6 @@ def _build_corr_stats_html(corr: dict) -> tuple[str, str, str, str]:
     return formula_html, ols1_html, ols2_html, granger_adf_html
 
 
-def _build_sanciones_table_html(sanc: dict) -> str:
-    """Genera tabla HTML de entidades OFAC top por categoría (sin JavaScript)."""
-    nodes = sanc.get("nodes", [])
-    if not nodes:
-        return "<p style='color:#8b949e;text-align:center;padding:32px'>Sin datos OFAC disponibles.</p>"
-
-    CAT_COLORS = {
-        "Gobierno": "#e05c5c", "PDVSA": "#e67e22", "Banca": "#f1c40f",
-        "Militares": "#9b59b6", "Intermediarios": "#3498db", "Otro": "#8b949e",
-    }
-
-    # Agrupar por categoría
-    from collections import defaultdict
-    by_cat: dict = defaultdict(list)
-    for n in nodes:
-        by_cat[n.get("categoria", "Otro")].append(n)
-
-    cat_order = ["Gobierno", "PDVSA", "Banca", "Militares", "Intermediarios", "Otro"]
-    html_parts = []
-
-    for cat in cat_order:
-        items = by_cat.get(cat, [])
-        if not items:
-            continue
-        color = CAT_COLORS.get(cat, "#8b949e")
-        items_sorted = sorted(items, key=lambda n: n.get("año_sancion") or 9999)
-        html_parts.append(
-            f'<div style="margin-bottom:20px">'
-            f'<div style="font-size:.78rem;font-weight:600;color:{color};'
-            f'border-left:3px solid {color};padding-left:10px;margin-bottom:8px">'
-            f'{cat} <span style="font-size:.68rem;color:#8b949e;font-weight:400">({len(items)} entidades)</span></div>'
-            f'<table style="width:100%;font-size:.72rem;border-collapse:collapse">'
-            f'<thead><tr style="color:#8b949e;border-bottom:1px solid #21262d">'
-            f'<th style="text-align:left;padding:4px 8px">Entidad</th>'
-            f'<th style="text-align:center;padding:4px 8px;width:60px">Año</th>'
-            f'<th style="text-align:left;padding:4px 8px">Descripción</th>'
-            f'</tr></thead><tbody>'
-        )
-        for nd in items_sorted[:25]:
-            nombre = (nd.get("nombre") or nd.get("id", ""))[:55]
-            año = nd.get("año_sancion", "—")
-            desc = (nd.get("descripcion") or "")[:80]
-            html_parts.append(
-                f'<tr style="border-bottom:1px solid #21262d22">'
-                f'<td style="padding:5px 8px;color:#e6edf3">{nombre}</td>'
-                f'<td style="padding:5px 8px;text-align:center;color:{color}">{año}</td>'
-                f'<td style="padding:5px 8px;color:#8b949e">{desc}</td>'
-                f'</tr>'
-            )
-        html_parts.append("</tbody></table></div>")
-
-    total = len(nodes)
-    meta = sanc.get("metadata", {})
-    total_real = meta.get("total_venezuelan_entities", total)
-    gen_date = meta.get("generated_at", "")[:10]
-    html_parts.insert(0,
-        f'<div style="font-size:.72rem;color:#8b949e;margin-bottom:16px">'
-        f'Mostrando top {total} entidades de {total_real:,} venezolanas en la lista SDN de OFAC'
-        + (f' · Datos al {gen_date}' if gen_date else "")
-        + f'</div>'
-    )
-    return "\n".join(html_parts)
-
-
 def _load_map_data(settings: Settings) -> tuple[str, str]:
     """
     Carga el GeoJSON de estados venezolanos y los datos NTL por estado.
@@ -797,135 +718,39 @@ def _load_map_data(settings: Settings) -> tuple[str, str]:
     return geojson_str, viirs_json
 
 
-# =============================================================================
-# FASE 4 -- DASHBOARD HTML
-# =============================================================================
-
-# =============================================================================
-# FASE 3f — MONTE CARLO (Proyección Probabilística)
-# =============================================================================
-
-def fase_monte_carlo(
-    df_ahp: pd.DataFrame,
-    df_norm: pd.DataFrame,
-    ahp: "AHPWeights",
-) -> dict:
-    """Simulación Monte Carlo 10.000 trayectorias ICIV 2027–2030."""
-    from iciv.scenarios.engine import ScenarioEngine
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3f -- Monte Carlo · Proyección Probabilística 2027–2030")
-    logger.info("-" * 60)
-
-    # Extraer pesos AHP finales para las 3 variables estocásticas
-    ahp_weights: dict[str, float] = {}
-    if ahp.variable_results_:
-        try:
-            tbl = ahp.get_variable_weights_table()
-            for _, r in tbl.iterrows():
-                ahp_weights[str(r["variable"])] = float(r["peso_final"])
-        except Exception:
-            pass
-
-    engine = ScenarioEngine(df_ahp)
-    mc = engine.compute_monte_carlo(df_norm, ahp_weights=ahp_weights or None)
-    p50 = mc["percentiles"]["p50"]
-    logger.info("  P50 Monte Carlo: 2027=%.1f  2028=%.1f  2029=%.1f  2030=%.1f",
-                p50[0], p50[1], p50[2], p50[3])
-    logger.info("  P(recuperación 2030 > 45): %.1f%%  |  P(alto riesgo < 25): %.1f%%",
-                mc["prob_recuperacion"] * 100, mc["prob_colapso"] * 100)
-    return mc
-
-
-# =============================================================================
-# FASE 3g — INDICADORES LÍDERES
-# =============================================================================
-
-def fase_indicadores_lideres(
-    df_norm: pd.DataFrame,
-    df_ahp: pd.DataFrame,
-) -> dict:
-    """Calcula el poder anticipatorio de cada variable sobre el ICIV futuro."""
-    from iciv.analytics.leading_indicators import LeadingIndicatorsAnalyzer
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3g -- Indicadores Líderes · Early Warning Power")
-    logger.info("-" * 60)
-    analyzer = LeadingIndicatorsAnalyzer(df_norm, df_ahp)
-    result = analyzer.compute_all()
-    if "error" not in result:
-        top = result.get("top_lideres", [])
-        if top:
-            logger.info("  Top 3 indicadores líderes:")
-            for r in top[:3]:
-                logger.info("    %-45s  EWS=%.3f  señal=%s  lag=%da",
-                            r["label"], r["ews"], r["signal"], r["best_lag"])
-        bar = result.get("barometro_score", 0)
-        lbl = result.get("barometro_label", "—")
-        logger.info("  Barómetro actual: %.1f — %s", bar, lbl)
-    return result
-
-
-# =============================================================================
-# FASE 3h — COMPARACIÓN REGIONAL
-# =============================================================================
-
-def fase_regional(settings: "Settings") -> dict:
-    """Computa el ICIV Regional para Venezuela y 4 países andinos."""
-    from iciv.analytics.regional import RegionalComparison
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3h -- Comparación Regional · Venezuela vs. Andina")
-    logger.info("-" * 60)
-    regional_path = settings.paths.data_raw / "regional"
-    engine = RegionalComparison(regional_path)
-    result = engine.compute_all()
-    if "error" not in result:
-        actual = result.get("actual", {})
-        for pais, info in sorted(actual.items(), key=lambda x: x[1]["rank"]):
-            logger.info("  %d. %-12s  ICIV Regional=%.1f  Δ5y=%+.1f",
-                        info["rank"], result["etiquetas"][pais],
-                        info["score"], info.get("delta5y", 0))
-    else:
-        logger.warning("  WARN %s", result["error"])
-    return result
-
-
-def fase_sector_radar(df_ahp: pd.DataFrame, sanciones_data: dict | None = None) -> dict:
-    """Calcula el Investment Entry Radar Sectorial sobre las dimensiones ICIV."""
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3g -- Investment Entry Radar Sectorial")
-    logger.info("-" * 60)
+def fase_sector_radar(df_ahp: pd.DataFrame) -> dict:
+    """Calcula el radar sectorial con las dimensiones ICIV disponibles."""
     try:
         from iciv.analytics.sector_radar import SectorRadar
-        # Contar entidades venezolanas en lista SDN-OFAC
-        n_sanc = 0
-        if sanciones_data:
-            n_sanc = len(sanciones_data.get("nodes", []))
-        engine = SectorRadar(df_ahp, sanciones_count=n_sanc)
-        result = engine.compute_all()
-        for r in result["ranking"]:
-            score_txt = f"{r['score']:.1f}" if r["score"] is not None else "N/D"
-            logger.info("  %2d. %-30s  score=%5s  [%s]",
-                        r["rank"], r["label"], score_txt, r["recomendacion_short"])
-        return result
+
+        logger.info("\n" + "-" * 60)
+        logger.info("  FASE 3e -- Radar Sectorial")
+        logger.info("-" * 60)
+        return SectorRadar(df_ahp).compute_all()
     except Exception as exc:
         logger.error("  ERROR SectorRadar: %s", exc, exc_info=True)
-        return {"error": str(exc), "ranking": [], "series_historicas": {"años": [], "sectores": {}}}
-
-
-def _score_to_color(score: float) -> str:
-    if score <= 30:  return "#e05c5c"
-    if score <= 50:  return "#e67e22"
-    if score <= 65:  return "#f1c40f"
-    if score <= 80:  return "#2ecc71"
-    return "#00d4aa"
+        return {"error": str(exc), "ranking": []}
 
 
 def _score_to_label(score: float) -> str:
-    if score <= 30:  return "ALTO RIESGO"
-    if score <= 50:  return "RIESGO MODERADO-ALTO"
-    if score <= 65:  return "RIESGO MODERADO"
-    if score <= 80:  return "BAJO RIESGO"
-    return "MUY BAJO RIESGO"
+    if score < 35:
+        return "Alto Riesgo"
+    if score < 50:
+        return "Riesgo Moderado-Alto"
+    if score < 65:
+        return "Riesgo Moderado"
+    if score < 80:
+        return "Bajo Riesgo"
+    return "Muy Bajo Riesgo"
 
+
+def _score_to_color(score: float) -> str:
+    return RISK_COLORS[_score_to_label(score)]
+
+
+# =============================================================================
+# FASE 4 -- DASHBOARD HTML
+# =============================================================================
 
 def fase_dashboard(
     df_raw: pd.DataFrame,
@@ -1122,10 +947,8 @@ def fase_dashboard(
     # Dimension detail cards — variables + sources per dimension
     SOURCE_LABELS = {
         "WDI": "World Bank WDI", "WGI": "World Bank WGI", "EIA": "EIA International",
-        "IMF": "FMI DataMapper", "CPI": "Transparency Intl.", "IEF": "Heritage Foundation",
         "HDI": "PNUD / UNDP", "GUARDIAN": "The Guardian", "FRED": "FRED St. Louis Fed",
-        "FREEDOM_HOUSE": "Freedom House", "OFAC": "US Treasury OFAC",
-        "UNHCR": "UNHCR / R4V", "GTRENDS": "Google Trends", "VIIRS": "NASA VIIRS/DMSP",
+        "FREEDOM_HOUSE": "Freedom House",
     }
     from iciv.data.catalog import CATALOG
     dim_detail_cards_html = ""
@@ -1170,63 +993,40 @@ def fase_dashboard(
     # ── Dimension sub-tab descriptions (academic) ────────────────────────────
     DIM_DESCRIPTIONS = {
         "D1_macro": (
-            "La <strong>Estabilidad Macroeconómica</strong> captura la salud del entorno económico "
-            "general de Venezuela. Integra inflación (deflactor del PIB), crecimiento real del PIB, "
-            "reservas internacionales y tipo de cambio oficial como variables endógenas, ampliadas con "
-            "el precio WTI del petróleo —principal driver externo del ciclo fiscal venezolano, que genera "
-            ">95 % de divisas— y la tasa de fondos federales de EE.UU. como proxy del costo de oportunidad "
-            "global de capital (Obstfeld &amp; Rogoff, 1995). Peso en el ICIV: <strong>25 %</strong>."
+            "La <strong>Estabilidad Macroeconomica</strong> captura inflacion, crecimiento, "
+            "reservas, tipo de cambio y condiciones financieras externas. Se transforma la "
+            "inflacion a log10 para que la hiperinflacion historica no vuelva artificialmente "
+            "optimistas los anos recientes. Peso en el ICIV: <strong>25 %</strong>."
         ),
         "D2_energia": (
-            "El <strong>Sector Energético y Petrolero</strong> es el núcleo de la economía venezolana. "
-            "Venezuela posee las mayores reservas probadas de petróleo del mundo (303 MMMbbl, OPEC 2023) "
-            "y el colapso de PDVSA desde 2016 explica en gran medida la contracción del PIB (−75 % real "
-            "2013–2020). Incluye producción de crudo y gas, generación eléctrica y, como variable "
-            "innovadora, el índice de luminosidad nocturna satelital VIIRS/DMSP (NOAA EOG) como proxy "
-            "independiente de actividad económica real, validado por Henderson et al. (2012, AER). "
-            "El mínimo histórico en 2019 refleja el Gran Apagón Nacional (falla de la represa Guri, "
-            "7-mar-2019). Peso en el ICIV: <strong>20 %</strong>."
+            "El <strong>Sector Energetico y Petrolero</strong> mide capacidad de produccion de "
+            "crudo, gas, electricidad y actividad observada por luminosidad nocturna. La capa "
+            "satelital aporta una senal independiente de estadisticas locales. Peso en el ICIV: "
+            "<strong>20 %</strong>."
         ),
         "D3_institucional": (
-            "El <strong>Entorno Institucional y Legal</strong> mide la calidad de las instituciones "
-            "que determinan la seguridad jurídica del capital extranjero. Combina el CPI (Transparency "
-            "International), los 6 indicadores WGI del Banco Mundial (control de corrupción, efectividad "
-            "gubernamental, estabilidad política, Estado de derecho, calidad regulatoria y voz ciudadana) "
-            "y el IEF de Heritage Foundation. Se añade el Freedom House Score (derechos políticos y civiles) "
-            "y el conteo acumulado de entidades venezolanas en la lista SDN de OFAC como proxy cuantitativo "
-            "del riesgo de compliance internacional. Peso en el ICIV: <strong>20 %</strong>."
+            "El <strong>Entorno Institucional y Legal</strong> resume corrupcion, gobernanza, "
+            "libertades, regla de derecho y represion politica con fuentes internacionales "
+            "comparables: Transparency International, WGI, Freedom House, WJP y Political Terror "
+            "Scale. Peso en el ICIV: <strong>20 %</strong>."
         ),
         "D4_comercial": (
-            "La <strong>Apertura Comercial y Financiera</strong> evalúa la capacidad operativa real de "
-            "Venezuela en el sistema económico internacional. Incorpora flujos netos de IED (World Bank "
-            "WDI), exportaciones como % del PIB, tasa de desempleo (FMI) y, como variable diferenciadora, "
-            "el flujo migratorio venezolano (UNHCR/R4V) — que documenta el mayor éxodo de la historia "
-            "latinoamericana (&gt;7.7 M personas para 2024) como proxy directo de la destrucción del "
-            "capital humano y la pérdida de confianza en el entorno institucional. "
-            "Peso en el ICIV: <strong>15 %</strong>."
+            "La <strong>Apertura Comercial y Operativa</strong> evalua exportaciones, desempleo, "
+            "migracion acumulada y conectividad maritima. La IED queda fuera del score y se usa "
+            "como outcome externo para validacion. Peso en el ICIV: <strong>15 %</strong>."
         ),
         "D5_capital_humano": (
-            "El <strong>Capital Humano e Infraestructura</strong> mide la disponibilidad de fuerza laboral "
-            "calificada e infraestructura básica. Venezuela históricamente mantuvo ventajas relativas en "
-            "esta dimensión: IDH alto a nivel regional y tasa de alfabetización adulta superior al 95 %. "
-            "Sin embargo, la crisis ha erosionado estas ventajas: fuga de cerebros, deterioro del sistema "
-            "educativo y colapso del acceso a electricidad. Combina el IDH del PNUD, tasa de alfabetización "
-            "adulta (World Bank WDI) y acceso a electricidad como % de la población. "
-            "Peso en el ICIV: <strong>10 %</strong>."
+            "El <strong>Capital Humano e Infraestructura Social</strong> mide condiciones de vida "
+            "y capacidad laboral mediante IDH, esperanza de vida, mortalidad infantil, acceso a "
+            "electricidad y empleo informal. Peso en el ICIV: <strong>10 %</strong>."
         ),
         "D6_percepcion": (
-            "La <strong>Percepción Internacional</strong> captura la imagen de Venezuela en el ecosistema "
-            "global de información. Un clima de percepción negativa encarece el capital, activa cláusulas "
-            "de riesgo político y genera asimetría de información que desincentiva la IED (Bekaert &amp; "
-            "Harvey, 2003). Combina análisis de sentimiento VADER sobre titulares de The Guardian "
-            "(API oficial), volumen de cobertura mediática como proxy inverso de estabilidad, y el índice "
-            "Google Trends de búsquedas 'Venezuela inversión' como nowcasting de percepción global "
-            "(Choi &amp; Varian, 2012, <em>The Economic Journal</em>). Peso en el ICIV: <strong>10 %</strong>."
+            "La <strong>Percepcion Internacional</strong> captura tono y volumen de cobertura "
+            "externa sobre Venezuela con The Guardian y VADER. GDELT se reserva para Pulse y "
+            "monitoreo de noticias, no para el score anual core. Peso en el ICIV: <strong>10 %</strong>."
         ),
     }
 
-    # ── Build per-dimension tab data for JS ───────────────────────────────────
-    # BUG FIX: do NOT use df_norm.iloc[-1] (year 2026 has only 6/38 vars with data).
     # Instead, for each variable use the LAST YEAR where it has a real non-NaN value.
     def _last_valid_norm(col: str) -> tuple[float | None, int | None]:
         """Return (normalized_value, year) for the most recent non-NaN cell in col."""
@@ -1375,10 +1175,8 @@ def fase_dashboard(
     _scatter_b64, _crosscorr_b64 = _generate_corr_charts_b64(_corr)
     _corr_formula_html, _corr_ols1_html, _corr_ols2_html, _corr_granger_adf_html = _build_corr_stats_html(_corr)
 
-    # ── Red de Sanciones OFAC — tabla HTML estática ───────────────────────────
-    _sanc = sanciones_data or {}
-    sanciones_json = json.dumps(_sanc, ensure_ascii=False, cls=_NumpyEncoder)
-    _sanciones_table_html = _build_sanciones_table_html(_sanc)
+    sanciones_json = "{}"
+    _sanciones_table_html = ""
 
     # ── Validación externa: correlaciones ICIV vs índices internacionales ─────
     # Calcula Pearson/Spearman entre el ICIV y cada índice externo presente como
@@ -1390,16 +1188,12 @@ def fase_dashboard(
         # "+" significa que el índice ya está en escala "más es mejor" (debería correlacionar positivo)
         # "-" significa que el índice es "más es peor" → ya invertido en normalizado, correlación positiva
         _ext_indices = {
-            "HDI — Desarrollo Humano (PNUD)":             ("hdi", "+"),
-            "WGI — Gobernanza promedio (Banco Mundial)":  ("wgi_promedio_sc", "+"),
-            "CPI — Percepción Corrupción (TI)":           ("cpi_score", "+"),
-            "IEF — Libertad Económica (Heritage)":        ("ief_overall_score", "+"),
-            "Freedom House — Libertades":                  ("freedom_house_score", "+"),
-            "V-Dem — Democracia Liberal":                  ("vdem_libdem_index", "+"),
-            "WJP — Rule of Law":                           ("wjp_rule_of_law", "+"),
-            "FSI — Fragile States Index (FFP)":           ("fragile_states_index", "+"),
-            "PTS — Political Terror Scale":                ("pts_terror_politico", "+"),
-            "RSF — Press Freedom":                         ("rsf_press_freedom", "+"),
+            "HDI - Desarrollo Humano (PNUD)":             ("hdi", "+"),
+            "WGI - Gobernanza promedio (Banco Mundial)":  ("wgi_promedio_sc", "+"),
+            "CPI - Percepcion Corrupcion (TI)":           ("cpi_score", "+"),
+            "Freedom House - Libertades":                 ("freedom_house_score", "+"),
+            "WJP - Rule of Law":                          ("wjp_rule_of_law", "+"),
+            "PTS - Political Terror Scale":               ("pts_terror_politico", "+"),
         }
         _iciv_series = df_ahp["iciv_score"]
         _df_match = df_ahp.merge(df_norm, on="año", suffixes=("_x", "")) \
@@ -1445,7 +1239,7 @@ def fase_dashboard(
         (2002, "Golpe de Estado + Paro Petrolero", "↓"),
         (2007, "Cierre RCTV · nacionalización masiva", "↓"),
         (2014, "Protestas masivas · primeras sanciones EE.UU.", "↓"),
-        (2017, "ANC constituyente · sanciones petroleras OFAC", "↓"),
+        (2017, "ANC constituyente · endurecimiento financiero externo", "↓"),
         (2019, "Dual gobierno Maduro-Guaidó · hiperinflación", "↓"),
         (2021, "Recuperación gradual oil · dolarización informal", "↑"),
         (2024, "Elecciones presidenciales · escalada represión", "↓"),
@@ -1482,7 +1276,7 @@ def fase_dashboard(
     _eventos_resumen = (f"<strong style='color:#2ecc71'>{_n_validados}/{_n_total}</strong> eventos validados"
                         if _n_total > 0 else "Sin datos suficientes")
 
-    # ── Monte Carlo — JSON ────────────────────────────────────────────────────
+    # ── Simulacion probabilistica retirada — JSON ────────────────────────────────────────────────────
     _mc = mc_data or {}
     mc_json = json.dumps(_mc, cls=_NumpyEncoder, ensure_ascii=False)
 
@@ -2464,7 +2258,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         La <strong>diferencia entre ambas curvas</strong> cuantifica el impacto del juicio experto frente a una distribución
         sin preferencias. Las bandas de color indican el nivel de riesgo de inversión.<br><br>
         <strong>Hitos clave:</strong> El colapso post-2013 coincide con la caída del precio del petróleo y el inicio
-        de las sanciones OFAC. El mínimo histórico ({score_min:.1f} pts) se alcanza en {year_min}, durante la hiperinflación
+        de las colapso macroinstitucional. El mínimo histórico ({score_min:.1f} pts) se alcanza en {year_min}, durante la hiperinflación
         y el aislamiento internacional máximo. La recuperación parcial post-2021 refleja el aperturismo económico
         del régimen y la dolarización de facto, no una normalización institucional.
       </div>
@@ -2971,15 +2765,15 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 </section>
 
-<!-- ===== SECTION 10 REMOVED: Sanciones OFAC (decisión usuario: poco valor para el foco)
-     OFAC sanciones_count se mantiene como variable D3 institucional pero sin sección dedicada. -->
+<!-- ===== SECTION 10 REMOVED: Riesgo regulatorio (decisión usuario: poco valor para el foco)
+     Riesgo regulatorio se mantiene como variable D3 institucional pero sin sección dedicada. -->
 
 
 <!-- ===== SECTION 11: RADAR SECTORIAL ===== -->
 <section class="section tab-section" id="sectorial">
   <div class="section-header">
     <span class="section-title">Investment Entry Radar Sectorial</span>
-    <span class="section-sub">¿En qué sectores tiene sentido entrar primero? · Score 0–100 por sensibilidad a las dimensiones ICIV · Ajustadores: sanciones OFAC · CAPEX · Demanda defensiva</span>
+    <span class="section-sub">¿En qué sectores tiene sentido entrar primero? · Score 0–100 por sensibilidad a las dimensiones ICIV · Ajustadores: colapso macroinstitucional · CAPEX · Demanda defensiva</span>
   </div>
 
   <!-- KPI strip (server-side rendered) -->
@@ -3280,65 +3074,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 </section>
 
 <!-- ===== SUB-SECCIÓN: NOWCAST ANUAL ===== -->
-<section class="section tab-section" id="forecast-nowcast">
-  <div class="section-header">
-    <span class="section-title">Nowcast ICIV Anual</span>
-    <span class="section-sub">Estimación temprana del score anual usando señales Pulse del año en curso</span>
-  </div>
-
-  <div class="alert alert-info" style="margin-bottom:20px">
-    <div class="alert-title">¿Qué es el nowcasting?</div>
-    <div class="alert-body">
-      El <strong>nowcasting</strong> (Stock &amp; Watson 2002) predice el valor de una variable de baja frecuencia
-      (ICIV Anual, publicado con lag) usando señales de alta frecuencia disponibles en tiempo real (Pulse mensual).
-      El objetivo: tener una estimación del ICIV Anual final antes de que se publiquen WGI, HDI, CPI y WDI para ese año.
-    </div>
-  </div>
-
-  <!-- Stats nowcast -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label">ICIV Anual predicho</div>
-      <div class="stat-val stat-neu" id="nc2NowcastValue">—</div>
-      <div class="stat-sub" id="nc2NowcastYear">Año en curso</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Meses Pulse usados</div>
-      <div class="stat-val stat-neu" id="nc2NMeses">—</div>
-      <div class="stat-sub">del año actual</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">R² LOO-CV</div>
-      <div class="stat-val" id="nc2R2Loo">—</div>
-      <div class="stat-sub">leave-one-out (honesto)</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">MAE train</div>
-      <div class="stat-val stat-neu" id="nc2Mae">—</div>
-      <div class="stat-sub">puntos ICIV</div>
-    </div>
-  </div>
-
-  <!-- Tabla coeficientes nowcast -->
-  <div class="card" style="margin-top:18px">
-    <div class="ct">Coeficientes del modelo OLS Pulse → ICIV Anual</div>
-    <div class="cs">Cómo cada feature del Pulse mensual contribuye al score anual predicho</div>
-    <div id="nc2CoeffsTable" style="margin-top:10px"></div>
-  </div>
-
-  <!-- Advertencia de limitaciones cuando n es pequeño -->
-  <div class="card" style="margin-top:16px;border-left:3px solid #e6a817">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:#e6a817">Nota de interpretación:</strong>
-      El nowcast tiene muestra de entrenamiento pequeña (~5-6 años de Pulse disponible desde 2020).
-      Un R² LOO-CV negativo no es un error del código: indica honestamente que el modelo no generaliza bien
-      fuera de muestra con tan pocos datos. La predicción debe tratarse como <strong>indicativa</strong>,
-      no como pronóstico estadísticamente robusto. Mejorará a medida que se acumulen más años de Pulse.
-    </div>
-  </div>
-</section>
-
-<!-- ===== SUB-SECCIÓN: FORECAST METODOLOGÍA ===== -->
 <section class="section tab-section" id="forecast-metodologia">
   <div class="section-header">
     <span class="section-title">Forecast ML — Metodología</span>
@@ -3412,13 +3147,29 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="noticias">
   <div class="section-header">
     <span class="section-title">Noticias Venezuela</span>
-    <span class="section-sub">Últimos 3 meses · The Guardian API — actualización en tiempo real</span>
+    <span class="section-sub">Guardian en vivo + accesos rapidos a GDELT y prensa internacional</span>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="ct">Fuentes complementarias</div>
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:8px">
+      Las tarjetas se cargan desde The Guardian por API abierta. Para ampliar lectura sin agregar
+      dependencias fragiles al dashboard, se incluyen accesos directos a busquedas internacionales
+      sobre Venezuela en GDELT, Reuters, AP y Google News. Estas fuentes externas no entran al score
+      salvo que pasen por el pipeline y queden documentadas.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <a class="news-chip" href="https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela%20investment&mode=artlist&format=html" target="_blank" rel="noopener">GDELT</a>
+      <a class="news-chip" href="https://www.reuters.com/site-search/?query=Venezuela%20investment" target="_blank" rel="noopener">Reuters</a>
+      <a class="news-chip" href="https://apnews.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">AP</a>
+      <a class="news-chip" href="https://news.google.com/search?q=Venezuela%20investment%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Google News</a>
+    </div>
   </div>
 
   <div class="news-filter" id="newsFilter">
     <span class="news-chip active" data-tag="all">Todas</span>
-    <span class="news-chip" data-tag="economy">Economía</span>
-    <span class="news-chip" data-tag="politics">Política</span>
+    <span class="news-chip" data-tag="economy">Economia</span>
+    <span class="news-chip" data-tag="politics">Politica</span>
     <span class="news-chip" data-tag="world">Internacional</span>
     <span class="news-chip" data-tag="business">Negocios</span>
   </div>
@@ -3433,7 +3184,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div style="text-align:center;margin-top:20px">
     <button id="newsLoadMore" style="display:none;background:rgba(0,212,170,.1);border:1px solid var(--accent);
       color:var(--accent);padding:8px 24px;border-radius:20px;cursor:pointer;font-size:.82rem;font-family:inherit">
-      Cargar más
+      Cargar mas
     </button>
   </div>
 </section>
@@ -3457,7 +3208,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         <li><strong>Stock, J. H., &amp; Watson, M. W. (2002).</strong> Macroeconomic forecasting using diffusion indexes. <em>JBES</em>, 20(2), 147-162. — Base teórica para nowcasting.</li>
         <li><strong>Jerven, M. (2013).</strong> <em>Poor Numbers: How We Are Misled by African Development Statistics</em>. Cornell University Press. — Limitaciones de datos en países en crisis.</li>
         <li><strong>Granger, C. W. J. (1969).</strong> Investigating causal relations by econometric models and cross-spectral methods. <em>Econometrica</em>, 37(3), 424-438.</li>
-        <li><strong>Bank of England. (2013).</strong> Fan Charts and the Analysis of Uncertainty. — Base de las bandas Monte Carlo del ICIV.</li>
       </ol>
     </div>
 
@@ -3474,20 +3224,11 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         <li><strong>WHO.</strong> Global Health Observatory data repository. <a href="https://www.who.int/data/gho" target="_blank">who.int/data/gho</a></li>
         <li><strong>UNHCR.</strong> Refugee Data Finder. <a href="https://www.unhcr.org/refugee-statistics" target="_blank">unhcr.org/refugee-statistics</a></li>
         <li><strong>Transparency International. (2025).</strong> Corruption Perceptions Index 2024. <a href="https://www.transparency.org/en/cpi" target="_blank">transparency.org/cpi</a></li>
-        <li><strong>Heritage Foundation. (2026).</strong> 2026 Index of Economic Freedom. <a href="https://www.heritage.org/index" target="_blank">heritage.org/index</a></li>
         <li><strong>Freedom House. (2026).</strong> Freedom in the World 2026.</li>
-        <li><strong>Coppedge, M., Gerring, J., et al. (2024).</strong> V-Dem Dataset v14. Varieties of Democracy Project. <em>U. Gothenburg</em>.</li>
         <li><strong>World Justice Project. (2025).</strong> WJP Rule of Law Index 2025.</li>
-        <li><strong>Reporters Without Borders. (2025).</strong> World Press Freedom Index 2025.</li>
-        <li><strong>Bertelsmann Stiftung. (2026).</strong> Bertelsmann Transformation Index 2026.</li>
-        <li><strong>Fund for Peace. (2024).</strong> Fragile States Index 2024.</li>
         <li><strong>Gibney, M., Cornett, L., Wood, R., et al.</strong> Political Terror Scale 1976-2023. <a href="https://www.politicalterrorscale.org" target="_blank">politicalterrorscale.org</a></li>
-        <li><strong>von Grebmer, K., et al. (2024).</strong> Global Hunger Index 2024. Welthungerhilfe; Concern Worldwide.</li>
-        <li><strong>Pettersson, T., &amp; Davies, S. (2024).</strong> UCDP Conflict Data v24.1. <em>Journal of Peace Research</em>.</li>
-        <li><strong>U.S. Treasury OFAC.</strong> Specially Designated Nationals List. <a href="https://www.treasury.gov/ofac" target="_blank">treasury.gov/ofac</a></li>
         <li><strong>Li, X., Zhou, Y., et al. (2020).</strong> A harmonized global nighttime light dataset 1992-2024. <em>Scientific Data</em>, 7(1). Figshare DOI: 10.6084/m9.figshare.9828827</li>
         <li><strong>Our World in Data.</strong> Redistribución licencia abierta (V-Dem, WJP, RSF, HDI, GHI, FAO).</li>
-        <li><strong>FAOSTAT.</strong> Food Balance Sheets. <a href="https://www.fao.org/faostat/" target="_blank">fao.org/faostat</a></li>
         <li><strong>ILO ILOSTAT.</strong> Labour Statistics Database (via WB proxy).</li>
         <li><strong>The Guardian Open Platform.</strong> Articles API + VADER sentiment (Hutto &amp; Gilbert, 2014).</li>
         <li><strong>Hutto, C. J., &amp; Gilbert, E. (2014).</strong> VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. <em>ICWSM</em>.</li>
@@ -3573,8 +3314,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
   &nbsp;·&nbsp; Tesis de Especialización — Big Data e Inteligencia de Negocios &nbsp;·&nbsp; {generated_at}<br>
   <span style="font-size:.65rem">
-    IMF · World Bank · EIA · FRED · Transparency International · UNDP · Heritage Foundation ·
-    UNHCR · The Guardian · Li et al. (VIIRS) · Fund for Peace · V-Dem · WJP
     &nbsp;·&nbsp; AHP Saaty (1980) · OCDE Handbook (2008) · Stock &amp; Watson (2002)
   </span>
 </footer>
@@ -3825,7 +3564,7 @@ const SECTION_TO_BLOCK = {{
   'dimensiones':'diagnostico', 'alertas':'diagnostico', 'sectorial':'diagnostico',
   // Proyección
   'proyecciones':'proyeccion',
-  'forecast-ml':'proyeccion', 'forecast-nowcast':'proyeccion', 'forecast-metodologia':'proyeccion',
+  'forecast-ml':'proyeccion', 'forecast-metodologia':'proyeccion',
   // Metodología
   'correlacion':'metodologia', 'noticias':'metodologia', 'bibliografia':'metodologia',
 }};
@@ -5098,7 +4837,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
-  // ── Monte Carlo — en el mismo scope para llamada directa sin bridge ─────────
+  // ── Simulacion probabilistica retirada — en el mismo scope para llamada directa sin bridge ─────────
   var MC = {mc_json};
   var buildMCChart = function() {{}};
   var buildProbCards = function() {{}};
@@ -5333,7 +5072,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     "wti_precio_usd": 0.08, "brent_precio_usd": 0.05,
     "tasa_fed_funds_pct": 0.06, "usd_index_broad": 0.05,
     "vix_volatility": 0.06, "ust_10y_yield_pct": 0.05,
-    "petroleo_crudo_produccion_tbpd": 0.25, "ofac_sanciones_count": 0.10,
     "migrantes_vzla_millones": 0.15, "guardian_articulos_venezuela": 0.07,
     "guardian_tono_titulares": 0.08,
   }};
@@ -5345,7 +5083,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     "vix_volatility": "VIX Volatility",
     "ust_10y_yield_pct": "UST 10Y Yield",
     "petroleo_crudo_produccion_tbpd": "Producción Petróleo VEN",
-    "ofac_sanciones_count": "Sanciones OFAC",
     "migrantes_vzla_millones": "Migrantes VEN",
     "guardian_articulos_venezuela": "Vol. Artículos Guardian",
     "guardian_tono_titulares": "Tono VADER Guardian",
@@ -5762,7 +5499,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
 }})();
 
-// ── Nowcast Anual sub-sección (forecast-nowcast) ──────────────────────────────
 (function() {{
   var ML = {ml_forecast_json};
   if (!ML || !ML.nowcast) return;
@@ -5804,11 +5540,9 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }}
   }}
   if (typeof _tabInits !== 'undefined') {{
-    _tabInits['forecast-nowcast']    = fillNowcastTab;
     _tabInits['forecast-metodologia'] = function() {{}};  // sección estática
     _tabInits['pulse-metodologia']    = function() {{}};  // sección estática
   }}
-  if (window.location.hash === '#forecast-nowcast') fillNowcastTab();
 }})();
 
 // ── Venezuela Hoy panel ──────────────────────────────────────────────────────
@@ -6242,6 +5976,7 @@ def main() -> None:
 
     # -- Fase 2: Pipeline -------------------------------------------------------
     df_raw, df_norm = fase_pipeline(settings)
+    fase_dataset_publico(df_raw, df_norm, settings)
 
     # -- Fase 3: Modelo ---------------------------------------------------------
     df_fixed, df_ahp, ahp = fase_modelo(df_norm, settings)
@@ -6256,13 +5991,13 @@ def main() -> None:
     correlacion_data = fase_correlacion(df_raw, df_ahp)
 
     # -- Fase 3e: Radar Sectorial -----------------------------------------------
-    # Las proyecciones anuales por escenario, Monte Carlo y red OFAC dejaron de
+    # Las proyecciones anuales por escenario, Simulacion probabilistica retirada y red de sanciones dejaron de
     # exponerse en el dashboard principal; el pipeline semanal calcula solo las
     # piezas defendibles que se usan en la experiencia final.
     escenarios_data: dict = {}
     sanciones_data: dict = {}
     mc_data: dict = {}
-    sector_data = fase_sector_radar(df_ahp, sanciones_data)
+    sector_data = fase_sector_radar(df_ahp)
 
     # -- Fase 3f: Forecast mensual Pulse ----------------------------------------
     ml_forecast = fase_ml_forecast(pulse_data, df_ahp)

@@ -44,6 +44,8 @@ pesimista no forman parte de la vista publica principal.
   variables apartadas, fuentes y politica de cobertura.
 - [docs/GUIA_DECISIONES_ICIV.md](./docs/GUIA_DECISIONES_ICIV.md): plan de mejora y
   criterios para tomar decisiones antes de defensa o publicacion.
+- [docs/DATASET_ICIV.md](./docs/DATASET_ICIV.md): estructura del dataset publico
+  generado por el pipeline.
 - [iciv/data/sources/PROVENANCE.md](./iciv/data/sources/PROVENANCE.md): trazabilidad
   de artefactos de datos mantenida junto al pipeline.
 
@@ -78,6 +80,10 @@ de fuentes Pulse puede ejecutarse aparte:
 ```bash
 python scripts/check_pulse_inputs.py
 ```
+
+Tambien genera `iciv/data/processed/iciv_dataset_wide.csv` y
+`iciv/data/processed/iciv_dataset_largo.csv` para auditoria, backtesting y
+replicacion.
 
 ## Modulos que importan en defensa
 

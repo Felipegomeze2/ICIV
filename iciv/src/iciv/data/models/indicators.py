@@ -31,39 +31,24 @@ class DimensionID(str, Enum):
 
 
 class SourceID(str, Enum):
-    """Identificadores de las fuentes de datos."""
-    WDI           = "WDI"
-    WGI           = "WGI"
-    EIA           = "EIA"
-    IMF           = "IMF"
-    CPI           = "CPI"
-    IEF           = "IEF"
-    HDI           = "HDI"
-    GDELT         = "GDELT"
-    GUARDIAN      = "GUARDIAN"
-    FRED          = "FRED"
+    """Identificadores de fuentes vigentes."""
+    WDI = "WDI"
+    WGI = "WGI"
+    EIA = "EIA"
+    IMF = "IMF"
+    CPI = "CPI"
+    HDI = "HDI"
+    GDELT = "GDELT"
+    GUARDIAN = "GUARDIAN"
+    FRED = "FRED"
     FREEDOM_HOUSE = "FREEDOM_HOUSE"
-    OFAC          = "OFAC"
-    UNHCR         = "UNHCR"
-    GTRENDS       = "GTRENDS"
-    VIIRS         = "VIIRS"
-    UNCTAD        = "UNCTAD"
-    OPENSKY       = "OPENSKY"
-    PTS           = "PTS"
-    WHO           = "WHO"
-    # ── Nuevas fuentes 2026 ──────────────────────────────────────────────────
-    VDEM          = "VDEM"          # Varieties of Democracy (V-Dem Institute)
-    FRAGILE       = "FRAGILE"       # Fragile States Index (Fund for Peace)
-    WJP           = "WJP"           # World Justice Project Rule of Law Index
-    RSF           = "RSF"           # Reporters Without Borders Press Freedom
-    BTI           = "BTI"           # Bertelsmann Transformation Index
-    GHI           = "GHI"           # Global Hunger Index (Welthungerhilfe)
-    ACLED         = "ACLED"         # Armed Conflict Location & Event Data
-    ILOSTAT       = "ILOSTAT"       # ILO International Labour Statistics
-    FAO           = "FAO"           # FAO FAOSTAT (food security)
-    UCDP          = "UCDP"          # Uppsala Conflict Data Program
-    CEPALSTAT     = "CEPALSTAT"     # CEPAL/ECLAC Statistics
-    BASEL_AML     = "BASEL_AML"     # Basel AML Index (money laundering risk)
+    UNHCR = "UNHCR"
+    VIIRS = "VIIRS"
+    UNCTAD = "UNCTAD"
+    PTS = "PTS"
+    WHO = "WHO"
+    WJP = "WJP"
+    ILOSTAT = "ILOSTAT"
 
 
 @dataclass(frozen=True)

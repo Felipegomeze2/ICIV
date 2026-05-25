@@ -34,13 +34,8 @@ DEFAULT_STRATEGIES: dict[str, ImputeStrategy] = {
     "reservas_internacionales_usd":   "none",         # Venezuela no reporta al WB desde 2018
     "tipo_cambio_oficial_lcu_usd":    "none",         # lag WDI 2025-2026 → NaN honesto
     "cpi_score":                      "interpolate",
-    "ief_overall_score":              "interpolate",
     "hdi":                            "interpolate",
     "cuenta_corriente_pct_pib":       "none",         # suspendió reporte al FMI
-    "tasa_alfabetizacion_adulta_pct": "forward_fill",
-    "ofac_sanciones_count":           "none",         # solo 1 año real (snapshot SDN) → no imputar
-    "google_trends_vzla":             "none",         # rate limit frecuente → NaN si falla
-    "vuelos_aerolineas_int_count":    "none",         # OpenSky sin cobertura histórica
 }
 
 

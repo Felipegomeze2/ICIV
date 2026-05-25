@@ -25,7 +25,7 @@ class DataLoader(ABC):
     """
     Clase base abstracta para todos los loaders de datos del ICIV.
 
-    Cada fuente de datos (WDI, WGI, EIA, IMF, CPI, IEF, HDI) tiene su
+    Cada fuente de datos (WDI, WGI, EIA, IMF, CPI, HDI) tiene su
     propio loader concreto que hereda de esta clase. El contrato garantiza:
 
     1. `load()`         → devuelve siempre un DatasetResult

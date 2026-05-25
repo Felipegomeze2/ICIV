@@ -6,6 +6,7 @@
 # ── AI / Claude internal (never commit) ──────────────────────────────
 .claude/
 memory/
+entregables_local/
 
 # ── Python ───────────────────────────────────────────────────────────
 __pycache__/
@@ -58,6 +59,8 @@ desktop.ini
 iciv/data/processed/*.csv
 iciv/data/processed/*.xlsx
 iciv/data/processed/_test_script.js
+!iciv/data/processed/iciv_dataset_largo.csv
+!iciv/data/processed/iciv_dataset_wide.csv
 
 # ── Archivos grandes / binarios ───────────────────────────────────────
 *.zip

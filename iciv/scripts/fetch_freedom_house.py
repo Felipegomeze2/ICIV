@@ -6,7 +6,7 @@ URL:    https://freedomhouse.org/report/freedom-world
 Salida: data/raw/freedom_house.csv
 
 Formato de salida: año|indicador|valor|pais|fuente
-(mismo formato que CPI, IEF, HDI — compatible con _LongFormatLoader)
+(mismo formato que CPI, HDI — compatible con _LongFormatLoader)
 
 Nota sobre disponibilidad de API:
   Freedom House NO tiene una API pública gratuita. Sus datos se publican

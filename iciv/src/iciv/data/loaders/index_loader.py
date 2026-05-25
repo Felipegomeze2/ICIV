@@ -1,21 +1,6 @@
-"""
-Loaders para los tres índices compuestos de gobernanza y capital humano:
-  - CPI  (Transparency International)
-  - IEF  (Heritage Foundation)
-  - HDI  (PNUD)
-
-Los tres archivos usan formato largo con columnas:
-    año | indicador | valor | pais | fuente
-
-Este módulo los carga y devuelve en formato ancho (una columna por índice)
-para que sean compatibles con el pipeline de transformación.
-"""
+"""Loaders para indices estaticos vigentes: CPI y HDI."""
 
 from __future__ import annotations
-
-from pathlib import Path
-
-import pandas as pd
 
 from iciv.config import Settings
 from iciv.data.models import DatasetResult, SourceID
@@ -23,14 +8,10 @@ from .base import DataLoader
 
 
 class _LongFormatLoader(DataLoader):
-    """
-    Loader genérico para archivos en formato largo (indicador/valor).
-    Subclases solo necesitan declarar el archivo, el SourceID y el
-    nombre del indicador a extraer.
-    """
+    """Loader generico para CSV largo: año, indicador, valor, pais, fuente."""
 
-    _indicator_name: str  # valor esperado en la columna 'indicador'
-    _output_column: str   # nombre de columna en el DataFrame de salida
+    _indicator_name: str
+    _output_column: str
 
     def load(self) -> DatasetResult:
         df_raw = self._read_csv()
@@ -42,7 +23,6 @@ class _LongFormatLoader(DataLoader):
                 f"'indicador' y 'valor'."
             )
 
-        # Filtrar solo el indicador de interés y pivotar a formato ancho
         mask = df["indicador"] == self._indicator_name
         df_filtered = df[mask][["año", "valor"]].copy()
         df_filtered = df_filtered.rename(columns={"valor": self._output_column})
@@ -53,16 +33,14 @@ class _LongFormatLoader(DataLoader):
         if df_filtered.empty:
             missing.append(self._output_column)
 
-        return DatasetResult(
-            source=self.get_source_id(), df=df_filtered, missing_cols=missing
-        )
+        return DatasetResult(source=self.get_source_id(), df=df_filtered, missing_cols=missing)
 
     def validate(self, result: DatasetResult) -> bool:
         return not result.df.empty and self._output_column in result.df.columns
 
 
 class CPILoader(_LongFormatLoader):
-    """Índice de Percepción de Corrupción — Transparency International."""
+    """Corruption Perceptions Index, Transparency International."""
 
     _indicator_name = "cpi_score"
     _output_column = "cpi_score"
@@ -75,22 +53,8 @@ class CPILoader(_LongFormatLoader):
         return SourceID.CPI
 
 
-class IEFLoader(_LongFormatLoader):
-    """Índice de Libertad Económica — Heritage Foundation."""
-
-    _indicator_name = "ief_overall_score"
-    _output_column = "ief_overall_score"
-
-    def __init__(self, settings: Settings | None = None) -> None:
-        cfg = settings or Settings()
-        super().__init__(cfg.paths.raw_ief)
-
-    def get_source_id(self) -> SourceID:
-        return SourceID.IEF
-
-
 class HDILoader(_LongFormatLoader):
-    """Índice de Desarrollo Humano — PNUD."""
+    """Human Development Index, UNDP."""
 
     _indicator_name = "hdi"
     _output_column = "hdi"

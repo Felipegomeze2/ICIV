@@ -33,3 +33,5 @@ data/processed/*.xlsx
 # API keys — NUNCA subir
 *.key
 secrets.yaml
+!data/processed/iciv_dataset_largo.csv
+!data/processed/iciv_dataset_wide.csv

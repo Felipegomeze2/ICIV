@@ -1,76 +1,41 @@
-"""
-Registro de todos los loaders disponibles.
+"""Registro de loaders usados por el pipeline vigente."""
 
-Uso:
-    from iciv.data.loaders import ALL_LOADERS, WDILoader
-
-    for loader_cls in ALL_LOADERS:
-        result = loader_cls().load_validated()
-"""
-
+from .base import DataLoader
 from .wdi_loader import WDILoader
 from .wgi_loader import WGILoader
 from .eia_loader import EIALoader
 from .imf_loader import IMFLoader
-from .index_loader import CPILoader, IEFLoader, HDILoader
+from .index_loader import CPILoader, HDILoader
 from .guardian_loader import GuardianLoader
 from .fred_loader import FREDLoader
 from .freedom_house_loader import FreedomHouseLoader
 from .unhcr_loader import UNHCRLoader
-from .ofac_loader import OFACLoader
-from .gtrends_loader import GTrendsLoader
 from .viirs_loader import VIIRSLoader
 from .unctad_loader import UNCTADLoader
-from .opensky_loader import OpenSkyLoader
 from .pts_loader import PTSLoader
 from .who_loader import WHOLoader
-from .extended_loaders import (
-    VDemLoader,
-    FragileStatesLoader,
-    WJPLoader,
-    RSFLoader,
-    BTILoader,
-    GHILoader,
-    ACLEDLoader,
-    ILOStatLoader,
-    UCDPLoader,
-    FAOLoader,
-    BaselAMLLoader,
-)
-from .base import DataLoader
+from .extended_loaders import WJPLoader, ILOStatLoader
 
-# Lista completa de loaders — útil para iterar en el pipeline de ingesta
+# Loaders que alimentan el ICIV anual vigente o su outcome externo.
+# Las fuentes apartadas pueden conservar scripts/CSV de auditoria, pero no entran
+# al panel maestro para no publicitarlas como cobertura efectiva.
 ALL_LOADERS: list[type[DataLoader]] = [
     WDILoader,
     WGILoader,
     EIALoader,
     IMFLoader,
     CPILoader,
-    IEFLoader,
     HDILoader,
     GuardianLoader,
     FREDLoader,
     FreedomHouseLoader,
     UNHCRLoader,
-    OFACLoader,
-    GTrendsLoader,
     VIIRSLoader,
     UNCTADLoader,
-    OpenSkyLoader,
     PTSLoader,
     WHOLoader,
-    # Fuentes ampliadas (mayo 2026)
-    VDemLoader,
-    FragileStatesLoader,
     WJPLoader,
-    RSFLoader,
-    BTILoader,
-    GHILoader,
-    ACLEDLoader,
     ILOStatLoader,
-    UCDPLoader,
-    FAOLoader,
-    BaselAMLLoader,
 ]
 
 __all__ = [
@@ -80,29 +45,16 @@ __all__ = [
     "EIALoader",
     "IMFLoader",
     "CPILoader",
-    "IEFLoader",
     "HDILoader",
     "GuardianLoader",
     "FREDLoader",
     "FreedomHouseLoader",
     "UNHCRLoader",
-    "OFACLoader",
-    "GTrendsLoader",
     "VIIRSLoader",
     "UNCTADLoader",
-    "OpenSkyLoader",
     "PTSLoader",
     "WHOLoader",
-    "VDemLoader",
-    "FragileStatesLoader",
     "WJPLoader",
-    "RSFLoader",
-    "BTILoader",
-    "GHILoader",
-    "ACLEDLoader",
     "ILOStatLoader",
-    "UCDPLoader",
-    "FAOLoader",
-    "BaselAMLLoader",
     "ALL_LOADERS",
 ]
