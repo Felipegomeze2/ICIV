@@ -784,7 +784,12 @@ def fase_dashboard(
     dim_names = {d.value: DIMENSIONS[d].name for d in DIMENSIONS}
     available_dims = [c for c in dim_cols if c in df_plot.columns]
 
-    generated_at = datetime.now().strftime("%d de %B de %Y · %H:%M")
+    _MONTH_NAMES_ES = [
+        "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+    ]
+    _now = datetime.now()
+    generated_at = f"{_now.day:02d} de {_MONTH_NAMES_ES[_now.month]} de {_now.year} · {_now:%H:%M}"
     n_years   = int(df_plot["iciv_score"].notna().sum())
     score_min = float(df_plot["iciv_score"].min())
     year_min  = int(df_plot.loc[df_plot["iciv_score"].idxmin(), "año"])
@@ -1347,7 +1352,7 @@ def fase_dashboard(
     _sector_year = _sector.get("año_actual", int(last_row["año"]))
 
     # ── Venezuela Hoy: panel de indicadores clave (high-frequency + anuales) ──
-    _MONTHS_ES = ["","Ene","Feb","Mar","Apr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
+    _MONTHS_ES = ["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
     _ven_hoy: dict = {}
     try:
         # === ICIV Anual ===
@@ -1902,7 +1907,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div style="padding:48px 40px 40px;background:linear-gradient(135deg,rgba(0,212,170,.04) 0%,rgba(52,152,219,.03) 50%,transparent 100%);border-bottom:1px solid var(--border)">
     <div style="margin-bottom:18px">
       <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px">Felipe Gómez Espinal</div>
-      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.3px">Tesis de Especialización · Big Data e Inteligencia de Negocios · EAFIT &nbsp;·&nbsp; {generated_at}</div>
+      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.3px">Tesis de Especialización · Big Data e Inteligencia de Negocios · Universidad EIA &nbsp;·&nbsp; {generated_at}</div>
     </div>
     <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:10px">
       <span style="font-size:3.2rem;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-1px">ICIV</span>
@@ -2920,7 +2925,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <div class="chart-card">
     <div class="ct">Series mensuales normalizadas (Min-Max 0–100)</div>
-    <div class="cs">Mayor valor = mejor clima (variables negativas ya invertidas). Click leyenda para mostrar/ocultar.</div>
+    <div class="cs">Mayor valor = mejor clima (variables negativas ya invertidas). Haz clic en la leyenda para mostrar/ocultar.</div>
     <div class="chart-wrap" style="height:520px">
       <canvas id="cPulseComponents"></canvas>
     </div>
@@ -3256,7 +3261,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="alert-body">
       Gómez, F. (2026). <em>ICIV — Indicador de Clima de Inversión Venezuela: Diseño metodológico,
       pipeline ETL automatizado y dashboard interactivo</em>. Tesis de Especialización en Big Data
-      e Inteligencia de Negocios. Disponible en: <code>github.com/[pendiente publicar]</code>
+      e Inteligencia de Negocios, Universidad EIA. Disponible en:
+      <code>github.com/Felipegomeze2/ICIV</code>
     </div>
   </div>
 </section>
@@ -3312,7 +3318,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <a href="#" onclick="event.preventDefault();showSection('portada')"
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
-  &nbsp;·&nbsp; Tesis de Especialización — Big Data e Inteligencia de Negocios &nbsp;·&nbsp; {generated_at}<br>
+  &nbsp;·&nbsp; Tesis de Especialización — Big Data e Inteligencia de Negocios · Universidad EIA &nbsp;·&nbsp; {generated_at}<br>
   <span style="font-size:.65rem">
     &nbsp;·&nbsp; AHP Saaty (1980) · OCDE Handbook (2008) · Stock &amp; Watson (2002)
   </span>
