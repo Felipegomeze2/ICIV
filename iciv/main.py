@@ -837,13 +837,19 @@ def fase_dashboard(
         }
     score_by_year_json = json.dumps(_sya, ensure_ascii=False)
 
-    # Default annual reference: keep provisional recent years selectable, but
-    # make the headline annual card start from the latest defensible coverage.
+    # Default annual reference: the headline must always show the latest
+    # available year, even when coverage is provisional. A separate reference
+    # row keeps the latest high-coverage annual reading visible for comparison.
     if "cobertura_pct" in df_plot.columns:
         _reference_years = df_plot[df_plot["cobertura_pct"] >= 70.0]
     else:
         _reference_years = df_plot
-    _current_row = _reference_years.iloc[-1] if not _reference_years.empty else df_plot.iloc[-1]
+    _reference_row = _reference_years.iloc[-1] if not _reference_years.empty else df_plot.iloc[-1]
+    _current_row = df_plot.iloc[-1]
+    annual_ref_year = int(_reference_row["año"])
+    annual_ref_score = float(_reference_row["iciv_score"])
+    annual_ref_coverage = float(_reference_row["cobertura_pct"]) \
+        if "cobertura_pct" in df_plot.columns else 100.0
 
     # Year selector buttons (horizontal scrollable bar)
     _score_years = [int(y) for y in df_plot["año"].tolist()]
@@ -1362,17 +1368,29 @@ def fase_dashboard(
                 _dfa_nn[_dfa_nn["cobertura_pct"] >= 70]
                 if "cobertura_pct" in _dfa_nn.columns else _dfa_nn
             )
-            _vi = _dfa_reliable.iloc[-1] if not _dfa_reliable.empty else _dfa_nn.iloc[-1]
-            _prev_annual_base = _dfa_reliable if len(_dfa_reliable) >= 2 else _dfa_nn
+            _vi = _dfa_nn.iloc[-1]
+            _vr = _dfa_reliable.iloc[-1] if not _dfa_reliable.empty else _vi
+            _vp = _dfa_nn.iloc[-2] if len(_dfa_nn) >= 2 else _vi
+            _vi_cov = round(float(_vi.get("cobertura_pct", 100)), 1) \
+                if "cobertura_pct" in _dfa_nn.columns else None
+            _vi_reliable = bool((_vi_cov or 100) >= 70)
             _ven_hoy["iciv"] = {
                 "score": round(float(_vi["iciv_score"]), 2),
                 "year": int(_vi["año"]),
-                "label": _score_to_label(float(_vi["iciv_score"])),
+                "label": (
+                    _score_to_label(float(_vi["iciv_score"]))
+                    if _vi_reliable else f"Provisional · {_score_to_label(float(_vi['iciv_score']))}"
+                ),
                 "color": _score_to_color(float(_vi["iciv_score"])),
-                "delta": round(float(_vi["iciv_score"]) - float(_prev_annual_base.iloc[-2]["iciv_score"]), 2)
-                         if len(_prev_annual_base) >= 2 else None,
-                "coverage": round(float(_vi.get("cobertura_pct", 100)), 1)
-                            if "cobertura_pct" in _dfa_nn.columns else None,
+                "delta": round(float(_vi["iciv_score"]) - float(_vp["iciv_score"]), 2)
+                         if len(_dfa_nn) >= 2 else None,
+                "coverage": _vi_cov,
+                "is_reliable": _vi_reliable,
+                "reliable_score": round(float(_vr["iciv_score"]), 2),
+                "reliable_year": int(_vr["año"]),
+                "reliable_label": _score_to_label(float(_vr["iciv_score"])),
+                "reliable_coverage": round(float(_vr.get("cobertura_pct", 100)), 1)
+                                     if "cobertura_pct" in _dfa_nn.columns else None,
             }
         # === ICIV Pulse ===
         if pulse_data is not None and not pulse_data.empty:
@@ -1864,6 +1882,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <a href="#" data-block="historia">Historia</a>
     <a href="#" data-block="diagnostico">Diagnóstico</a>
     <a href="#" data-block="proyeccion">Proyección</a>
+    <a href="#" data-block="noticias">Noticias</a>
     <a href="#" data-block="metodologia">Metodología</a>
   </div>
 
@@ -1893,9 +1912,12 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <a href="#proyecciones">Laboratorio</a>
   </div>
 
+  <div class="nav-sub" data-block="noticias">
+    <!-- Noticias queda como pestaña principal sin submenú. -->
+  </div>
+
   <div class="nav-sub" data-block="metodologia">
     <a href="#correlacion">Validación / Coherencia</a>
-    <a href="#noticias">Noticias</a>
     <a href="#bibliografia">Bibliografía</a>
   </div>
 </div>
@@ -1928,6 +1950,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         <div style="display:flex;align-items:baseline;gap:8px">
           <span style="font-size:1.5rem;font-weight:700;color:{current_color}">{current_score:.1f}</span>
           <span style="font-size:.75rem;color:{current_color}">{current_label}</span>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:6px">
+          {coverage_badge}{f" · último confiable: {annual_ref_year} · {annual_ref_score:.1f} · {annual_ref_coverage:.0f}% cob." if current_year_val != annual_ref_year else ""}
         </div>
       </div>
       <div id="portadaPCard" style="background:var(--card);border:1px solid var(--border);border-left:3px solid #8b949e;
@@ -2067,6 +2092,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div id="inicioAL" style="font-size:.88rem;font-weight:600;color:var(--text)">—</div>
       <div id="inicioAD" style="font-size:.72rem;color:var(--muted);margin-top:4px">—</div>
       <div id="inicioAY" style="font-size:.68rem;color:#555;margin-top:4px">—</div>
+      <div id="inicioAR" style="font-size:.68rem;color:var(--muted);margin-top:6px;line-height:1.4">—</div>
       <div style="flex:1"></div>
       <!-- Mini gauge (SVG simplificado) -->
       <svg id="inicioGauge" viewBox="0 0 200 110" style="width:100%;max-width:220px;margin:16px auto 0">
@@ -3571,8 +3597,10 @@ const SECTION_TO_BLOCK = {{
   // Proyección
   'proyecciones':'proyeccion',
   'forecast-ml':'proyeccion', 'forecast-metodologia':'proyeccion',
+  // Noticias
+  'noticias':'noticias',
   // Metodología
-  'correlacion':'metodologia', 'noticias':'metodologia', 'bibliografia':'metodologia',
+  'correlacion':'metodologia', 'bibliografia':'metodologia',
 }};
 
 // Sección por defecto al activar cada bloque
@@ -3582,6 +3610,7 @@ const DEFAULT_SECTION = {{
   'historia':   'historia',
   'diagnostico':'dimensiones',
   'proyeccion': 'proyecciones',
+  'noticias':   'noticias',
   'metodologia':'correlacion',
 }};
 
@@ -5581,7 +5610,10 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     el = document.getElementById('vhIcivDelta');
     if (el) el.innerHTML = _delta(ic.delta, 1, ' pts');
     el = document.getElementById('vhIcivYear');
-    if (el) {{ el.textContent = 'ICIV ' + ic.year + (ic.coverage != null ? ' · ' + ic.coverage + '% cob.' : ''); }}
+    if (el) {{
+      el.textContent = 'ICIV ' + ic.year + (ic.coverage != null ? ' · ' + ic.coverage + '% cob.' : '')
+        + (ic.is_reliable ? '' : ' · confiable: ' + ic.reliable_year + ' (' + ic.reliable_score.toFixed(1) + ')');
+    }}
     // color del score
     var sc = document.getElementById('vhIcivScore');
     if (sc) sc.style.color = ic.color;
@@ -5716,6 +5748,12 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     if (el2) el2.innerHTML = _deltaStr(ic.delta, 1, ' pts');
     el2 = document.getElementById('inicioAY');
     if (el2) el2.textContent = 'ICIV ' + ic.year + (ic.coverage != null ? ' · ' + ic.coverage + '% cob.' : '');
+    el2 = document.getElementById('inicioAR');
+    if (el2) {{
+      el2.textContent = ic.is_reliable
+        ? 'Lectura anual con cobertura alta.'
+        : 'Último anual confiable: ' + ic.reliable_year + ' · ' + ic.reliable_score.toFixed(1) + ' · ' + ic.reliable_coverage + '% cob.';
+    }}
     // Aguja gauge simplificada
     // El arco va de izquierda (score=0) a tope (score=50) a derecha (score=100)
     // Fórmula correcta: angle_rad = π*(1 - score/100), y negativa porque SVG y↓
