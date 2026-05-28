@@ -10,7 +10,9 @@ replacement series.
 from __future__ import annotations
 
 import time
-from datetime import date
+import json
+from datetime import date, datetime, timezone
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -20,7 +22,42 @@ from iciv.config import settings
 BASE_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 QUERY = "Venezuela"
 START_YEAR = 2015
-PAUSE_SECONDS = 12
+PAUSE_SECONDS = 10
+RETRIES = 3
+HEADERS = {
+    "User-Agent": "ICIV academic dashboard data fetcher (Felipe Gomez, Universidad EIA)",
+    "Accept": "application/json,text/plain,*/*",
+}
+
+
+def _status_path() -> Path:
+    return settings.paths.raw_gdelt_monthly.with_suffix(".status.json")
+
+
+def _write_status(ok: bool, message: str, rows: int = 0) -> None:
+    payload = {
+        "ok": ok,
+        "message": message,
+        "rows": rows,
+        "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "source": "GDELT DOC 2.0 API",
+        "policy": "No synthetic fallback; preserve existing non-empty data on fetch failure.",
+    }
+    _status_path().write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _existing_non_empty() -> pd.DataFrame | None:
+    path = settings.paths.raw_gdelt_monthly
+    if not path.exists() or path.stat().st_size <= 80:
+        return None
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return None
+    required = {"año", "mes", "variable", "valor", "fuente"}
+    if df.empty or not required.issubset(df.columns):
+        return None
+    return df
 
 
 def _timeline(mode: str) -> pd.DataFrame:
@@ -32,9 +69,22 @@ def _timeline(mode: str) -> pd.DataFrame:
         "enddatetime": f"{date.today().year}1231235959",
         "timelinesmooth": 0,
     }
-    response = requests.get(BASE_URL, params=params, timeout=120)
-    response.raise_for_status()
-    payload = response.json()
+    last_error: Exception | None = None
+    for attempt in range(1, RETRIES + 1):
+        try:
+            response = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=90)
+            response.raise_for_status()
+            text = response.text.strip()
+            if not text:
+                raise ValueError("respuesta vacia")
+            payload = response.json()
+            break
+        except Exception as exc:
+            last_error = exc
+            if attempt < RETRIES:
+                time.sleep(PAUSE_SECONDS * attempt)
+    else:
+        raise RuntimeError(f"GDELT {mode} no entrego JSON valido: {last_error}")
     points = (payload.get("timeline") or [{}])[0].get("data") or []
 
     rows: list[dict] = []
@@ -54,7 +104,15 @@ def fetch_gdelt_monthly() -> pd.DataFrame:
         time.sleep(PAUSE_SECONDS)
         volume = _timeline("timelinevolraw")
     except Exception as exc:
-        print(f"  GDELT monthly sin datos: {exc}")
+        existing = _existing_non_empty()
+        if existing is not None:
+            msg = f"fetch fallo; se conserva CSV previo no vacio ({len(existing)} filas): {exc}"
+            print(f"  GDELT monthly: {msg}")
+            _write_status(False, msg, len(existing))
+            return existing
+        msg = f"sin datos reales: {exc}"
+        print(f"  GDELT monthly {msg}")
+        _write_status(False, msg, 0)
         return pd.DataFrame(columns=["año", "mes", "variable", "valor", "fuente"])
 
     frames: list[pd.DataFrame] = []
@@ -75,13 +133,16 @@ def fetch_gdelt_monthly() -> pd.DataFrame:
         frames.append(by_month)
 
     if not frames:
+        _write_status(False, "API respondio pero sin puntos validos", 0)
         return pd.DataFrame(columns=["año", "mes", "variable", "valor", "fuente"])
 
     result = pd.concat(frames, ignore_index=True)
     result["fuente"] = "GDELT DOC 2.0 API monthly timeline"
-    return result[["año", "mes", "variable", "valor", "fuente"]].sort_values(
+    result = result[["año", "mes", "variable", "valor", "fuente"]].sort_values(
         ["año", "mes", "variable"]
     ).reset_index(drop=True)
+    _write_status(True, "fetch exitoso", len(result))
+    return result
 
 
 if __name__ == "__main__":

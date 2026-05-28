@@ -134,7 +134,7 @@ mensual observada.
 
 Exija:
 
-1. Backtesting rolling-origin.
+1. Revisar backtesting rolling-origin ya implementado.
 2. Comparacion contra naive estacional y ETS.
 3. MAE/RMSE y cobertura de intervalos.
 4. Registro de meses de baja cobertura.
@@ -184,11 +184,11 @@ o mejora una pregunta visible.
 
 ### Mediano plazo
 
-1. Backtesting formal del forecast Pulse.
-2. Panel de expertos o encuesta estructurada para AHP.
-3. Outcome validation adicional que no comparta inputs con el score.
-4. Estudio de NASA monthly y/o comercio mensual.
-5. Pruebas de regresion visual del dashboard en desktop.
+1. Panel de expertos o encuesta estructurada para AHP.
+2. Outcome validation adicional que no comparta inputs con el score.
+3. Estudio de NASA monthly y/o comercio mensual.
+4. Pruebas de regresion visual del dashboard en desktop.
+5. Backtesting ampliado con regresores exogenos solo si mejora fuera de muestra.
 
 ### Largo plazo
 

@@ -35,3 +35,5 @@ data/processed/*.xlsx
 secrets.yaml
 !data/processed/iciv_dataset_largo.csv
 !data/processed/iciv_dataset_wide.csv
+!data/processed/pulse_forecast_backtest.csv
+!data/processed/pulse_forecast_backtest_summary.csv

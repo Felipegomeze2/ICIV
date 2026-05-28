@@ -102,7 +102,47 @@ core ni se publicite como cobertura efectiva.
 - UNDP/OWID para HDI distribuido.
 - Guardian API.
 - GDELT DOC API.
+- Google News RSS filtrado por whitelist internacional para la pestana de
+  noticias; no entra al score.
 - Figshare/Li et al. para luces nocturnas.
+
+## Noticias internacionales del dashboard
+
+La pestana `Noticias` combina dos capas:
+
+| Capa | Archivo / API | Uso | Entra al score |
+|---|---|---|---|
+| Guardian | API abierta de The Guardian | tarjetas en vivo y variables Guardian mensual | Guardian mensual si entra al Pulse |
+| Snapshot internacional | `data/raw/international_news.csv` desde Google News RSS | contexto cualitativo y diversidad de medios | no |
+
+El snapshot internacional se filtra con una lista cerrada de medios
+internacionales: Reuters, AP, BBC, Financial Times, Bloomberg, CNBC, CNN, NPR,
+The Guardian, Al Jazeera, France 24, DW, The New York Times, The Washington Post,
+The Economist, Miami Herald, Yahoo Finance, MarketWatch, The Wall Street Journal,
+Forbes, Voice of America, The Independent, ABC, CBS, NBC, Politico, Semafor y
+Euronews, entre otros definidos en codigo.
+
+Se excluyen fuentes locales venezolanas o dominios `.ve`. Si el RSS no entrega
+noticias que pasen el filtro, el archivo queda vacio; no se crean noticias de
+relleno.
+
+## GDELT
+
+GDELT DOC API se conserva como fuente opcional de percepcion mensual. Como su API
+publica puede rate-limit o devolver respuestas no JSON, el fetch escribe un
+archivo de estado:
+
+```text
+iciv/data/raw/gdelt_monthly.status.json
+```
+
+Politica vigente:
+
+- Si GDELT entrega filas reales, se actualiza `gdelt_monthly.csv`.
+- Si falla y existe una serie previa no vacia, se preserva la serie previa y se
+  registra la advertencia.
+- Si falla y no existe serie real previa, el CSV queda vacio.
+- Nunca se crea fallback sintetico para simular cobertura.
 
 ## Fuentes candidatas para subir coverage o valor
 
@@ -129,8 +169,8 @@ por cantidad baja claridad y puede bajar cobertura efectiva.
 
 - Score anual: mostrar cobertura de peso disponible por ano.
 - Pulse: mostrar cobertura por mes y numero de variables disponibles.
-- Control semanal: FRED, Guardian y EIA son core; GDELT es opcional por rate
-  limit. Si una fuente core queda demasiado vieja, el workflow falla antes de
-  publicar una actualizacion.
+- Control semanal: FRED, Guardian y EIA son core; GDELT y noticias RSS son
+  complementarias. Si una fuente core queda demasiado vieja, el workflow falla
+  antes de publicar una actualizacion.
 - Faltante es faltante. No se rellena con un numero inventado para que la grafica
   parezca continua.

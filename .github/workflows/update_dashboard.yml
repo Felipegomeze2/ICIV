@@ -63,6 +63,7 @@ jobs:
           python scripts/fetch_guardian_monthly.py  || echo "WARN: fetch_guardian_monthly falló (continuando)"
           # GDELT DOC — público, puede rate-limit; el quality gate lo marca como opcional
           python scripts/fetch_gdelt_monthly.py     || echo "WARN: fetch_gdelt_monthly falló (continuando)"
+          python scripts/fetch_international_news.py || echo "WARN: fetch_international_news falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"
           # UNHCR — datos públicos
@@ -105,6 +106,7 @@ jobs:
           # Añadir dashboard y datos crudos actualizados (si hubo fetch)
           git add iciv_dashboard.html
           git add iciv/data/raw/ || true
+          git add iciv/data/processed/pulse_forecast_backtest*.csv || true
 
           # Solo hacer commit si hay cambios
           if git diff --quiet --cached; then

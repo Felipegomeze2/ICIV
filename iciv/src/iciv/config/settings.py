@@ -40,6 +40,7 @@ class Paths:
     raw_fred_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "fred_monthly.csv"
     raw_guardian_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "guardian_monthly.csv"
     raw_gdelt_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "gdelt_monthly.csv"
+    raw_international_news: Path = _PROJECT_ROOT / "data" / "raw" / "international_news.csv"
 
     config: Path = _PROJECT_ROOT / "config"
     scripts: Path = _PROJECT_ROOT / "scripts"

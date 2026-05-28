@@ -83,7 +83,9 @@ El score mensual:
    cobertura del mes.
 
 GDELT es opcional en el control semanal porque su API publica puede aplicar
-rate limits. Si falla, Pulse no fabrica sustituto y la cobertura lo revela.
+rate limits. Si falla, Pulse no fabrica sustituto y la cobertura lo revela. El
+fetch deja un `gdelt_monthly.status.json` para auditar si la falla fue de API,
+red o ausencia de respuesta valida.
 
 ## SATV Pulse
 
@@ -122,10 +124,9 @@ como baseline de serie temporal porque:
 - entrega bandas de incertidumbre;
 - evita inventar escenarios politicos futuros.
 
-Trabajo posterior puede comparar ETS, ARIMA estacional, modelos dinamicos con
-regresores exogenos y backtesting rolling-origin. Un modelo mas complejo solo
-debe subir a la vista publica si mejora error fuera de muestra y conserva
-interpretabilidad.
+El proyecto ya incluye backtesting rolling-origin contra naive, seasonal naive
+y ETS. Un modelo mas complejo con regresores exogenos solo debe subir a la vista
+publica si mejora error fuera de muestra y conserva interpretabilidad.
 
 ## Visualizacion
 

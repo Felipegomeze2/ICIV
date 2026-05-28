@@ -30,12 +30,18 @@ La IED se excluye del score y se conserva como outcome economico externo para el
 bloque exploratorio de validacion.
 
 El Pulse usa 11 variables mensuales observadas de FRED, EIA International,
-Guardian y GDELT. El componente SATV se alimenta solo de Pulse para que sus
-alertas tengan una frecuencia coherente.
+Guardian y GDELT. GDELT es opcional por estabilidad de API: si falla, se registra
+la advertencia y no se fabrica una serie sustituta. El componente SATV se
+alimenta solo de Pulse para que sus alertas tengan una frecuencia coherente.
 
 La prediccion visible es una sola trayectoria SARIMA de seis meses sobre Pulse,
-con bandas de incertidumbre. Los escenarios politicos optimista, base y
-pesimista no forman parte de la vista publica principal.
+con bandas de incertidumbre y backtesting rolling-origin contra naive, seasonal
+naive y ETS. Los escenarios politicos optimista, base y pesimista no forman
+parte de la vista publica principal.
+
+La pestana de noticias combina Guardian en vivo con un snapshot de Google News
+RSS filtrado por medios internacionales. Esa capa es contextual y no modifica
+el score.
 
 ## Documentacion canonica
 
@@ -46,6 +52,8 @@ pesimista no forman parte de la vista publica principal.
   criterios para tomar decisiones antes de defensa o publicacion.
 - [docs/DATASET_ICIV.md](./docs/DATASET_ICIV.md): estructura del dataset publico
   generado por el pipeline.
+- [docs/BACKTESTING_FORECAST.md](./docs/BACKTESTING_FORECAST.md): evaluacion
+  fuera de muestra del forecast Pulse.
 - [iciv/data/sources/PROVENANCE.md](./iciv/data/sources/PROVENANCE.md): trazabilidad
   de artefactos de datos mantenida junto al pipeline.
 

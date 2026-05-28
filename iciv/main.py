@@ -93,6 +93,7 @@ def fase_fetch(settings: Settings) -> None:
         ("FRED Monthly -- WTI/Brent/Fed/VIX...",   "scripts.fetch_fred_monthly",  "fetch_fred_monthly"),
         ("Guardian Monthly -- VADER mensual",      "scripts.fetch_guardian_monthly", "fetch_guardian_monthly"),
         ("GDELT Monthly -- tono/cobertura global", "scripts.fetch_gdelt_monthly", "fetch_gdelt_monthly"),
+        ("Noticias internacionales -- RSS filtrado", "scripts.fetch_international_news", "fetch_international_news"),
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
         ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "build_freedom_house"),
@@ -124,6 +125,7 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_fred_monthly":  settings.paths.raw_fred_monthly,
                 "fetch_guardian_monthly": settings.paths.raw_guardian_monthly,
                 "fetch_gdelt_monthly": settings.paths.raw_gdelt_monthly,
+                "fetch_international_news": settings.paths.raw_international_news,
                 "fetch_guardian":      settings.paths.raw_guardian,
                 "fetch_fred":          settings.paths.raw_fred,
                 "build_freedom_house": settings.paths.raw_freedom_house,
@@ -418,7 +420,25 @@ def fase_ml_forecast(pulse_df: pd.DataFrame, annual_df: pd.DataFrame) -> dict:
     logger.info("-" * 60)
     annual_for_ml = annual_df[["año", "iciv_score"]].dropna()
     forecaster = PulseForecaster(pulse_df, annual_for_ml)
-    return forecaster.compute_forecast()
+    result = forecaster.compute_forecast()
+    try:
+        from iciv.config import settings as project_settings
+        from iciv.ml.pulse_backtest import run_pulse_backtest
+
+        bt = run_pulse_backtest(pulse_df, project_settings.paths.data_processed)
+        result["backtest"] = bt["payload"]
+        if bt["payload"].get("available"):
+            logger.info(
+                "  Backtest Pulse: %s predicciones, %s origenes",
+                bt["payload"].get("n_predictions"),
+                bt["payload"].get("n_origins"),
+            )
+        else:
+            logger.warning("  Backtest Pulse no disponible: %s", bt["payload"].get("reason"))
+    except Exception as exc:
+        logger.warning("  Backtest Pulse omitido: %s", exc)
+        result["backtest"] = {"available": False, "reason": str(exc)}
+    return result
 
 
 # =============================================================================
@@ -1352,6 +1372,18 @@ def fase_dashboard(
     # ── ML Forecast (SARIMA + Nowcast) ────────────────────────────────────────
     _ml_payload = ml_forecast or {}
     ml_forecast_json = json.dumps(_ml_payload, cls=_NumpyEncoder, ensure_ascii=False)
+
+    # Noticias internacionales: snapshot RSS filtrado server-side.
+    _intl_news: list[dict] = []
+    try:
+        _news_path = settings.paths.raw_international_news
+        if _news_path.exists() and _news_path.stat().st_size > 40:
+            _news_df = pd.read_csv(_news_path).fillna("")
+            _news_df = _news_df.head(24)
+            _intl_news = _news_df.to_dict("records")
+    except Exception as _ne:
+        logger.warning(f"  International news load failed: {_ne}")
+    intl_news_json = json.dumps(_intl_news, cls=_NumpyEncoder, ensure_ascii=False)
 
     _sector = sector_data or {}
     sector_json = json.dumps(_sector, cls=_NumpyEncoder, ensure_ascii=False)
@@ -3079,9 +3111,9 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="stat-sub">incertidumbre del forecast</div>
     </div>
     <div class="stat">
-      <div class="stat-label">Uso</div>
-      <div class="stat-val stat-neu" style="font-size:1rem">Monitor</div>
-      <div class="stat-sub">no escenario normativo</div>
+      <div class="stat-label">Backtesting</div>
+      <div class="stat-val stat-neu" id="mlBacktestBest" style="font-size:1rem">—</div>
+      <div class="stat-sub" id="mlBacktestSub">rolling-origin</div>
     </div>
   </div>
 
@@ -3101,6 +3133,14 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       SARIMA auto-selección por AIC entre especificaciones candidatas sobre observaciones
       Pulse con cobertura suficiente. Ver metodología para supuestos y límites.
     </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:3px solid #f1c40f">
+    <div class="ct">Backtesting rolling-origin</div>
+    <div id="mlBacktestSummary" style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-top:8px">
+      Ejecuta <code>python scripts/backtest_pulse_forecast.py</code> para generar la evidencia fuera de muestra.
+    </div>
+    <div id="mlBacktestTable" style="margin-top:12px"></div>
   </div>
 </section>
 
@@ -3178,22 +3218,32 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="noticias">
   <div class="section-header">
     <span class="section-title">Noticias Venezuela</span>
-    <span class="section-sub">Guardian en vivo + accesos rapidos a GDELT y prensa internacional</span>
+    <span class="section-sub">Guardian en vivo + snapshot RSS internacional filtrado</span>
   </div>
 
   <div class="card" style="margin-bottom:16px">
     <div class="ct">Fuentes complementarias</div>
     <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:8px">
-      Las tarjetas se cargan desde The Guardian por API abierta. Para ampliar lectura sin agregar
-      dependencias fragiles al dashboard, se incluyen accesos directos a busquedas internacionales
-      sobre Venezuela en GDELT, Reuters, AP y Google News. Estas fuentes externas no entran al score
-      salvo que pasen por el pipeline y queden documentadas.
+      Esta pestana combina The Guardian por API abierta con un snapshot de Google News RSS filtrado
+      por una lista cerrada de medios internacionales. Se excluyen fuentes locales venezolanas y la
+      seccion no modifica el ICIV ni el Pulse: solo sirve como evidencia cualitativa de contexto.
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
       <a class="news-chip" href="https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela%20investment&mode=artlist&format=html" target="_blank" rel="noopener">GDELT</a>
       <a class="news-chip" href="https://www.reuters.com/site-search/?query=Venezuela%20investment" target="_blank" rel="noopener">Reuters</a>
       <a class="news-chip" href="https://apnews.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">AP</a>
+      <a class="news-chip" href="https://www.bbc.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">BBC</a>
+      <a class="news-chip" href="https://www.ft.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">Financial Times</a>
+      <a class="news-chip" href="https://www.bloomberg.com/search?query=Venezuela%20economy" target="_blank" rel="noopener">Bloomberg</a>
       <a class="news-chip" href="https://news.google.com/search?q=Venezuela%20investment%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Google News</a>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="ct">Prensa internacional agregada</div>
+    <div class="cs">RSS filtrado · sin fuentes venezolanas · no entra al score</div>
+    <div class="news-grid" id="intlNewsGrid" style="margin-top:12px">
+      <div class="news-status">Cargando snapshot internacional...</div>
     </div>
   </div>
 
@@ -4024,6 +4074,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
 
 // ── Guardian News ─────────────────────────────────────────────────────────────
 (function() {{
+  const INTL_NEWS = {intl_news_json};
   const GUARDIAN_KEY = '9d4cf6fc-8864-4693-adda-987c76fc7476';
   const PAGE_SIZE    = 12;
   let   allArticles  = [];
@@ -4046,6 +4097,25 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     if (!iso) return '';
     const d = new Date(iso);
     return d.toLocaleDateString('es-VE', {{ year:'numeric', month:'short', day:'numeric' }});
+  }}
+
+  function renderIntlNews() {{
+    const grid = document.getElementById('intlNewsGrid');
+    if (!grid) return;
+    if (!INTL_NEWS || INTL_NEWS.length === 0) {{
+      grid.innerHTML = '<div class="news-status">No hay snapshot internacional disponible. El pipeline no fabrica noticias si el RSS no entrega fuentes validas.</div>';
+      return;
+    }}
+    grid.innerHTML = INTL_NEWS.slice(0, 12).map(a => `
+      <div class="news-card">
+        <div class="news-thumb-ph"></div>
+        <div class="news-body">
+          <div class="news-section">${{a.source || 'Fuente internacional'}}</div>
+          <div class="news-title"><a href="${{a.url}}" target="_blank" rel="noopener">${{a.title}}</a></div>
+          <div class="news-trail">${{a.query || 'Venezuela economy'}}</div>
+          <div class="news-date">${{fmtDate(a.published_at)}}</div>
+        </div>
+      </div>`).join('');
   }}
 
   function renderCard(a) {{
@@ -4091,6 +4161,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
 
   async function loadNews() {{
+    renderIntlNews();
     const grid = document.getElementById('newsGrid');
     const url  = `https://content.guardianapis.com/search`
                + `?section=world&tag=world/venezuela`
@@ -5341,6 +5412,33 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     var elA = document.getElementById('mlSarimaAic');
     if (elO) elO.textContent = ML.sarima.order;
     if (elA) elA.textContent = 'AIC: ' + (ML.sarima.aic != null ? ML.sarima.aic.toFixed(2) : '—');
+  }}
+
+  if (ML.backtest && ML.backtest.available) {{
+    var bt = ML.backtest;
+    var best1 = (bt.best_by_horizon || []).find(function(r) {{ return r.horizon === 1; }}) || (bt.best_by_horizon || [])[0];
+    var elBt = document.getElementById('mlBacktestBest');
+    var elBtSub = document.getElementById('mlBacktestSub');
+    if (elBt && best1) elBt.textContent = best1.model + ' · MAE ' + Number(best1.mae).toFixed(2);
+    if (elBtSub) elBtSub.textContent = bt.n_origins + ' orígenes · ' + bt.n_predictions + ' predicciones';
+    var elBtSummary = document.getElementById('mlBacktestSummary');
+    if (elBtSummary) {{
+      elBtSummary.innerHTML = 'Evaluación fuera de muestra con rolling-origin, usando meses con cobertura ≥ '
+        + bt.config.min_coverage_pct + '%. Si SARIMA no es el mejor en MAE, el dashboard lo conserva como baseline técnico y muestra el ganador.';
+    }}
+    var elBtTable = document.getElementById('mlBacktestTable');
+    if (elBtTable) {{
+      var rows = (bt.best_by_horizon || []).map(function(r) {{
+        return '<tr><td>' + r.horizon + 'm</td><td>' + r.model + '</td><td style="text-align:right">' +
+          Number(r.mae).toFixed(2) + '</td><td style="text-align:right">' + Number(r.rmse).toFixed(2) + '</td></tr>';
+      }}).join('');
+      elBtTable.innerHTML = '<table class="ahp-table" style="width:100%;max-width:620px">' +
+        '<thead><tr><th>Horizonte</th><th>Mejor modelo</th><th style="text-align:right">MAE</th><th style="text-align:right">RMSE</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>';
+    }}
+  }} else if (ML.backtest) {{
+    var elBtNote = document.getElementById('mlBacktestSummary');
+    if (elBtNote) elBtNote.textContent = 'Backtesting no disponible: ' + (ML.backtest.reason || 'muestra insuficiente');
   }}
 
   // Nowcast stats

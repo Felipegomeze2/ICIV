@@ -1,0 +1,8 @@
+{
+  "ok": false,
+  "message": "sin datos reales: GDELT timelinetone no entrego JSON valido: Expecting value: line 1 column 1 (char 0)",
+  "rows": 0,
+  "updated_at_utc": "2026-05-28T16:58:17.441263+00:00",
+  "source": "GDELT DOC 2.0 API",
+  "policy": "No synthetic fallback; preserve existing non-empty data on fetch failure."
+}
