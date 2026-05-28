@@ -251,6 +251,7 @@ def fase_dataset_publico(
     settings: Settings,
 ) -> tuple[Path, Path]:
     """Exporta el dataset publico del proyecto en formato ancho y largo."""
+    from iciv.data.dataset_package import build_dataset_package
     from iciv.index.dimensions import DIMENSIONS
 
     out_dir = settings.paths.data_processed
@@ -300,13 +301,22 @@ def fase_dataset_publico(
                 "dimension": meta.dimension.value,
                 "direccion": meta.direction.value,
                 "rol": role,
+                "entra_iciv_anual": var in core_vars,
+                "entra_pulse_mensual": var in pulse_vars,
+                "entra_validacion_outcome": var == "ied_neta_usd",
                 "descripcion": meta.description,
                 "nota": meta.notes,
             })
 
     long_path = out_dir / "iciv_dataset_largo.csv"
     pd.DataFrame(rows).to_csv(long_path, index=False, encoding="utf-8-sig")
-    logger.info("  OK Dataset publico -> %s, %s", wide_path.name, long_path.name)
+    package = build_dataset_package(df_raw, wide_path, long_path, settings, release_id="latest")
+    logger.info(
+        "  OK Dataset publico -> %s, %s, release %s",
+        wide_path.name,
+        long_path.name,
+        package.release_dir.relative_to(settings.paths.root),
+    )
     return wide_path, long_path
 
 

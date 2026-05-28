@@ -91,7 +91,14 @@ python scripts/check_pulse_inputs.py
 
 Tambien genera `iciv/data/processed/iciv_dataset_wide.csv` y
 `iciv/data/processed/iciv_dataset_largo.csv` para auditoria, backtesting y
-replicacion.
+replicacion. Adicionalmente crea el paquete auditable:
+
+```text
+iciv/data/releases/latest/
+```
+
+Ese paquete incluye diccionario, cobertura anual, provenance por fuente,
+manifest con hashes y copias de los CSV publicos.
 
 ## Modulos que importan en defensa
 

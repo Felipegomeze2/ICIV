@@ -106,6 +106,7 @@ jobs:
           # Añadir dashboard y datos crudos actualizados (si hubo fetch)
           git add iciv_dashboard.html
           git add iciv/data/raw/ || true
+          git add iciv/data/releases/latest/ || true
           git add iciv/data/processed/pulse_forecast_backtest*.csv || true
 
           # Solo hacer commit si hay cambios

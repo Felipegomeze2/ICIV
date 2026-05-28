@@ -194,7 +194,7 @@ o mejora una pregunta visible.
 
 1. Versionar releases metodologicos del indicador.
 2. Separar pipeline de datos, modelo y frontend si el dashboard crece.
-3. Publicar dataset derivado con data dictionary y provenance por release.
+3. Mantener releases historicos del dataset ademas de `data/releases/latest`.
 4. Diseñar comparacion regional solo si la misma politica de fuentes puede
    sostenerse para todos los paises comparados.
 5. Convertir SATV en sistema de alertas evaluado contra eventos si se requiere

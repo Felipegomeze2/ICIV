@@ -1,6 +1,6 @@
 # Provenance de datos ICIV
 
-Fecha de corte: 2026-05-23.
+Fecha de corte: 2026-05-28.
 
 Este archivo documenta la trazabilidad vigente. La regla principal es simple:
 ningun score debe depender de fuentes originadas en Venezuela, valores inventados
@@ -40,9 +40,11 @@ El pipeline genera:
 
 - `iciv/data/processed/iciv_dataset_wide.csv`
 - `iciv/data/processed/iciv_dataset_largo.csv`
+- `iciv/data/releases/latest/`
 
-Estos archivos resumen variables publicadas, fuente, direccion, rol y valores
-normalizados. No sustituyen a los datos crudos; son una capa de auditoria.
+El paquete `data/releases/latest/` incluye diccionario, cobertura anual,
+provenance por fuente, manifest con hashes y copias de los CSV publicos. No
+sustituye a los datos crudos; es una capa de auditoria reproducible.
 
 ## Fuentes apartadas
 
@@ -53,5 +55,7 @@ trabajo futuro. No deben presentarse como parte del score si no aparecen en
 ## Controles
 
 - `scripts/check_pulse_inputs.py` revisa vigencia de fuentes mensuales.
+- `scripts/build_dataset_package.py` reconstruye el paquete de dataset desde
+  artefactos procesados.
 - `python main.py --no-fetch --no-open` regenera dashboard y dataset.
 - `python -m pytest` valida loaders y pipeline basico.

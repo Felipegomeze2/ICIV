@@ -17,6 +17,7 @@ class Paths:
 
     data_raw: Path = _PROJECT_ROOT / "data" / "raw"
     data_processed: Path = _PROJECT_ROOT / "data" / "processed"
+    data_releases: Path = _PROJECT_ROOT / "data" / "releases"
 
     raw_wdi: Path = _PROJECT_ROOT / "data" / "raw" / "wdi.csv"
     raw_wgi: Path = _PROJECT_ROOT / "data" / "raw" / "wgi.csv"
@@ -46,7 +47,7 @@ class Paths:
     scripts: Path = _PROJECT_ROOT / "scripts"
 
     def ensure_exists(self) -> None:
-        for folder in (self.data_raw, self.data_processed):
+        for folder in (self.data_raw, self.data_processed, self.data_releases):
             folder.mkdir(parents=True, exist_ok=True)
 
 

@@ -1,0 +1,18 @@
+﻿fuente_id,fuente_nombre,origen_fuente,raw_files,n_variables_catalogadas,n_variables_iciv_anual,n_variables_pulse_mensual,roles,variables,politica
+CPI,Transparency International CPI,international,cpi.csv,1,1,0,core_anual,cpi_score,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+EIA,U.S. Energy Information Administration International,international,eia.csv; eia_monthly.csv,3,3,1,core_anual,electricidad_generacion_bkwh;gas_natural_produccion_bcf;petroleo_crudo_produccion_tbpd,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+FRED,Federal Reserve Bank of St. Louis FRED,international,fred.csv; fred_monthly.csv,6,2,6,core_anual;pulse_mensual,brent_precio_usd;tasa_fed_funds_pct;usd_index_broad;ust_10y_yield_pct;vix_volatility;wti_precio_usd,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+FREEDOM_HOUSE,Freedom House,international,freedom_house.csv,1,1,0,core_anual,freedom_house_score,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+GDELT,GDELT DOC 2.0 API,international,gdelt_monthly.csv; gdelt_monthly.status.json,2,0,2,pulse_mensual,gdelt_cobertura_vol;gdelt_tono_noticias,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+GUARDIAN,The Guardian Open Platform,international,guardian.csv; guardian_monthly.csv,2,2,2,core_anual,guardian_articulos_venezuela;guardian_tono_titulares,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+HDI,UNDP Human Development Report,international,hdi.csv,1,1,0,core_anual,hdi,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+ILOSTAT,International Labour Organization / ILOSTAT,international,ilostat.csv,1,1,0,core_anual,ilo_empleo_informal_pct,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+IMF,International Monetary Fund,international,imf.csv,2,2,0,core_anual,desempleo_pct;inflacion_deflactor_pib_pct,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+PTS,Political Terror Scale,international,pts.csv,1,1,0,core_anual,pts_terror_politico,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+UNCTAD,UNCTAD,international,unctad.csv,1,1,0,core_anual,lsci_conectividad_maritima,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+UNHCR,UNHCR/R4V,international,unhcr.csv,1,1,0,core_anual,migrantes_vzla_millones,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+VIIRS,Li et al./Figshare harmonized nighttime lights,international,viirs.csv; viirs_states.csv,1,1,0,core_anual,luminosidad_nocturna_idx,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+WDI,World Bank World Development Indicators,international,wdi.csv,6,5,0,core_anual;outcome_externo,acceso_electricidad_pct;exportaciones_pct_pib;ied_neta_usd;pib_crecimiento_real_pct;reservas_internacionales_usd;tipo_cambio_oficial_lcu_usd,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+WGI,World Bank Worldwide Governance Indicators,international,wgi.csv,1,1,0,core_anual,wgi_promedio_sc,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+WHO,World Health Organization,international,who.csv,2,2,0,core_anual,esperanza_vida_anos;mortalidad_infantil_x1000,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
+WJP,World Justice Project,international,wjp.csv,1,1,0,core_anual,wjp_rule_of_law,Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.
