@@ -3,7 +3,7 @@ inflacion_deflactor_pib_pct,core_anual,IMF,27,27,100.0,2000,2026,
 pib_crecimiento_real_pct,core_anual,WDI,25,27,92.6,2000,2024,2025;2026
 reservas_internacionales_usd,core_anual,WDI,18,27,66.7,2000,2017,2018;2019;2020;2021;2022;2023;2024;2025;2026
 tipo_cambio_oficial_lcu_usd,core_anual,WDI,23,27,85.2,2000,2024,2018;2019;2025;2026
-wti_precio_usd,core_anual,FRED,27,27,100.0,2000,2026,
+wti_precio_usd,core_anual,FRED,26,27,96.3,2000,2025,2026
 tasa_fed_funds_pct,core_anual,FRED,27,27,100.0,2000,2026,
 petroleo_crudo_produccion_tbpd,core_anual,EIA,26,27,96.3,2000,2025,2026
 gas_natural_produccion_bcf,core_anual,EIA,25,27,92.6,2000,2024,2025;2026

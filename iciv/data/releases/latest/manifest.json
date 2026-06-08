@@ -1,6 +1,6 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-06-01T12:39:45.796230+00:00",
+  "generated_at_utc": "2026-06-08T12:04:46.544297+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -11,12 +11,12 @@
   "files": {
     "README.md": {
       "bytes": 1585,
-      "sha256": "762be30cd8fe62f22c1ce4f73a0f512ae679a9182dd8fb63b821c7777133a865",
+      "sha256": "222968fd8cffd41a0afd6404b79300d8ceafb771f706e0bb9bf1cc4be1ab76a7",
       "rows": null
     },
     "coverage_annual.csv": {
-      "bytes": 2737,
-      "sha256": "2f4056f15fb12a6a3e836a3b18ac281561f5b1eeeaf170068245e4a752bad7b6",
+      "bytes": 2740,
+      "sha256": "b5198520659326b120e3d24d25b2c278db0eceacbaf38f25b6c6b8beb74cb5a2",
       "rows": 33
     },
     "data_dictionary.csv": {
@@ -30,23 +30,23 @@
       "rows": null
     },
     "iciv_dataset_largo.csv": {
-      "bytes": 122398,
-      "sha256": "26aeeace71fbaf43c5205d45257d0b7d358bb5cc3f3b43b11afa0740dbe04f67",
+      "bytes": 122120,
+      "sha256": "3c127514698663539010d747c3f86ef5b6b2a0066f93a8d1b5691e6cbbcf07e6",
       "rows": 837
     },
     "iciv_dataset_wide.csv": {
-      "bytes": 9151,
-      "sha256": "370ef17a05cd18e1889f4075069f2f59cfb42c2daab95c2ffca163fc8f500e09",
+      "bytes": 8875,
+      "sha256": "c14235a5b89a66bb31c5c1aad2fec529e09173762b490bfc8d065e7ed2947b19",
       "rows": 27
     },
     "pulse_forecast_backtest.csv": {
-      "bytes": 35429,
-      "sha256": "2e2d5ed92dfee2e9c45f315178079638ec03286b5f61fff1f62f9b3ffc55b1bd",
+      "bytes": 35446,
+      "sha256": "ce68c71a13d1ec55aac25070a809cea018511785ed2cd0354d7e902ba9057469",
       "rows": 420
     },
     "pulse_forecast_backtest_summary.csv": {
-      "bytes": 514,
-      "sha256": "1f82fca69d5f08338e27b32b1e10653cc1b095da091fcd6a1ffa44955107f283",
+      "bytes": 513,
+      "sha256": "3be9518dd8b5c90f341e6cdebb6867514b6258c809d379598ec9558433c7d80c",
       "rows": 12
     },
     "source_provenance.csv": {

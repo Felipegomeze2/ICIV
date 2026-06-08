@@ -3,7 +3,7 @@
 2000,pib_crecimiento_real_pct,3.6869441668769,69.7636758341683,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2000,reservas_internacionales_usd,15898851162.5221,18.348458166050335,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2000,tipo_cambio_oficial_lcu_usd,-0.1675123767607597,100.0,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2000,wti_precio_usd,30.37852,5.964848029116164,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2000,wti_precio_usd,30.38,5.970959424616636,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2000,tasa_fed_funds_pct,6.235833333333333,0.0,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2000,petroleo_crudo_produccion_tbpd,2893.620218579235,100.0,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2000,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -24,7 +24,7 @@
 2000,acceso_electricidad_pct,98.9,74.4186046511629,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2000,ilo_empleo_informal_pct,35.67,21.849865951742576,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2000,guardian_tono_titulares,-0.0707,71.54600901617609,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2000,guardian_articulos_venezuela,137.0,94.74452554744526,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2000,guardian_articulos_venezuela,137.0,94.81268011527378,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2000,ied_neta_usd,4703000000.0,83.52402745995423,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2000,brent_precio_usd,28.66067193675889,4.826899941260694,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2000,usd_index_broad,,,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -34,7 +34,7 @@
 2001,pib_crecimiento_real_pct,3.39423610779077,69.15746896144141,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2001,reservas_internacionales_usd,12264400222.6423,7.424809542402473,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2001,tipo_cambio_oficial_lcu_usd,-0.14046643238203688,99.74844723174576,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2001,wti_precio_usd,25.98312,0.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2001,wti_precio_usd,25.98,0.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2001,tasa_fed_funds_pct,3.8875,38.14809801001759,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2001,petroleo_crudo_produccion_tbpd,2806.9134410958904,96.33616415455528,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2001,gas_natural_produccion_bcf,1119.83865,100.0,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -65,7 +65,7 @@
 2002,pib_crecimiento_real_pct,-8.85564735286771,43.7876053261886,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2002,reservas_internacionales_usd,12106510810.7652,6.950259607551271,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2002,tipo_cambio_oficial_lcu_usd,0.06481351586975792,97.83915027665576,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2002,wti_precio_usd,26.18496,0.2739102075344246,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2002,wti_precio_usd,26.18,0.27140724657348253,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2002,tasa_fed_funds_pct,1.6666666666666667,74.22498984702855,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2002,petroleo_crudo_produccion_tbpd,2435.3080191780823,80.63380149385542,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2002,gas_natural_produccion_bcf,1003.29915,75.152473458324,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -86,7 +86,7 @@
 2002,acceso_electricidad_pct,99.8,95.34883720930226,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2002,ilo_empleo_informal_pct,33.19,55.09383378016087,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2002,guardian_tono_titulares,-0.0884,66.85229382126757,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2002,guardian_articulos_venezuela,163.0,90.94890510948905,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2002,guardian_articulos_venezuela,163.0,91.06628242074927,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2002,ied_neta_usd,761000000.0,27.14530892448512,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2002,brent_precio_usd,24.993254901960785,0.6170410223359055,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2002,usd_index_broad,,,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -96,7 +96,7 @@
 2003,pib_crecimiento_real_pct,-7.75530004959877,46.06645647812034,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2003,reservas_internacionales_usd,20820560020.6513,33.14106895745548,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2003,tipo_cambio_oficial_lcu_usd,0.20600461612985874,96.52593999913877,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2003,wti_precio_usd,31.07524,6.910343073673156,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2003,wti_precio_usd,31.08,6.920884787623827,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2003,tasa_fed_funds_pct,1.1275,82.98361987274941,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2003,petroleo_crudo_produccion_tbpd,2303.495602739726,75.06400556510803,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2003,gas_natural_produccion_bcf,861.686,44.95896393343888,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -117,7 +117,7 @@
 2003,acceso_electricidad_pct,95.7,0.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2003,ilo_empleo_informal_pct,34.13,42.49329758713131,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2003,guardian_tono_titulares,-0.0371,80.45611243701934,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2003,guardian_articulos_venezuela,177.0,88.9051094890511,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2003,guardian_articulos_venezuela,177.0,89.04899135446685,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2003,ied_neta_usd,1573000000.0,38.75858123569794,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2003,brent_precio_usd,28.850813953488373,5.045165564557888,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2003,usd_index_broad,,,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -127,7 +127,7 @@
 2004,pib_crecimiento_real_pct,18.2866066891244,100.0,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2004,reservas_internacionales_usd,23408050057.2128,40.91798834476805,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2004,tipo_cambio_oficial_lcu_usd,0.2767680767401703,95.86777313469094,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2004,wti_precio_usd,41.506024096385545,21.065605839169244,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2004,wti_precio_usd,41.51,21.074772696430994,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2004,tasa_fed_funds_pct,1.3491666666666668,79.38269933667253,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2004,petroleo_crudo_produccion_tbpd,2563.9085601092897,86.06787810566178,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2004,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -148,7 +148,7 @@
 2004,acceso_electricidad_pct,99.1,79.06976744186032,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2004,ilo_empleo_informal_pct,31.88,72.65415549597856,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2004,guardian_tono_titulares,-0.043,78.89154070538319,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2004,guardian_articulos_venezuela,183.0,88.02919708029196,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2004,guardian_articulos_venezuela,183.0,88.18443804034582,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2004,ied_neta_usd,1489000000.0,37.55720823798627,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2004,brent_precio_usd,38.25969348659004,15.845697667582684,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2004,usd_index_broad,,,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -158,7 +158,7 @@
 2005,pib_crecimiento_real_pct,10.3179138043147,83.49660611155198,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2005,reservas_internacionales_usd,29802940547.6946,60.13837069694821,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2005,tipo_cambio_oficial_lcu_usd,0.32009433390309644,95.46479811652134,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2005,wti_precio_usd,56.637250996015936,41.59967985982033,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2005,wti_precio_usd,56.64,41.606730899715025,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2005,tasa_fed_funds_pct,3.2133333333333334,49.099769865980775,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2005,petroleo_crudo_produccion_tbpd,2839.5498273972603,97.71523007612882,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2005,gas_natural_produccion_bcf,827.92486,37.760710789850286,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -179,7 +179,7 @@
 2005,acceso_electricidad_pct,98.8,72.09302325581388,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2005,ilo_empleo_informal_pct,31.6,76.40750670241285,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2005,guardian_tono_titulares,-0.1065,62.05250596658711,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2005,guardian_articulos_venezuela,178.0,88.75912408759125,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2005,guardian_articulos_venezuela,178.0,88.9048991354467,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2005,ied_neta_usd,2450000000.0,51.30148741418764,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2005,brent_precio_usd,54.57455252918288,34.57366184503034,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2005,usd_index_broad,,,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -189,7 +189,7 @@
 2006,pib_crecimiento_real_pct,9.87214910851037,82.57341450876773,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2006,reservas_internacionales_usd,36715128120.2438,80.91353302883266,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2006,tipo_cambio_oficial_lcu_usd,0.33183204443624864,95.35562634805818,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2006,wti_precio_usd,66.05465863453816,54.37972385855144,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2006,wti_precio_usd,66.05,54.376441850997416,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2006,tasa_fed_funds_pct,4.964166666666666,20.657912549072694,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2006,petroleo_crudo_produccion_tbpd,2785.042293150685,95.4119884655434,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2006,gas_natural_produccion_bcf,918.19,57.00624952940302,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -210,7 +210,7 @@
 2006,acceso_electricidad_pct,99.3,83.72093023255806,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2006,ilo_empleo_informal_pct,30.85,86.4611260053619,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2006,guardian_tono_titulares,0.0366,100.0,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2006,guardian_articulos_venezuela,360.0,62.18978102189781,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2006,guardian_articulos_venezuela,360.0,62.680115273775215,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2006,ied_neta_usd,198000000.0,19.09324942791762,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2006,brent_precio_usd,65.16176470588235,46.726811919243545,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2006,usd_index_broad,98.60046576923077,71.20513367247484,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -220,7 +220,7 @@
 2007,pib_crecimiento_real_pct,8.75357880785845,80.25682300117329,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2007,reservas_internacionales_usd,33759218864.9235,72.02929862792054,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2007,tipo_cambio_oficial_lcu_usd,0.33183204443624864,95.35562634805818,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2007,wti_precio_usd,72.34059523809525,62.91015489119389,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2007,wti_precio_usd,72.34,62.912199755733475,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2007,tasa_fed_funds_pct,5.019166666666666,19.76445106267768,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2007,petroleo_crudo_produccion_tbpd,2819.733887671233,96.8778981813604,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2007,gas_natural_produccion_bcf,732.044635,17.31797304419865,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -241,7 +241,7 @@
 2007,acceso_electricidad_pct,98.9,74.4186046511629,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2007,ilo_empleo_informal_pct,29.84,100.0,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2007,guardian_tono_titulares,-0.057,75.17899761336515,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2007,guardian_articulos_venezuela,478.0,44.96350364963504,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2007,guardian_articulos_venezuela,478.0,45.67723342939482,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2007,ied_neta_usd,4358000000.0,78.58981693363845,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2007,brent_precio_usd,72.44116,55.08289111954845,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2007,usd_index_broad,93.80996538461538,85.24680579413652,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -251,7 +251,7 @@
 2008,pib_crecimiento_real_pct,5.27785412398785,73.05849645817618,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2008,reservas_internacionales_usd,43065463087.2778,100.0,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2008,tipo_cambio_oficial_lcu_usd,0.33183204443624864,95.35562634805818,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2008,wti_precio_usd,99.6715019762846,100.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2008,wti_precio_usd,99.67,100.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2008,tasa_fed_funds_pct,1.9275,69.98781643427643,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2008,petroleo_crudo_produccion_tbpd,2510.0,83.78994643022074,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2008,gas_natural_produccion_bcf,732.78625,17.47609366764568,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -272,7 +272,7 @@
 2008,acceso_electricidad_pct,98.9,74.4186046511629,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2008,ilo_empleo_informal_pct,30.81,86.99731903485257,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2008,guardian_tono_titulares,-0.0497,77.11482365420312,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2008,guardian_articulos_venezuela,447.0,49.48905109489051,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2008,guardian_articulos_venezuela,447.0,50.14409221902017,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2008,ied_neta_usd,2083000000.0,46.05263157894737,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2008,brent_precio_usd,96.94434782608695,83.21030690917932,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2008,usd_index_broad,90.88013206106872,93.83458485631554,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -282,7 +282,7 @@
 2009,pib_crecimiento_real_pct,-3.20230265749002,55.4958460180639,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2009,reservas_internacionales_usd,34317956993.5458,73.7086331658374,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2009,tipo_cambio_oficial_lcu_usd,0.33183204443624864,95.35562634805818,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2009,wti_precio_usd,61.95043650793651,48.81002343016841,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2009,wti_precio_usd,61.95,48.812593296241005,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2009,tasa_fed_funds_pct,0.16,98.7004196561527,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2009,petroleo_crudo_produccion_tbpd,2520.0,84.2125011545211,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2009,gas_natural_produccion_bcf,650.820134999999,0.0,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -303,7 +303,7 @@
 2009,acceso_electricidad_pct,99.0,76.74418604651162,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2009,ilo_empleo_informal_pct,31.44,78.5522788203753,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2009,guardian_tono_titulares,-0.0215,84.59294616812517,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2009,guardian_articulos_venezuela,306.0,70.07299270072993,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2009,guardian_articulos_venezuela,306.0,70.46109510086455,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2009,ied_neta_usd,-1137000000.0,0.0,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2009,brent_precio_usd,61.73876984126984,42.79752726917756,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2009,usd_index_broad,96.7509265060241,76.62640949441027,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -313,7 +313,7 @@
 2010,pib_crecimiento_real_pct,-1.48879125078356,59.04457779704004,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2010,reservas_internacionales_usd,29665473906.3905,59.72520312035445,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2010,tipo_cambio_oficial_lcu_usd,0.4119663832573614,94.61030148602329,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2010,wti_precio_usd,79.47571428571429,72.59298257211022,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2010,wti_precio_usd,79.48,72.60143845840685,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2010,tasa_fed_funds_pct,0.175,98.45674834168133,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2010,petroleo_crudo_produccion_tbpd,2410.0,79.56439918721713,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2010,gas_natural_produccion_bcf,696.69432,9.78088999322358,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -334,7 +334,7 @@
 2010,acceso_electricidad_pct,99.1,79.06976744186032,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2010,ilo_empleo_informal_pct,33.24,54.42359249329755,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2010,guardian_tono_titulares,-0.0818,68.60249270750465,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2010,guardian_articulos_venezuela,312.0,69.1970802919708,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2010,guardian_articulos_venezuela,312.0,69.59654178674351,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2010,ied_neta_usd,1583000000.0,38.901601830663616,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2010,brent_precio_usd,79.60944444444445,63.31142523920184,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2010,usd_index_broad,93.05413699186992,87.46225170146971,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -344,7 +344,7 @@
 2011,pib_crecimiento_real_pct,4.17642535923936,70.77740556818071,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2011,reservas_internacionales_usd,27934651458.8556,54.52307037470822,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2011,tipo_cambio_oficial_lcu_usd,0.632386422501182,92.56018741812206,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2011,wti_precio_usd,94.880873015873,93.49880017456023,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2011,wti_precio_usd,94.88,93.49979644456506,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2011,tasa_fed_funds_pct,0.1016666666666666,99.64803032354136,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2011,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2011,gas_natural_produccion_bcf,733.457235,17.61915518409775,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -365,7 +365,7 @@
 2011,acceso_electricidad_pct,98.8,72.09302325581388,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2011,ilo_empleo_informal_pct,33.01,57.506702412868634,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2011,guardian_tono_titulares,-0.1793,42.74728188809335,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2011,guardian_articulos_venezuela,317.0,68.46715328467154,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2011,guardian_articulos_venezuela,317.0,68.87608069164266,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2011,ied_neta_usd,5855000000.0,100.0,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2011,brent_precio_usd,111.2642741935484,99.64827105789593,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2011,usd_index_broad,88.77671992031873,100.0,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -375,7 +375,7 @@
 2012,pib_crecimiento_real_pct,5.62595697508632,73.77942755044114,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2012,reservas_internacionales_usd,29468789162.686,59.13405054589399,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2012,tipo_cambio_oficial_lcu_usd,0.632386422501182,92.56018741812206,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2012,wti_precio_usd,94.05333333333331,92.37577418274783,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2012,wti_precio_usd,94.05,92.37345637128512,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2012,tasa_fed_funds_pct,0.14,99.02531474211453,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2012,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2012,gas_natural_produccion_bcf,802.56869,32.35449137866138,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -396,7 +396,7 @@
 2012,acceso_electricidad_pct,99.3,83.72093023255806,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2012,ilo_empleo_informal_pct,31.91,72.25201072386056,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2012,guardian_tono_titulares,0.0134,93.84778573322727,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2012,guardian_articulos_venezuela,260.0,76.78832116788321,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2012,guardian_articulos_venezuela,260.0,77.08933717579251,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2012,ied_neta_usd,4986000000.0,87.57151029748283,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2012,brent_precio_usd,111.57068273092368,100.0,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2012,usd_index_broad,91.63612329317267,91.61866164250141,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -406,7 +406,7 @@
 2013,pib_crecimiento_real_pct,1.34309403607486,64.90949429106317,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2013,reservas_internacionales_usd,20275216409.4457,31.501992770569824,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2013,tipo_cambio_oficial_lcu_usd,0.7816090424128124,91.17227643970367,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2013,wti_precio_usd,97.98253968253968,97.70796664487968,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2013,wti_precio_usd,97.98,97.70660876645407,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2013,tasa_fed_funds_pct,0.1075,99.5532692568025,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2013,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2013,gas_natural_produccion_bcf,770.537985,25.525186356449233,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -427,7 +427,7 @@
 2013,acceso_electricidad_pct,99.4,86.0465116279071,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2013,ilo_empleo_informal_pct,31.63,76.00536193029491,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2013,guardian_tono_titulares,-0.0963,64.75735879077168,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2013,guardian_articulos_venezuela,360.0,62.18978102189781,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2013,guardian_articulos_venezuela,360.0,62.680115273775215,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2013,ied_neta_usd,2145000000.0,46.93935926773455,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2013,brent_precio_usd,108.555,96.53827238054333,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2013,usd_index_broad,92.76113654618474,88.32107976941535,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -437,7 +437,7 @@
 2014,pib_crecimiento_real_pct,-3.89438647450667,54.06252037719009,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2014,reservas_internacionales_usd,21454894042.4243,35.047613323714785,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2014,tipo_cambio_oficial_lcu_usd,0.7982499983784683,91.01749986836491,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2014,wti_precio_usd,93.17222222222225,91.18004822503222,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2014,wti_precio_usd,93.17,91.17926448636179,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2014,tasa_fed_funds_pct,0.0891666666666666,99.85108975226751,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2014,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2014,gas_natural_produccion_bcf,772.62157,25.969430012800405,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -458,7 +458,7 @@
 2014,acceso_electricidad_pct,100.0,100.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2014,ilo_empleo_informal_pct,31.55,77.07774798927612,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2014,guardian_tono_titulares,-0.2169,32.776451869530625,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2014,guardian_articulos_venezuela,299.0,71.0948905109489,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2014,guardian_articulos_venezuela,299.0,71.46974063400576,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2014,ied_neta_usd,1135000000.0,32.494279176201374,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2014,brent_precio_usd,98.9696062992126,85.53511817697814,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2014,usd_index_broad,95.58756504065042,80.03639570549886,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -468,7 +468,7 @@
 2015,pib_crecimiento_real_pct,-6.22137102671199,49.2432679361048,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2015,reservas_internacionales_usd,15625329211.5224,17.526364888963986,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2015,tipo_cambio_oficial_lcu_usd,0.7982499983784683,91.01749986836491,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2015,wti_precio_usd,48.656706349206345,30.76955381718582,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2015,wti_precio_usd,48.66,30.777581761433026,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2015,tasa_fed_funds_pct,0.1325,99.14715039935021,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2015,petroleo_crudo_produccion_tbpd,2489.47397260274,82.92260944543767,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2015,gas_natural_produccion_bcf,918.295945,57.028838189895424,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -489,7 +489,7 @@
 2015,acceso_electricidad_pct,100.0,100.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2015,ilo_empleo_informal_pct,31.56,76.9436997319035,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2015,guardian_tono_titulares,-0.1044,62.609387430389816,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2015,guardian_articulos_venezuela,307.0,69.92700729927007,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2015,guardian_articulos_venezuela,307.0,70.31700288184439,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2015,ied_neta_usd,2956000000.0,58.538329519450805,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2015,brent_precio_usd,52.31654901960784,31.98168058858965,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2015,usd_index_broad,108.16961726907633,43.15652140748982,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -499,7 +499,7 @@
 2016,pib_crecimiento_real_pct,-17.0403345996548,26.836880854804978,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2016,reservas_internacionales_usd,10150000483.5116,1.069802917671331,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2016,tipo_cambio_oficial_lcu_usd,0.966486423126211,89.45274258816482,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2016,wti_precio_usd,43.29365079365079,23.491533304696393,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2016,wti_precio_usd,43.29,23.490297190934996,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2016,tasa_fed_funds_pct,0.395,94.88290239610126,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2016,petroleo_crudo_produccion_tbpd,2254.4535519125684,72.99171053846865,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2016,gas_natural_produccion_bcf,971.9389743,68.46613279222046,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -520,7 +520,7 @@
 2016,acceso_electricidad_pct,99.4,86.0465116279071,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2016,ilo_empleo_informal_pct,31.65,75.7372654155496,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2016,guardian_tono_titulares,-0.1538,49.509413948554766,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2016,guardian_articulos_venezuela,398.0,56.64233576642336,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2016,guardian_articulos_venezuela,398.0,57.20461095100865,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2016,ied_neta_usd,1587000000.0,38.95881006864988,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2016,brent_precio_usd,43.638000000000005,22.01950103637155,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2016,usd_index_broad,113.06646008064516,28.80314374945087,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -530,7 +530,7 @@
 2017,pib_crecimiento_real_pct,-15.6714088720003,29.671965706748292,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2017,reservas_internacionales_usd,9794062064.62109,0.0,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2017,tipo_cambio_oficial_lcu_usd,0.9989129043587858,89.15114575706228,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2017,wti_precio_usd,50.80032,33.67857908453874,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2017,wti_precio_usd,50.8,33.6816392997693,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2017,tasa_fed_funds_pct,1.0016666666666667,85.02775145525924,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2017,petroleo_crudo_produccion_tbpd,1997.4054794520548,62.130022799419514,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2017,gas_natural_produccion_bcf,956.3651916,65.14562790767448,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -551,7 +551,7 @@
 2017,acceso_electricidad_pct,99.2,81.39534883720935,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2017,ilo_empleo_informal_pct,32.71,61.52815013404823,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2017,guardian_tono_titulares,-0.3405,0.0,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2017,guardian_articulos_venezuela,325.0,67.2992700729927,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2017,guardian_articulos_venezuela,325.0,67.72334293948127,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2017,ied_neta_usd,-299000000.0,11.98512585812357,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2017,brent_precio_usd,54.1248046875,34.05739250761639,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2017,usd_index_broad,112.81009919678716,29.554575789309133,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -561,7 +561,7 @@
 2018,pib_crecimiento_real_pct,-19.6553415972227,21.42112558279822,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2018,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2018,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2018,wti_precio_usd,65.22746987951807,53.25717409855494,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2018,wti_precio_usd,65.23,53.26367214004614,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2018,tasa_fed_funds_pct,1.8316666666666668,71.5446053878435,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2018,petroleo_crudo_produccion_tbpd,1485.6219178082192,40.50436662023278,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2018,gas_natural_produccion_bcf,823.1799863,36.749050578525804,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -582,7 +582,7 @@
 2018,acceso_electricidad_pct,99.9,97.6744186046513,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2018,ilo_empleo_informal_pct,34.25,40.884718498659495,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2018,guardian_tono_titulares,-0.1676,45.8499071864227,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2018,guardian_articulos_venezuela,270.0,75.32846715328468,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2018,guardian_articulos_venezuela,270.0,75.64841498559078,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2018,ied_neta_usd,622000000.0,25.157322654462245,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2018,brent_precio_usd,71.335,53.813120734132156,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2018,usd_index_broad,112.00375403225809,31.918093899769257,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -592,7 +592,7 @@
 2019,pib_crecimiento_real_pct,-27.6579678662627,4.847454672256894,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2019,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2019,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2019,wti_precio_usd,56.98832,42.07610367938126,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2019,wti_precio_usd,57.0,42.095263943547295,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2019,tasa_fed_funds_pct,2.158333333333333,66.23798565046704,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2019,petroleo_crudo_produccion_tbpd,877.668493150685,14.815007445870359,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2019,gas_natural_produccion_bcf,702.2743063,10.97060556340743,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -612,8 +612,8 @@
 2019,mortalidad_infantil_x1000,21.4775,0.0,WHO,D5_capital_humano,negative,core_anual,True,False,False,Mortalidad infantil,
 2019,acceso_electricidad_pct,99.8,95.34883720930226,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2019,ilo_empleo_informal_pct,35.9,18.766756032171568,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
-2019,guardian_tono_titulares,-0.189,40.17501988862371,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2019,guardian_articulos_venezuela,583.0,29.635036496350363,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2019,guardian_tono_titulares,-0.183,41.766109785202865,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
+2019,guardian_articulos_venezuela,583.0,30.547550432276655,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2019,ied_neta_usd,564000000.0,24.32780320366133,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2019,brent_precio_usd,64.30062256809337,45.73829960258185,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2019,usd_index_broad,115.73329798387095,20.986243544416677,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -623,7 +623,7 @@
 2020,pib_crecimiento_real_pct,-29.9985699155957,0.0,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2020,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2020,tipo_cambio_oficial_lcu_usd,8.49910369416233,19.392303943633465,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2020,wti_precio_usd,39.16043650793651,17.88248860203962,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2020,wti_precio_usd,39.16,17.88573754919256,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2020,tasa_fed_funds_pct,0.3758333333333333,95.19426018681467,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2020,petroleo_crudo_produccion_tbpd,527.0628415300547,0.0,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2020,gas_natural_produccion_bcf,675.3392956,5.227759633327256,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -644,7 +644,7 @@
 2020,acceso_electricidad_pct,99.9,97.6744186046513,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2020,ilo_empleo_informal_pct,36.45,11.394101876675531,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2020,guardian_tono_titulares,-0.2383,27.101564571731636,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2020,guardian_articulos_venezuela,309.0,69.63503649635037,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2020,guardian_articulos_venezuela,308.0,70.17291066282421,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2020,ied_neta_usd,1504000000.0,37.77173913043478,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2020,brent_precio_usd,41.95725490196079,20.090159574988217,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2020,usd_index_broad,117.7739632,15.004749008483254,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -654,7 +654,7 @@
 2021,pib_crecimiento_real_pct,0.955433428579269,64.10663793895924,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2021,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2021,tipo_cambio_oficial_lcu_usd,9.323165611312218,11.72775159636768,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2021,wti_precio_usd,68.13509960159362,57.20301962276706,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2021,wti_precio_usd,68.13,57.19907721536164,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2021,tasa_fed_funds_pct,0.08,100.0,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2021,petroleo_crudo_produccion_tbpd,594.8082191780821,2.8626129374686027,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2021,gas_natural_produccion_bcf,750.8798251,21.33384651136869,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -674,8 +674,8 @@
 2021,mortalidad_infantil_x1000,21.4775,0.0,WHO,D5_capital_humano,negative,core_anual,True,False,False,Mortalidad infantil,
 2021,acceso_electricidad_pct,100.0,100.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2021,ilo_empleo_informal_pct,35.42,25.201072386058932,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
-2021,guardian_tono_titulares,-0.1037,62.79501458499072,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2021,guardian_articulos_venezuela,236.0,80.2919708029197,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2021,guardian_tono_titulares,-0.1142,60.01060726597719,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
+2021,guardian_articulos_venezuela,236.0,80.54755043227667,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2021,ied_neta_usd,1213000000.0,33.60983981693364,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2021,brent_precio_usd,70.85533596837945,53.262510350190276,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2021,usd_index_broad,113.10509156626506,28.689909095219463,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -685,7 +685,7 @@
 2022,pib_crecimiento_real_pct,8.00091310654791,78.69803052233007,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2022,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2022,tipo_cambio_oficial_lcu_usd,9.82502879918026,7.059951040938501,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2022,wti_precio_usd,94.9028685258964,93.52864953402978,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2022,wti_precio_usd,94.9,93.52693716922242,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2022,tasa_fed_funds_pct,1.6833333333333331,73.95424394206039,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2022,petroleo_crudo_produccion_tbpd,723.6575342465753,8.307201617974341,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2022,gas_natural_produccion_bcf,833.3942476,38.92684547858427,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -706,7 +706,7 @@
 2022,acceso_electricidad_pct,100.0,100.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2022,ilo_empleo_informal_pct,36.43,11.662198391420882,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2022,guardian_tono_titulares,-0.118,59.00291699814373,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2022,guardian_articulos_venezuela,249.0,78.39416058394161,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2022,guardian_articulos_venezuela,248.0,78.81844380403457,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2022,ied_neta_usd,2349000000.0,49.85697940503432,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2022,brent_precio_usd,100.93130952380952,87.7869738394219,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2022,usd_index_broad,120.6980116,6.433926421237815,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -716,7 +716,7 @@
 2023,pib_crecimiento_real_pct,4.00168591128376,70.41551510770653,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2023,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2023,tipo_cambio_oficial_lcu_usd,10.456902662111267,1.1829286976976954,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2023,wti_precio_usd,77.57653225806452,70.01566715723112,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2023,wti_precio_usd,77.58,70.02306961595875,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2023,tasa_fed_funds_pct,5.024166666666667,19.68322729118721,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2023,petroleo_crudo_produccion_tbpd,770.5068493150685,10.286841559217127,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2023,gas_natural_produccion_bcf,847.2156673,41.87372694657919,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -737,7 +737,7 @@
 2023,acceso_electricidad_pct,100.0,100.0,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2023,ilo_empleo_informal_pct,37.0,4.021447721179587,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2023,guardian_tono_titulares,-0.1275,56.483691328560056,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2023,guardian_articulos_venezuela,254.0,77.66423357664235,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2023,guardian_articulos_venezuela,254.0,77.95389048991355,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2023,ied_neta_usd,13000000.0,16.447368421052634,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2023,brent_precio_usd,82.49386454183266,66.62247537549597,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2023,usd_index_broad,120.266318875502,7.6992822730346,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -747,7 +747,7 @@
 2024,pib_crecimiento_real_pct,5.29999999999984,73.10436120916029,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2024,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2024,tipo_cambio_oficial_lcu_usd,10.584086409616642,0.0,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2024,wti_precio_usd,76.63224000000001,68.73420021123628,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2024,wti_precio_usd,76.63,68.73388519473468,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2024,tasa_fed_funds_pct,5.1433333333333335,17.747394070664672,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2024,petroleo_crudo_produccion_tbpd,863.4699453551913,14.215041100951325,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2024,gas_natural_produccion_bcf,898.0486073,52.71187903957277,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -768,7 +768,7 @@
 2024,acceso_electricidad_pct,,,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2024,ilo_empleo_informal_pct,37.16,1.8766756032171663,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2024,guardian_tono_titulares,-0.1207,58.286926544683105,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2024,guardian_articulos_venezuela,307.0,69.92700729927007,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2024,guardian_articulos_venezuela,307.0,70.31700288184439,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2024,ied_neta_usd,1632583330.0,39.61074556636156,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2024,brent_precio_usd,80.52185039370079,64.35878371703808,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2024,usd_index_broad,122.89302988047808,0.0,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -778,7 +778,7 @@
 2025,pib_crecimiento_real_pct,,,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2025,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2025,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2025,wti_precio_usd,65.38810483870968,53.47516634493552,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2025,wti_precio_usd,65.39,53.48079793730493,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2025,tasa_fed_funds_pct,4.2125,32.868552863137936,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2025,petroleo_crudo_produccion_tbpd,968.3698630136986,18.64763667948343,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2025,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
@@ -799,7 +799,7 @@
 2025,acceso_electricidad_pct,,,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2025,ilo_empleo_informal_pct,37.3,0.0,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2025,guardian_tono_titulares,-0.2293,29.488199416600374,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2025,guardian_articulos_venezuela,689.0,14.16058394160584,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2025,guardian_articulos_venezuela,689.0,15.273775216138327,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2025,ied_neta_usd,,,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2025,brent_precio_usd,69.14264822134388,51.296501652848924,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2025,usd_index_broad,122.7202868,0.5063357692546838,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
@@ -809,8 +809,8 @@
 2026,pib_crecimiento_real_pct,,,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2026,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2026,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2026,wti_precio_usd,83.93949494949496,78.65062767716526,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
-2026,tasa_fed_funds_pct,3.64,42.16867469879518,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
+2026,wti_precio_usd,,,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2026,tasa_fed_funds_pct,3.638,42.201164207391365,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2026,petroleo_crudo_produccion_tbpd,,,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2026,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
 2026,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
@@ -829,8 +829,8 @@
 2026,mortalidad_infantil_x1000,,,WHO,D5_capital_humano,negative,core_anual,True,False,False,Mortalidad infantil,
 2026,acceso_electricidad_pct,,,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2026,ilo_empleo_informal_pct,,,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
-2026,guardian_tono_titulares,-0.1379,53.72580217448952,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
-2026,guardian_articulos_venezuela,786.0,0.0,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
+2026,guardian_tono_titulares,-0.1404,53.06284805091488,GUARDIAN,D6_percepcion,positive,core_anual,True,True,False,Tono de titulares internacionales,
+2026,guardian_articulos_venezuela,795.0,0.0,GUARDIAN,D6_percepcion,negative,core_anual,True,True,False,Volumen de cobertura internacional,
 2026,ied_neta_usd,,,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 2026,brent_precio_usd,92.74030303030304,78.38444846135091,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
 2026,usd_index_broad,119.00169191919191,11.406092762759014,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
