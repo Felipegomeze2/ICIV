@@ -1343,15 +1343,6 @@ def fase_dashboard(
     # Arc from score=0 to current score (visual fill)
     score_arc = (current_score / 100) * _ARC_TOTAL
 
-    # ── Mini gauge INICIO: posición inicial de la aguja calculada en Python ───
-    # El arco del miniGauge va de izquierda (score=0, ángulo=π) a tope (score=50, ángulo=π/2)
-    # a derecha (score=100, ángulo=0). Fórmula: angle = π*(1 - score/100), y2 con seno negativo.
-    import math as _math
-    _mg_angle = _math.pi * (1.0 - current_score / 100.0)
-    _mg_cx, _mg_cy, _mg_r = 100.0, 100.0, 72.0
-    _mg_x2 = _mg_cx + _mg_r * _math.cos(_mg_angle)
-    _mg_y2 = _mg_cy - _mg_r * _math.sin(_mg_angle)
-
     # ── SATV — serializar a JSON para el dashboard ────────────────────────────
     _satv = satv_data or {}
     satv_json = json.dumps(_satv, ensure_ascii=False)
@@ -2024,8 +2015,14 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
             display:flex;flex-direction:column;transition:border-color .2s}}
 .news-card:hover{{border-color:var(--accent)}}
 .news-thumb{{width:100%;height:160px;object-fit:cover;background:#21262d;display:block}}
-.news-thumb-ph{{width:100%;height:160px;background:#21262d;display:flex;align-items:center;justify-content:center;
-                font-size:2.5rem}}
+.news-thumb-ph{{width:100%;height:80px;background:linear-gradient(135deg,#161d2b,#1d2430);display:flex;
+                align-items:center;justify-content:center;font-size:1.5rem;opacity:.7}}
+.news-thumb-ph::after{{content:'📰'}}
+.news-srclinks{{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}}
+.news-srclink{{font-size:.7rem;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--border);
+               padding-bottom:1px;transition:color .2s}}
+.news-srclink:hover{{color:var(--accent);border-bottom-color:var(--accent)}}
+.news-srclink::after{{content:' ↗';font-size:.62rem;opacity:.7}}
 .news-body{{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}}
 .news-section{{font-size:.65rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px}}
 .news-title{{font-size:.9rem;font-weight:600;color:var(--text);line-height:1.4}}
@@ -2313,15 +2310,27 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div id="inicioAY" style="font-size:.68rem;color:#555;margin-top:4px">—</div>
       <div id="inicioAR" style="font-size:.68rem;color:var(--muted);margin-top:6px;line-height:1.4">—</div>
       <div style="flex:1"></div>
-      <!-- Mini gauge (SVG simplificado) -->
-      <svg id="inicioGauge" viewBox="0 0 200 110" style="width:100%;max-width:220px;margin:16px auto 0">
-        <path d="M 20 100 A 80 80 0 0 1 100 20" stroke="#e74c3c" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.25"/>
-        <path d="M 100 20 A 80 80 0 0 1 140 29" stroke="#e67e22" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.25"/>
-        <path d="M 140 29 A 80 80 0 0 1 164 58" stroke="#f1c40f" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.25"/>
-        <path d="M 164 58 A 80 80 0 0 1 177 92" stroke="#2ecc71" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.25"/>
-        <path d="M 177 92 A 80 80 0 0 1 180 100" stroke="#27ae60" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.25"/>
-        <line id="inicioNeedle" x1="100" y1="100" x2="{_mg_x2:.1f}" y2="{_mg_y2:.1f}" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="100" cy="100" r="5" fill="white"/>
+      <!-- Mini gauge — misma estructura que el gauge principal: bandas tenues,
+           banda activa resaltada y aguja del color de la categoría -->
+      <svg id="inicioGauge" viewBox="0 0 220 130" style="width:100%;max-width:220px;margin:16px auto 0">
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#21262d" stroke-width="20" stroke-linecap="butt"/>
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e05c5c" stroke-width="20" stroke-linecap="butt"
+              stroke-dasharray="84.8 282.74" stroke-dashoffset="0" opacity="0.18"/>
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e67e22" stroke-width="20" stroke-linecap="butt"
+              stroke-dasharray="56.5 282.74" stroke-dashoffset="-84.8" opacity="0.18"/>
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#f1c40f" stroke-width="20" stroke-linecap="butt"
+              stroke-dasharray="42.4 282.74" stroke-dashoffset="-141.3" opacity="0.18"/>
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#2ecc71" stroke-width="20" stroke-linecap="butt"
+              stroke-dasharray="42.4 282.74" stroke-dashoffset="-183.7" opacity="0.18"/>
+        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#00d4aa" stroke-width="20" stroke-linecap="butt"
+              stroke-dasharray="56.5 282.74" stroke-dashoffset="-226.1" opacity="0.18"/>
+        <path id="inicioActiveBand" d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="{current_color}" stroke-width="22" stroke-linecap="butt"
+              stroke-dasharray="{active_dash_len:.1f} 282.74" stroke-dashoffset="-{active_dash_offset:.1f}" opacity="1"/>
+        <line id="inicioNeedle" x1="110" y1="112" x2="110" y2="38"
+              stroke="{current_color}" stroke-width="3.5" stroke-linecap="round"
+              transform="rotate({gauge_angle},110,110)"/>
+        <circle id="inicioNeedleBase" cx="110" cy="110" r="7" fill="{current_color}" opacity="0.95"/>
+        <circle cx="110" cy="110" r="3.5" fill="#0d1117"/>
       </svg>
     </div>
   </div>
@@ -3417,14 +3426,14 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       por una lista cerrada de medios internacionales. Se excluyen fuentes locales venezolanas y la
       seccion no modifica el ICIV ni el Pulse: solo sirve como evidencia cualitativa de contexto.
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-      <a class="news-chip" href="https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela%20investment&mode=artlist&format=html" target="_blank" rel="noopener">GDELT</a>
-      <a class="news-chip" href="https://www.reuters.com/site-search/?query=Venezuela%20investment" target="_blank" rel="noopener">Reuters</a>
-      <a class="news-chip" href="https://apnews.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">AP</a>
-      <a class="news-chip" href="https://www.bbc.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">BBC</a>
-      <a class="news-chip" href="https://www.ft.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">Financial Times</a>
-      <a class="news-chip" href="https://www.bloomberg.com/search?query=Venezuela%20economy" target="_blank" rel="noopener">Bloomberg</a>
-      <a class="news-chip" href="https://news.google.com/search?q=Venezuela%20investment%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Google News</a>
+    <div class="news-srclinks">
+      <a class="news-srclink" href="https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela%20investment&mode=artlist&format=html" target="_blank" rel="noopener">GDELT</a>
+      <a class="news-srclink" href="https://www.reuters.com/site-search/?query=Venezuela%20investment" target="_blank" rel="noopener">Reuters</a>
+      <a class="news-srclink" href="https://apnews.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">AP</a>
+      <a class="news-srclink" href="https://www.bbc.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">BBC</a>
+      <a class="news-srclink" href="https://www.ft.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">Financial Times</a>
+      <a class="news-srclink" href="https://www.bloomberg.com/search?query=Venezuela%20economy" target="_blank" rel="noopener">Bloomberg</a>
+      <a class="news-srclink" href="https://news.google.com/search?q=Venezuela%20investment%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Google News</a>
     </div>
   </div>
 
@@ -3436,12 +3445,18 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
 
-  <div class="news-filter" id="newsFilter">
-    <span class="news-chip active" data-tag="all">Todas</span>
-    <span class="news-chip" data-tag="economy">Economia</span>
-    <span class="news-chip" data-tag="politics">Politica</span>
-    <span class="news-chip" data-tag="world">Internacional</span>
-    <span class="news-chip" data-tag="business">Negocios</span>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div>
+      <div class="ct">The Guardian — en vivo</div>
+      <div class="cs">Cobertura Venezuela vía API abierta · filtra por categoría</div>
+    </div>
+    <div class="news-filter" id="newsFilter" style="margin-bottom:0">
+      <span class="news-chip active" data-tag="all">Todas</span>
+      <span class="news-chip" data-tag="economy">Economia</span>
+      <span class="news-chip" data-tag="politics">Politica</span>
+      <span class="news-chip" data-tag="world">Internacional</span>
+      <span class="news-chip" data-tag="business">Negocios</span>
+    </div>
   </div>
 
   <div class="news-grid" id="newsGrid">
@@ -4297,7 +4312,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }}
     grid.innerHTML = INTL_NEWS.slice(0, 12).map(a => `
       <div class="news-card">
-        <div class="news-thumb-ph"></div>
         <div class="news-body">
           <div class="news-section">${{a.source || 'Fuente internacional'}}</div>
           <div class="news-title"><a href="${{a.url}}" target="_blank" rel="noopener">${{a.title}}</a></div>
@@ -4380,7 +4394,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   document.getElementById('newsFilter').addEventListener('click', e => {{
     const chip = e.target.closest('.news-chip');
     if (!chip) return;
-    document.querySelectorAll('.news-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#newsFilter .news-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
     activeTag = chip.dataset.tag;
     applyFilter();
@@ -6041,16 +6055,34 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         ? 'Lectura anual con cobertura alta.'
         : 'Último anual confiable: ' + ic.reliable_year + ' · ' + ic.reliable_score.toFixed(1) + ' · ' + ic.reliable_coverage + '% cob.';
     }}
-    // Aguja gauge simplificada
-    // El arco va de izquierda (score=0) a tope (score=50) a derecha (score=100)
-    // Fórmula correcta: angle_rad = π*(1 - score/100), y negativa porque SVG y↓
-    var cx = 100, cy = 100, r = 72;
-    var angle_rad = Math.PI * (1 - ic.score / 100);
-    var x2 = cx + r * Math.cos(angle_rad);
-    var y2 = cy - r * Math.sin(angle_rad);
+    // Mini gauge: misma lógica que el gauge principal (banda activa + aguja).
+    // Bandas: [lo, hi, dashOffset, dashLen] sobre arco total 282.74 (π·90).
+    var _IC_BANDS = [
+      [0,  30,   0.0,  84.8],
+      [30, 50,  84.8,  56.5],
+      [50, 65, 141.3,  42.4],
+      [65, 80, 183.7,  42.4],
+      [80, 100,226.1,  56.5],
+    ];
+    var icCol = ic.color || _col(ic.score);
+    var icAngle = -90 + (ic.score / 100) * 180;
+    var icBand = _IC_BANDS[0];
+    for (var bi = 0; bi < _IC_BANDS.length; bi++) {{
+      if (ic.score > _IC_BANDS[bi][0] && ic.score <= _IC_BANDS[bi][1]) icBand = _IC_BANDS[bi];
+    }}
+    var inBand = document.getElementById('inicioActiveBand');
+    if (inBand) {{
+      inBand.setAttribute('stroke', icCol);
+      inBand.setAttribute('stroke-dasharray', icBand[3] + ' 282.74');
+      inBand.setAttribute('stroke-dashoffset', '-' + icBand[2]);
+    }}
     var needle = document.getElementById('inicioNeedle');
-    if (needle) needle.setAttribute('x2', x2.toFixed(1));
-    if (needle) needle.setAttribute('y2', y2.toFixed(1));
+    if (needle) {{
+      needle.setAttribute('stroke', icCol);
+      needle.setAttribute('transform', 'rotate(' + icAngle.toFixed(1) + ',110,110)');
+    }}
+    var inBase = document.getElementById('inicioNeedleBase');
+    if (inBase) inBase.setAttribute('fill', icCol);
   }}
 
   // ── Sparkline Pulse: últimos 12 meses ──
