@@ -64,7 +64,7 @@
 2002,inflacion_deflactor_pib_pct,1.3502480183341627,93.18708356596834,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2002,pib_crecimiento_real_pct,-8.85564735286771,43.7876053261886,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2002,reservas_internacionales_usd,12106510810.7652,6.950259607551271,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2002,tipo_cambio_oficial_lcu_usd,0.06481351586975792,97.83915027665576,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2002,tipo_cambio_oficial_lcu_usd,0.06481351586975793,97.83915027665576,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
 2002,wti_precio_usd,26.18,0.27140724657348253,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2002,tasa_fed_funds_pct,1.6666666666666667,74.22498984702855,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2002,petroleo_crudo_produccion_tbpd,2435.3080191780823,80.63380149385542,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
@@ -95,7 +95,7 @@
 2003,inflacion_deflactor_pib_pct,1.4927603890268375,89.35455606542565,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2003,pib_crecimiento_real_pct,-7.75530004959877,46.06645647812034,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2003,reservas_internacionales_usd,20820560020.6513,33.14106895745548,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2003,tipo_cambio_oficial_lcu_usd,0.20600461612985874,96.52593999913877,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2003,tipo_cambio_oficial_lcu_usd,0.20600461612985876,96.52593999913877,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
 2003,wti_precio_usd,31.08,6.920884787623827,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2003,tasa_fed_funds_pct,1.1275,82.98361987274941,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2003,petroleo_crudo_produccion_tbpd,2303.495602739726,75.06400556510803,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,

@@ -610,6 +610,180 @@ def _generate_corr_charts_b64(corr: dict) -> tuple[str, str]:
     return scatter_b64, crosscorr_b64
 
 
+def _generate_loo_validation_html(df_norm) -> str:
+    """
+    Bloque A2 del dashboard: validación externa NO circular (leave-one-out).
+
+    Recalcula el ICIV excluyendo la variable de validación (el aggregator
+    redistribuye su peso) y lo correlaciona contra la serie cruda excluida:
+      - ICIV sin migración   vs stock migrantes UNHCR (esperada negativa)
+      - ICIV sin luminosidad vs luz nocturna VIIRS 2014-2024 (esperada positiva;
+        restringido a la era VIIRS por el escalón de sensor DMSP→VIIRS en 2013/14)
+
+    Retorna el bloque HTML completo, o "" si faltan datos.
+    Misma lógica que scripts/external_validation.py (fuente canónica de los CSV).
+    """
+    import base64, io
+
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
+
+    from iciv.config.settings import settings
+    from iciv.index.aggregator import ICIVAggregator
+
+    DARK_BG  = "#0d1117"
+    CARD_BG  = "#161b22"
+    GRID_COL = "#21262d"
+    TEXT_COL = "#8b949e"
+    ACCENT   = "#00d4aa"
+    YELLOW   = "#f1c40f"
+
+    if df_norm is None or "año" not in getattr(df_norm, "columns", []):
+        return ""
+
+    def _loo_score(col: str) -> pd.Series:
+        df_loo = df_norm.copy()
+        df_loo[col] = np.nan
+        return ICIVAggregator(method="linear").compute(df_loo).set_index("año")["iciv_score"]
+
+    def _raw_series(fname: str, indicador: str) -> pd.Series:
+        df = pd.read_csv(settings.paths.data_raw / fname)
+        df = df[df["indicador"] == indicador]
+        return df.set_index("año")["valor"].astype(float)
+
+    def _scatter_b64_loo(x: pd.Series, y: pd.Series, xlabel: str, ylabel: str,
+                         title: str) -> tuple[str, dict]:
+        joined = pd.concat([x, y], axis=1, keys=["x", "y"]).dropna()
+        if len(joined) < 5:
+            return "", {}
+        r, p = stats.pearsonr(joined["x"], joined["y"])
+        rho, p2 = stats.spearmanr(joined["x"], joined["y"])
+        st = {"r": r, "p": p, "rho": rho, "p2": p2, "n": len(joined),
+              "y0": int(joined.index.min()), "y1": int(joined.index.max())}
+
+        plt.rcParams.update({
+            "figure.facecolor": DARK_BG, "axes.facecolor": CARD_BG,
+            "axes.edgecolor": GRID_COL,  "axes.labelcolor": TEXT_COL,
+            "xtick.color": TEXT_COL,     "ytick.color": TEXT_COL,
+            "grid.color": GRID_COL,      "text.color": TEXT_COL,
+            "font.size": 9,
+        })
+        fig, ax = plt.subplots(figsize=(5.5, 3.6))
+        fig.patch.set_facecolor(DARK_BG)
+        ax.scatter(joined["x"], joined["y"], c=ACCENT, s=45, zorder=3, alpha=0.85)
+        for yr, row in joined.iterrows():
+            ax.annotate(str(int(yr)), (row["x"], row["y"]), fontsize=6.5,
+                        color=TEXT_COL, xytext=(3, 3), textcoords="offset points")
+        slope, intercept = np.polyfit(joined["x"], joined["y"], 1)
+        xs = np.array([joined["x"].min(), joined["x"].max()])
+        ax.plot(xs, slope * xs + intercept, color=YELLOW, linewidth=1.4,
+                linestyle="--", zorder=2)
+        ax.set_xlabel(xlabel, color=TEXT_COL, fontsize=9)
+        ax.set_ylabel(ylabel, color=TEXT_COL, fontsize=9)
+        ax.set_title(title, color="#e6edf3", fontsize=9.5, pad=8)
+        ax.grid(True, linewidth=0.5, alpha=0.6)
+        ax.tick_params(labelsize=8)
+        fig.tight_layout(pad=1.0)
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=130, bbox_inches="tight",
+                    facecolor=DARK_BG, edgecolor="none")
+        plt.close(fig)
+        return base64.b64encode(buf.getvalue()).decode(), st
+
+    try:
+        migr = _raw_series("unhcr.csv", "migrantes_vzla_millones")
+        lumi = _raw_series("viirs.csv", "luminosidad_nocturna_idx")
+        loo_migr = _loo_score("migrantes_vzla_millones")
+        loo_lumi = _loo_score("luminosidad_nocturna_idx").loc[2014:]
+
+        b64_m, st_m = _scatter_b64_loo(
+            loo_migr, migr,
+            "ICIV recalculado sin migración", "Migrantes UNHCR (millones)",
+            "ICIV (leave-one-out) vs Emigración UNHCR")
+        b64_l, st_l = _scatter_b64_loo(
+            loo_lumi, lumi.loc[2014:],
+            "ICIV recalculado sin luminosidad", "Luminosidad nocturna (índice)",
+            "ICIV (leave-one-out) vs Luz nocturna · era VIIRS")
+        if not b64_m or not b64_l:
+            return ""
+    except Exception as exc:  # noqa: BLE001 — el dashboard no debe caerse por este bloque
+        logger.warning("  Validación leave-one-out: %s", exc)
+        return ""
+
+    def _stat_card(st: dict, esperado: str, ok: bool) -> str:
+        color = "#2ecc71" if ok else "#e67e22"
+        veredicto = "Hipótesis confirmada ✓" if ok else "Revisar"
+        p_txt = "&lt; 0.001" if st["p"] < 0.001 else f"= {st['p']:.3f}"
+        return (
+            f'<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:8px">'
+            f'<span><strong style="color:#e6edf3">Pearson r = {st["r"]:+.3f}</strong> (p {p_txt})</span>'
+            f'<span>Spearman ρ = {st["rho"]:+.3f}</span>'
+            f'<span>n = {st["n"]} ({st["y0"]}–{st["y1"]})</span>'
+            f'<span>Esperada: {esperado}</span>'
+            f'<span style="color:{color};font-weight:600">{veredicto}</span>'
+            f'</div>'
+        )
+
+    card_m = _stat_card(st_m, "negativa", st_m["r"] < 0 and st_m["p"] < 0.05)
+    card_l = _stat_card(st_l, "positiva", st_l["r"] > 0 and st_l["p"] < 0.05)
+
+    return f'''
+  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+  <!-- A2 · VALIDACIÓN EXTERNA NO CIRCULAR (leave-one-out) -->
+  <div style="margin-top:32px;margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid var(--accent);border-radius:6px">
+    <strong style="color:var(--accent);font-size:.85rem">A2 · Validación externa no circular — leave-one-out</strong>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
+      El ICIV se recalcula <em>excluyendo</em> la variable de validación (su peso se redistribuye) y se
+      correlaciona contra la serie cruda excluida. El score validado no contiene información directa
+      de la señal contra la que se contrasta.
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
+        ICIV (sin migración) vs Emigración venezolana
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
+        Stock de migrantes y refugiados UNHCR · hipótesis: peor clima → más emigración
+      </div>
+      <img src="data:image/png;base64,{b64_m}" style="width:100%;border-radius:6px" alt="Scatter ICIV leave-one-out vs migración UNHCR">
+      {card_m}
+    </div>
+    <div class="card">
+      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
+        ICIV (sin luminosidad) vs Luz nocturna satelital
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
+        Era VIIRS 2014–2024 (sensor homogéneo) · hipótesis: mejor clima → más actividad luminosa
+      </div>
+      <img src="data:image/png;base64,{b64_l}" style="width:100%;border-radius:6px" alt="Scatter ICIV leave-one-out vs luminosidad VIIRS">
+      {card_l}
+    </div>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--accent)">
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--text)">Por qué no es circular.</strong>
+      Migración (D4) y luminosidad (D2) forman parte del score, así que correlacionar el ICIV completo
+      contra ellas sería validar el índice con sus propios componentes. En el diseño leave-one-out el
+      ICIV se recalcula sin la variable y el peso se redistribuye dentro de su dimensión: la correlación
+      resultante mide si <em>el resto del índice</em> sigue la señal externa.
+      <br><strong>Luminosidad — periodo completo no interpretable:</strong> la serie armonizada
+      (Li et al., 2020) combina sensores DMSP (hasta 2013) y VIIRS (desde 2014) con un escalón de
+      calibración en la transición; además el tramo 2000–2013 refleja la expansión eléctrica del boom
+      petrolero. El test se restringe a la era VIIRS, que cubre el periodo de colapso económico.
+      <br><em>Fuentes: UNHCR Population Statistics; Li et al. (2020) Harmonized NTL; Henderson,
+      Storeygard &amp; Weil (2012, AER). Reproducible: <code>python scripts/external_validation.py</code>.</em>
+    </div>
+  </div>
+'''
+
+
 def _build_corr_stats_html(corr: dict) -> tuple[str, str, str, str]:
     """
     Genera HTML estático para OLS, Granger, ADF y la fórmula.
@@ -1218,6 +1392,9 @@ def fase_dashboard(
 
     sanciones_json = "{}"
     _sanciones_table_html = ""
+
+    # ── Validación externa no circular (leave-one-out) — bloque A2 ───────────
+    _loo_validation_html = _generate_loo_validation_html(df_norm)
 
     # ── Validación externa: correlaciones ICIV vs índices internacionales ─────
     # Calcula Pearson/Spearman entre el ICIV y cada índice externo presente como
@@ -2619,7 +2796,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="correlacion">
   <div class="section-header">
     <span class="section-title">Validación del Indicador</span>
-    <span class="section-sub">A) Outcome externo ICIV→IED · B) Benchmarks internacionales · C) Eventos políticos · D) Validaciones internas · E) Metodología AHP</span>
+    <span class="section-sub">A) Outcome externo ICIV→IED · A2) Leave-one-out UNHCR/VIIRS · B) Benchmarks internacionales · C) Eventos políticos · D) Validaciones internas · E) Metodología AHP</span>
   </div>
 
   <!-- Sub-encabezado bloque A -->
@@ -2728,6 +2905,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <br><em>Fuentes: World Bank WDI (IED); ICIV AHP (este estudio). Período: 2000–2026 (n={int(n_years)} obs.).</em>
     </div>
   </div>
+
+{_loo_validation_html}
 
   <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
   <!-- B · VALIDACIÓN EXTERNA vs índices internacionales -->
