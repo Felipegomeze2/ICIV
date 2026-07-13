@@ -1,6 +1,6 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-07-06T11:31:40.011352+00:00",
+  "generated_at_utc": "2026-07-13T10:25:44.560549+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -11,7 +11,7 @@
   "files": {
     "README.md": {
       "bytes": 1585,
-      "sha256": "9ed689bdc527ebf6d2fc88aff2eec474b6294f68c662ffd4fcfdbc845187373c",
+      "sha256": "3536a88fd222a4dc6a6666821a8528fcd3a9cd82c6af1f0d7de0125c6515923c",
       "rows": null
     },
     "coverage_annual.csv": {
@@ -30,23 +30,23 @@
       "rows": null
     },
     "iciv_dataset_largo.csv": {
-      "bytes": 122398,
-      "sha256": "ac91874d59db19232917c294bb4d149502eaf1d3ce5ba4a3b8394f4499de6fb3",
+      "bytes": 122407,
+      "sha256": "628eed95d686b0dd00c8bca21bc4d4000ed14b126989bf372803e2cba43aa052",
       "rows": 837
     },
     "iciv_dataset_wide.csv": {
-      "bytes": 9148,
-      "sha256": "be1e00b91f269c1be2e107626e0a723a4db370412f53ff968383fa611ab8ad78",
+      "bytes": 9161,
+      "sha256": "00bfe63cc33d739486b7e4fac67d81446fb805ad0688e73f45e476abd71a9489",
       "rows": 27
     },
     "pulse_forecast_backtest.csv": {
-      "bytes": 35451,
-      "sha256": "82607941fc262e28bd18cc7296c2ab6504e09b4c02294870994e914a4ba9c001",
-      "rows": 420
+      "bytes": 36149,
+      "sha256": "bbda833d885e5f1f0445d07412fc8db29f0b676163be0561eb409687830f9088",
+      "rows": 429
     },
     "pulse_forecast_backtest_summary.csv": {
-      "bytes": 515,
-      "sha256": "02731ce672701879a24a017438047e3fb38a7c17fa1215405804694426c116c0",
+      "bytes": 511,
+      "sha256": "1f58021f3e84d2355105457e90711e2ec2ad3c8b14b3033d67306bead1892d8e",
       "rows": 12
     },
     "source_provenance.csv": {
