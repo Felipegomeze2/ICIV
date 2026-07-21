@@ -28,8 +28,8 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | D2 | `luminosidad_nocturna_idx` | Li et al./Figshare | positiva | proxy satelital de actividad |
 | D3 | `cpi_score` | Transparency International | positiva | corrupcion percibida |
 | D3 | `wgi_promedio_sc` | World Bank WGI | positiva | gobernanza compuesta |
-| D3 | `freedom_house_score` | Freedom House | positiva | libertades relevantes al entorno |
-| D3 | `wjp_rule_of_law` | WJP | positiva | regla de derecho |
+| D3 | `freedom_house_score` | Freedom House | positiva | libertades relevantes al entorno; solo Aggregate Score publicado (2012+) |
+| D3 | `wjp_rule_of_law` | WJP | positiva | regla de derecho; el indice existe desde 2012, antes NaN |
 | D3 | `pts_terror_politico` | Political Terror Scale | negativa | coercion y riesgo institucional |
 | D4 | `exportaciones_pct_pib` | WDI/OWID | positiva | apertura comercial |
 | D4 | `desempleo_pct` | IMF/OWID | negativa | absorcion economica |
@@ -85,6 +85,23 @@ historia mensual real y reproducible.
 Apartar no significa borrar el fetch inmediatamente. Una fuente puede quedar
 en el repositorio como evidencia auxiliar o backlog mientras no entre al score
 core ni se publicite como cobertura efectiva.
+
+## Auditoria de fuentes institucionales (2026-07-21)
+
+Se auditaron los archivos manuales de D3/D5 contra las publicaciones
+oficiales. Hallazgos y correcciones aplicadas:
+
+| Archivo | Hallazgo | Correccion |
+|---|---|---|
+| `wjp.csv` | contenia la serie Rule of Law de V-Dem (via fallback OWID) etiquetada como WJP, con valores 0.211-0.009 y cobertura 2000-2025 imposible (el indice WJP existe desde 2012 y Venezuela puntua ~0.26-0.36) | reemplazado por el Historical Data File oficial del WJP (ediciones 2012-2013 a 2025); fallback OWID eliminado del fetch |
+| `freedom_house.csv` | valores hardcodeados que no coincidian con los publicados (ej. 2012: decia 19, publicado 39; 2022: decia 11, publicado 15) y una formula PR/CL→0-100 presentada como oficial que Freedom House nunca publico | reemplazado por el Excel oficial All Data FIW (ediciones 2013-2024) mas ediciones 2025-2026 verificadas contra la pagina del pais; anos 2000-2011 quedan NaN |
+| `hdi.csv` | mezclaba vintages de HDR distintos (2000=0.671 de un HDR viejo vs 0.703 del vigente) y tenia huecos 2001-2004, 2006-2009 | reemplazado por la serie completa de un solo vintage (UNDP HDR via OWID), 2000-2023 sin huecos; nuevo `fetch_hdi.py` |
+| `pts.csv` | valores correctos pero terminaba en 2023 | actualizado a la edicion PTS 2025 (cubre hasta 2024) |
+
+Consecuencia en el score: la dimension D3 pierde cobertura antes de 2012
+(quedan CPI, WGI y PTS) y los scores 2012+ cambian porque los valores
+corregidos de FH/WJP son mas altos que los erroneos. La cobertura se
+reporta como siempre: faltante es faltante.
 
 ## Fuentes aprobadas presentes
 
@@ -150,15 +167,21 @@ Politica vigente:
 
 | Fuente | Uso potencial | Condicion de entrada |
 |---|---|---|
-| UN Comtrade | comercio mensual observado | evaluar token, historia, cobertura y stable product groups |
+| OPEC MOMR (fuentes secundarias) | produccion de crudo venezolano mensual, mas oportuna que EIA | parseo reproducible del reporte mensual |
+| World Bank Commodity Prices (Pink Sheet) | precios mensuales de crudo y commodities para Pulse | CSV estable ya publicado; definir variable y peso |
+| IMF DOTS (Direction of Trade Statistics) | comercio bilateral mensual reportado por los socios (mirror statistics, sin fuente venezolana) | API IMF y seleccion de socios estables |
+| UN Comtrade | comercio mensual observado (mirror) | evaluar token, historia, cobertura y stable product groups |
 | NASA Black Marble monthly | actividad nocturna mas oportuna | pipeline raster reproducible y comparabilidad con serie anual |
-| UNCTAD nowcasts o series logisticas actualizadas | comercio/logistica | que actualice huecos de LSCI sin fuente venezolana |
+| UNCTAD stat LSCI trimestral | actualizar LSCI mas alla de 2021 (WDI quedo congelado) | endpoint estable de UNCTADstat |
+| FRED spreads emergentes (ICE BofA EM) | condicion financiera externa adicional del Pulse | ya se usa FRED; definir variable y peso |
 
 ### Candidatas de mediano plazo
 
 | Fuente | Uso potencial | Riesgo |
 |---|---|---|
 | ACLED | conflicto/eventos | coverage reciente y sesgo de reporte |
+| OpenSanctions API | historial estructurado de sanciones OFAC/EU/UK (reactivaria `ofac_sanciones_count`) | historia temporal limitada; validar reproducibilidad |
+| R4V (ACNUR/OIM) | cortes intra-anuales de migracion venezolana | formato de publicacion cambia entre reportes |
 | Global Database of Events alternatives | percepcion/noticias | redundancia con Guardian/GDELT |
 | Shipping/AIS internacional | conectividad | costo, licencia y reproducibilidad |
 

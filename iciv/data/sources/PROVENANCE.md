@@ -1,10 +1,25 @@
 # Provenance de datos ICIV
 
-Fecha de corte: 2026-05-28.
+Fecha de corte: 2026-07-21.
 
 Este archivo documenta la trazabilidad vigente. La regla principal es simple:
 ningun score debe depender de fuentes originadas en Venezuela, valores inventados
 o rellenos artificiales.
+
+## Auditoria 2026-07-21 (correccion de fuentes institucionales)
+
+Se detectaron y corrigieron tres problemas de atribucion en archivos manuales
+del bloque institucional/humano. Detalle completo en
+`docs/FUENTES_Y_VARIABLES.md`, seccion "Auditoria de fuentes institucionales":
+
+- `wjp.csv`: contenia la serie V-Dem (fallback OWID) etiquetada como WJP.
+  Reemplazado por el Historical Data File oficial del WJP (2012-2025).
+- `freedom_house.csv`: valores que no coincidian con los publicados.
+  Reemplazado por el Excel oficial All Data FIW + ediciones 2025/2026
+  verificadas. Sin Aggregate Score antes de 2012 (NaN).
+- `hdi.csv`: mezcla de vintages HDR. Reemplazado por un solo vintage
+  (UNDP via OWID, 2000-2023) con nuevo `scripts/fetch_hdi.py`.
+- `pts.csv`: actualizado a la edicion PTS 2025 (hasta 2024).
 
 ## Fuentes que alimentan el core anual
 

@@ -1,23 +1,35 @@
 """
 World Justice Project Rule of Law Index — Venezuela.
 
-Fuente: World Justice Project (worldjusticeproject.org)
-        https://worldjusticeproject.org/rule-of-law-index/
+Fuente OFICIAL: World Justice Project — Historical Data File
+    https://worldjusticeproject.org/rule-of-law-index/
+    Archivo: {edicion}_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx
+    Hoja "Historical Data", columna "WJP Rule of Law Index: Overall Score".
 
-Variable: WJP Rule of Law Index Overall Score (0-1, mayor = mejor estado de derecho).
-  9 dimensiones: gobierno abierto, ausencia de corrupción, gobierno limitado,
+Variable: wjp_rule_of_law — Overall Score (0-1, mayor = mejor estado de derecho).
+  9 factores: gobierno limitado, ausencia de corrupción, gobierno abierto,
   derechos fundamentales, orden y seguridad, cumplimiento regulatorio,
   justicia civil y justicia penal.
 
-Cobertura: 2007-2025 (con algunos años bianuales al inicio)
+Cobertura REAL del índice: ediciones 2012-2013 en adelante. El índice WJP
+NO existe antes de 2012; los años 2000-2011 quedan NaN en el pipeline.
+Las ediciones dobles (2012-2013, 2017-2018) se asignan a ambos años
+calendario, tal como las nombra el propio WJP.
 
-Acceso: WJP publica datos en Excel descargable desde su website.
-  URL directa cambia cada año. Se intenta URL 2024, luego 2023.
-  Para histórico completo: descargar manualmente desde worldjusticeproject.org
-  y colocar en data/raw/wjp_manual.csv con columnas: year | score
+Rango de referencia: Venezuela puntúa ~0.36 (2012) a ~0.26 (2024-2025),
+último lugar del ranking global. Cualquier valor fuera de [0.15, 1.0] se
+rechaza como error de escala.
 
-  También disponible vía Our World in Data:
-  https://ourworldindata.org/grapher/rule-of-law-index-wjp
+NOTA DE AUDITORÍA (2026-07-21):
+  Una versión anterior de este script tenía como fallback el grapher de OWID
+  "rule-of-law-index.csv", que corresponde al índice Rule of Law de V-DEM
+  (escala distinta, valores cercanos a 0 para Venezuela). Ese fallback
+  contaminó wjp.csv con datos de otra fuente etiquetados como WJP
+  (2000-2025, valores 0.211→0.009). Se eliminó todo fallback que no sea el
+  archivo oficial WJP o un CSV manual descargado del propio WJP.
+
+Fallback manual: data/raw/wjp_manual.csv con columnas year|score, solo si
+  proviene de worldjusticeproject.org.
 
 Salida: data/raw/wjp.csv
 Formato: año | indicador | valor | pais | fuente
@@ -29,7 +41,7 @@ Uso:
 from __future__ import annotations
 
 import sys
-from io import BytesIO, StringIO
+from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
@@ -46,111 +58,95 @@ START  = _CFG["serie"]["start_year"]
 END    = _CFG["serie"]["end_year"]
 OUTPUT = settings.paths.raw_wjp
 
-# Our World in Data — grapher CSV endpoint (funciona sin auth)
-_OWID_WJP_URL     = "https://ourworldindata.org/grapher/rule-of-law-index-wjp.csv"
-_OWID_WJP_ALT     = "https://ourworldindata.org/grapher/rule-of-law-index.csv"
+_HEADERS = {"User-Agent": "Mozilla/5.0 (academic research project ICIV)"}
 
-# URL directa WJP Excel — versiones 2024 y 2023
-_WJP_EXCEL_URL    = "https://worldjusticeproject.org/sites/default/files/documents/WJP-ROLI-2024-v3-Final.xlsx"
-_WJP_EXCEL_2023   = "https://worldjusticeproject.org/sites/default/files/documents/WJP-ROLI-2023-Scores.xlsx"
+# Archivo histórico oficial WJP — se intenta la edición más reciente primero.
+_WJP_HISTORICAL_URLS = [
+    "https://worldjusticeproject.org/rule-of-law-index/downloads/2026_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
+    "https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
+    "https://worldjusticeproject.org/rule-of-law-index/downloads/2024_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
+]
 
 _MANUAL_CSV = Path(__file__).resolve().parents[1] / "data" / "raw" / "wjp_manual.csv"
-_VEN_NAMES  = {"Venezuela", "Venezuela, RB", "República Bolivariana de Venezuela"}
+
+# Sanidad de escala: el Overall Score WJP nunca baja de ~0.25 (Venezuela es
+# el mínimo global). Valores fuera de este rango indican mezcla de fuentes.
+_SCORE_MIN, _SCORE_MAX = 0.15, 1.0
 
 
-def _try_wjp_excel(url: str) -> pd.DataFrame | None:
-    """Intenta descargar el Excel WJP y extraer Venezuela."""
+def _expand_edition_years(year_label: str) -> list[int]:
+    """'2012-2013' -> [2012, 2013]; '2019' -> [2019]."""
+    label = str(year_label).strip()
+    if "-" in label:
+        parts = label.split("-")
+        try:
+            return list(range(int(parts[0]), int(parts[1]) + 1))
+        except ValueError:
+            return []
     try:
-        from io import BytesIO
-        headers = {"User-Agent": "Mozilla/5.0 (research project)"}
-        print(f"  WJP Excel: {url.split('/')[-1]}")
-        resp = requests.get(url, timeout=60, headers=headers)
-        resp.raise_for_status()
-        xls = pd.ExcelFile(BytesIO(resp.content))
-        # Buscar hoja con scores
-        sheet = xls.sheet_names[0]
-        for sh in xls.sheet_names:
-            if any(k in sh.lower() for k in ["score", "overall", "country"]):
-                sheet = sh
-                break
-        df = pd.read_excel(BytesIO(resp.content), sheet_name=sheet, header=0)
-        # Buscar fila Venezuela
-        country_col = df.columns[0]
-        ven_mask = df[country_col].astype(str).str.contains("Venezuela", case=False, na=False)
-        if not ven_mask.any():
+        return [int(float(label))]
+    except ValueError:
+        return []
+
+
+def _try_wjp_historical(url: str) -> pd.DataFrame | None:
+    """Descarga el Historical Data File oficial WJP y extrae Venezuela."""
+    fname = url.split("/")[-1]
+    try:
+        resp = requests.get(url, timeout=90, headers=_HEADERS)
+        if resp.status_code != 200 or "html" in resp.headers.get("Content-Type", "").lower():
+            print(f"  WJP {fname}: HTTP {resp.status_code} / no-excel — se omite")
             return None
-        ven_row = df[ven_mask].iloc[0]
-        # Buscar columna overall score
+        xls = pd.ExcelFile(BytesIO(resp.content))
+        if "Historical Data" not in xls.sheet_names:
+            print(f"  WJP {fname}: sin hoja 'Historical Data'")
+            return None
+        df = pd.read_excel(BytesIO(resp.content), sheet_name="Historical Data")
+
+        code_col = "Country Code" if "Country Code" in df.columns else None
+        if code_col:
+            ven = df[df[code_col].astype(str) == "VEN"].copy()
+        else:
+            ven = df[df[df.columns[0]].astype(str).str.contains(
+                "Venezuela", case=False, na=False)].copy()
+        if ven.empty:
+            print(f"  WJP {fname}: Venezuela no encontrada")
+            return None
+
         score_col = None
         for col in df.columns:
-            if any(k in str(col).lower() for k in ["overall", "wjp rule", "score", "index"]):
-                try:
-                    val = float(ven_row[col])
-                    if 0 < val <= 1:
-                        score_col = col
-                        break
-                except (ValueError, TypeError):
-                    pass
-        if score_col is None:
-            return None
-        # Inferir año del nombre de archivo
-        fname = url.split("/")[-1]
-        yr = None
-        for part in fname.replace("-", "_").split("_"):
-            part_clean = part.split(".")[0]
-            if part_clean.isdigit() and 2000 <= int(part_clean) <= 2030:
-                yr = int(part_clean)
-                break
-        if yr is None:
-            return None
-        val = float(ven_row[score_col])
-        print(f"  WJP Excel {yr}: Venezuela = {val:.4f}")
-        return pd.DataFrame([{"año": yr, "valor": val}])
-    except Exception as exc:
-        print(f"  WJP Excel fallo ({url.split('/')[-1]}): {exc}")
-        return None
-
-
-def _try_owid_wjp(url: str) -> pd.DataFrame | None:
-    """Intenta obtener WJP series Venezuela desde OWID grapher CSV."""
-    try:
-        headers = {"User-Agent": "Mozilla/5.0 (research project)"}
-        resp = requests.get(url, timeout=60, headers=headers)
-        resp.raise_for_status()
-        df = pd.read_csv(StringIO(resp.text))
-
-        entity_col = "Entity" if "Entity" in df.columns else df.columns[0]
-        year_col   = "Year"   if "Year"   in df.columns else df.columns[1]
-        score_col  = None
-        for col in df.columns:
-            if "rule" in col.lower() or "roli" in col.lower() or "overall" in col.lower():
+            if "overall score" in str(col).lower():
                 score_col = col
                 break
-        if score_col is None and len(df.columns) > 2:
-            score_col = df.columns[2]
-
         if score_col is None:
+            print(f"  WJP {fname}: columna Overall Score no encontrada")
             return None
 
-        ven = df[df[entity_col].isin(_VEN_NAMES)].copy()
-        if ven.empty:
-            ven = df[df[entity_col].str.contains("Venezuela", case=False, na=False)].copy()
-        if ven.empty:
+        year_col = "Year" if "Year" in ven.columns else ven.columns[1]
+        rows = []
+        for _, r in ven.iterrows():
+            val = float(r[score_col])
+            if not (_SCORE_MIN <= val <= _SCORE_MAX):
+                raise ValueError(
+                    f"Score fuera de rango WJP ({val}) — posible mezcla de escalas"
+                )
+            edition = str(r[year_col]).strip()
+            for yr in _expand_edition_years(edition):
+                if START <= yr <= END:
+                    rows.append({"año": yr, "valor": round(val, 4), "edicion": edition})
+        if not rows:
             return None
-
-        ven = ven[[year_col, score_col]].rename(
-            columns={year_col: "año", score_col: "valor"}
-        ).dropna(subset=["valor"])
-        ven["año"] = ven["año"].astype(int)
-        ven = ven[(ven["año"] >= START) & (ven["año"] <= END)]
-        print(f"  OWID WJP ({url.split('/')[-1]}): {len(ven)} anos para Venezuela")
-        return ven if not ven.empty else None
+        out = pd.DataFrame(rows)
+        out.attrs["source_url"] = url
+        print(f"  WJP {fname}: {len(out)} años para Venezuela")
+        return out
     except Exception as exc:
-        print(f"  OWID WJP fallo ({url.split('/')[-1]}): {exc}")
+        print(f"  WJP {fname} fallo: {exc}")
         return None
 
 
 def _try_manual_csv() -> pd.DataFrame | None:
+    """CSV manual descargado del propio WJP (year|score)."""
     if not _MANUAL_CSV.exists():
         return None
     try:
@@ -162,7 +158,13 @@ def _try_manual_csv() -> pd.DataFrame | None:
         ).dropna(subset=["valor"])
         df["año"] = df["año"].astype(int)
         df = df[(df["año"] >= START) & (df["año"] <= END)]
-        print(f"  Manual CSV WJP: {len(df)} anos cargados")
+        bad = df[(df["valor"] < _SCORE_MIN) | (df["valor"] > _SCORE_MAX)]
+        if not bad.empty:
+            print("  Manual CSV WJP: valores fuera de escala WJP — rechazado")
+            return None
+        df["edicion"] = df["año"].astype(str)
+        df.attrs["source_url"] = "wjp_manual.csv (descarga manual worldjusticeproject.org)"
+        print(f"  Manual CSV WJP: {len(df)} años cargados")
         return df if not df.empty else None
     except Exception as exc:
         print(f"  Manual CSV error: {exc}")
@@ -170,13 +172,10 @@ def _try_manual_csv() -> pd.DataFrame | None:
 
 
 def fetch_wjp() -> pd.DataFrame:
-    """Descarga WJP Rule of Law Index Venezuela. Sin datos inventados."""
+    """Descarga WJP Rule of Law Venezuela desde el archivo oficial. Sin fallbacks de otras fuentes."""
     df_vals = None
     for attempt in [
-        lambda: _try_owid_wjp(_OWID_WJP_URL),
-        lambda: _try_owid_wjp(_OWID_WJP_ALT),
-        lambda: _try_wjp_excel(_WJP_EXCEL_URL),
-        lambda: _try_wjp_excel(_WJP_EXCEL_2023),
+        *[lambda u=u: _try_wjp_historical(u) for u in _WJP_HISTORICAL_URLS],
         _try_manual_csv,
     ]:
         candidate = attempt()
@@ -187,12 +186,15 @@ def fetch_wjp() -> pd.DataFrame:
     if df_vals is None or df_vals.empty:
         print(
             "\n  ADVERTENCIA: WJP Rule of Law no disponible automaticamente.\n"
-            "  Descargar desde worldjusticeproject.org/rule-of-law-index/\n"
-            "  Guardar en data/raw/wjp_manual.csv con columnas: year | score\n"
-            "  Variable wjp_rule_of_law quedara NaN en el pipeline."
+            "  Descargar el Historical Data File desde\n"
+            "  worldjusticeproject.org/rule-of-law-index/ y guardar en\n"
+            "  data/raw/wjp_manual.csv con columnas: year | score\n"
+            "  La variable wjp_rule_of_law quedara NaN en el pipeline.\n"
+            "  NO usar fuentes distintas al WJP (p.ej. V-Dem via OWID)."
         )
         return pd.DataFrame(columns=["año", "indicador", "valor", "pais", "fuente"])
 
+    src = df_vals.attrs.get("source_url", "worldjusticeproject.org")
     rows = []
     for _, row in df_vals.iterrows():
         rows.append({
@@ -201,8 +203,8 @@ def fetch_wjp() -> pd.DataFrame:
             "valor":     round(float(row["valor"]), 4),
             "pais":      "Venezuela",
             "fuente":    (
-                "World Justice Project — Rule of Law Index. "
-                "https://worldjusticeproject.org/rule-of-law-index/"
+                f"World Justice Project — Rule of Law Index, edicion {row['edicion']}, "
+                f"Overall Score. Historical Data File oficial: {src}"
             ),
         })
 
@@ -211,8 +213,7 @@ def fetch_wjp() -> pd.DataFrame:
 
 if __name__ == "__main__":
     print("=" * 65)
-    print("  WJP Rule of Law Index — Venezuela")
-    print("  Fuente: World Justice Project")
+    print("  WJP Rule of Law Index — Venezuela (archivo historico oficial)")
     print("=" * 65)
     settings.paths.ensure_exists()
     df = fetch_wjp()

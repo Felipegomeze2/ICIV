@@ -1,6 +1,6 @@
 # Validación externa del ICIV (no circular)
 
-**Fecha:** 2026-06-10 · **Script:** `iciv/scripts/external_validation.py` · **Outputs:** `iciv/data/processed/external_validation.csv`, `external_validation_summary.csv`
+**Fecha:** 2026-07-21 (recalculada tras la auditoría de fuentes institucionales WJP/FH/HDI/PTS) · **Script:** `iciv/scripts/external_validation.py` · **Outputs:** `iciv/data/processed/external_validation.csv`, `external_validation_summary.csv`
 
 ## Problema que resuelve
 
@@ -29,10 +29,10 @@ leave-one-out y la serie cruda (no normalizada) de la variable excluida.
 
 | Test | Periodo | n | Pearson r | p | Spearman ρ | p | Veredicto |
 |---|---|---|---|---|---|---|---|
-| ICIV (sin migrantes) vs stock migrantes UNHCR | 2000–2025 | 26 | **−0.883** | <0.001 | −0.848 | <0.001 | ✅ Confirmada |
-| ICIV (sin luminosidad) vs luminosidad nocturna, era VIIRS | 2014–2024 | 11 | **+0.826** | 0.002 | +0.782 | 0.004 | ✅ Confirmada |
-| ICIV (sin luminosidad) vs luminosidad, periodo completo | 2000–2024 | 25 | −0.525 | 0.007 | −0.717 | <0.001 | ⚠️ No interpretable* |
-| ICIV completo vs IED neta (outcome externo) | 2000–2024 | 25 | +0.372 | 0.067 | +0.322 | 0.116 | Signo correcto, no significativa |
+| ICIV (sin migrantes) vs stock migrantes UNHCR | 2000–2025 | 26 | **−0.895** | <0.001 | −0.729 | <0.001 | ✅ Confirmada |
+| ICIV (sin luminosidad) vs luminosidad nocturna, era VIIRS | 2014–2024 | 11 | **+0.839** | 0.001 | +0.809 | 0.003 | ✅ Confirmada |
+| ICIV (sin luminosidad) vs luminosidad, periodo completo | 2000–2024 | 25 | −0.476 | 0.016 | −0.642 | <0.001 | ⚠️ No interpretable* |
+| ICIV completo vs IED neta (outcome externo) | 2000–2024 | 25 | +0.390 | 0.054 | +0.423 | 0.035 | Signo correcto, no significativa |
 
 \* **Por qué el periodo completo de luminosidad no es interpretable:** la serie
 armonizada de Li et al. (2020) combina dos sensores — DMSP-OLS hasta 2013 y VIIRS
@@ -46,7 +46,7 @@ resultados por transparencia.
 
 ## Interpretación
 
-- El ICIV **sin saber nada de migración** explica el 78% de la varianza (r²) del
+- El ICIV **sin saber nada de migración** explica el 80% de la varianza (r²) del
   stock de emigrantes venezolanos registrado por UNHCR. Cuando el índice cae, la
   gente se va. Es la validación externa más fuerte del proyecto.
 - El ICIV **sin saber nada de luminosidad** sigue el apagón económico observable
@@ -61,8 +61,8 @@ resultados por transparencia.
 
 > "No validamos el índice contra sus propios componentes. Recalculamos el ICIV
 > excluyendo la variable de validación y correlacionamos contra la serie cruda.
-> El índice sin migración predice la emigración (r=−0.88); el índice sin
-> luminosidad sigue la luz nocturna del país medida por satélite (r=+0.83).
+> El índice sin migración predice la emigración (r=−0.89); el índice sin
+> luminosidad sigue la luz nocturna del país medida por satélite (r=+0.84).
 > Dos fenómenos observables, independientes y no manipulables por el gobierno
 > venezolano, confirman lo que el índice mide."
 

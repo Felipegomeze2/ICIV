@@ -1,17 +1,25 @@
 ﻿año,indicador,valor,pais,fuente
-2000,hdi,0.671,Venezuela,UNDP HDR (serie histórica validada)
-2005,hdi,0.699,Venezuela,UNDP HDR (serie histórica validada)
-2010,hdi,0.731,Venezuela,UNDP HDR (serie histórica validada)
-2011,hdi,0.737,Venezuela,UNDP HDR (serie histórica validada)
-2012,hdi,0.748,Venezuela,UNDP HDR (serie histórica validada)
-2013,hdi,0.762,Venezuela,UNDP HDR (serie histórica validada)
-2014,hdi,0.767,Venezuela,UNDP HDR (serie histórica validada)
-2015,hdi,0.768,Venezuela,UNDP HDR (serie histórica validada)
-2016,hdi,0.76,Venezuela,UNDP HDR (serie histórica validada)
-2017,hdi,0.737,Venezuela,UNDP HDR (serie histórica validada)
-2018,hdi,0.726,Venezuela,UNDP HDR (serie histórica validada)
-2019,hdi,0.717,Venezuela,UNDP HDR (serie histórica validada)
-2020,hdi,0.705,Venezuela,UNDP HDR (serie histórica validada)
-2021,hdi,0.699,Venezuela,UNDP HDR (serie histórica validada)
-2022,hdi,0.709,Venezuela,UNDP HDR
-2023,hdi,0.709,Venezuela,UNDP HDR via Our World in Data (https://ourworldindata.org/grapher/human-development-index)
+2000,hdi,0.703,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2001,hdi,0.708,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2002,hdi,0.716,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2003,hdi,0.707,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2004,hdi,0.718,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2005,hdi,0.728,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2006,hdi,0.736,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2007,hdi,0.753,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2008,hdi,0.759,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2009,hdi,0.76,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2010,hdi,0.764,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2011,hdi,0.77,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2012,hdi,0.772,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2013,hdi,0.773,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2014,hdi,0.77,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2015,hdi,0.768,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2016,hdi,0.761,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2017,hdi,0.749,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2018,hdi,0.741,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2019,hdi,0.724,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2020,hdi,0.699,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2021,hdi,0.696,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2022,hdi,0.706,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index
+2023,hdi,0.709,Venezuela,UNDP Human Development Report (vintage vigente completo) via Our World in Data: https://ourworldindata.org/grapher/human-development-index

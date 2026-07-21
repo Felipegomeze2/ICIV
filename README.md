@@ -21,6 +21,10 @@ core pasan el control de vigencia.
 - No se crean series sustitutas cuando una fuente no responde o no ha publicado.
 - La cobertura se conserva como parte del resultado: un score con menor cobertura
   no debe presentarse con la misma fuerza que un score bien cubierto.
+- Auditoria 2026-07-21: los archivos institucionales (WJP, Freedom House, HDI,
+  PTS) se verificaron valor por valor contra las publicaciones oficiales y se
+  regeneran desde ellas. Detalle en
+  [docs/FUENTES_Y_VARIABLES.md](./docs/FUENTES_Y_VARIABLES.md).
 
 ## Diseno actual
 

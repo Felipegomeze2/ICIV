@@ -1,5 +1,5 @@
 """
-Political Terror Scale (PTS) — Venezuela (2000–2023).
+Political Terror Scale (PTS) — Venezuela (2000–última edición disponible).
 
 El PTS mide el nivel de represión política y violencia de Estado en un país,
 codificado anualmente desde tres fuentes independientes de derechos humanos:
@@ -64,7 +64,12 @@ START  = _CFG["serie"]["start_year"]
 END    = _CFG["serie"]["end_year"]
 OUTPUT = settings.paths.raw_pts
 
-PTS_URL = "https://www.politicalterrorscale.org/Data/Files/PTS-2024.csv"
+# Se intenta la edición más reciente primero; la edición N cubre hasta el año N-1.
+PTS_URLS = [
+    ("2026", "https://www.politicalterrorscale.org/Data/Files/PTS-2026.csv"),
+    ("2025", "https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv"),
+    ("2024", "https://www.politicalterrorscale.org/Data/Files/PTS-2024.csv"),
+]
 
 
 def fetch_pts() -> pd.DataFrame:
@@ -73,15 +78,22 @@ def fetch_pts() -> pd.DataFrame:
     Promedia PTS_A, PTS_H, PTS_S cuando están disponibles.
     Retorna DataFrame con columnas: año|indicador|valor|pais|fuente
     """
-    print("  Descargando Political Terror Scale 2024...")
-    try:
-        resp = requests.get(PTS_URL, timeout=30)
-        resp.raise_for_status()
-    except Exception as exc:
-        print(
-            f"  [ERROR] PTS no disponible: {exc}\n"
-            "  La variable pts_terror_politico quedará sin datos."
-        )
+    resp = None
+    edition = None
+    for ed, url in PTS_URLS:
+        print(f"  Descargando Political Terror Scale {ed}...")
+        try:
+            r = requests.get(
+                url, timeout=60,
+                headers={"User-Agent": "Mozilla/5.0 (academic research project ICIV)"},
+            )
+            r.raise_for_status()
+            resp, edition = r, ed
+            break
+        except Exception as exc:
+            print(f"    PTS {ed} no disponible: {exc}")
+    if resp is None:
+        print("  [ERROR] Ninguna edición PTS disponible. pts_terror_politico quedará sin datos.")
         return pd.DataFrame(columns=["año", "indicador", "valor", "pais", "fuente"])
 
     df_raw = pd.read_csv(io.StringIO(resp.text))
@@ -111,7 +123,10 @@ def fetch_pts() -> pd.DataFrame:
             "indicador": "pts_terror_politico",
             "valor":     avg,
             "pais":      "Venezuela",
-            "fuente":    "Political Terror Scale 2024 — Gibney et al.",
+            "fuente":    (
+                f"Political Terror Scale {edition} — Gibney et al. "
+                f"(https://www.politicalterrorscale.org/Data/Files/PTS-{edition}.csv)"
+            ),
         })
 
     if not rows:

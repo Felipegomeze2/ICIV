@@ -1,27 +1,15 @@
 ﻿año,indicador,valor,pais,fuente
-2000,wjp_rule_of_law,0.211,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2001,wjp_rule_of_law,0.204,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2002,wjp_rule_of_law,0.191,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2003,wjp_rule_of_law,0.187,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2004,wjp_rule_of_law,0.145,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2005,wjp_rule_of_law,0.081,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2006,wjp_rule_of_law,0.075,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2007,wjp_rule_of_law,0.065,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2008,wjp_rule_of_law,0.069,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2009,wjp_rule_of_law,0.063,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2010,wjp_rule_of_law,0.057,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2011,wjp_rule_of_law,0.056,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2012,wjp_rule_of_law,0.055,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2013,wjp_rule_of_law,0.033,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2014,wjp_rule_of_law,0.031,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2015,wjp_rule_of_law,0.029,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2016,wjp_rule_of_law,0.024,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2017,wjp_rule_of_law,0.015,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2018,wjp_rule_of_law,0.012,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2019,wjp_rule_of_law,0.011,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2020,wjp_rule_of_law,0.01,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2021,wjp_rule_of_law,0.012,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2022,wjp_rule_of_law,0.013,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2023,wjp_rule_of_law,0.012,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2024,wjp_rule_of_law,0.009,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
-2025,wjp_rule_of_law,0.009,Venezuela,World Justice Project — Rule of Law Index. https://worldjusticeproject.org/rule-of-law-index/
+2012,wjp_rule_of_law,0.3586,Venezuela,"World Justice Project — Rule of Law Index, edicion 2012-2013, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2013,wjp_rule_of_law,0.3586,Venezuela,"World Justice Project — Rule of Law Index, edicion 2012-2013, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2014,wjp_rule_of_law,0.3105,Venezuela,"World Justice Project — Rule of Law Index, edicion 2014, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2015,wjp_rule_of_law,0.3128,Venezuela,"World Justice Project — Rule of Law Index, edicion 2015, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2016,wjp_rule_of_law,0.2775,Venezuela,"World Justice Project — Rule of Law Index, edicion 2016, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2017,wjp_rule_of_law,0.2861,Venezuela,"World Justice Project — Rule of Law Index, edicion 2017-2018, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2018,wjp_rule_of_law,0.2861,Venezuela,"World Justice Project — Rule of Law Index, edicion 2017-2018, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2019,wjp_rule_of_law,0.2763,Venezuela,"World Justice Project — Rule of Law Index, edicion 2019, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2020,wjp_rule_of_law,0.2691,Venezuela,"World Justice Project — Rule of Law Index, edicion 2020, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2021,wjp_rule_of_law,0.2651,Venezuela,"World Justice Project — Rule of Law Index, edicion 2021, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2022,wjp_rule_of_law,0.2614,Venezuela,"World Justice Project — Rule of Law Index, edicion 2022, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2023,wjp_rule_of_law,0.2638,Venezuela,"World Justice Project — Rule of Law Index, edicion 2023, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2024,wjp_rule_of_law,0.2607,Venezuela,"World Justice Project — Rule of Law Index, edicion 2024, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+2025,wjp_rule_of_law,0.2597,Venezuela,"World Justice Project — Rule of Law Index, edicion 2025, Overall Score. Historical Data File oficial: https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"

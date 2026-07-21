@@ -1,25 +1,26 @@
 ﻿año,indicador,valor,pais,fuente
-2000,pts_terror_politico,2.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2001,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2002,pts_terror_politico,4.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2003,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2004,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2005,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2006,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2007,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2008,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2009,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2010,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2011,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2012,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2013,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2014,pts_terror_politico,3.33,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2015,pts_terror_politico,3.33,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2016,pts_terror_politico,3.67,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2017,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2018,pts_terror_politico,4.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2019,pts_terror_politico,4.67,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2020,pts_terror_politico,5.0,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2021,pts_terror_politico,4.67,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2022,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2024 — Gibney et al.
-2023,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2024 — Gibney et al.
+2000,pts_terror_politico,2.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2001,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2002,pts_terror_politico,4.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2003,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2004,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2005,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2006,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2007,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2008,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2009,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2010,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2011,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2012,pts_terror_politico,3.5,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2013,pts_terror_politico,3.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2014,pts_terror_politico,3.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2015,pts_terror_politico,3.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2016,pts_terror_politico,3.67,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2017,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2018,pts_terror_politico,4.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2019,pts_terror_politico,4.67,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2020,pts_terror_politico,5.0,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2021,pts_terror_politico,4.67,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2022,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2023,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)
+2024,pts_terror_politico,4.33,Venezuela,Political Terror Scale 2025 — Gibney et al. (https://www.politicalterrorscale.org/Data/Files/PTS-2025.csv)

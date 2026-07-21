@@ -96,7 +96,7 @@ def fase_fetch(settings: Settings) -> None:
         ("Noticias internacionales -- RSS filtrado", "scripts.fetch_international_news", "fetch_international_news"),
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
-        ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "build_freedom_house"),
+        ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "fetch_freedom_house"),
         ("UNHCR/R4V -- Migración venezolana",     "scripts.fetch_unhcr",         "build_unhcr"),
         ("VIIRS/DMSP   -- Luminosidad nocturna",  "scripts.fetch_viirs",         "build_viirs"),
         ("UNCTAD LSCI -- Conectividad marítima",  "scripts.fetch_unctad",        "fetch_unctad"),
@@ -128,7 +128,7 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_international_news": settings.paths.raw_international_news,
                 "fetch_guardian":      settings.paths.raw_guardian,
                 "fetch_fred":          settings.paths.raw_fred,
-                "build_freedom_house": settings.paths.raw_freedom_house,
+                "fetch_freedom_house": settings.paths.raw_freedom_house,
                 "build_unhcr":         settings.paths.raw_unhcr,
                 "build_viirs":         settings.paths.raw_viirs,
                 "fetch_unctad":        settings.paths.raw_unctad,
@@ -3511,9 +3511,10 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
         <li><strong>Transparency International. (2025).</strong> Corruption Perceptions Index 2024. <a href="https://www.transparency.org/en/cpi" target="_blank">transparency.org/cpi</a></li>
         <li><strong>Freedom House. (2026).</strong> Freedom in the World 2026.</li>
         <li><strong>World Justice Project. (2025).</strong> WJP Rule of Law Index 2025.</li>
-        <li><strong>Gibney, M., Cornett, L., Wood, R., et al.</strong> Political Terror Scale 1976-2023. <a href="https://www.politicalterrorscale.org" target="_blank">politicalterrorscale.org</a></li>
+        <li><strong>Gibney, M., Cornett, L., Wood, R., et al.</strong> Political Terror Scale 1976-2024 (ed. 2025). <a href="https://www.politicalterrorscale.org" target="_blank">politicalterrorscale.org</a></li>
         <li><strong>Li, X., Zhou, Y., et al. (2020).</strong> A harmonized global nighttime light dataset 1992-2024. <em>Scientific Data</em>, 7(1). Figshare DOI: 10.6084/m9.figshare.9828827</li>
-        <li><strong>Our World in Data.</strong> Redistribución licencia abierta (V-Dem, WJP, RSF, HDI, GHI, FAO).</li>
+        <li><strong>Our World in Data.</strong> Redistribución licencia abierta (HDI, GHI, FAO).</li>
+        <li><strong>UNDP.</strong> Human Development Report — HDI series (via Our World in Data).</li>
         <li><strong>ILO ILOSTAT.</strong> Labour Statistics Database (via WB proxy).</li>
         <li><strong>The Guardian Open Platform.</strong> Articles API + VADER sentiment (Hutto &amp; Gilbert, 2014).</li>
         <li><strong>Hutto, C. J., &amp; Gilbert, E. (2014).</strong> VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. <em>ICWSM</em>.</li>
