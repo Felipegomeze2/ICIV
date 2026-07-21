@@ -27,7 +27,10 @@ class UNCTADLoader(DataLoader):
         df = self._read_csv()
         df = self._ensure_year_column(df)
         df = self._filter_year_range(df)
-        df = df.sort_values("año").reset_index(drop=True)
+        # El CSV incluye una columna `fuente` para auditoría; el contrato del
+        # pipeline exige solo año + variables, así que se filtra aquí.
+        keep = ["año"] + [c for c in _REQUIRED if c in df.columns]
+        df = df[keep].sort_values("año").reset_index(drop=True)
         missing = self._check_required_columns(df, _REQUIRED, "UNCTAD")
         return DatasetResult(source=self.get_source_id(), df=df, missing_cols=missing)
 

@@ -28,7 +28,13 @@ del bloque institucional/humano. Detalle completo en
 | Macro | IMF, World Bank WDI, FRED | `imf.csv`, `wdi.csv`, `fred.csv` |
 | Energia | U.S. EIA, Li et al./Figshare | `eia.csv`, `viirs.csv` |
 | Institucional | Transparency International, WGI, Freedom House, WJP, PTS | `cpi.csv`, `wgi.csv`, `freedom_house.csv`, `wjp.csv`, `pts.csv` |
-| Comercial | WDI, IMF, UNHCR/R4V, UNCTAD | `wdi.csv`, `imf.csv`, `unhcr.csv`, `unctad.csv` |
+| Comercial | WDI, IMF, UNHCR/R4V, UNCTADstat | `wdi.csv`, `imf.csv`, `unhcr.csv`, `unctad.csv` |
+
+Nota LSCI (2026-07-21): `unctad.csv` ahora proviene directo del bulk oficial
+de UNCTADstat (US.LSCI trimestral, base Q1-2023=100, promedio anual de
+trimestres publicados, 2006-2026). Reemplaza a la serie WDI congelada en
+2021. Nunca se mezclan ambas bases en una misma serie; el fallback WDI solo
+se usa si UNCTADstat no responde, y en ese caso toda la serie es WDI.
 | Humano | UNDP/HDI, WHO, WDI, ILOSTAT | `hdi.csv`, `who.csv`, `wdi.csv`, `ilostat.csv` |
 | Percepcion | The Guardian Open Platform + VADER | `guardian.csv` |
 

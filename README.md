@@ -1,5 +1,11 @@
 # ICIV - Indicador de Clima de Inversion Venezuela
 
+[![CI](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/ci.yml)
+[![Dashboard semanal](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml/badge.svg)](https://github.com/Felipegomeze2/ICIV/actions/workflows/update_dashboard.yml)
+[![Dashboard en vivo](https://img.shields.io/badge/dashboard-en%20vivo-2ea44f)](https://felipegomeze2.github.io/ICIV/)
+
+![ICIV 2000-2026 con eventos anotados](docs/figures/iciv_timeline_eventos.png)
+
 ICIV es un proyecto de analitica aplicada para leer el clima de inversion de
 Venezuela sin depender de fuentes originadas en Venezuela. Separa tres piezas
 con funciones distintas:

@@ -34,7 +34,7 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | D4 | `exportaciones_pct_pib` | WDI/OWID | positiva | apertura comercial |
 | D4 | `desempleo_pct` | IMF/OWID | negativa | absorcion economica |
 | D4 | `migrantes_vzla_millones` | UNHCR/R4V | negativa | salida poblacional acumulada |
-| D4 | `lsci_conectividad_maritima` | UNCTAD | positiva | conectividad logistica |
+| D4 | `lsci_conectividad_maritima` | UNCTADstat (trimestral → promedio anual) | positiva | conectividad logistica; serie 2006-2026 base Q1-2023=100 |
 | D5 | `hdi` | UNDP/OWID | positiva | capital humano agregado |
 | D5 | `esperanza_vida_anos` | WHO/WDI | positiva | condicion sanitaria |
 | D5 | `mortalidad_infantil_x1000` | WHO/WDI | negativa | fragilidad social |
@@ -190,10 +190,12 @@ Politica vigente:
 | US Census intltrade API | comercio espejo EEUU-VEN mas oportuno que IMTS (~2 meses lag) | requiere API key gratuita (api.census.gov); complementa IMTS |
 | UN Comtrade | comercio mensual observado (mirror, mas socios) | evaluar token, historia, cobertura y stable product groups |
 | NASA Black Marble monthly | actividad nocturna mas oportuna | pipeline raster reproducible y comparabilidad con serie anual |
-| UNCTAD stat LSCI trimestral | actualizar LSCI mas alla de 2021 (WDI quedo congelado) | endpoint estable de UNCTADstat |
 
 Integradas en 2026-07 (ya no son candidatas): IMF IMTS (antes DOTS), World
-Bank Pink Sheet y spread EM de ICE BofA via FRED.
+Bank Pink Sheet, spread EM de ICE BofA via FRED, y UNCTADstat LSCI
+trimestral (reemplaza al WDI congelado en 2021; serie completa 2006-2026 en
+base Q1-2023=100, promedio anual de trimestres publicados, sin mezclar
+bases con la serie WDI antigua).
 
 ### Candidatas de mediano plazo
 

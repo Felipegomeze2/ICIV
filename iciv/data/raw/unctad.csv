@@ -1,17 +1,22 @@
-﻿año,lsci_conectividad_maritima
-2006,24.42
-2007,23.84
-2008,22.68
-2009,22.57
-2010,21.82
-2011,21.08
-2012,22.49
-2013,22.78
-2014,15.97
-2015,14.17
-2016,12.92
-2017,11.84
-2018,12.03
-2019,11.11
-2020,11.01
-2021,7.36
+﻿año,lsci_conectividad_maritima,fuente
+2006,115.87,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2007,118.41,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2008,117.71,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2009,108.74,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2010,98.77,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2011,84.51,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2012,96.48,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2013,96.55,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2014,87.61,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2015,73.1,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2016,63.46,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2017,49.91,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2018,50.1,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2019,47.28,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2020,42.79,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2021,31.38,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2022,26.87,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2023,31.39,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2024,37.22,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2025,36.51,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q4. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
+2026,38.6,"UNCTADstat US.LSCI trimestral (base Q1 2023=100), promedio de trimestres publicados Q1-Q2. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
