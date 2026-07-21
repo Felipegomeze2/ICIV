@@ -52,6 +52,7 @@ jobs:
           GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
           ACLED_EMAIL:      ${{ secrets.ACLED_EMAIL }}
           ACLED_PASSWORD:   ${{ secrets.ACLED_PASSWORD }}
+          COMTRADE_API_KEY: ${{ secrets.COMTRADE_API_KEY }}
         run: |
           echo "Descargando datos frescos de fuentes de alta frecuencia..."
           # FRED — datos públicos, sin API key
@@ -71,6 +72,8 @@ jobs:
           python scripts/fetch_wb_commodities_monthly.py || echo "WARN: fetch_wb_commodities falló (continuando)"
           # ACLED — eventos de conflicto (requiere secrets ACLED_EMAIL/ACLED_PASSWORD; si faltan, avisa y continua)
           python scripts/fetch_acled_monthly.py     || echo "WARN: fetch_acled_monthly falló (continuando)"
+          # UN Comtrade — comercio espejo de socios adicionales (requiere COMTRADE_API_KEY; si falta, avisa y continua)
+          python scripts/fetch_comtrade_monthly.py  || echo "WARN: fetch_comtrade_monthly falló (continuando)"
           python scripts/fetch_international_news.py || echo "WARN: fetch_international_news falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"

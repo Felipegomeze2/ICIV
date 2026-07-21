@@ -188,7 +188,7 @@ Politica vigente:
 |---|---|---|
 | OPEC MOMR (fuentes secundarias) | produccion de crudo venezolano mensual, mas oportuna que EIA | el sitio OPEC bloquea descargas automatizadas (HTTP 403, verificado 2026-07); requiere parseo PDF reproducible |
 | US Census intltrade API | comercio espejo EEUU-VEN mas oportuno que IMTS (~2 meses lag) | requiere API key gratuita (api.census.gov); complementa IMTS |
-| UN Comtrade | comercio mensual observado (mirror, mas socios) | evaluar token, historia, cobertura y stable product groups |
+| UN Comtrade | EN INCORPORACION (2026-07): `scripts/fetch_comtrade_monthly.py` listo, requiere secret COMTRADE_API_KEY. Comercio espejo mensual de 5 socios (Espana, Brasil, India, Turkiye, China) con Venezuela desde 2010, 2 variables agregadas. Capa auxiliar de contexto/validacion del bloque espejo IMTS; NO entra al score ni al Pulse sin decision de peso + backtest | cobertura de reporte varia por socio y mes |
 | NASA Black Marble monthly | actividad nocturna mas oportuna | pipeline raster reproducible y comparabilidad con serie anual |
 
 Integradas en 2026-07 (ya no son candidatas): IMF IMTS (antes DOTS), World
