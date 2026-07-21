@@ -1532,7 +1532,7 @@ def fase_dashboard(
     pulse_json = json.dumps({"data": _pulse_payload, "summary": _pulse_summary},
                             cls=_NumpyEncoder, ensure_ascii=False)
 
-    # Pulse components (12 series mensuales normalizadas)
+    # Pulse components (15 series mensuales normalizadas)
     _pulse_comp_payload: dict = {"meses": [], "componentes": {}}
     _pulse_comp_path = settings.paths.data_processed / "iciv_pulse_components.csv"
     if _pulse_comp_path.exists():
@@ -2260,7 +2260,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px">Metodología y temporalidad</div>
       <div style="display:flex;flex-direction:column;gap:12px;font-size:.8rem;color:var(--muted)">
         <div><span style="color:var(--text);font-weight:600">ICIV Anual (oficial):</span> Datos 2000–{settings.series.end_year} · Pesos AHP (CR=0.008) · Normalización Min-Max · Score 0–100</div>
-        <div><span style="color:var(--text);font-weight:600">ICIV Pulse (mensual):</span> 2010–{settings.series.end_year} · 11 variables mensuales · Pesos renormalizados según cobertura real · Stock &amp; Watson (2002)</div>
+        <div><span style="color:var(--text);font-weight:600">ICIV Pulse (mensual):</span> 2010–{settings.series.end_year} · 15 variables mensuales · Pesos renormalizados según cobertura real · Stock &amp; Watson (2002)</div>
         <div><span style="color:var(--text);font-weight:600">Forecast:</span> SARIMA(1,1,2)(1,1,1,12) · 6 meses horizon · IC 80%/95%</div>
         <div><span style="color:var(--text);font-weight:600">VIIRS NTL:</span> Li et al. (2020) Figshare · bbox Venezuela + 25 estados · Extracción raster real</div>
         <div style="margin-top:4px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem">
@@ -2301,7 +2301,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <div id="inicioPR" style="font-size:.72rem;color:var(--muted);margin-top:10px">—</div>
       <!-- Sparkline 12 meses (oculta, usada internamente) -->
       <canvas id="cInicioSparkline" style="display:none"></canvas>
-      <div style="font-size:.65rem;color:#555;margin-top:16px">11 variables internacionales · FRED macro · EIA petróleo · Guardian y GDELT noticias · cobertura visible por mes</div>
+      <div style="font-size:.65rem;color:#555;margin-top:16px">15 variables internacionales · FRED macro · EIA petróleo · IMF IMTS comercio espejo · WB Pink Sheet · Guardian y GDELT noticias · cobertura visible por mes</div>
     </div>
 
     <!-- ICIV Anual: contexto estructural -->
@@ -3105,7 +3105,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="pulse">
   <div class="section-header">
     <span class="section-title">ICIV Pulse Mensual</span>
-    <span class="section-sub">Co-indicador high-frequency · 11 variables internacionales mensuales · Stock-Watson (2002)</span>
+    <span class="section-sub">Co-indicador high-frequency · 15 variables internacionales mensuales · Stock-Watson (2002)</span>
   </div>
 
   <div class="alert alert-info" style="margin-bottom:20px">
@@ -3180,7 +3180,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <section class="section tab-section" id="pulse-componentes">
   <div class="section-header">
     <span class="section-title">Componentes Pulse — Series mensuales</span>
-    <span class="section-sub">Las 11 variables mensuales normalizadas (0–100) que alimentan el ICIV Pulse cuando cada fuente está disponible</span>
+    <span class="section-sub">Las 15 variables mensuales normalizadas (0–100) que alimentan el ICIV Pulse cuando cada fuente está disponible</span>
   </div>
 
   <div class="chart-card">

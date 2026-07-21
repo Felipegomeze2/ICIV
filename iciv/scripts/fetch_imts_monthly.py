@@ -123,9 +123,10 @@ def fetch_imts_monthly() -> pd.DataFrame:
             if df.empty:
                 print(f"  [WARN] IMTS {key}: 0 observaciones — {variable} quedara NaN")
             else:
+                fechas = df["año"] * 100 + df["mes"]
+                first, last = int(fechas.min()), int(fechas.max())
                 print(f"  IMTS {key}: {len(df)} meses "
-                      f"({df['año'].min()}-{df['mes'][df['año'].idxmin()]:02d} a "
-                      f"{df['año'].max()}-{df['mes'][df['año'].idxmax()]:02d}) — {desc}")
+                      f"({first // 100}-{first % 100:02d} a {last // 100}-{last % 100:02d}) — {desc}")
                 frames.append(df)
         except Exception as exc:
             print(f"  [ERROR] IMTS {key}: {exc} — {variable} quedara NaN")

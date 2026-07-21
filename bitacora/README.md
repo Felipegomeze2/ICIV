@@ -1,6 +1,6 @@
 # Bitacora vigente del ICIV
 
-Fecha de corte: 2026-05-23.
+Fecha de corte: 2026-07-21.
 
 Esta carpeta conserva solo las decisiones metodologicas vigentes. Las notas
 historicas de exploracion, versiones con fuentes descartadas y entregables
