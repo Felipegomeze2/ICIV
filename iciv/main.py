@@ -93,6 +93,8 @@ def fase_fetch(settings: Settings) -> None:
         ("FRED Monthly -- WTI/Brent/Fed/VIX...",   "scripts.fetch_fred_monthly",  "fetch_fred_monthly"),
         ("Guardian Monthly -- VADER mensual",      "scripts.fetch_guardian_monthly", "fetch_guardian_monthly"),
         ("GDELT Monthly -- tono/cobertura global", "scripts.fetch_gdelt_monthly", "fetch_gdelt_monthly"),
+        ("IMF IMTS -- comercio espejo EEUU-VEN",   "scripts.fetch_imts_monthly",  "fetch_imts_monthly"),
+        ("WB Pink Sheet -- crudo Dubai mensual",   "scripts.fetch_wb_commodities_monthly", "fetch_wb_commodities_monthly"),
         ("Noticias internacionales -- RSS filtrado", "scripts.fetch_international_news", "fetch_international_news"),
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
@@ -125,6 +127,8 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_fred_monthly":  settings.paths.raw_fred_monthly,
                 "fetch_guardian_monthly": settings.paths.raw_guardian_monthly,
                 "fetch_gdelt_monthly": settings.paths.raw_gdelt_monthly,
+                "fetch_imts_monthly":  settings.paths.data_raw / "imts_monthly.csv",
+                "fetch_wb_commodities_monthly": settings.paths.data_raw / "wb_commodities_monthly.csv",
                 "fetch_international_news": settings.paths.raw_international_news,
                 "fetch_guardian":      settings.paths.raw_guardian,
                 "fetch_fred":          settings.paths.raw_fred,
@@ -3213,22 +3217,26 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <!-- Variables incluidas -->
   <div class="card" style="margin-bottom:16px">
-    <div class="ct">Variables incluidas en el Pulse (11)</div>
-    <div class="cs">Solo series mensuales observadas; los pesos se renormalizan cuando una fuente aún no publicó dato</div>
+    <div class="ct">Variables incluidas en el Pulse (15)</div>
+    <div class="cs">Solo series mensuales observadas de fuentes internacionales (ninguna de origen venezolano); los pesos se renormalizan cuando una fuente aún no publicó dato</div>
     <table class="ahp-table" style="margin-top:10px">
       <thead><tr><th>Variable</th><th>Fuente</th><th>Frecuencia</th><th>Dirección</th><th>Peso AHP renorm.</th></tr></thead>
       <tbody>
-        <tr><td>WTI precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>8%</td></tr>
-        <tr><td>Brent precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>5%</td></tr>
-        <tr><td>Fed Funds Rate (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>5%</td></tr>
-        <tr><td>USD Index</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
-        <tr><td>VIX volatilidad</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>7%</td></tr>
-        <tr><td>US Treasury 10Y (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
-        <tr><td>Producción petróleo VEN (tbpd)</td><td>EIA International</td><td>Mensual</td><td>Positivo</td><td>30%</td></tr>
-        <tr><td>Artículos Guardian (VEN)</td><td>Guardian API</td><td>Mensual</td><td>Negativo</td><td>8%</td></tr>
-        <tr><td>Tono titulares Guardian</td><td>Guardian + VADER</td><td>Mensual</td><td>Positivo</td><td>12%</td></tr>
-        <tr><td>Cobertura GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Negativo</td><td>7%</td></tr>
-        <tr><td>Tono GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Positivo</td><td>10%</td></tr>
+        <tr><td>WTI precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>6.5%</td></tr>
+        <tr><td>Brent precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>4%</td></tr>
+        <tr><td>Crudo Dubai (USD/bbl)</td><td>World Bank Pink Sheet</td><td>Mensual</td><td>Positivo</td><td>4%</td></tr>
+        <tr><td>Fed Funds Rate (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
+        <tr><td>USD Index</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>3.5%</td></tr>
+        <tr><td>VIX volatilidad</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>6%</td></tr>
+        <tr><td>US Treasury 10Y (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>3%</td></tr>
+        <tr><td>Spread bonos EM (%)</td><td>FRED / ICE BofA</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
+        <tr><td>Producción petróleo VEN (tbpd)</td><td>EIA International</td><td>Mensual</td><td>Positivo</td><td>25%</td></tr>
+        <tr><td>Importaciones espejo desde EEUU (M USD)</td><td>IMF IMTS (reporta EEUU)</td><td>Mensual</td><td>Positivo</td><td>5%</td></tr>
+        <tr><td>Exportaciones espejo a EEUU (M USD)</td><td>IMF IMTS (reporta EEUU)</td><td>Mensual</td><td>Positivo</td><td>5%</td></tr>
+        <tr><td>Artículos Guardian (VEN)</td><td>Guardian API</td><td>Mensual</td><td>Negativo</td><td>6.5%</td></tr>
+        <tr><td>Tono titulares Guardian</td><td>Guardian + VADER</td><td>Mensual</td><td>Positivo</td><td>10%</td></tr>
+        <tr><td>Cobertura GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Negativo</td><td>5.5%</td></tr>
+        <tr><td>Tono GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Positivo</td><td>8%</td></tr>
       </tbody>
     </table>
   </div>
@@ -5377,25 +5385,38 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   var D = PULSE.data;
   var S = PULSE.summary;
 
-  // Pesos AHP renormalizados Pulse (para tabla)
+  // Pesos AHP renormalizados Pulse (para tabla) — sincronizado con
+  // iciv.index.pulse_aggregator.PULSE_WEIGHTS
   var PULSE_WEIGHTS = {{
-    "wti_precio_usd": 0.08, "brent_precio_usd": 0.05,
-    "tasa_fed_funds_pct": 0.06, "usd_index_broad": 0.05,
-    "vix_volatility": 0.06, "ust_10y_yield_pct": 0.05,
-    "migrantes_vzla_millones": 0.15, "guardian_articulos_venezuela": 0.07,
-    "guardian_tono_titulares": 0.08,
+    "wti_precio_usd": 0.065, "brent_precio_usd": 0.04,
+    "crudo_dubai_usd": 0.04,
+    "tasa_fed_funds_pct": 0.04, "usd_index_broad": 0.035,
+    "vix_volatility": 0.06, "ust_10y_yield_pct": 0.03,
+    "em_bond_spread_pct": 0.04,
+    "petroleo_crudo_produccion_tbpd": 0.25,
+    "importaciones_espejo_usa_musd": 0.05,
+    "exportaciones_espejo_usa_musd": 0.05,
+    "guardian_articulos_venezuela": 0.065,
+    "guardian_tono_titulares": 0.10,
+    "gdelt_cobertura_vol": 0.055,
+    "gdelt_tono_noticias": 0.08,
   }};
   var PULSE_LABELS = {{
     "wti_precio_usd": "WTI Oil Price",
     "brent_precio_usd": "Brent Oil Price",
+    "crudo_dubai_usd": "Crudo Dubai (Pink Sheet)",
     "tasa_fed_funds_pct": "Fed Funds Rate",
     "usd_index_broad": "USD Index (Broad)",
     "vix_volatility": "VIX Volatility",
     "ust_10y_yield_pct": "UST 10Y Yield",
+    "em_bond_spread_pct": "Spread Bonos EM (ICE BofA)",
     "petroleo_crudo_produccion_tbpd": "Producción Petróleo VEN",
-    "migrantes_vzla_millones": "Migrantes VEN",
+    "importaciones_espejo_usa_musd": "Import. espejo desde EEUU",
+    "exportaciones_espejo_usa_musd": "Export. espejo a EEUU",
     "guardian_articulos_venezuela": "Vol. Artículos Guardian",
     "guardian_tono_titulares": "Tono VADER Guardian",
+    "gdelt_cobertura_vol": "Cobertura GDELT",
+    "gdelt_tono_noticias": "Tono GDELT",
   }};
 
   // Llenar stats

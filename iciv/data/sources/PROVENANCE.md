@@ -36,10 +36,19 @@ del bloque institucional/humano. Detalle completo en
 
 | Fuente | Archivo |
 |---|---|
-| FRED mensual | `fred_monthly.csv` |
+| FRED mensual (incluye spread EM ICE BofA desde 2026-07) | `fred_monthly.csv` |
 | EIA mensual | `eia_monthly.csv` |
 | Guardian mensual | `guardian_monthly.csv` |
 | GDELT mensual | `gdelt_monthly.csv` cuando existe en el pipeline local o de Actions |
+| IMF IMTS — comercio espejo EEUU-VEN (mirror, reporta EEUU) | `imts_monthly.csv` |
+| World Bank Pink Sheet — crudo Dubai | `wb_commodities_monthly.csv` |
+
+Ampliacion 2026-07-21: el Pulse paso de 11 a 15 variables con tres fuentes
+nuevas (IMF IMTS, WB Pink Sheet, ICE BofA via FRED). Ninguna es de origen
+venezolano; el comercio espejo usa exclusivamente lo reportado por EEUU.
+Notas de cobertura: IMTS publica con ~3-6 meses de rezago; FRED solo
+redistribuye una ventana movil (~3 anos) del spread ICE BofA, cobertura
+desde 2023-07. Faltante es faltante: los pesos se renormalizan por mes.
 
 GDELT se trata como fuente mensual opcional por estabilidad de API/rate limit.
 Si falta, el dashboard debe mostrar menor cobertura, no inventar el dato.

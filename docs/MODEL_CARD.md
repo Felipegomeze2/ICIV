@@ -66,10 +66,17 @@ aparente basada en NaN, snapshots o series redundantes.
 
 ## Pulse mensual
 
-Pulse usa 11 variables mensuales observadas:
+Pulse usa 15 variables mensuales observadas (ampliado 2026-07):
 
-- FRED: WTI, Brent, Fed Funds, USD index, VIX y UST 10Y.
+- FRED: WTI, Brent, Fed Funds, USD index, VIX, UST 10Y y spread de bonos
+  emergentes (ICE BofA EM Corporate Plus OAS; FRED solo redistribuye una
+  ventana movil ~3 anos por licenciamiento, cobertura desde 2023-07).
+- World Bank Pink Sheet: crudo Dubai mensual (benchmark mediano-pesado, mas
+  cercano al Merey venezolano que WTI/Brent).
 - EIA International: produccion petrolera mensual.
+- IMF IMTS (sucesor de DOTS): comercio espejo EEUU-Venezuela — importaciones
+  y exportaciones venezolanas segun lo reporta EEUU (mirror statistics;
+  actividad real observada sin usar fuentes venezolanas).
 - Guardian: volumen y tono de titulares.
 - GDELT: volumen de cobertura y tono del timeline DOC.
 

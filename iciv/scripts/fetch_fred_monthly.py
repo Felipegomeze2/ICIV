@@ -14,6 +14,10 @@ Series descargadas (todas DIARIAS o MENSUALES nativas):
   - DTWEXBGS     : Trade-weighted USD Index (Broad) — diaria → mensual
   - VIXCLS       : CBOE VIX volatility — diaria → mensual
   - DGS10        : US Treasury 10Y yield (%) — diaria → mensual
+  - BAMLEMCBPIOAS: ICE BofA EM Corporate Plus OAS (%) — diaria → mensual.
+        NOTA: FRED solo redistribuye una ventana movil (~3 años) de las
+        series ICE BofA por licenciamiento; cobertura desde 2023-07.
+        Los meses anteriores quedan NaN y el Pulse renormaliza pesos.
 
 Método: agregación por promedio mensual desde el CSV diario.
 
@@ -54,12 +58,15 @@ OUTPUT = Path(__file__).resolve().parents[1] / "data" / "raw" / "fred_monthly.cs
 
 _BASE_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 _SERIES = {
-    "DCOILWTICO":   "wti_precio_usd",
-    "FEDFUNDS":     "tasa_fed_funds_pct",
-    "DCOILBRENTEU": "brent_precio_usd",
-    "DTWEXBGS":     "usd_index_broad",
-    "VIXCLS":       "vix_volatility",
-    "DGS10":        "ust_10y_yield_pct",
+    "DCOILWTICO":    "wti_precio_usd",
+    "FEDFUNDS":      "tasa_fed_funds_pct",
+    "DCOILBRENTEU":  "brent_precio_usd",
+    "DTWEXBGS":      "usd_index_broad",
+    "VIXCLS":        "vix_volatility",
+    "DGS10":         "ust_10y_yield_pct",
+    # ICE BofA Emerging Markets Corporate Plus OAS (%) — condición financiera
+    # externa para mercados emergentes; diaria → mensual. Dirección negativa.
+    "BAMLEMCBPIOAS": "em_bond_spread_pct",
 }
 
 _FUENTE_BASE = (
@@ -70,7 +77,9 @@ _FUENTE_BASE = (
 
 def _fetch_monthly(series_id: str, col_name: str) -> pd.DataFrame:
     """Descarga CSV diario y agrega a mensual."""
-    url = f"{_BASE_URL}?id={series_id}"
+    # cosd fija el inicio de la ventana: sin él, fredgraph puede devolver solo
+    # la ventana por defecto del chart (~3-5 años) para algunas series.
+    url = f"{_BASE_URL}?id={series_id}&cosd={PULSE_START_YEAR}-01-01"
     resp = requests.get(url, timeout=60)
     resp.raise_for_status()
     df = pd.read_csv(StringIO(resp.text))

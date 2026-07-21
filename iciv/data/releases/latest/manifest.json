@@ -1,6 +1,6 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-07-21T21:28:21.009840+00:00",
+  "generated_at_utc": "2026-07-21T21:52:12.560242+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -46,7 +46,7 @@
     },
     "README.md": {
       "bytes": 1619,
-      "sha256": "96a1301a790ce4d8899ae5d5d2618524f629bbef2791b4b02349d3e5ba285e22",
+      "sha256": "18f15ccfc2c5f9d096689b203574b0b18a61be7af3830ef356383ec8c67a593e",
       "rows": null
     },
     "source_provenance.csv": {

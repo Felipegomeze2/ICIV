@@ -63,6 +63,10 @@ jobs:
           python scripts/fetch_guardian_monthly.py  || echo "WARN: fetch_guardian_monthly falló (continuando)"
           # GDELT DOC — público, puede rate-limit; el quality gate lo marca como opcional
           python scripts/fetch_gdelt_monthly.py     || echo "WARN: fetch_gdelt_monthly falló (continuando)"
+          # IMF IMTS — comercio espejo EEUU-VEN (mirror statistics, sin origen venezolano)
+          python scripts/fetch_imts_monthly.py      || echo "WARN: fetch_imts_monthly falló (continuando)"
+          # World Bank Pink Sheet — crudo Dubai mensual
+          python scripts/fetch_wb_commodities_monthly.py || echo "WARN: fetch_wb_commodities falló (continuando)"
           python scripts/fetch_international_news.py || echo "WARN: fetch_international_news falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"

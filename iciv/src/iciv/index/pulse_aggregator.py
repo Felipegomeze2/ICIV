@@ -7,17 +7,23 @@ de inversión usando solo las variables disponibles con granularidad ≥mensual.
 NO reemplaza el ICIV Anual oficial — es un nowcasting indicator
 (Stock & Watson, 2002; Aruoba, Diebold & Scotti, 2009).
 
-Variables incluidas (11, todas de fuentes internacionales):
+Variables incluidas (15, todas de fuentes internacionales, ninguna de
+origen venezolano):
   Macro externo (D1 — 35% peso renormalizado):
     - wti_precio_usd            (FRED, mensual)
     - brent_precio_usd          (FRED, mensual)
+    - crudo_dubai_usd           (WB Pink Sheet, mensual — benchmark mediano-pesado)
     - tasa_fed_funds_pct        (FRED, mensual)
     - usd_index_broad           (FRED, mensual)
     - vix_volatility            (FRED, mensual)
     - ust_10y_yield_pct         (FRED, mensual)
+    - em_bond_spread_pct        (FRED BAMLEMCBPIOAS, mensual — estrés financiero EM)
   Energía Venezuela (D2 — 25% peso renormalizado):
     - petroleo_crudo_produccion_tbpd (EIA International, mensual)
-  Percepción (D6):
+  Actividad comercial espejo (10%):
+    - importaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
+    - exportaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
+  Percepción (D6 — 30%):
     - guardian_articulos_venezuela (Guardian, mensual)
     - guardian_tono_titulares      (Guardian, mensual)
     - gdelt_cobertura_vol          (GDELT DOC timeline, mensual)
@@ -51,28 +57,37 @@ PULSE_START_YEAR = 2010
 
 # ── Pesos renormalizados del Pulse (suman 1.0) ───────────────────────────────
 # Basado en pesos AHP originales pero renormalizando sobre el subconjunto disponible.
+# Ampliado 2026-07: comercio espejo IMTS (actividad real), crudo Dubai
+# (benchmark mediano-pesado, mas cercano al Merey que WTI/Brent) y spread
+# EM (condicion financiera para emergentes). Todas fuentes internacionales;
+# ninguna de origen venezolano.
 PULSE_WEIGHTS: dict[str, float] = {
-    # D1 Macro externo (33%) — drivers globales
-    "wti_precio_usd":                  0.08,
-    "brent_precio_usd":                0.05,
-    "tasa_fed_funds_pct":              0.05,  # NEGATIVO (tasa alta → menos IED EM)
-    "usd_index_broad":                 0.04,  # NEGATIVO (USD fuerte → presión EM)
-    "vix_volatility":                  0.07,  # NEGATIVO (volatilidad alta → riesgo)
-    "ust_10y_yield_pct":               0.04,  # NEGATIVO (yield alto → outflow EM)
-    # D2 Energía VEN (30%) — driver doméstico clave
-    "petroleo_crudo_produccion_tbpd":  0.30,
-    # D6 Percepción internacional (37%) — dos sistemas de cobertura
-    "guardian_articulos_venezuela":    0.08,  # NEGATIVO (más cobertura → crisis)
-    "guardian_tono_titulares":         0.12,  # POSITIVO (tono positivo es bueno)
-    "gdelt_cobertura_vol":             0.07,  # NEGATIVO
-    "gdelt_tono_noticias":             0.10,  # POSITIVO
+    # D1 Macro externo (35%) — drivers globales de precio y financiamiento
+    "wti_precio_usd":                  0.065,
+    "brent_precio_usd":                0.040,
+    "crudo_dubai_usd":                 0.040,  # POSITIVO (WB Pink Sheet)
+    "tasa_fed_funds_pct":              0.040,  # NEGATIVO (tasa alta → menos IED EM)
+    "usd_index_broad":                 0.035,  # NEGATIVO (USD fuerte → presión EM)
+    "vix_volatility":                  0.060,  # NEGATIVO (volatilidad alta → riesgo)
+    "ust_10y_yield_pct":               0.030,  # NEGATIVO (yield alto → outflow EM)
+    "em_bond_spread_pct":              0.040,  # NEGATIVO (spread alto → estrés EM)
+    # D2 Energía VEN (25%) — driver doméstico clave
+    "petroleo_crudo_produccion_tbpd":  0.250,
+    # D4 Actividad comercial espejo (10%) — IMF IMTS, reportado por EEUU
+    "importaciones_espejo_usa_musd":   0.050,  # POSITIVO (demanda interna)
+    "exportaciones_espejo_usa_musd":   0.050,  # POSITIVO (ingreso exportador)
+    # D6 Percepción internacional (30%) — dos sistemas de cobertura
+    "guardian_articulos_venezuela":    0.065,  # NEGATIVO (más cobertura → crisis)
+    "guardian_tono_titulares":         0.100,  # POSITIVO (tono positivo es bueno)
+    "gdelt_cobertura_vol":             0.055,  # NEGATIVO
+    "gdelt_tono_noticias":             0.080,  # POSITIVO
 }
 
 # Variables con dirección negativa (mayor valor = peor clima)
 PULSE_NEGATIVE = {
     "tasa_fed_funds_pct", "usd_index_broad", "vix_volatility",
-    "ust_10y_yield_pct", "guardian_articulos_venezuela",
-    "gdelt_cobertura_vol",
+    "ust_10y_yield_pct", "em_bond_spread_pct",
+    "guardian_articulos_venezuela", "gdelt_cobertura_vol",
 }
 
 
@@ -96,10 +111,12 @@ class PulseAggregator:
     def load_monthly_sources(self) -> pd.DataFrame:
         """Carga y unifica todos los CSVs mensuales en un panel."""
         sources = {
-            "eia_monthly.csv":      "EIA International monthly",
-            "fred_monthly.csv":     "FRED monthly aggregation",
-            "guardian_monthly.csv": "Guardian monthly + VADER",
-            "gdelt_monthly.csv":    "GDELT DOC timeline monthly",
+            "eia_monthly.csv":            "EIA International monthly",
+            "fred_monthly.csv":           "FRED monthly aggregation",
+            "guardian_monthly.csv":       "Guardian monthly + VADER",
+            "gdelt_monthly.csv":          "GDELT DOC timeline monthly",
+            "imts_monthly.csv":           "IMF IMTS mirror trade (EEUU-VEN)",
+            "wb_commodities_monthly.csv": "WB Pink Sheet crude Dubai",
         }
         frames: list[pd.DataFrame] = []
         for fname, label in sources.items():

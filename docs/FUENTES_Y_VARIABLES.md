@@ -47,17 +47,32 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 
 | Variable | Fuente | Peso base Pulse | Decision |
 |---|---|---:|---|
-| `wti_precio_usd` | FRED | 8% | incluir |
-| `brent_precio_usd` | FRED | 5% | incluir |
-| `tasa_fed_funds_pct` | FRED | 5% | incluir |
-| `usd_index_broad` | FRED | 4% | incluir |
-| `vix_volatility` | FRED | 7% | incluir |
-| `ust_10y_yield_pct` | FRED | 4% | incluir |
-| `petroleo_crudo_produccion_tbpd` | EIA International | 30% | incluir; cobertura refleja lag |
-| `guardian_articulos_venezuela` | Guardian | 8% | incluir |
-| `guardian_tono_titulares` | Guardian + VADER | 12% | incluir |
-| `gdelt_cobertura_vol` | GDELT DOC | 7% | incluir si API entrega datos |
-| `gdelt_tono_noticias` | GDELT DOC | 10% | incluir si API entrega datos |
+| `wti_precio_usd` | FRED | 6.5% | incluir |
+| `brent_precio_usd` | FRED | 4% | incluir |
+| `crudo_dubai_usd` | World Bank Pink Sheet | 4% | incluir (2026-07); benchmark mediano-pesado cercano al Merey |
+| `tasa_fed_funds_pct` | FRED | 4% | incluir |
+| `usd_index_broad` | FRED | 3.5% | incluir |
+| `vix_volatility` | FRED | 6% | incluir |
+| `ust_10y_yield_pct` | FRED | 3% | incluir |
+| `em_bond_spread_pct` | FRED (ICE BofA EM Corporate Plus OAS) | 4% | incluir (2026-07); cobertura desde 2023-07 por ventana movil de FRED |
+| `petroleo_crudo_produccion_tbpd` | EIA International | 25% | incluir; cobertura refleja lag |
+| `importaciones_espejo_usa_musd` | IMF IMTS (reporta EEUU) | 5% | incluir (2026-07); mirror statistics, sin fuente venezolana |
+| `exportaciones_espejo_usa_musd` | IMF IMTS (reporta EEUU) | 5% | incluir (2026-07); captura dinamica de licencias petroleras |
+| `guardian_articulos_venezuela` | Guardian | 6.5% | incluir |
+| `guardian_tono_titulares` | Guardian + VADER | 10% | incluir |
+| `gdelt_cobertura_vol` | GDELT DOC | 5.5% | incluir si API entrega datos |
+| `gdelt_tono_noticias` | GDELT DOC | 8% | incluir si API entrega datos |
+
+Ampliacion 2026-07: se agregaron cuatro variables mensuales de tres fuentes
+nuevas (IMF IMTS, WB Pink Sheet, ICE BofA via FRED). Los pesos previos se
+reescalaron proporcionalmente (x0.82) para ceder 18% a las nuevas variables;
+la estructura relativa entre bloques queda: macro externo 35%, energia 25%,
+comercio espejo 10%, percepcion 30%.
+
+El comercio espejo (mirror statistics) usa exclusivamente lo que EEUU reporta
+de su comercio con Venezuela via IMF IMTS: dato mensual real de actividad
+sin tocar fuentes venezolanas. Es la practica estandar cuando un pais deja
+de reportar comercio confiable.
 
 Pulse no incluye snapshots sanciones externas ni acumulados migratorios como si fueran
 series mensuales de alta frecuencia cuando el pipeline no dispone de una
@@ -119,6 +134,10 @@ reporta como siempre: faltante es faltante.
 - UNDP/OWID para HDI distribuido.
 - Guardian API.
 - GDELT DOC API.
+- IMF IMTS (International Trade in Goods by partner country, sucesor de DOTS)
+  para comercio espejo mensual EEUU-Venezuela.
+- World Bank Commodity Markets "Pink Sheet" para crudo Dubai mensual.
+- ICE BofA (via FRED) para spread de bonos emergentes.
 - Google News RSS filtrado por whitelist internacional para la pestana de
   noticias; no entra al score.
 - Figshare/Li et al. para luces nocturnas.
@@ -167,13 +186,14 @@ Politica vigente:
 
 | Fuente | Uso potencial | Condicion de entrada |
 |---|---|---|
-| OPEC MOMR (fuentes secundarias) | produccion de crudo venezolano mensual, mas oportuna que EIA | parseo reproducible del reporte mensual |
-| World Bank Commodity Prices (Pink Sheet) | precios mensuales de crudo y commodities para Pulse | CSV estable ya publicado; definir variable y peso |
-| IMF DOTS (Direction of Trade Statistics) | comercio bilateral mensual reportado por los socios (mirror statistics, sin fuente venezolana) | API IMF y seleccion de socios estables |
-| UN Comtrade | comercio mensual observado (mirror) | evaluar token, historia, cobertura y stable product groups |
+| OPEC MOMR (fuentes secundarias) | produccion de crudo venezolano mensual, mas oportuna que EIA | el sitio OPEC bloquea descargas automatizadas (HTTP 403, verificado 2026-07); requiere parseo PDF reproducible |
+| US Census intltrade API | comercio espejo EEUU-VEN mas oportuno que IMTS (~2 meses lag) | requiere API key gratuita (api.census.gov); complementa IMTS |
+| UN Comtrade | comercio mensual observado (mirror, mas socios) | evaluar token, historia, cobertura y stable product groups |
 | NASA Black Marble monthly | actividad nocturna mas oportuna | pipeline raster reproducible y comparabilidad con serie anual |
 | UNCTAD stat LSCI trimestral | actualizar LSCI mas alla de 2021 (WDI quedo congelado) | endpoint estable de UNCTADstat |
-| FRED spreads emergentes (ICE BofA EM) | condicion financiera externa adicional del Pulse | ya se usa FRED; definir variable y peso |
+
+Integradas en 2026-07 (ya no son candidatas): IMF IMTS (antes DOTS), World
+Bank Pink Sheet y spread EM de ICE BofA via FRED.
 
 ### Candidatas de mediano plazo
 

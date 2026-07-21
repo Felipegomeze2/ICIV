@@ -33,10 +33,12 @@ debil, variables declaradas sin historia verificable y redundancia institucional
 La IED se excluye del score y se conserva como outcome economico externo para el
 bloque exploratorio de validacion.
 
-El Pulse usa 11 variables mensuales observadas de FRED, EIA International,
-Guardian y GDELT. GDELT es opcional por estabilidad de API: si falla, se registra
-la advertencia y no se fabrica una serie sustituta. El componente SATV se
-alimenta solo de Pulse para que sus alertas tengan una frecuencia coherente.
+El Pulse usa 15 variables mensuales observadas de FRED, EIA International,
+IMF IMTS (comercio espejo EEUU-Venezuela reportado por EEUU), World Bank
+Pink Sheet (crudo Dubai), Guardian y GDELT. GDELT es opcional por estabilidad
+de API: si falla, se registra la advertencia y no se fabrica una serie
+sustituta. El componente SATV se alimenta solo de Pulse para que sus alertas
+tengan una frecuencia coherente.
 
 La prediccion visible es una sola trayectoria SARIMA de seis meses sobre Pulse,
 con bandas de incertidumbre y backtesting rolling-origin contra naive, seasonal
