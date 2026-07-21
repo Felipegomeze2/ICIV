@@ -201,7 +201,7 @@ bases con la serie WDI antigua).
 
 | Fuente | Uso potencial | Riesgo |
 |---|---|---|
-| ACLED | conflicto/eventos | coverage reciente y sesgo de reporte |
+| ACLED | EN INCORPORACION (2026-07): `scripts/fetch_acled_monthly.py` listo, requiere credenciales (secrets ACLED_EMAIL/ACLED_PASSWORD). Genera 4 variables mensuales (eventos, protestas, violencia politica, fatalidades) desde 2018 como capa auxiliar para SATV y contexto. NO entra al score ni al Pulse mientras no se decida peso y se re-ejecute backtest | coverage desde 2018 y sesgo de reporte |
 | OpenSanctions API | historial estructurado de sanciones OFAC/EU/UK (reactivaria `ofac_sanciones_count`) | historia temporal limitada; validar reproducibilidad |
 | R4V (ACNUR/OIM) | cortes intra-anuales de migracion venezolana | formato de publicacion cambia entre reportes |
 | Global Database of Events alternatives | percepcion/noticias | redundancia con Guardian/GDELT |

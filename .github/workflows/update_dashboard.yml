@@ -50,6 +50,8 @@ jobs:
         env:
           EIA_API_KEY:      ${{ secrets.EIA_API_KEY }}
           GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+          ACLED_EMAIL:      ${{ secrets.ACLED_EMAIL }}
+          ACLED_PASSWORD:   ${{ secrets.ACLED_PASSWORD }}
         run: |
           echo "Descargando datos frescos de fuentes de alta frecuencia..."
           # FRED — datos públicos, sin API key
@@ -67,6 +69,8 @@ jobs:
           python scripts/fetch_imts_monthly.py      || echo "WARN: fetch_imts_monthly falló (continuando)"
           # World Bank Pink Sheet — crudo Dubai mensual
           python scripts/fetch_wb_commodities_monthly.py || echo "WARN: fetch_wb_commodities falló (continuando)"
+          # ACLED — eventos de conflicto (requiere secrets ACLED_EMAIL/ACLED_PASSWORD; si faltan, avisa y continua)
+          python scripts/fetch_acled_monthly.py     || echo "WARN: fetch_acled_monthly falló (continuando)"
           python scripts/fetch_international_news.py || echo "WARN: fetch_international_news falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"
