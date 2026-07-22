@@ -11,42 +11,52 @@ gap-filled de radiancia nocturna VIIRS DNB, 15 arc-seg, coleccion 002).
 Cobertura espacial: Venezuela ocupa 5 tiles de 10x10 grados:
   h10v07 h11v07 (lat 10-20N) | h10v08 h11v08 h12v08 (lat 0-10N)
   (h12v07 es oceano/Guyana: 0 pixeles de Venezuela, se omite)
-Cada tile es una grilla lineal lat/lon de 2400x2400 pixeles.
+
+Salidas (dos archivos):
+  data/raw/blackmarble_monthly.csv  (nacional, formato largo año|mes|variable|valor|fuente)
+    variables por mes:
+      luminosidad_nocturna_mensual_nwcm2sr   media aritmetica (compat historica)
+      luminosidad_nocturna_mediana           mediana — robusta al flaring petrolero
+      luminosidad_nocturna_logmedia          media geometrica-log — atenua brillos extremos
+      luminosidad_nocturna_p90               percentil 90 — nucleos mas iluminados
+      luminosidad_nocturna_frac_iluminada    fraccion de pixeles > 1 nW/cm2/sr (proxy urbano)
+  data/raw/blackmarble_states_monthly.csv  (subnacional año|mes|estado|cod|radiancia_media|fuente)
+    radiancia media por cada uno de los 25 estados/entidades → habilita el mapa mensual.
+
+Por que varias agregaciones: la media puede estar dominada por el flaring de
+gas del Orinoco (llamas de gas extremadamente brillantes que NO son actividad
+economica). La mediana, la log-media y la fraccion iluminada atenuan ese
+sesgo y suelen correlacionar mejor con actividad economica real.
 
 Metodo:
-  1. CMR lista los 6 granulos del mes (bounding box de Venezuela).
+  1. CMR lista los 5 granulos del mes (bounding box de Venezuela).
   2. Se descarga cada tile .h5 (token EARTHDATA_TOKEN de env o iciv/.env).
-  3. Se lee la capa NearNadir_Composite_Snow_Free (radiancia nW/cm2/sr,
-     estandar en la literatura economica, p.ej. Henderson et al. 2012).
-  4. Se enmascara al territorio con data/raw/venezuela_states.geojson
-     (mascara por tile cacheada en data/interim/bm_mask_{tile}.npy).
-  5. valor del mes = promedio de radiancia sobre pixeles de Venezuela
-     (suma ponderada entre tiles por numero de pixeles del pais).
-  6. Los .h5 se borran tras procesar (no se acumulan gigas en el repo).
+  3. Capa NearNadir_Composite_Snow_Free (radiancia nW/cm2/sr).
+  4. Se asigna cada pixel a su estado con etiquetas cacheadas
+     (data/sources/bm_masks/bm_states_{tile}.npz) generadas desde
+     venezuela_states.geojson en una sola pasada.
+  5. Agregaciones nacionales + media por estado; se borran los .h5.
 
-Incremental: los meses ya presentes en el CSV no se reprocesan. El
-backfill se acota con --months N (procesa N meses faltantes por corrida,
-del mas reciente al mas antiguo) para que cada corrida sea manejable.
+Incremental: --months N procesa N meses faltantes (mas reciente primero).
+--reprocess recomputa TODOS los meses (necesario al anadir agregaciones).
 
-Variable de salida:
-  - luminosidad_nocturna_mensual_nwcm2sr (promedio pais, nW/cm2/sr)
+Rol: capa auxiliar en evaluacion. NO entra al Pulse hasta validar variantes
+de agregacion vs la serie anual (Li et al.) y decidir peso + backtest.
 
-Rol: capa auxiliar en evaluacion. NO entra al Pulse hasta validar la
-serie mensual contra la anual (Li et al./VIIRS) y decidir peso + backtest.
-
-Politica de datos: mes sin los 6 tiles o sin token → no se escribe ese
-mes. Sin estimaciones ni rellenos.
+Politica de datos: mes sin los 5 tiles o sin token -> no se escribe ese mes.
+Sin estimaciones ni rellenos.
 
 Uso:
-    python scripts/fetch_blackmarble_monthly.py                # 3 meses faltantes mas recientes
-    python scripts/fetch_blackmarble_monthly.py --months 12    # backfill mas agresivo
-    python scripts/fetch_blackmarble_monthly.py --start 2014-01
+    python scripts/fetch_blackmarble_monthly.py                # 3 meses faltantes
+    python scripts/fetch_blackmarble_monthly.py --months 200   # backfill completo
+    python scripts/fetch_blackmarble_monthly.py --reprocess --months 200  # recomputar todo
 """
 
 from __future__ import annotations
 
 import argparse
 import calendar
+import json
 import os
 import sys
 import tempfile
@@ -64,32 +74,40 @@ from iciv.config import settings  # noqa: E402
 _ICIV_DIR = Path(__file__).resolve().parents[1]
 _CFG = yaml.safe_load((_ICIV_DIR / "config" / "settings.yaml").read_text(encoding="utf-8"))
 
-DEFAULT_START = "2014-01"   # era VIIRS homogenea usada en la validacion externa
+DEFAULT_START = "2014-01"
 END_YEAR = _CFG["serie"]["end_year"]
 
-OUTPUT    = _ICIV_DIR / "data" / "raw" / "blackmarble_monthly.csv"
-GEOJSON   = _ICIV_DIR / "data" / "raw" / "venezuela_states.geojson"
-INTERIM   = _ICIV_DIR / "data" / "interim"
+OUTPUT        = _ICIV_DIR / "data" / "raw" / "blackmarble_monthly.csv"
+OUTPUT_STATES = _ICIV_DIR / "data" / "raw" / "blackmarble_states_monthly.csv"
+GEOJSON       = _ICIV_DIR / "data" / "raw" / "venezuela_states.geojson"
+INTERIM       = _ICIV_DIR / "data" / "interim"
+_MASKS_DIR    = _ICIV_DIR / "data" / "sources" / "bm_masks"
 
 _CMR_URL  = "https://cmr.earthdata.nasa.gov/search/granules.json"
 _HEADERS  = {"User-Agent": "Mozilla/5.0 (academic research project ICIV)"}
 _BBOX     = "-73.5,0.5,-59.5,12.5"
-# h12v07 (lat 10-20N, lon 60-50W) se excluye: es oceano Atlantico/Guyana,
-# 0 pixeles de Venezuela (verificado con la mascara el 2026-07-22).
 _TILES    = {"h10v07", "h11v07", "h10v08", "h11v08", "h12v08"}
 _H5_LAYER = "HDFEOS/GRIDS/VNP_Grid_DNB/Data Fields/NearNadir_Composite_Snow_Free"
-_PIX      = 2400  # pixeles por lado de tile (15 arc-seg)
+_PIX      = 2400
+_LIT_THRESHOLD = 1.0  # nW/cm2/sr — umbral "iluminado" (proxy urbano)
 
-_VARIABLE = "luminosidad_nocturna_mensual_nwcm2sr"
+# Variables nacionales: (sufijo_variable, funcion sobre el vector de radiancia del pais)
+_NAT_STATS = {
+    "luminosidad_nocturna_mensual_nwcm2sr": lambda v: float(np.mean(v)),
+    "luminosidad_nocturna_mediana":         lambda v: float(np.median(v)),
+    "luminosidad_nocturna_logmedia":        lambda v: float(np.expm1(np.mean(np.log1p(np.clip(v, 0, None))))),
+    "luminosidad_nocturna_p90":             lambda v: float(np.percentile(v, 90)),
+    "luminosidad_nocturna_frac_iluminada":  lambda v: float(np.mean(v > _LIT_THRESHOLD) * 100.0),
+}
+
 _FUENTE = (
     "NASA Black Marble VNP46A3 (LAADS DAAC, coleccion 002), radiancia "
-    "NearNadir Composite Snow Free promediada sobre Venezuela "
-    "(mascara venezuela_states.geojson, 6 tiles). nW/cm2/sr."
+    "NearNadir Composite Snow Free sobre Venezuela (mascara venezuela_states.geojson, "
+    "5 tiles). nW/cm2/sr salvo frac_iluminada (%)."
 )
 
 
 def _load_token() -> str | None:
-    """Lee EARTHDATA_TOKEN del entorno o de iciv/.env. Nunca lo imprime."""
     if os.environ.get("EARTHDATA_TOKEN"):
         return os.environ["EARTHDATA_TOKEN"]
     env_file = _ICIV_DIR / ".env"
@@ -106,33 +124,26 @@ def _load_token() -> str | None:
     return None
 
 
+def _state_names() -> list[tuple[str, str]]:
+    """[(cod, nombre)] en orden del geojson."""
+    gj = json.loads(GEOJSON.read_text(encoding="utf-8"))
+    return [(f["properties"].get("cod", str(i)), f["properties"].get("nombre", str(i)))
+            for i, f in enumerate(gj.get("features", []))]
+
+
 def _tile_bounds(tile: str) -> tuple[float, float]:
-    """(lon_oeste, lat_norte) del tile lineal Black Marble."""
-    h = int(tile[1:3])
-    v = int(tile[4:6])
+    h = int(tile[1:3]); v = int(tile[4:6])
     return -180.0 + 10.0 * h, 90.0 - 10.0 * v
 
 
-_MASKS_DIR = _ICIV_DIR / "data" / "sources" / "bm_masks"
-
-
-def _tile_mask(tile: str) -> np.ndarray:
-    """Mascara booleana 2400x2400 de pixeles dentro de Venezuela (cacheada).
-
-    El cache comprimido (.npz) se versiona en data/sources/bm_masks para que
-    los runners de Actions no recalculen ~5 min por tile cada semana.
-    """
+def _tile_state_labels(tile: str) -> np.ndarray:
+    """Etiqueta de estado por pixel (int16 2400x2400): -1 fuera de Venezuela,
+    si no el indice del estado en el orden del geojson. Cacheada."""
     _MASKS_DIR.mkdir(parents=True, exist_ok=True)
-    cache = _MASKS_DIR / f"bm_mask_{tile}.npz"
+    cache = _MASKS_DIR / f"bm_states_{tile}.npz"
     if cache.exists():
-        return np.load(cache)["mask"]
-    legacy = INTERIM / f"bm_mask_{tile}.npy"
-    if legacy.exists():
-        mask = np.load(legacy)
-        np.savez_compressed(cache, mask=mask)
-        return mask
+        return np.load(cache)["labels"]
 
-    import json as _json
     from matplotlib.path import Path as MplPath
 
     lon0, lat0 = _tile_bounds(tile)
@@ -142,38 +153,33 @@ def _tile_mask(tile: str) -> np.ndarray:
     lon_g, lat_g = np.meshgrid(lons, lats)
     pts = np.column_stack([lon_g.ravel(), lat_g.ravel()])
 
-    mask = np.zeros(_PIX * _PIX, dtype=bool)
-    gj = _json.loads(GEOJSON.read_text(encoding="utf-8"))
-    for feat in gj.get("features", []):
+    labels = np.full(_PIX * _PIX, -1, dtype=np.int16)
+    gj = json.loads(GEOJSON.read_text(encoding="utf-8"))
+    for si, feat in enumerate(gj.get("features", [])):
         geom = feat.get("geometry") or {}
-        polys = []
-        if geom.get("type") == "Polygon":
-            polys = [geom["coordinates"]]
-        elif geom.get("type") == "MultiPolygon":
-            polys = geom["coordinates"]
+        polys = ([geom["coordinates"]] if geom.get("type") == "Polygon"
+                 else geom.get("coordinates", []) if geom.get("type") == "MultiPolygon" else [])
         for poly in polys:
             outer = np.asarray(poly[0], dtype=float)
-            # bounding box rapido para saltar poligonos fuera del tile
             if (outer[:, 0].max() < lon0 or outer[:, 0].min() > lon0 + 10 or
                     outer[:, 1].max() < lat0 - 10 or outer[:, 1].min() > lat0):
                 continue
             inside = MplPath(outer).contains_points(pts)
-            for ring in poly[1:]:  # huecos
+            for ring in poly[1:]:
                 inside &= ~MplPath(np.asarray(ring, dtype=float)).contains_points(pts)
-            mask |= inside
+            take = inside & (labels == -1)
+            labels[take] = si
 
-    mask = mask.reshape(_PIX, _PIX)
-    np.savez_compressed(cache, mask=mask)
-    print(f"    mascara {tile}: {int(mask.sum())} pixeles de Venezuela (cacheada)")
-    return mask
+    labels = labels.reshape(_PIX, _PIX)
+    np.savez_compressed(cache, labels=labels)
+    print(f"    etiquetas {tile}: {int((labels >= 0).sum())} pixeles de Venezuela (cacheada)")
+    return labels
 
 
 def _cmr_granules(year: int, month: int) -> dict[str, str]:
-    """{tile: url_h5} de los granulos VNP46A3 del mes via CMR (publico)."""
     last = calendar.monthrange(year, month)[1]
     params = {
-        "short_name": "VNP46A3",
-        "bounding_box": _BBOX,
+        "short_name": "VNP46A3", "bounding_box": _BBOX,
         "temporal": f"{year}-{month:02d}-01T00:00:00Z,{year}-{month:02d}-{last:02d}T23:59:59Z",
         "page_size": 40,
     }
@@ -186,8 +192,7 @@ def _cmr_granules(year: int, month: int) -> dict[str, str]:
         if tile is None:
             continue
         url = next((l["href"] for l in entry.get("links", [])
-                    if l.get("href", "").endswith(".h5")
-                    and l["href"].startswith("https")), None)
+                    if l.get("href", "").endswith(".h5") and l["href"].startswith("https")), None)
         if url:
             out[tile] = url
     return out
@@ -202,43 +207,91 @@ def _download(url: str, token: str, dest: Path) -> None:
                 f.write(chunk)
 
 
-def _tile_stats(h5_path: Path, tile: str) -> tuple[float, int]:
-    """(suma_radiancia, n_pixeles_validos) del tile dentro de Venezuela."""
-    import h5py
+def _tile_radiance(h5_path: Path) -> np.ndarray:
+    """Devuelve la radiancia escalada 2400x2400; los pixeles fill quedan NaN.
 
+    El fill se filtra sobre el dato CRUDO antes de escalar (el fill 65535 no
+    debe multiplicarse por el scale_factor: contaminaria las estadisticas)."""
+    import h5py
     with h5py.File(h5_path, "r") as f:
         if _H5_LAYER in f:
             ds = f[_H5_LAYER]
-        else:  # buscar la capa por nombre si la ruta del grupo cambia
+        else:
             found = []
             f.visit(lambda name: found.append(name)
                     if name.endswith("NearNadir_Composite_Snow_Free") else None)
             if not found:
                 raise KeyError("capa NearNadir_Composite_Snow_Free no encontrada")
             ds = f[found[0]]
-        data = ds[()].astype(np.float64)
-        fill = ds.attrs.get("_FillValue", [65535])
-        fill = float(np.ravel(fill)[0])
-        scale = ds.attrs.get("scale_factor", [1.0])
-        scale = float(np.ravel(scale)[0])
-        offset = ds.attrs.get("add_offset", [0.0])
-        offset = float(np.ravel(offset)[0])
-
-    mask = _tile_mask(tile)
-    valid = mask & (data != fill)
-    vals = data[valid] * scale + offset
-    return float(vals.sum()), int(valid.sum())
+        raw = ds[()].astype(np.float64)
+        fill  = float(np.ravel(ds.attrs.get("_FillValue", [65535]))[0])
+        scale = float(np.ravel(ds.attrs.get("scale_factor", [1.0]))[0])
+        offset = float(np.ravel(ds.attrs.get("add_offset", [0.0]))[0])
+    valid_raw = raw != fill
+    scaled = np.full(raw.shape, np.nan, dtype=np.float64)
+    scaled[valid_raw] = raw[valid_raw] * scale + offset
+    return scaled
 
 
-def _existing_months() -> set[str]:
-    if not OUTPUT.exists():
+def _process_month(year: int, month: int, token: str,
+                   states: list[tuple[str, str]]) -> tuple[list[dict], list[dict]] | None:
+    granules = _cmr_granules(year, month)
+    if set(granules) != _TILES:
+        print(f"  [WARN] {year}-{month:02d}: {len(granules)}/{len(_TILES)} tiles — mes omitido")
+        return None
+
+    nat_vals: list[np.ndarray] = []
+    st_sum = np.zeros(len(states)); st_cnt = np.zeros(len(states))
+    with tempfile.TemporaryDirectory() as tmp:
+        for tile, url in sorted(granules.items()):
+            dest = Path(tmp) / f"{tile}.h5"
+            _download(url, token, dest)
+            scaled = _tile_radiance(dest)
+            labels = _tile_state_labels(tile)
+            in_ve = labels >= 0
+            # el fill ya quedo como NaN dentro de _tile_radiance
+            valid = in_ve & np.isfinite(scaled)
+            vals = scaled[valid]
+            nat_vals.append(vals)
+            lab = labels[valid]
+            # acumular por estado
+            np.add.at(st_sum, lab, vals)
+            np.add.at(st_cnt, lab, 1.0)
+            dest.unlink(missing_ok=True)
+
+    allv = np.concatenate(nat_vals)
+    if allv.size == 0:
+        print(f"  [WARN] {year}-{month:02d}: 0 pixeles validos")
+        return None
+
+    nat_rows = [{
+        "año": year, "mes": month, "variable": var,
+        "valor": round(fn(allv), 4), "fuente": _FUENTE,
+    } for var, fn in _NAT_STATS.items()]
+
+    st_rows = []
+    for i, (cod, nombre) in enumerate(states):
+        if st_cnt[i] > 0:
+            st_rows.append({
+                "año": year, "mes": month, "estado": nombre, "cod": cod,
+                "radiancia_media": round(float(st_sum[i] / st_cnt[i]), 4),
+                "fuente": _FUENTE,
+            })
+    mean_v = round(float(np.mean(allv)), 4)
+    med_v = round(float(np.median(allv)), 4)
+    print(f"  {year}-{month:02d}: OK — media={mean_v} mediana={med_v} "
+          f"nW/cm2/sr sobre {allv.size} px, {len(st_rows)} estados")
+    return nat_rows, st_rows
+
+
+def _existing_months(path: Path) -> set[str]:
+    if not path.exists():
         return set()
-    df = pd.read_csv(OUTPUT)
+    df = pd.read_csv(path)
     return {f"{int(r['año'])}-{int(r['mes']):02d}" for _, r in df.iterrows()}
 
 
 def _candidate_months(start: str) -> list[tuple[int, int]]:
-    """Meses candidatos (mas reciente primero), con ~2 meses de margen de publicacion."""
     sy, sm = int(start[:4]), int(start[5:7])
     today = date.today()
     end_y, end_m = today.year, today.month - 2
@@ -247,91 +300,90 @@ def _candidate_months(start: str) -> list[tuple[int, int]]:
     months = []
     y, m = sy, sm
     while (y, m) <= (end_y, end_m) and y <= END_YEAR:
-        months.append((y, m))
-        m += 1
+        months.append((y, m)); m += 1
         if m > 12:
             y, m = y + 1, 1
     return months[::-1]
 
 
-def fetch_blackmarble(months_per_run: int, start: str) -> pd.DataFrame:
-    token = _load_token()
-    if token is None:
-        print(
-            "  [WARN] EARTHDATA_TOKEN no configurado (env o iciv/.env).\n"
-            "  Generarlo en urs.earthdata.nasa.gov (dura ~60 dias).\n"
-            "  No se descarga nada."
-        )
-        return pd.DataFrame()
-
-    try:
-        import h5py  # noqa: F401
-    except ImportError:
-        print("  [WARN] h5py no instalado (pip install h5py). No se procesa nada.")
-        return pd.DataFrame()
-
-    done = _existing_months()
-    pending = [(y, m) for (y, m) in _candidate_months(start)
-               if f"{y}-{m:02d}" not in done][:months_per_run]
-    if not pending:
-        print("  Sin meses pendientes. CSV al dia.")
-        return pd.DataFrame()
-
-    rows = []
-    for year, month in pending:
-        label = f"{year}-{month:02d}"
-        try:
-            granules = _cmr_granules(year, month)
-            if set(granules) != _TILES:
-                print(f"  [WARN] {label}: {len(granules)}/{len(_TILES)} tiles en CMR — mes omitido")
-                continue
-            total, npix = 0.0, 0
-            with tempfile.TemporaryDirectory() as tmp:
-                for tile, url in sorted(granules.items()):
-                    dest = Path(tmp) / f"{tile}.h5"
-                    print(f"  {label} {tile}: descargando...")
-                    _download(url, token, dest)
-                    s, n = _tile_stats(dest, tile)
-                    total += s
-                    npix += n
-                    dest.unlink(missing_ok=True)
-            if npix == 0:
-                print(f"  [WARN] {label}: 0 pixeles validos — mes omitido")
-                continue
-            valor = round(total / npix, 4)
-            rows.append({"año": year, "mes": month, "variable": _VARIABLE,
-                         "valor": valor, "fuente": _FUENTE})
-            print(f"  {label}: OK — {valor} nW/cm2/sr sobre {npix} pixeles")
-        except Exception as exc:
-            print(f"  [ERROR] {label}: {exc} — mes omitido")
-
-    return pd.DataFrame(rows)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Black Marble VNP46A3 mensual Venezuela")
-    parser.add_argument("--months", type=int, default=3,
-                        help="meses faltantes a procesar por corrida (default 3)")
-    parser.add_argument("--start", default=DEFAULT_START,
-                        help=f"primer mes del backfill YYYY-MM (default {DEFAULT_START})")
+    parser.add_argument("--months", type=int, default=3)
+    parser.add_argument("--start", default=DEFAULT_START)
+    parser.add_argument("--reprocess", action="store_true",
+                        help="recomputar meses ya presentes (para anadir agregaciones)")
     args = parser.parse_args()
 
     print("=" * 65)
-    print("  NASA Black Marble VNP46A3 — luminosidad mensual Venezuela")
+    print("  NASA Black Marble VNP46A3 — luminosidad mensual + subnacional Venezuela")
     print("=" * 65)
     settings.paths.ensure_exists()
-    df_new = fetch_blackmarble(args.months, args.start)
-    if df_new.empty:
+
+    token = _load_token()
+    if token is None:
+        print("  [WARN] EARTHDATA_TOKEN no configurado. No se descarga nada.")
+        return
+    try:
+        import h5py  # noqa: F401
+    except ImportError:
+        print("  [WARN] h5py no instalado. No se procesa nada.")
+        return
+
+    states = _state_names()
+    # Si la salida nacional aun no tiene las nuevas variables, forzar reprocess.
+    if OUTPUT.exists() and not args.reprocess:
+        existing_vars = set(pd.read_csv(OUTPUT)["variable"].unique())
+        if not set(_NAT_STATS).issubset(existing_vars):
+            print("  [INFO] faltan agregaciones nuevas en el CSV → activando --reprocess")
+            args.reprocess = True
+
+    # Meses con las 5 agregaciones ya completas (para reanudar sin reprocesar)
+    complete = set()
+    if OUTPUT.exists():
+        _cur = pd.read_csv(OUTPUT)
+        _cnt = _cur.groupby(["año", "mes"])["variable"].nunique()
+        complete = {f"{int(y)}-{int(m):02d}" for (y, m), n in _cnt.items() if n >= len(_NAT_STATS)}
+    done = complete if args.reprocess else _existing_months(OUTPUT)
+    pending = [(y, m) for (y, m) in _candidate_months(args.start)
+               if f"{y}-{m:02d}" not in done][:args.months]
+    if not pending:
+        print("  Sin meses pendientes. CSV al dia.")
+        return
+
+    def _upsert(path: Path, new_rows: list[dict], keys: list[str]) -> pd.DataFrame:
+        df_new = pd.DataFrame(new_rows)
+        if path.exists():
+            old = pd.read_csv(path)
+            proc = {(int(r["año"]), int(r["mes"])) for _, r in df_new.iterrows()}
+            old = old[~old.apply(lambda r: (int(r["año"]), int(r["mes"])) in proc, axis=1)]
+            df = pd.concat([old, df_new], ignore_index=True)
+        else:
+            df = df_new
+        return df.drop_duplicates(subset=keys, keep="last").sort_values(
+            [k for k in keys if k in df.columns]).reset_index(drop=True)
+
+    processed = 0
+    for year, month in pending:
+        try:
+            res = _process_month(year, month, token, states)
+        except Exception as exc:
+            print(f"  [ERROR] {year}-{month:02d}: {exc} — mes omitido")
+            continue
+        if not res:
+            continue
+        # Guardado incremental tras cada mes (reanudable ante cortes)
+        _upsert(OUTPUT, res[0], ["año", "mes", "variable"]).to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        _upsert(OUTPUT_STATES, res[1], ["año", "mes", "estado"]).to_csv(OUTPUT_STATES, index=False, encoding="utf-8-sig")
+        processed += 1
+
+    if processed == 0:
         print("\n  Sin filas nuevas.")
         return
-    if OUTPUT.exists():
-        df = pd.concat([pd.read_csv(OUTPUT), df_new], ignore_index=True)
-        df = df.drop_duplicates(subset=["año", "mes", "variable"], keep="last")
-    else:
-        df = df_new
-    df = df.sort_values(["año", "mes"]).reset_index(drop=True)
-    df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
-    print(f"\n  Guardado: {OUTPUT}  ({len(df)} filas totales, +{len(df_new)} nuevas)")
+    df_nat = pd.read_csv(OUTPUT)
+    df_st = pd.read_csv(OUTPUT_STATES)
+    n_meses = df_nat[["año", "mes"]].drop_duplicates().shape[0]
+    print(f"\n  Nacional: {OUTPUT.name} — {n_meses} meses × {len(_NAT_STATS)} variables (+{processed} reprocesados)")
+    print(f"  Subnacional: {OUTPUT_STATES.name} — {len(df_st)} filas ({df_st['estado'].nunique()} estados)")
 
 
 if __name__ == "__main__":
