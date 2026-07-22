@@ -1,6 +1,6 @@
 # Dataset publico ICIV
 
-Fecha de corte: 2026-05-28.
+Fecha de corte: 2026-07-22.
 
 El proyecto genera un paquete de dataset auditable junto con el dashboard. Su
 objetivo es que la defensa no dependa solo de la visualizacion, sino de una base

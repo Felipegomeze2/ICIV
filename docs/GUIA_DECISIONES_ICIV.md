@@ -145,6 +145,13 @@ pocos anos anuales puede verse sofisticado y ser menos defendible.
 
 ## Fuentes nuevas y coverage
 
+> Actualizacion 2026-07-22: gran parte de esta seccion ya se ejecuto.
+> Integradas al Pulse: IMF IMTS (comercio espejo EEUU), WB Pink Sheet
+> (crudo Dubai), spread EM via FRED. LSCI extendido a 2026 via UNCTADstat.
+> Capas auxiliares descargadas: ACLED (embargo ~12 meses en tier actual)
+> y UN Comtrade 5 socios (mas oportuno que IMTS, meses recientes
+> parciales). Ver docs/FUENTES_Y_VARIABLES.md como fuente de verdad.
+
 ### Prioridad 1
 
 Subir calidad antes que cantidad:

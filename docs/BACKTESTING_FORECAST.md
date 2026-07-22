@@ -1,6 +1,6 @@
 # Backtesting del forecast Pulse
 
-Fecha de corte: 2026-05-28.
+Fecha de corte: 2026-07-22 (Pulse ampliado a 15 variables).
 
 El forecast visible del dashboard usa el ICIV Pulse mensual como serie de alta
 frecuencia. Para que la prediccion sea defendible, el proyecto ya incluye
@@ -52,18 +52,22 @@ python scripts/backtest_pulse_forecast.py --sarima-origin-step-months 3
 
 ## Resultado actual
 
-Ultima ejecucion local: 2026-05-28.
+Ultima ejecucion: 2026-07-22, sobre el Pulse recompuesto de 15 variables
+(tras la auditoria de fuentes institucionales y la ampliacion con IMTS,
+Pink Sheet y spread EM). Los numeros se regeneran cada lunes con el
+workflow; la tabla refleja `pulse_forecast_backtest_summary.csv`.
 
-| Horizonte | Mejor modelo | MAE | RMSE |
-|---:|---|---:|---:|
-| 1 mes | SARIMA | 1.71 | 2.61 |
-| 3 meses | Naive | 4.27 | 5.62 |
-| 6 meses | SARIMA | 3.77 | 4.93 |
+| Horizonte | Mejor modelo | MAE | RMSE | Cobertura IC 80/95 (SARIMA) |
+|---:|---|---:|---:|---|
+| 1 mes | SARIMA | 2.23 | 3.06 | 100% / 100% |
+| 3 meses | Naive | 3.80 | 5.13 | — |
+| 6 meses | SARIMA | 3.61 | 4.86 | 82% / 91% |
 
 Interpretacion: SARIMA aporta valor en 1 y 6 meses, pero no domina todos los
 horizontes. Eso es positivo metodologicamente porque el dashboard no vende el
 modelo como infalible; muestra una comparacion fuera de muestra y permite
-defender el forecast con evidencia.
+defender el forecast con evidencia. Las bandas de incertidumbre SARIMA estan
+bien calibradas a 1 mes y levemente estrechas a 3 meses.
 
 ## Columnas del archivo largo
 
