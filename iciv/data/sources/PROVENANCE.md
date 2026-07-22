@@ -59,6 +59,18 @@ desde 2023-07. Faltante es faltante: los pesos se renormalizan por mes.
 GDELT se trata como fuente mensual opcional por estabilidad de API/rate limit.
 Si falta, el dashboard debe mostrar menor cobertura, no inventar el dato.
 
+## Capas auxiliares (no entran al score ni al Pulse)
+
+| Fuente | Archivo | Cobertura | Nota |
+|---|---|---|---|
+| ACLED (API OAuth oficial) | `acled_monthly.csv` | 2018-01 a hoy menos ~12 meses | el tier de cuenta actual entrega datos con ~12 meses de rezago; solo contexto historico |
+| UN Comtrade v1 (5 socios espejo) | `comtrade_monthly.csv` | 2010-01 a ~2 meses atras | ultimos ~3 meses parciales segun socios que hayan reportado |
+
+Ambas requieren credenciales via secrets/entorno (ACLED_EMAIL,
+ACLED_PASSWORD, COMTRADE_API_KEY); sin credenciales el fetch avisa y no
+escribe nada. Su eventual entrada al Pulse exige decision de peso
+documentada y re-ejecucion del backtest.
+
 ## Outcome externo
 
 `ied_neta_usd` proviene de WDI y se usa solo para validacion exploratoria

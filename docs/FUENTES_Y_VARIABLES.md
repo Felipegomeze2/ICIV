@@ -188,7 +188,7 @@ Politica vigente:
 |---|---|---|
 | OPEC MOMR (fuentes secundarias) | produccion de crudo venezolano mensual, mas oportuna que EIA | el sitio OPEC bloquea descargas automatizadas (HTTP 403, verificado 2026-07); requiere parseo PDF reproducible |
 | US Census intltrade API | comercio espejo EEUU-VEN mas oportuno que IMTS (~2 meses lag) | requiere API key gratuita (api.census.gov); complementa IMTS |
-| UN Comtrade | EN INCORPORACION (2026-07): `scripts/fetch_comtrade_monthly.py` listo, requiere secret COMTRADE_API_KEY. Comercio espejo mensual de 5 socios (Espana, Brasil, India, Turkiye, China) con Venezuela desde 2010, 2 variables agregadas. Capa auxiliar de contexto/validacion del bloque espejo IMTS; NO entra al score ni al Pulse sin decision de peso + backtest | cobertura de reporte varia por socio y mes |
+| UN Comtrade | DATOS DESCARGADOS (2026-07-22): `comtrade_monthly.csv`, comercio espejo de 5 socios (Espana, Brasil, India, Turkiye, China) con Venezuela, 2010-01 a 2026-06 (198 meses, ambos flujos). MAS OPORTUNO que IMF IMTS (junio 2026 vs marzo 2026). Advertencia de lectura: los ultimos ~3 meses son PARCIALES porque no todos los socios han reportado (ej. una caida abrupta en el ultimo trimestre refleja socios faltantes, no colapso comercial). Capa auxiliar de contexto/validacion del bloque espejo IMTS; NO entra al score ni al Pulse sin decision de peso + backtest | reporte parcial de socios en meses recientes |
 | NASA Black Marble monthly | actividad nocturna mas oportuna | pipeline raster reproducible y comparabilidad con serie anual |
 
 Integradas en 2026-07 (ya no son candidatas): IMF IMTS (antes DOTS), World
@@ -201,7 +201,7 @@ bases con la serie WDI antigua).
 
 | Fuente | Uso potencial | Riesgo |
 |---|---|---|
-| ACLED | EN INCORPORACION (2026-07): `scripts/fetch_acled_monthly.py` listo, requiere credenciales (secrets ACLED_EMAIL/ACLED_PASSWORD). Genera 4 variables mensuales (eventos, protestas, violencia politica, fatalidades) desde 2018 como capa auxiliar para SATV y contexto. NO entra al score ni al Pulse mientras no se decida peso y se re-ejecute backtest | coverage desde 2018 y sesgo de reporte |
+| ACLED | DATOS DESCARGADOS (2026-07-22): `acled_monthly.csv` con 4 variables mensuales (eventos, protestas, violencia politica, fatalidades), 2018-01 a 2025-07, 27,247 eventos. LIMITACION CLAVE: la cuenta actual entrega los datos con ~12 meses de rezago (la serie termina exactamente 12 meses atras), por lo que NO sirve para alertas SATV en tiempo real — solo para contexto historico y validacion. Solucion posible: solicitar acceso academico completo a ACLED con el correo institucional .edu.co. NO entra al score ni al Pulse | rezago de acceso ~12 meses en el tier actual; sesgo de reporte |
 | OpenSanctions API | historial estructurado de sanciones OFAC/EU/UK (reactivaria `ofac_sanciones_count`) | historia temporal limitada; validar reproducibilidad |
 | R4V (ACNUR/OIM) | cortes intra-anuales de migracion venezolana | formato de publicacion cambia entre reportes |
 | Global Database of Events alternatives | percepcion/noticias | redundancia con Guardian/GDELT |
