@@ -53,6 +53,7 @@ jobs:
           ACLED_EMAIL:      ${{ secrets.ACLED_EMAIL }}
           ACLED_PASSWORD:   ${{ secrets.ACLED_PASSWORD }}
           COMTRADE_API_KEY: ${{ secrets.COMTRADE_API_KEY }}
+          EARTHDATA_TOKEN:  ${{ secrets.EARTHDATA_TOKEN }}
         run: |
           echo "Descargando datos frescos de fuentes de alta frecuencia..."
           # FRED — datos públicos, sin API key
@@ -74,6 +75,8 @@ jobs:
           python scripts/fetch_acled_monthly.py     || echo "WARN: fetch_acled_monthly falló (continuando)"
           # UN Comtrade — comercio espejo de socios adicionales (requiere COMTRADE_API_KEY; si falta, avisa y continua)
           python scripts/fetch_comtrade_monthly.py  || echo "WARN: fetch_comtrade_monthly falló (continuando)"
+          # NASA Black Marble — luminosidad mensual (requiere EARTHDATA_TOKEN; avanza el backfill 4 meses por semana)
+          python scripts/fetch_blackmarble_monthly.py --months 4 || echo "WARN: fetch_blackmarble falló (continuando)"
           python scripts/fetch_international_news.py || echo "WARN: fetch_international_news falló (continuando)"
           # IMF — datos públicos, sin API key
           python scripts/fetch_imf.py          || echo "WARN: fetch_imf falló (continuando)"

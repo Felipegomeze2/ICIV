@@ -1,0 +1,2 @@
+﻿año,mes,variable,valor,fuente
+2026,5,luminosidad_nocturna_mensual_nwcm2sr,0.9029,"NASA Black Marble VNP46A3 (LAADS DAAC, coleccion 002), radiancia NearNadir Composite Snow Free promediada sobre Venezuela (mascara venezuela_states.geojson, 6 tiles). nW/cm2/sr."

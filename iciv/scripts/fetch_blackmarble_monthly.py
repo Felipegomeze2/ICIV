@@ -8,8 +8,9 @@ gap-filled de radiancia nocturna VIIRS DNB, 15 arc-seg, coleccion 002).
   Descarga de archivos .h5 (requiere token Earthdata Bearer):
       https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/
 
-Cobertura espacial: Venezuela ocupa 6 tiles de 10x10 grados:
-  h10v07 h11v07 h12v07 (lat 10-20N) | h10v08 h11v08 h12v08 (lat 0-10N)
+Cobertura espacial: Venezuela ocupa 5 tiles de 10x10 grados:
+  h10v07 h11v07 (lat 10-20N) | h10v08 h11v08 h12v08 (lat 0-10N)
+  (h12v07 es oceano/Guyana: 0 pixeles de Venezuela, se omite)
 Cada tile es una grilla lineal lat/lon de 2400x2400 pixeles.
 
 Metodo:
@@ -73,7 +74,9 @@ INTERIM   = _ICIV_DIR / "data" / "interim"
 _CMR_URL  = "https://cmr.earthdata.nasa.gov/search/granules.json"
 _HEADERS  = {"User-Agent": "Mozilla/5.0 (academic research project ICIV)"}
 _BBOX     = "-73.5,0.5,-59.5,12.5"
-_TILES    = {"h10v07", "h11v07", "h12v07", "h10v08", "h11v08", "h12v08"}
+# h12v07 (lat 10-20N, lon 60-50W) se excluye: es oceano Atlantico/Guyana,
+# 0 pixeles de Venezuela (verificado con la mascara el 2026-07-22).
+_TILES    = {"h10v07", "h11v07", "h10v08", "h11v08", "h12v08"}
 _H5_LAYER = "HDFEOS/GRIDS/VNP_Grid_DNB/Data Fields/NearNadir_Composite_Snow_Free"
 _PIX      = 2400  # pixeles por lado de tile (15 arc-seg)
 
@@ -93,8 +96,11 @@ def _load_token() -> str | None:
     if env_file.exists():
         for line in env_file.read_text(encoding="utf-8-sig").splitlines():
             line = line.strip()
-            if line.startswith("EARTHDATA_TOKEN=") :
-                val = line.partition("=")[2].strip().strip('"').strip("'")
+            if line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            if key.strip() == "EARTHDATA_TOKEN":
+                val = val.strip().strip('"').strip("'")
                 if val:
                     return val
     return None
@@ -107,12 +113,24 @@ def _tile_bounds(tile: str) -> tuple[float, float]:
     return -180.0 + 10.0 * h, 90.0 - 10.0 * v
 
 
+_MASKS_DIR = _ICIV_DIR / "data" / "sources" / "bm_masks"
+
+
 def _tile_mask(tile: str) -> np.ndarray:
-    """Mascara booleana 2400x2400 de pixeles dentro de Venezuela (cacheada)."""
-    INTERIM.mkdir(parents=True, exist_ok=True)
-    cache = INTERIM / f"bm_mask_{tile}.npy"
+    """Mascara booleana 2400x2400 de pixeles dentro de Venezuela (cacheada).
+
+    El cache comprimido (.npz) se versiona en data/sources/bm_masks para que
+    los runners de Actions no recalculen ~5 min por tile cada semana.
+    """
+    _MASKS_DIR.mkdir(parents=True, exist_ok=True)
+    cache = _MASKS_DIR / f"bm_mask_{tile}.npz"
     if cache.exists():
-        return np.load(cache)
+        return np.load(cache)["mask"]
+    legacy = INTERIM / f"bm_mask_{tile}.npy"
+    if legacy.exists():
+        mask = np.load(legacy)
+        np.savez_compressed(cache, mask=mask)
+        return mask
 
     import json as _json
     from matplotlib.path import Path as MplPath
@@ -145,7 +163,7 @@ def _tile_mask(tile: str) -> np.ndarray:
             mask |= inside
 
     mask = mask.reshape(_PIX, _PIX)
-    np.save(cache, mask)
+    np.savez_compressed(cache, mask=mask)
     print(f"    mascara {tile}: {int(mask.sum())} pixeles de Venezuela (cacheada)")
     return mask
 
@@ -265,7 +283,7 @@ def fetch_blackmarble(months_per_run: int, start: str) -> pd.DataFrame:
         try:
             granules = _cmr_granules(year, month)
             if set(granules) != _TILES:
-                print(f"  [WARN] {label}: {len(granules)}/6 tiles en CMR — mes omitido")
+                print(f"  [WARN] {label}: {len(granules)}/{len(_TILES)} tiles en CMR — mes omitido")
                 continue
             total, npix = 0.0, 0
             with tempfile.TemporaryDirectory() as tmp:

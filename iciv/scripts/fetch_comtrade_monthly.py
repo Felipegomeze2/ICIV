@@ -86,8 +86,11 @@ def _load_key() -> str | None:
     if env_file.exists():
         for line in env_file.read_text(encoding="utf-8-sig").splitlines():
             line = line.strip()
-            if line.startswith("COMTRADE_API_KEY=") and "=" in line:
-                val = line.partition("=")[2].strip().strip('"').strip("'")
+            if line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            if key.strip() == "COMTRADE_API_KEY":
+                val = val.strip().strip('"').strip("'")
                 if val:
                     return val
     return None
