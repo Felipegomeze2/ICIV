@@ -2,7 +2,7 @@
   "ok": false,
   "message": "sin datos reales: GDELT timelinetone no entrego JSON valido: 429 Client Error: Too Many Requests for url: https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela&mode=timelinetone&format=json&startdatetime=20150101000000&enddatetime=20261231235959&timelinesmooth=0",
   "rows": 0,
-  "updated_at_utc": "2026-07-22T00:00:00.429320+00:00",
+  "updated_at_utc": "2026-07-22T22:32:51.938595+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; preserve existing non-empty data on fetch failure."
 }
