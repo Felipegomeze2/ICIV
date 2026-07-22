@@ -2232,12 +2232,15 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <div class="nav-sub" data-block="inicio">
     <a href="#inicio" class="active">Clima Actual</a>
+    <a href="#ven-hoy">Venezuela Hoy</a>
     <a href="#score">ICIV Anual</a>
   </div>
 
   <div class="nav-sub" data-block="historia">
     <a href="#historia">Evolución 25 años</a>
     <a href="#pulse">Pulse Mensual</a>
+    <a href="#pulse-componentes">Componentes Pulse</a>
+    <a href="#pulse-metodologia">Metodología Pulse</a>
     <a href="#mapa">Actividad por Estado</a>
   </div>
 
@@ -2249,6 +2252,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
   <div class="nav-sub" data-block="proyeccion">
     <a href="#forecast-ml">Predicción Pulse</a>
+    <a href="#forecast-metodologia">Metodología</a>
     <a href="#proyecciones">Laboratorio</a>
   </div>
 
