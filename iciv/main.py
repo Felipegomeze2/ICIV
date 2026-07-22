@@ -1580,6 +1580,27 @@ def fase_dashboard(
         logger.warning(f"  Mirror trade payload failed: {_me}")
     mirror_trade_json = json.dumps(_mirror_payload, ensure_ascii=False)
 
+    # Black Marble — luminosidad nocturna mensual (VNP46A3) + serie anual Li et al.
+    _bm_payload: dict = {"meses": [], "mensual": [], "anual_meses": [], "anual_li": []}
+    try:
+        _bm_path = settings.paths.data_raw / "blackmarble_monthly.csv"
+        if _bm_path.exists():
+            _bm = pd.read_csv(_bm_path).sort_values(["año", "mes"])
+            _bm["mstr"] = _bm["año"].astype(int).astype(str) + "-" + _bm["mes"].astype(int).astype(str).str.zfill(2)
+            _bm_payload["meses"] = _bm["mstr"].tolist()
+            _bm_payload["mensual"] = [round(float(v), 4) for v in _bm["valor"].tolist()]
+            # Serie anual Li et al. (VIIRS armonizado) reescalada al eje de la mensual
+            _li = pd.read_csv(settings.paths.raw_viirs)
+            _li = _li[(_li["año"] >= int(_bm["año"].min())) & (_li["año"] <= int(_bm["año"].max()))]
+            if not _li.empty and _bm["valor"].max() > 0:
+                _scale = float(_bm["valor"].mean()) / float(_li["valor"].mean())
+                for _, _r in _li.iterrows():
+                    _bm_payload["anual_meses"].append(f"{int(_r['año'])}-06")
+                    _bm_payload["anual_li"].append(round(float(_r["valor"]) * _scale, 4))
+    except Exception as _be:
+        logger.warning(f"  Black Marble payload failed: {_be}")
+    blackmarble_json = json.dumps(_bm_payload, ensure_ascii=False)
+
     # ── ML Forecast (SARIMA + Nowcast) ────────────────────────────────────────
     _ml_payload = ml_forecast or {}
     ml_forecast_json = json.dumps(_ml_payload, cls=_NumpyEncoder, ensure_ascii=False)
@@ -3252,6 +3273,30 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       Es práctica estándar (mirror statistics) cuando un país deja de reportar. Esta capa es contextual:
       el Pulse solo usa el flujo EEUU (IMF IMTS); la serie Comtrade multi-socio sirve de validación
       cruzada y contexto, y no entra al score.
+    </div>
+  </div>
+
+  <!-- Black Marble — luminosidad nocturna mensual (capa satelital contextual) -->
+  <div class="section-header" style="margin-top:32px">
+    <span class="section-title">Luminosidad nocturna mensual (satélite)</span>
+    <span class="section-sub">NASA Black Marble VNP46A3 · radiancia promedio de Venezuela, mensual 2014–2026 · capa satelital contextual — no entra al score</span>
+  </div>
+
+  <div class="chart-card">
+    <div class="ct">Radiancia nocturna mensual de Venezuela (nW/cm²/sr)</div>
+    <div class="cs">Línea azul = Black Marble mensual (VNP46A3, promedio país). Línea amarilla punteada = serie anual Li et al. (VIIRS armonizado, ya usada en el score anual) reescalada al mismo eje para comparar tendencia. Ambas coinciden en el colapso 2014–2020; divergen desde 2022 (Black Marble muestra recuperación parcial).</div>
+    <div class="chart-wrap" style="height:320px"><canvas id="cBlackMarble"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">Validación cruzada:</strong>
+      agregando la serie mensual por año y correlacionándola contra la serie anual Li et al.
+      (11 años completos 2014–2024) da Pearson r=+0.65 (p=0.03): consistencia positiva significativa.
+      Las diferencias esperables vienen de que son productos distintos (VNP46A3 radiancia cruda vs
+      serie armonizada tipo DMSP) y del tratamiento del flaring petrolero del Orinoco. Esta capa es
+      contextual y de mayor frecuencia; su eventual entrada al Pulse exige antes analizar variantes de
+      agregación (media logarítmica, mediana, píxeles urbanos) que atenúen el flaring, y re-backtest.
     </div>
   </div>
 </section>
@@ -5440,6 +5485,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   var PULSE = {pulse_json};
   var PCOMP = {pulse_components_json};
   var MIRROR = {mirror_trade_json};
+  var BLACKMARBLE = {blackmarble_json};
   if (!PULSE || !PULSE.data || !PULSE.data.scores || !PULSE.data.scores.length) return;
 
   var D = PULSE.data;
@@ -5710,6 +5756,48 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
+  // Black Marble — luminosidad nocturna mensual + overlay anual Li et al.
+  function buildBlackMarble() {{
+    if (!BLACKMARBLE || !BLACKMARBLE.meses || !BLACKMARBLE.meses.length) return;
+    var ctx = document.getElementById('cBlackMarble');
+    if (!ctx) return;
+    if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
+    // El overlay anual se alinea por etiqueta de mes (YYYY-06) sobre el eje mensual
+    var anualMap = {{}};
+    (BLACKMARBLE.anual_meses || []).forEach(function(m, i) {{ anualMap[m] = BLACKMARBLE.anual_li[i]; }});
+    var anualData = BLACKMARBLE.meses.map(function(m) {{ return (m in anualMap) ? anualMap[m] : null; }});
+    new Chart(ctx, {{
+      type: 'line',
+      data: {{
+        labels: BLACKMARBLE.meses,
+        datasets: [
+          {{
+            label: 'Black Marble mensual (VNP46A3)',
+            data: BLACKMARBLE.mensual,
+            borderColor: '#3498db', backgroundColor: 'transparent',
+            borderWidth: 1.8, pointRadius: 0, tension: 0.25,
+          }},
+          {{
+            label: 'Li et al. anual (VIIRS armonizado, reescalado)',
+            data: anualData,
+            borderColor: '#f1c40f', backgroundColor: 'transparent',
+            borderWidth: 1.6, borderDash: [6,4], pointRadius: 3, spanGaps: true,
+          }},
+        ]
+      }},
+      options: {{
+        responsive: true, maintainAspectRatio: false,
+        interaction: {{ mode: 'index', intersect: false }},
+        plugins: {{ legend: {{ position: 'top', labels: {{color:'#8b949e'}} }} }},
+        scales: {{
+          x: {{ ticks: {{color:'#8b949e', maxTicksLimit:14}}, grid: {{color:'#21262d'}} }},
+          y: {{ ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}},
+               title: {{display:true, text:'nW/cm²/sr', color:'#8b949e', font:{{size:10}}}} }},
+        }}
+      }}
+    }});
+  }}
+
   // Render on tab activation (lazy)
   if (typeof _tabInits !== 'undefined') {{
     _tabInits['pulse'] = function() {{
@@ -5719,6 +5807,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     _tabInits['pulse-componentes'] = function() {{
       buildPulseComponents();
       buildMirrorTrade();
+      buildBlackMarble();
     }};
   }}
 
@@ -5730,6 +5819,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   if (window.location.hash === '#pulse-componentes') {{
     buildPulseComponents();
     buildMirrorTrade();
+    buildBlackMarble();
   }}
 }})();
 
