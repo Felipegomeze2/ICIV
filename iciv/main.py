@@ -1580,26 +1580,96 @@ def fase_dashboard(
         logger.warning(f"  Mirror trade payload failed: {_me}")
     mirror_trade_json = json.dumps(_mirror_payload, ensure_ascii=False)
 
-    # Black Marble — luminosidad nocturna mensual (VNP46A3) + serie anual Li et al.
-    _bm_payload: dict = {"meses": [], "mensual": [], "anual_meses": [], "anual_li": []}
+    # Black Marble — luminosidad nocturna mensual (VNP46A3): media + log-media + Li et al.
+    _bm_payload: dict = {"meses": [], "mensual": [], "robusta": [], "anual_meses": [], "anual_li": []}
     try:
         _bm_path = settings.paths.data_raw / "blackmarble_monthly.csv"
         if _bm_path.exists():
-            _bm = pd.read_csv(_bm_path).sort_values(["año", "mes"])
-            _bm["mstr"] = _bm["año"].astype(int).astype(str) + "-" + _bm["mes"].astype(int).astype(str).str.zfill(2)
-            _bm_payload["meses"] = _bm["mstr"].tolist()
-            _bm_payload["mensual"] = [round(float(v), 4) for v in _bm["valor"].tolist()]
-            # Serie anual Li et al. (VIIRS armonizado) reescalada al eje de la mensual
+            _bm = pd.read_csv(_bm_path)
+            def _bm_series(_var):
+                _s = _bm[_bm["variable"] == _var].sort_values(["año", "mes"])
+                return {f"{int(r['año'])}-{int(r['mes']):02d}": round(float(r["valor"]), 4)
+                        for _, r in _s.iterrows()}
+            _mean_s = _bm_series("luminosidad_nocturna_mensual_nwcm2sr")
+            _rob_s  = _bm_series("luminosidad_nocturna_logmedia")
+            _meses = sorted(set(_mean_s) | set(_rob_s))
+            _bm_payload["meses"] = _meses
+            _bm_payload["mensual"] = [_mean_s.get(m) for m in _meses]
+            _bm_payload["robusta"] = [_rob_s.get(m) for m in _meses] if _rob_s else []
+            # Serie anual Li et al. (VIIRS armonizado) reescalada al eje de la media
             _li = pd.read_csv(settings.paths.raw_viirs)
-            _li = _li[(_li["año"] >= int(_bm["año"].min())) & (_li["año"] <= int(_bm["año"].max()))]
-            if not _li.empty and _bm["valor"].max() > 0:
-                _scale = float(_bm["valor"].mean()) / float(_li["valor"].mean())
-                for _, _r in _li.iterrows():
-                    _bm_payload["anual_meses"].append(f"{int(_r['año'])}-06")
-                    _bm_payload["anual_li"].append(round(float(_r["valor"]) * _scale, 4))
+            _mean_vals = [v for v in _mean_s.values()]
+            if _mean_vals:
+                _y0 = int(min(m[:4] for m in _meses)); _y1 = int(max(m[:4] for m in _meses))
+                _li = _li[(_li["año"] >= _y0) & (_li["año"] <= _y1)]
+                _mm = sum(_mean_vals) / len(_mean_vals)
+                if not _li.empty and _li["valor"].mean() > 0:
+                    _scale = _mm / float(_li["valor"].mean())
+                    for _, _r in _li.iterrows():
+                        _bm_payload["anual_meses"].append(f"{int(_r['año'])}-06")
+                        _bm_payload["anual_li"].append(round(float(_r["valor"]) * _scale, 4))
     except Exception as _be:
         logger.warning(f"  Black Marble payload failed: {_be}")
     blackmarble_json = json.dumps(_bm_payload, ensure_ascii=False)
+
+    # Mapa coroplético subnacional Black Marble (radiancia por estado y año)
+    _bmmap: dict = {"viewbox": [1000, 700], "estados": [], "years": [], "radiance": {}, "vmax": 1.0}
+    try:
+        _st_path = settings.paths.data_raw / "blackmarble_states_monthly.csv"
+        _geojson_bm = settings.paths.data_raw / "venezuela_states.geojson"
+        if _st_path.exists() and _geojson_bm.exists():
+            _gj = json.loads(_geojson_bm.read_text(encoding="utf-8"))
+            _feats = _gj.get("features", [])
+            # bbox para proyección equirectangular
+            _lons, _lats = [], []
+            for _f in _feats:
+                _g = _f.get("geometry") or {}
+                _polys = ([_g["coordinates"]] if _g.get("type") == "Polygon"
+                          else _g.get("coordinates", []) if _g.get("type") == "MultiPolygon" else [])
+                for _poly in _polys:
+                    for _ring in _poly:
+                        for _pt in _ring:
+                            _lons.append(_pt[0]); _lats.append(_pt[1])
+            _lo0, _lo1, _la0, _la1 = min(_lons), max(_lons), min(_lats), max(_lats)
+            _W = 1000.0
+            _H = round(_W * (_la1 - _la0) / (_lo1 - _lo0))
+            _bmmap["viewbox"] = [int(_W), int(_H)]
+
+            def _proj(pt):
+                x = (pt[0] - _lo0) / (_lo1 - _lo0) * _W
+                y = (_la1 - pt[1]) / (_la1 - _la0) * _H
+                return f"{x:.1f},{y:.1f}"
+
+            for _f in _feats:
+                _g = _f.get("geometry") or {}
+                _polys = ([_g["coordinates"]] if _g.get("type") == "Polygon"
+                          else _g.get("coordinates", []) if _g.get("type") == "MultiPolygon" else [])
+                _d = []
+                for _poly in _polys:
+                    for _ring in _poly:
+                        if len(_ring) < 3:
+                            continue
+                        _d.append("M" + "L".join(_proj(p) for p in _ring[::2]) + "Z")
+                _bmmap["estados"].append({
+                    "cod": _f["properties"].get("cod", ""),
+                    "nombre": _f["properties"].get("nombre", ""),
+                    "d": "".join(_d),
+                })
+
+            _st = pd.read_csv(_st_path)
+            _st_annual = _st.groupby(["año", "cod"])["radiancia_media"].mean().reset_index()
+            _years = sorted(_st_annual["año"].unique())
+            _bmmap["years"] = [int(y) for y in _years]
+            for _y in _years:
+                _sub = _st_annual[_st_annual["año"] == _y]
+                _bmmap["radiance"][str(int(_y))] = {
+                    r["cod"]: round(float(r["radiancia_media"]), 3) for _, r in _sub.iterrows()
+                }
+            _allvals = _st_annual["radiancia_media"].values
+            _bmmap["vmax"] = round(float(np.percentile(_allvals, 95)), 3) if len(_allvals) else 1.0
+    except Exception as _mpe:
+        logger.warning(f"  Black Marble map payload failed: {_mpe}")
+    blackmarble_map_json = json.dumps(_bmmap, ensure_ascii=False)
 
     # ── ML Forecast (SARIMA + Nowcast) ────────────────────────────────────────
     _ml_payload = ml_forecast or {}
@@ -3298,6 +3368,31 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       contextual y de mayor frecuencia; su eventual entrada al Pulse exige antes analizar variantes de
       agregación (media logarítmica, mediana, píxeles urbanos) que atenúen el flaring, y re-backtest.
     </div>
+  </div>
+
+  <!-- Mapa coroplético subnacional -->
+  <div class="chart-card" style="margin-top:18px">
+    <div class="ct">Mapa de actividad nocturna por estado — <span id="bmMapYear">—</span></div>
+    <div class="cs">Radiancia media anual por estado (NASA Black Marble). Mueve el año para ver cómo cambia la actividad nocturna de Venezuela en el territorio. Escala fija entre años: un mismo color = misma radiancia en cualquier año.</div>
+    <div style="display:flex;align-items:center;gap:14px;margin:14px 0 6px">
+      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;accent-color:#e6a817">
+      <button id="bmMapPlay" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <div style="flex:1 1 460px;min-width:300px">
+        <svg id="bmMapSvg" viewBox="0 0 1000 700" style="width:100%;height:auto;background:#0d1117;border-radius:8px"></svg>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)">
+          <span>menos luz</span>
+          <span id="bmMapGradient" style="flex:1;height:12px;border-radius:6px;display:block"></span>
+          <span>más luz</span>
+        </div>
+      </div>
+      <div style="flex:1 1 240px;min-width:220px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Top estados por radiancia (<span id="bmRankYear">—</span>)</div>
+        <div id="bmMapRanking" style="font-size:.75rem;line-height:1.5"></div>
+      </div>
+    </div>
+    <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em"></div>
   </div>
 </section>
 
@@ -5486,6 +5581,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   var PCOMP = {pulse_components_json};
   var MIRROR = {mirror_trade_json};
   var BLACKMARBLE = {blackmarble_json};
+  var BMMAP = {blackmarble_map_json};
   if (!PULSE || !PULSE.data || !PULSE.data.scores || !PULSE.data.scores.length) return;
 
   var D = PULSE.data;
@@ -5772,10 +5868,16 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         labels: BLACKMARBLE.meses,
         datasets: [
           {{
-            label: 'Black Marble mensual (VNP46A3)',
+            label: 'Media mensual (VNP46A3)',
             data: BLACKMARBLE.mensual,
             borderColor: '#3498db', backgroundColor: 'transparent',
             borderWidth: 1.8, pointRadius: 0, tension: 0.25,
+          }},
+          {{
+            label: 'Log-media mensual (atenúa flaring petrolero)',
+            data: BLACKMARBLE.robusta && BLACKMARBLE.robusta.length ? BLACKMARBLE.robusta : null,
+            borderColor: '#00d4aa', backgroundColor: 'transparent',
+            borderWidth: 1.8, pointRadius: 0, tension: 0.25, hidden: false,
           }},
           {{
             label: 'Li et al. anual (VIIRS armonizado, reescalado)',
@@ -5798,6 +5900,87 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
+  // Mapa coroplético subnacional Black Marble — SVG + slider de año + animación
+  function _bmColor(v, vmax) {{
+    // escala secuencial tipo "luces nocturnas": negro-azulado → ámbar → blanco
+    var t = Math.max(0, Math.min(1, Math.sqrt((v || 0) / (vmax || 1))));
+    var stops = [[13,17,23],[40,30,60],[140,60,40],[230,150,30],[255,240,190]];
+    var seg = t * (stops.length - 1);
+    var i = Math.floor(seg), f = seg - i;
+    if (i >= stops.length - 1) return 'rgb(' + stops[stops.length-1].join(',') + ')';
+    var a = stops[i], b = stops[i+1];
+    return 'rgb(' + a.map(function(c,k){{return Math.round(c+(b[k]-c)*f)}}).join(',') + ')';
+  }}
+  var _bmMapBuilt = false;
+  function buildBlackMarbleMap() {{
+    if (_bmMapBuilt || !BMMAP || !BMMAP.estados || !BMMAP.estados.length || !BMMAP.years.length) return;
+    var svg = document.getElementById('bmMapSvg');
+    if (!svg) return;
+    _bmMapBuilt = true;
+    svg.setAttribute('viewBox', '0 0 ' + BMMAP.viewbox[0] + ' ' + BMMAP.viewbox[1]);
+    var NS = 'http://www.w3.org/2000/svg';
+    var paths = {{}};
+    BMMAP.estados.forEach(function(e) {{
+      var p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', e.d);
+      p.setAttribute('stroke', '#0d1117');
+      p.setAttribute('stroke-width', '0.8');
+      p.style.cursor = 'pointer';
+      p.addEventListener('mousemove', function() {{
+        var y = BMMAP.years[+document.getElementById('bmMapSlider').value];
+        var v = (BMMAP.radiance[y] || {{}})[e.cod];
+        document.getElementById('bmMapTip').textContent =
+          e.nombre + ' · ' + (v != null ? v.toFixed(3) + ' nW/cm²/sr' : 'sin dato') + ' (' + y + ')';
+      }});
+      svg.appendChild(p);
+      paths[e.cod] = p;
+    }});
+    // gradiente de leyenda
+    var grad = document.getElementById('bmMapGradient');
+    if (grad) {{
+      var css = [];
+      for (var s = 0; s <= 10; s++) css.push(_bmColor(BMMAP.vmax * (s/10)*(s/10), BMMAP.vmax));
+      grad.style.background = 'linear-gradient(90deg,' + css.join(',') + ')';
+    }}
+
+    function render(idx) {{
+      var y = BMMAP.years[idx];
+      var rad = BMMAP.radiance[y] || {{}};
+      BMMAP.estados.forEach(function(e) {{
+        paths[e.cod].setAttribute('fill', _bmColor(rad[e.cod], BMMAP.vmax));
+      }});
+      document.getElementById('bmMapYear').textContent = y;
+      document.getElementById('bmRankYear').textContent = y;
+      var ranked = BMMAP.estados.map(function(e){{return {{n:e.nombre, v:rad[e.cod]}}}})
+                    .filter(function(x){{return x.v!=null}}).sort(function(a,b){{return b.v-a.v}}).slice(0,8);
+      document.getElementById('bmMapRanking').innerHTML = ranked.map(function(x){{
+        var w = Math.max(3, Math.min(100, Math.sqrt(x.v/BMMAP.vmax)*100));
+        return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">' +
+          '<span style="width:96px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
+          '<span style="flex:1;background:#161b22;border-radius:3px"><span style="display:block;height:9px;border-radius:3px;width:'+w+'%;background:'+_bmColor(x.v,BMMAP.vmax)+'"></span></span>' +
+          '<span style="width:38px;text-align:right;color:#8b949e">'+x.v.toFixed(2)+'</span></div>';
+      }}).join('');
+    }}
+
+    var slider = document.getElementById('bmMapSlider');
+    slider.max = BMMAP.years.length - 1;
+    slider.value = BMMAP.years.length - 1;
+    slider.addEventListener('input', function() {{ render(+slider.value); }});
+    render(BMMAP.years.length - 1);
+
+    var playBtn = document.getElementById('bmMapPlay');
+    var timer = null;
+    playBtn.addEventListener('click', function() {{
+      if (timer) {{ clearInterval(timer); timer = null; playBtn.textContent = '▶ Animar'; return; }}
+      playBtn.textContent = '⏸ Pausar';
+      var i = 0;
+      timer = setInterval(function() {{
+        slider.value = i; render(i); i++;
+        if (i >= BMMAP.years.length) {{ clearInterval(timer); timer = null; playBtn.textContent = '▶ Animar'; }}
+      }}, 700);
+    }});
+  }}
+
   // Render on tab activation (lazy)
   if (typeof _tabInits !== 'undefined') {{
     _tabInits['pulse'] = function() {{
@@ -5808,6 +5991,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
       buildPulseComponents();
       buildMirrorTrade();
       buildBlackMarble();
+      buildBlackMarbleMap();
     }};
   }}
 
@@ -5820,6 +6004,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     buildPulseComponents();
     buildMirrorTrade();
     buildBlackMarble();
+    buildBlackMarbleMap();
   }}
 }})();
 
