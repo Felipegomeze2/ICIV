@@ -54,6 +54,9 @@ iciv/.pytest_cache/
 Thumbs.db
 desktop.ini
 
+# ── Caches intermedios (mascaras raster Black Marble, etc.) ──────────
+iciv/data/interim/
+
 # ── Pipeline outputs — generados automáticamente (no commitear) ──────
 # El dashboard HTML SÍ se incluye (es el entregable del proyecto)
 iciv/data/processed/*.csv

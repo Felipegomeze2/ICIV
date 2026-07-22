@@ -16,6 +16,7 @@ dependencies = [
     "scipy>=1.11",
     "vaderSentiment>=3.3",
     "py7zr>=0.20",
+    "h5py>=3.9",
     "matplotlib>=3.7",
 ]
 
