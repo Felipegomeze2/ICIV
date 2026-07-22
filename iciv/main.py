@@ -2838,6 +2838,35 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     Para 2025–2026 sin dato satelital se muestra el último año disponible (indicado en tooltip).
     Mapa visualizado con Leaflet.js (BSD-2). Proyección: WGS84.
   </p>
+
+  <!-- Mapa coroplético mensual NASA Black Marble (2014-2026) -->
+  <div class="section-header" style="margin-top:36px">
+    <span class="section-title">Mapa mensual NASA Black Marble (2014–2026)</span>
+    <span class="section-sub">Radiancia nocturna por estado del producto satelital VNP46A3 · promedio anual · animación del apagón económico y su recuperación parcial</span>
+  </div>
+  <div class="chart-card" style="margin-top:14px">
+    <div class="ct">Actividad nocturna por estado — <span id="bmMapYear">—</span></div>
+    <div class="cs">Radiancia media anual por estado (NASA Black Marble VNP46A3, nW/cm²/sr). Mueve el año o pulsa «Animar» para ver cómo cambia la actividad nocturna en el territorio. Escala fija entre años: un mismo color = misma radiancia en cualquier año. Complementa el mapa anual Li et al. de arriba con datos mensuales más recientes (hasta 2026) y de un producto distinto.</div>
+    <div style="display:flex;align-items:center;gap:14px;margin:14px 0 6px">
+      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;accent-color:#e6a817">
+      <button id="bmMapPlay" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+      <div style="flex:1 1 460px;min-width:300px">
+        <svg id="bmMapSvg" viewBox="0 0 1000 700" style="width:100%;height:auto;background:#0d1117;border-radius:8px"></svg>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)">
+          <span>menos luz</span>
+          <span id="bmMapGradient" style="flex:1;height:12px;border-radius:6px;display:block"></span>
+          <span>más luz</span>
+        </div>
+      </div>
+      <div style="flex:1 1 240px;min-width:220px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Top estados por radiancia (<span id="bmRankYear">—</span>)</div>
+        <div id="bmMapRanking" style="font-size:.75rem;line-height:1.5"></div>
+      </div>
+    </div>
+    <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em"></div>
+  </div>
 </section>
 
 <!-- ===== SECTION 8: LABORATORIO ===== -->
@@ -3370,30 +3399,6 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
   </div>
 
-  <!-- Mapa coroplético subnacional -->
-  <div class="chart-card" style="margin-top:18px">
-    <div class="ct">Mapa de actividad nocturna por estado — <span id="bmMapYear">—</span></div>
-    <div class="cs">Radiancia media anual por estado (NASA Black Marble). Mueve el año para ver cómo cambia la actividad nocturna de Venezuela en el territorio. Escala fija entre años: un mismo color = misma radiancia en cualquier año.</div>
-    <div style="display:flex;align-items:center;gap:14px;margin:14px 0 6px">
-      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;accent-color:#e6a817">
-      <button id="bmMapPlay" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
-      <div style="flex:1 1 460px;min-width:300px">
-        <svg id="bmMapSvg" viewBox="0 0 1000 700" style="width:100%;height:auto;background:#0d1117;border-radius:8px"></svg>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)">
-          <span>menos luz</span>
-          <span id="bmMapGradient" style="flex:1;height:12px;border-radius:6px;display:block"></span>
-          <span>más luz</span>
-        </div>
-      </div>
-      <div style="flex:1 1 240px;min-width:220px">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Top estados por radiancia (<span id="bmRankYear">—</span>)</div>
-        <div id="bmMapRanking" style="font-size:.75rem;line-height:1.5"></div>
-      </div>
-    </div>
-    <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em"></div>
-  </div>
 </section>
 
 <!-- ===== SUB-SECCIÓN: PULSE METODOLOGÍA ===== -->
@@ -4830,14 +4835,18 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
 
   // Initialize map when tab is clicked (compatible con nuevo nav 2 niveles)
+  function initMapTab() {{
+    setTimeout(initMap, 100);
+    setTimeout(function() {{ if (window.__buildBMMap) window.__buildBMMap(); }}, 120);
+  }}
   if (typeof _tabInits !== 'undefined') {{
-    _tabInits['mapa'] = function() {{ setTimeout(initMap, 100); }};
+    _tabInits['mapa'] = initMapTab;
   }}
   // Fallback: escucha clicks en cualquier link que lleve a #mapa
   document.querySelectorAll('[href="#mapa"]').forEach(function(el) {{
-    el.addEventListener('click', function() {{ setTimeout(initMap, 100); }});
+    el.addEventListener('click', initMapTab);
   }});
-  if (window.location.hash === '#mapa') setTimeout(initMap, 200);
+  if (window.location.hash === '#mapa') setTimeout(initMapTab, 200);
 }})();
 
 // ── HISTORIA — sub-tabs Gráfico / Tabla ─────────────────────────────────────
@@ -5981,6 +5990,10 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
+  // El mapa Black Marble vive en la pestaña "Actividad por Estado" (#mapa);
+  // se expone para que ese tab lo construya al activarse.
+  window.__buildBMMap = buildBlackMarbleMap;
+
   // Render on tab activation (lazy)
   if (typeof _tabInits !== 'undefined') {{
     _tabInits['pulse'] = function() {{
@@ -5991,7 +6004,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
       buildPulseComponents();
       buildMirrorTrade();
       buildBlackMarble();
-      buildBlackMarbleMap();
     }};
   }}
 
