@@ -1551,6 +1551,35 @@ def fase_dashboard(
             logger.warning(f"  Pulse components load failed: {_pe}")
     pulse_components_json = json.dumps(_pulse_comp_payload, ensure_ascii=False)
 
+    # Comercio espejo multi-socio (IMTS EEUU + Comtrade 5 socios) — capa contextual
+    _mirror_payload: dict = {"meses": [], "imts_imp": [], "imts_exp": [], "ct_imp": [], "ct_exp": []}
+    try:
+        def _mirror_series(path: Path, var: str) -> dict:
+            _df = pd.read_csv(path)
+            _df = _df[_df["variable"] == var]
+            return {
+                f"{int(r['año'])}-{int(r['mes']):02d}": round(float(r["valor"]), 1)
+                for _, r in _df.iterrows()
+            }
+        _mirror_sources = {}
+        _imts_path = settings.paths.data_raw / "imts_monthly.csv"
+        _ct_path   = settings.paths.data_raw / "comtrade_monthly.csv"
+        if _imts_path.exists():
+            _mirror_sources["imts_imp"] = _mirror_series(_imts_path, "importaciones_espejo_usa_musd")
+            _mirror_sources["imts_exp"] = _mirror_series(_imts_path, "exportaciones_espejo_usa_musd")
+        if _ct_path.exists():
+            _mirror_sources["ct_imp"] = _mirror_series(_ct_path, "importaciones_espejo_socios_musd")
+            _mirror_sources["ct_exp"] = _mirror_series(_ct_path, "exportaciones_espejo_socios_musd")
+        if _mirror_sources:
+            _mm = sorted(set().union(*[set(s) for s in _mirror_sources.values()]))
+            _mirror_payload["meses"] = _mm
+            for _k in ("imts_imp", "imts_exp", "ct_imp", "ct_exp"):
+                _s = _mirror_sources.get(_k, {})
+                _mirror_payload[_k] = [_s.get(m) for m in _mm]
+    except Exception as _me:
+        logger.warning(f"  Mirror trade payload failed: {_me}")
+    mirror_trade_json = json.dumps(_mirror_payload, ensure_ascii=False)
+
     # ── ML Forecast (SARIMA + Nowcast) ────────────────────────────────────────
     _ml_payload = ml_forecast or {}
     ml_forecast_json = json.dumps(_ml_payload, cls=_NumpyEncoder, ensure_ascii=False)
@@ -3194,6 +3223,36 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="card" style="margin-top:18px">
     <div class="ct">Pesos renormalizados del Pulse (suman 100 %)</div>
     <div id="pulseWeightsTable" style="margin-top:10px"></div>
+  </div>
+
+  <!-- Comercio espejo multi-socio (capa contextual, no entra al score) -->
+  <div class="section-header" style="margin-top:32px">
+    <span class="section-title">Comercio espejo multi-socio</span>
+    <span class="section-sub">Lo que las aduanas de los socios reportan comerciar con Venezuela · IMF IMTS (EEUU) y UN Comtrade (España, Brasil, India, Türkiye, China) · capa contextual — no entra al score</span>
+  </div>
+
+  <div class="chart-card">
+    <div class="ct">Importaciones venezolanas según los socios (millones USD/mes)</div>
+    <div class="cs">Exportaciones de cada bloque de socios hacia Venezuela = proxy de demanda interna. Los últimos ~3 meses de Comtrade son parciales: no todos los socios han reportado aún.</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="cMirrorImports"></canvas></div>
+  </div>
+
+  <div class="chart-card" style="margin-top:18px">
+    <div class="ct">Exportaciones venezolanas según los socios (millones USD/mes)</div>
+    <div class="cs">Compras de los socios a Venezuela (mayormente crudo). La serie EEUU muestra el cese de 2019 (sanciones) y la reanudación desde 2023 (licencias OFAC). Últimos meses de Comtrade parciales.</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="cMirrorExports"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
+    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">Mirror statistics:</strong>
+      Venezuela dejó de publicar comercio exterior confiable, pero sus socios sí reportan el suyo.
+      Estas series provienen exclusivamente de las aduanas de los socios (vía IMF IMTS y UN Comtrade),
+      por lo que son observaciones reales de actividad económica no manipulables desde Venezuela.
+      Es práctica estándar (mirror statistics) cuando un país deja de reportar. Esta capa es contextual:
+      el Pulse solo usa el flujo EEUU (IMF IMTS); la serie Comtrade multi-socio sirve de validación
+      cruzada y contexto, y no entra al score.
+    </div>
   </div>
 </section>
 
@@ -5380,6 +5439,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
 (function() {{
   var PULSE = {pulse_json};
   var PCOMP = {pulse_components_json};
+  var MIRROR = {mirror_trade_json};
   if (!PULSE || !PULSE.data || !PULSE.data.scores || !PULSE.data.scores.length) return;
 
   var D = PULSE.data;
@@ -5606,13 +5666,60 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
+  // Comercio espejo multi-socio — dos charts (importaciones / exportaciones)
+  function buildMirrorTrade() {{
+    if (!MIRROR || !MIRROR.meses || !MIRROR.meses.length) return;
+    var configs = [
+      {{ id: 'cMirrorImports', usa: MIRROR.imts_imp, socios: MIRROR.ct_imp }},
+      {{ id: 'cMirrorExports', usa: MIRROR.imts_exp, socios: MIRROR.ct_exp }},
+    ];
+    configs.forEach(function(cfg) {{
+      var ctx = document.getElementById(cfg.id);
+      if (!ctx) return;
+      if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
+      new Chart(ctx, {{
+        type: 'line',
+        data: {{
+          labels: MIRROR.meses,
+          datasets: [
+            {{
+              label: 'EEUU (IMF IMTS)',
+              data: cfg.usa,
+              borderColor: '#3498db', backgroundColor: 'transparent',
+              borderWidth: 1.8, pointRadius: 0, tension: 0.2, spanGaps: false,
+            }},
+            {{
+              label: '5 socios: ESP+BRA+IND+TUR+CHN (Comtrade)',
+              data: cfg.socios,
+              borderColor: '#00d4aa', backgroundColor: 'transparent',
+              borderWidth: 1.8, pointRadius: 0, tension: 0.2, spanGaps: false,
+            }},
+          ]
+        }},
+        options: {{
+          responsive: true, maintainAspectRatio: false,
+          interaction: {{ mode: 'index', intersect: false }},
+          plugins: {{ legend: {{ position: 'top', labels: {{color:'#8b949e'}} }} }},
+          scales: {{
+            x: {{ ticks: {{color:'#8b949e', maxTicksLimit:14}}, grid: {{color:'#21262d'}} }},
+            y: {{ beginAtZero: true, ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}},
+                 title: {{display:true, text:'millones USD/mes', color:'#8b949e', font:{{size:10}}}} }},
+          }}
+        }}
+      }});
+    }});
+  }}
+
   // Render on tab activation (lazy)
   if (typeof _tabInits !== 'undefined') {{
     _tabInits['pulse'] = function() {{
       buildPulseChart();
       buildPulseVsAnnual();
     }};
-    _tabInits['pulse-componentes'] = buildPulseComponents;
+    _tabInits['pulse-componentes'] = function() {{
+      buildPulseComponents();
+      buildMirrorTrade();
+    }};
   }}
 
   // Also try to build immediately if already on this tab
@@ -5622,6 +5729,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
   if (window.location.hash === '#pulse-componentes') {{
     buildPulseComponents();
+    buildMirrorTrade();
   }}
 }})();
 
