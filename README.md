@@ -121,8 +121,20 @@ manifest con hashes y copias de los CSV publicos.
    estan moviendo antes de que lleguen las fuentes anuales.
 3. SATV no es un segundo indice: traduce el Pulse en alertas de cobertura,
    nivel y tendencia reciente.
-4. El mapa satelital no es decoracion: muestra la evidencia subnacional de
-   actividad nocturna que complementa la dimension energetica y la historia.
+4. El mapa satelital no es decoracion: un coropletico animado de los 25 estados
+   con la luminosidad nocturna mensual de NASA Black Marble (VNP46A3, 2014-2026)
+   muestra la evidencia subnacional de actividad — el apagon economico y su
+   recuperacion parcial vistos desde el espacio, imposibles de manipular desde
+   Venezuela. Complementa la dimension energetica y la historia.
+
+## Capas auxiliares contextuales
+
+Ademas del score y el Pulse, el proyecto mantiene capas contextuales que NO
+entran al score: comercio espejo multi-socio (IMF IMTS + UN Comtrade, lo que
+las aduanas de los socios reportan comerciar con Venezuela), eventos de
+conflicto ACLED, y la serie mensual/subnacional de Black Marble. Se documentan
+en [docs/FUENTES_Y_VARIABLES.md](./docs/FUENTES_Y_VARIABLES.md) y sirven de
+validacion cruzada y contexto, no de insumo del indice.
 
 ## Nota de interpretacion
 

@@ -1,0 +1,6 @@
+﻿agregacion,variable,n_años,pearson_r,pearson_p,spearman_rho,spearman_p
+Media aritmetica,luminosidad_nocturna_mensual_nwcm2sr,11,0.6489,0.0308,0.6727,0.0233
+Fraccion iluminada (%),luminosidad_nocturna_frac_iluminada,11,0.3967,0.227,0.2818,0.4011
+Log-media (geometrica),luminosidad_nocturna_logmedia,11,0.1744,0.608,0.1727,0.6115
+Percentil 90,luminosidad_nocturna_p90,11,0.0002,0.9996,-0.0211,0.951
+Mediana,luminosidad_nocturna_mediana,11,,,,

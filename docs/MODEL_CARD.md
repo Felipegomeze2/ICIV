@@ -110,6 +110,27 @@ SATV es una capa de monitoreo y comunicacion. Sus umbrales deben revisarse con
 backtesting formal si se quiere convertir en sistema operativo de alertas para
 usuarios externos.
 
+## Capas auxiliares / contextuales
+
+Ademas del score anual y el Pulse, el proyecto mantiene capas contextuales que
+**no entran al score ni al Pulse**. Sirven para validacion cruzada, contexto y
+diferenciacion frente a jurado:
+
+- **Comercio espejo multi-socio** (IMF IMTS reportado por EEUU + UN Comtrade con
+  Espana, Brasil, India, Turkiye y China): actividad comercial real observada
+  desde las aduanas de los socios, sin fuentes venezolanas. Los ultimos ~3 meses
+  de Comtrade son parciales (no todos los socios reportaron aun).
+- **ACLED**: eventos mensuales de conflicto y protesta desde 2018. El tier de
+  cuenta actual entrega los datos con ~12 meses de rezago, por lo que es contexto
+  historico, no alerta en tiempo real.
+- **NASA Black Marble mensual y subnacional** (VNP46A3, 2014-2026): radiancia
+  nocturna nacional (5 agregaciones) y por los 25 estados; alimenta el mapa
+  coropletico animado. Validacion honesta vs la serie anual Li et al.: la media
+  aritmetica es la que mejor correlaciona (Pearson r=+0.65, p=0.03); las
+  variantes robustas al flaring (mediana, log-media, p90) no mejoran — capturan
+  una senal distinta, no una mejor. Por eso no se agrega al Pulse: la media ya
+  esta representada por la luminosidad anual en la dimension energetica.
+
 ## IED
 
 La IED neta se aparta del score anual. Su rol actual es outcome externo:

@@ -66,6 +66,9 @@ iciv/data/processed/_test_script.js
 !iciv/data/processed/iciv_dataset_wide.csv
 !iciv/data/processed/pulse_forecast_backtest.csv
 !iciv/data/processed/pulse_forecast_backtest_summary.csv
+!iciv/data/processed/blackmarble_validation.csv
+!iciv/data/processed/external_validation.csv
+!iciv/data/processed/external_validation_summary.csv
 
 # ── Archivos grandes / binarios ───────────────────────────────────────
 *.zip

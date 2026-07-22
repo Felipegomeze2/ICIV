@@ -1,0 +1,5 @@
+test,descripcion,hipotesis,metodo,n,pearson_r,pearson_p,spearman_rho,spearman_p,years,veredicto
+ICIV_loo_vs_migracion_UNHCR,ICIV sin migrantes vs stock migrantes UNHCR (millones),negativa,leave-one-out,26,-0.8987,0.0,-0.7119,5e-05,2000-2025,confirmada (p<0.05)
+ICIV_loo_vs_luminosidad_2000_2024,"ICIV sin luminosidad vs luminosidad nocturna (periodo completo, confundido por transición de sensor DMSP a VIIRS)",no interpretable,leave-one-out (descartado: artefacto de sensor),25,-0.4711,0.01744,-0.6415,0.00055,2000-2024,no interpretable (artefacto de sensor documentado)
+ICIV_loo_vs_luminosidad_era_VIIRS,"ICIV sin luminosidad vs luminosidad nocturna, solo era VIIRS 2014-2024 (sensor homogéneo)",positiva,leave-one-out,11,0.8412,0.00117,0.8091,0.00256,2014-2024,confirmada (p<0.05)
+ICIV_vs_IED_neta,ICIV completo vs IED neta USD (outcome externo al score),positiva,outcome externo (exploratorio),25,0.3867,0.05621,0.4146,0.03933,2000-2024,"signo correcto, no significativa"
