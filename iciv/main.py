@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
+import re
 import sys
 import time
 import webbrowser
@@ -1612,15 +1614,24 @@ def fase_dashboard(
         logger.warning(f"  Black Marble payload failed: {_be}")
     blackmarble_json = json.dumps(_bm_payload, ensure_ascii=False)
 
-    # Mapa coroplético subnacional Black Marble (radiancia por estado y año)
-    _bmmap: dict = {"viewbox": [1000, 700], "estados": [], "years": [], "radiance": {}, "vmax": 1.0}
+    # Mapa coroplético subnacional Black Marble — radiancia por estado, anual y mensual
+    _bmmap: dict = {
+        "viewbox": [1000, 700], "estados": [],
+        "years": [], "radiance": {},          # promedio anual por estado
+        "months": [], "radiance_m": {},       # valor mensual por estado
+        "vmin": 0.01, "vmax": 1.0,
+    }
     try:
         _st_path = settings.paths.data_raw / "blackmarble_states_monthly.csv"
         _geojson_bm = settings.paths.data_raw / "venezuela_states.geojson"
         if _st_path.exists() and _geojson_bm.exists():
             _gj = json.loads(_geojson_bm.read_text(encoding="utf-8"))
             _feats = _gj.get("features", [])
-            # bbox para proyección equirectangular
+
+            # Encuadre: Venezuela continental + islas principales. Isla de Aves
+            # (15.7 N) queda fuera del encuadre visual porque estiraria el mapa
+            # un 25% por un punto de 4 km2; sus datos siguen en el CSV.
+            _LAT_MAX_VIEW = 12.9
             _lons, _lats = [], []
             for _f in _feats:
                 _g = _f.get("geometry") or {}
@@ -1629,16 +1640,23 @@ def fase_dashboard(
                 for _poly in _polys:
                     for _ring in _poly:
                         for _pt in _ring:
-                            _lons.append(_pt[0]); _lats.append(_pt[1])
+                            if _pt[1] <= _LAT_MAX_VIEW:
+                                _lons.append(_pt[0]); _lats.append(_pt[1])
             _lo0, _lo1, _la0, _la1 = min(_lons), max(_lons), min(_lats), max(_lats)
+            # Proyección equirectangular con corrección de latitud (aspecto real)
+            _cos_lat = math.cos(math.radians((_la0 + _la1) / 2.0))
             _W = 1000.0
-            _H = round(_W * (_la1 - _la0) / (_lo1 - _lo0))
+            _H = round(_W * (_la1 - _la0) / ((_lo1 - _lo0) * _cos_lat))
             _bmmap["viewbox"] = [int(_W), int(_H)]
 
             def _proj(pt):
                 x = (pt[0] - _lo0) / (_lo1 - _lo0) * _W
                 y = (_la1 - pt[1]) / (_la1 - _la0) * _H
                 return f"{x:.1f},{y:.1f}"
+
+            def _pretty(name: str) -> str:
+                # DistritoCapital -> Distrito Capital ; DeltaAmacuro -> Delta Amacuro
+                return re.sub(r"(?<=[a-záéíóú])(?=[A-ZÁÉÍÓÚ])", " ", name)
 
             for _f in _feats:
                 _g = _f.get("geometry") or {}
@@ -1649,24 +1667,41 @@ def fase_dashboard(
                     for _ring in _poly:
                         if len(_ring) < 3:
                             continue
-                        _d.append("M" + "L".join(_proj(p) for p in _ring[::2]) + "Z")
+                        _pts = [p for p in _ring if p[1] <= _LAT_MAX_VIEW + 0.5]
+                        if len(_pts) < 3:
+                            continue
+                        # simplificación suave: conserva forma sin inflar el HTML
+                        _step = 2 if len(_pts) > 400 else 1
+                        _d.append("M" + "L".join(_proj(p) for p in _pts[::_step]) + "Z")
                 _bmmap["estados"].append({
                     "cod": _f["properties"].get("cod", ""),
-                    "nombre": _f["properties"].get("nombre", ""),
+                    "nombre": _pretty(_f["properties"].get("nombre", "")),
                     "d": "".join(_d),
                 })
 
             _st = pd.read_csv(_st_path)
+            # Serie anual (promedio de los meses disponibles de cada año)
             _st_annual = _st.groupby(["año", "cod"])["radiancia_media"].mean().reset_index()
-            _years = sorted(_st_annual["año"].unique())
-            _bmmap["years"] = [int(y) for y in _years]
-            for _y in _years:
+            _bmmap["years"] = [int(y) for y in sorted(_st_annual["año"].unique())]
+            for _y in _bmmap["years"]:
                 _sub = _st_annual[_st_annual["año"] == _y]
-                _bmmap["radiance"][str(int(_y))] = {
+                _bmmap["radiance"][str(_y)] = {
                     r["cod"]: round(float(r["radiancia_media"]), 3) for _, r in _sub.iterrows()
                 }
-            _allvals = _st_annual["radiancia_media"].values
-            _bmmap["vmax"] = round(float(np.percentile(_allvals, 95)), 3) if len(_allvals) else 1.0
+            # Serie mensual
+            _st = _st.sort_values(["año", "mes"])
+            _st["mstr"] = (_st["año"].astype(int).astype(str) + "-"
+                           + _st["mes"].astype(int).astype(str).str.zfill(2))
+            _bmmap["months"] = sorted(_st["mstr"].unique().tolist())
+            for _m, _sub in _st.groupby("mstr"):
+                _bmmap["radiance_m"][_m] = {
+                    r["cod"]: round(float(r["radiancia_media"]), 3) for _, r in _sub.iterrows()
+                }
+            # Escala de color compartida por ambos modos (log): p2 a p98 mensual
+            _allvals = _st["radiancia_media"].values
+            if len(_allvals):
+                _bmmap["vmin"] = max(round(float(np.percentile(_allvals, 2)), 4), 0.001)
+                _bmmap["vmax"] = round(float(np.percentile(_allvals, 98)), 3)
     except Exception as _mpe:
         logger.warning(f"  Black Marble map payload failed: {_mpe}")
     blackmarble_map_json = json.dumps(_bmmap, ensure_ascii=False)
@@ -2795,15 +2830,20 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <!-- ===== SECTION 7: MAPA COROPLÉTICO ===== -->
 <section class="section tab-section" id="mapa">
   <div class="section-header">
-    <span class="section-title">Luminosidad Nocturna por Estado</span>
-    <span class="section-sub">NTL Index (0–100) · Fuente: VIIRS DNB / DMSP-OLS · Stokes &amp; Ghosh (2021)</span>
+    <span class="section-title">Luminosidad Nocturna por Estado — índice relativo</span>
+    <span class="section-sub">Serie anual armonizada Li et al. 2000–2024 · % del máximo histórico de cada estado · proxy de actividad económica (Henderson et al., 2012)</span>
   </div>
-  <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">
-    La luminosidad nocturna satelital (Nighttime Lights, NTL) es un proxy
-    establecido de actividad económica subnacional (Henderson et al., 2012).
-    El índice 100 corresponde al máximo histórico de cada estado.
-    Seleccione el año con el control deslizante para observar la evolución geográfica.
-  </p>
+  <div class="alert alert-info" style="margin-bottom:16px">
+    <div class="alert-title">Cómo leer este mapa (y en qué se diferencia del de abajo)</div>
+    <div class="alert-body">
+      Aquí cada estado se compara <strong>consigo mismo</strong>: 100 = su máximo histórico.
+      Sirve para ver <em>cuánto perdió o recuperó cada región</em> frente a su mejor momento, pero
+      <strong>no permite comparar estados entre sí</strong> (Amazonas al 51 % de su máximo sigue
+      siendo mucho más oscuro que Caracas al 100 %). El mapa de NASA Black Marble más abajo usa
+      <strong>radiancia absoluta</strong>, que sí es comparable entre estados. Ambos coinciden en el
+      ordenamiento del territorio (correlación Pearson 0,90 en 2024); miden lo mismo con dos lentes.
+    </div>
+  </div>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
     <label style="font-size:.82rem;color:var(--muted)">Año:</label>
     <input type="range" id="mapaYear" min="{settings.series.start_year}" max="{settings.series.end_year}"
@@ -2825,7 +2865,11 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div style="flex:1;min-width:200px">
       <div style="background:var(--card);border:1px solid var(--border);
         border-radius:10px;padding:16px;margin-bottom:12px">
-        <div style="font-size:.78rem;font-weight:600;margin-bottom:12px">Escala NTL</div>
+        <div style="font-size:.78rem;font-weight:600;margin-bottom:4px">Escala NTL relativa</div>
+        <div style="font-size:.66rem;color:var(--muted);margin-bottom:10px;line-height:1.4">
+          % del máximo histórico <em>de cada estado</em>. Compara un estado consigo mismo
+          en el tiempo, <strong>no</strong> entre estados.
+        </div>
         <div id="mapaLegend" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);
@@ -2850,18 +2894,23 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
   <div class="chart-card" style="margin-top:14px">
     <div class="ct">Actividad nocturna por estado — <span id="bmMapYear">—</span></div>
-    <div class="cs">Radiancia media anual por estado (NASA Black Marble VNP46A3, nW/cm²/sr). Mueve el año o pulsa «Animar» para ver cómo cambia la actividad nocturna en el territorio. Escala fija entre años: un mismo color = misma radiancia en cualquier año. Complementa el mapa anual Li et al. de arriba con datos mensuales más recientes (hasta 2026) y de un producto distinto.</div>
-    <div style="display:flex;align-items:center;gap:14px;margin:14px 0 6px">
-      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;accent-color:#e6a817">
-      <button id="bmMapPlay" style="background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
+    <div class="cs">Radiancia por estado (NASA Black Marble VNP46A3, nW/cm²/sr). Elige vista <strong>anual</strong> (promedio del año, menos ruido) o <strong>mensual</strong> (149 meses, ciclos intra-año). Escala logarítmica fija en ambas vistas: un mismo color = misma radiancia siempre. La escala es logarítmica porque Caracas concentra ~46 nW/cm²/sr frente a &lt;1 en los estados del sur; en escala lineal el resto del país se vería uniformemente negro.</div>
+    <div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;flex-wrap:wrap">
+      <div style="display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden">
+        <button id="bmModeYear" style="background:var(--accent);color:#0d1117;border:0;padding:6px 14px;cursor:pointer;font-size:.78rem;font-weight:600">Anual</button>
+        <button id="bmModeMonth" style="background:var(--card);color:var(--text);border:0;padding:6px 14px;cursor:pointer;font-size:.78rem">Mensual</button>
+      </div>
+      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;min-width:180px;accent-color:#e6a817">
+      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
-      <div style="flex:1 1 460px;min-width:300px">
-        <svg id="bmMapSvg" viewBox="0 0 1000 700" style="width:100%;height:auto;background:#0d1117;border-radius:8px"></svg>
+      <div style="flex:2 1 440px;min-width:300px">
+        <svg id="bmMapSvg" viewBox="0 0 1000 880" preserveAspectRatio="xMidYMid meet"
+             style="width:100%;max-height:460px;height:auto;display:block;background:#0d1117;border-radius:8px"></svg>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)">
-          <span>menos luz</span>
+          <span id="bmLegMin">—</span>
           <span id="bmMapGradient" style="flex:1;height:12px;border-radius:6px;display:block"></span>
-          <span>más luz</span>
+          <span id="bmLegMax">—</span>
         </div>
       </div>
       <div style="flex:1 1 240px;min-width:220px">
@@ -2870,6 +2919,11 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       </div>
     </div>
     <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em"></div>
+    <div style="font-size:.68rem;color:var(--muted);margin-top:8px;opacity:.8">
+      Encuadre: Venezuela continental e islas principales. Isla de Aves (15.7°N) queda fuera del marco visual
+      pero sus datos están en la serie. Radiancia media de los píxeles de cada estado, sin corregir por
+      flaring de gas (Monagas y Anzoátegui incluyen quema petrolera del Orinoco).
+    </div>
   </div>
 </section>
 
@@ -4753,7 +4807,9 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   function buildLegend() {{
     const el = document.getElementById('mapaLegend');
     if (!el) return;
-    const steps = [[0,'< 10','Apagado'],[ 30,'30–50','Bajo'],[50,'50–70','Moderado'],[70,'70–90','Alto'],[90,'> 90','Máximo']];
+    // El indice esta normalizado POR ESTADO (100 = maximo historico de ese
+    // estado), asi que la leyenda describe posicion temporal, no brillo absoluto.
+    const steps = [[0,'< 10 %','Colapso vs su máximo'],[30,'30–50 %','Muy por debajo'],[50,'50–70 %','Por debajo'],[70,'70–90 %','Cerca de su máximo'],[90,'> 90 %','En su máximo histórico']];
     el.innerHTML = steps.map(([v,label,desc]) =>
       `<div style="display:flex;align-items:center;gap:8px">
         <div style="width:18px;height:18px;background:${{ntlColor(v+1)}};border-radius:3px;border:1px solid #555"></div>
@@ -5913,11 +5969,15 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
-  // Mapa coroplético subnacional Black Marble — SVG + slider de año + animación
-  function _bmColor(v, vmax) {{
-    // escala secuencial tipo "luces nocturnas": negro-azulado → ámbar → blanco
-    var t = Math.max(0, Math.min(1, Math.sqrt((v || 0) / (vmax || 1))));
-    var stops = [[13,17,23],[40,30,60],[140,60,40],[230,150,30],[255,240,190]];
+  // Mapa coroplético subnacional Black Marble — SVG, escala log, modo anual/mensual
+  // Escala LOGARITMICA: la radiancia va de ~0.005 (selva) a ~46 (Caracas). En
+  // escala lineal el 90% del pais se veria negro; en log se distingue el relieve.
+  function _bmColor(v) {{
+    var vmin = BMMAP.vmin || 0.01, vmax = BMMAP.vmax || 1;
+    if (v == null || !isFinite(v)) return '#161b22';
+    var lv = Math.log(Math.max(v, vmin)), l0 = Math.log(vmin), l1 = Math.log(vmax);
+    var t = Math.max(0, Math.min(1, (lv - l0) / (l1 - l0 || 1)));
+    var stops = [[10,14,24],[45,32,72],[122,52,80],[200,94,52],[240,168,44],[255,243,205]];
     var seg = t * (stops.length - 1);
     var i = Math.floor(seg), f = seg - i;
     if (i >= stops.length - 1) return 'rgb(' + stops[stops.length-1].join(',') + ')';
@@ -5933,6 +5993,10 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     svg.setAttribute('viewBox', '0 0 ' + BMMAP.viewbox[0] + ' ' + BMMAP.viewbox[1]);
     var NS = 'http://www.w3.org/2000/svg';
     var paths = {{}};
+    var mode = 'year';   // 'year' | 'month'
+    function keys() {{ return mode === 'year' ? BMMAP.years.map(String) : BMMAP.months; }}
+    function dataFor(k) {{ return (mode === 'year' ? BMMAP.radiance[k] : BMMAP.radiance_m[k]) || {{}}; }}
+
     BMMAP.estados.forEach(function(e) {{
       var p = document.createElementNS(NS, 'path');
       p.setAttribute('d', e.d);
@@ -5940,57 +6004,89 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
       p.setAttribute('stroke-width', '0.8');
       p.style.cursor = 'pointer';
       p.addEventListener('mousemove', function() {{
-        var y = BMMAP.years[+document.getElementById('bmMapSlider').value];
-        var v = (BMMAP.radiance[y] || {{}})[e.cod];
+        var k = keys()[+document.getElementById('bmMapSlider').value];
+        var v = dataFor(k)[e.cod];
         document.getElementById('bmMapTip').textContent =
-          e.nombre + ' · ' + (v != null ? v.toFixed(3) + ' nW/cm²/sr' : 'sin dato') + ' (' + y + ')';
+          e.nombre + ' · ' + (v != null ? v.toFixed(3) + ' nW/cm²/sr' : 'sin dato') + ' (' + k + ')';
+      }});
+      p.addEventListener('mouseleave', function() {{
+        document.getElementById('bmMapTip').textContent = '';
       }});
       svg.appendChild(p);
       paths[e.cod] = p;
     }});
-    // gradiente de leyenda
+
+    // leyenda: gradiente log + etiquetas numéricas reales
     var grad = document.getElementById('bmMapGradient');
     if (grad) {{
       var css = [];
-      for (var s = 0; s <= 10; s++) css.push(_bmColor(BMMAP.vmax * (s/10)*(s/10), BMMAP.vmax));
+      var l0 = Math.log(BMMAP.vmin), l1 = Math.log(BMMAP.vmax);
+      for (var s = 0; s <= 12; s++) css.push(_bmColor(Math.exp(l0 + (l1-l0)*s/12)));
       grad.style.background = 'linear-gradient(90deg,' + css.join(',') + ')';
+      document.getElementById('bmLegMin').textContent = BMMAP.vmin.toFixed(2);
+      document.getElementById('bmLegMax').textContent = BMMAP.vmax.toFixed(1) + ' nW/cm²/sr';
     }}
 
     function render(idx) {{
-      var y = BMMAP.years[idx];
-      var rad = BMMAP.radiance[y] || {{}};
+      var ks = keys();
+      idx = Math.max(0, Math.min(ks.length - 1, idx));
+      var k = ks[idx];
+      var rad = dataFor(k);
       BMMAP.estados.forEach(function(e) {{
-        paths[e.cod].setAttribute('fill', _bmColor(rad[e.cod], BMMAP.vmax));
+        paths[e.cod].setAttribute('fill', _bmColor(rad[e.cod]));
       }});
-      document.getElementById('bmMapYear').textContent = y;
-      document.getElementById('bmRankYear').textContent = y;
+      document.getElementById('bmMapYear').textContent = k;
+      document.getElementById('bmRankYear').textContent = k;
       var ranked = BMMAP.estados.map(function(e){{return {{n:e.nombre, v:rad[e.cod]}}}})
                     .filter(function(x){{return x.v!=null}}).sort(function(a,b){{return b.v-a.v}}).slice(0,8);
+      var l0 = Math.log(BMMAP.vmin), l1 = Math.log(BMMAP.vmax);
       document.getElementById('bmMapRanking').innerHTML = ranked.map(function(x){{
-        var w = Math.max(3, Math.min(100, Math.sqrt(x.v/BMMAP.vmax)*100));
+        var t = (Math.log(Math.max(x.v, BMMAP.vmin)) - l0) / (l1 - l0 || 1);
+        var w = Math.max(4, Math.min(100, t * 100));
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">' +
-          '<span style="width:96px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
-          '<span style="flex:1;background:#161b22;border-radius:3px"><span style="display:block;height:9px;border-radius:3px;width:'+w+'%;background:'+_bmColor(x.v,BMMAP.vmax)+'"></span></span>' +
-          '<span style="width:38px;text-align:right;color:#8b949e">'+x.v.toFixed(2)+'</span></div>';
+          '<span style="width:104px;color:#c9d1d9;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
+          '<span style="flex:1;background:#161b22;border-radius:3px"><span style="display:block;height:9px;border-radius:3px;width:'+w+'%;background:'+_bmColor(x.v)+'"></span></span>' +
+          '<span style="width:42px;text-align:right;color:#8b949e;font-size:.72rem">'+x.v.toFixed(2)+'</span></div>';
       }}).join('');
     }}
 
     var slider = document.getElementById('bmMapSlider');
-    slider.max = BMMAP.years.length - 1;
-    slider.value = BMMAP.years.length - 1;
-    slider.addEventListener('input', function() {{ render(+slider.value); }});
-    render(BMMAP.years.length - 1);
-
     var playBtn = document.getElementById('bmMapPlay');
     var timer = null;
+    function stopAnim() {{
+      if (timer) {{ clearInterval(timer); timer = null; playBtn.textContent = '▶ Animar'; }}
+    }}
+    function setMode(m) {{
+      stopAnim();
+      mode = m;
+      var ks = keys();
+      slider.max = ks.length - 1;
+      slider.value = ks.length - 1;
+      var bY = document.getElementById('bmModeYear'), bM = document.getElementById('bmModeMonth');
+      var on = 'var(--accent)', onTxt = '#0d1117', off = 'var(--card)', offTxt = 'var(--text)';
+      bY.style.background = m === 'year' ? on : off;
+      bY.style.color      = m === 'year' ? onTxt : offTxt;
+      bY.style.fontWeight = m === 'year' ? '600' : '400';
+      bM.style.background = m === 'month' ? on : off;
+      bM.style.color      = m === 'month' ? onTxt : offTxt;
+      bM.style.fontWeight = m === 'month' ? '600' : '400';
+      render(ks.length - 1);
+    }}
+    slider.addEventListener('input', function() {{ stopAnim(); render(+slider.value); }});
+    document.getElementById('bmModeYear').addEventListener('click', function() {{ setMode('year'); }});
+    document.getElementById('bmModeMonth').addEventListener('click', function() {{ setMode('month'); }});
+    setMode('year');
+
     playBtn.addEventListener('click', function() {{
-      if (timer) {{ clearInterval(timer); timer = null; playBtn.textContent = '▶ Animar'; return; }}
+      if (timer) {{ stopAnim(); return; }}
       playBtn.textContent = '⏸ Pausar';
+      var ks = keys();
       var i = 0;
+      var step = mode === 'month' ? 180 : 700;   // mensual más rápido: 149 cuadros
       timer = setInterval(function() {{
         slider.value = i; render(i); i++;
-        if (i >= BMMAP.years.length) {{ clearInterval(timer); timer = null; playBtn.textContent = '▶ Animar'; }}
-      }}, 700);
+        if (i >= ks.length) stopAnim();
+      }}, step);
     }});
   }}
 

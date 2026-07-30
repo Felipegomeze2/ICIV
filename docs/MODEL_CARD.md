@@ -89,10 +89,29 @@ El score mensual:
 5. No forward-fillea el rezago mensual de EIA; si el dato no llego, baja la
    cobertura del mes.
 
-GDELT es opcional en el control semanal porque su API publica puede aplicar
-rate limits. Si falla, Pulse no fabrica sustituto y la cobertura lo revela. El
-fetch deja un `gdelt_monthly.status.json` para auditar si la falla fue de API,
-red o ausencia de respuesta valida.
+GDELT es opcional en el control semanal porque su API publica aplica rate limit
+por frecuencia de peticiones. Desde 2026-07-29 la serie se descarga en tramos
+anuales acumulativos (ver docs/FUENTES_Y_VARIABLES.md), lo que la llevo de
+vacia a 91 meses (2019-2026). Si un tramo falla, Pulse no fabrica sustituto y
+la cobertura lo revela; el fetch deja un `gdelt_monthly.status.json` con los
+anos logrados y los fallidos.
+
+## Los dos mapas subnacionales
+
+El dashboard muestra dos mapas de luminosidad por estado que **no son
+redundantes ni contradictorios**: miden lo mismo con lentes distintos.
+
+| Mapa | Metrica | Comparabilidad | Uso |
+|---|---|---|---|
+| Li et al. anual (Leaflet, 2000-2024) | % del maximo historico **de cada estado** | temporal, intra-estado | cuanto perdio o recupero cada region frente a su mejor momento |
+| NASA Black Marble (SVG, 2014-2026) | radiancia absoluta nW/cm2/sr | entre estados y en el tiempo | que regiones concentran la actividad nocturna del pais |
+
+Concuerdan en el ordenamiento del territorio (Pearson 0.90 en 2024: Distrito
+Capital primero, estados del sur al fondo). La normalizacion por estado del
+primero explica por que su paleta se ve mas uniforme; se documenta en la propia
+leyenda para no inducir a leerlo como brillo absoluto. El mapa Black Marble usa
+escala **logaritmica** porque la radiancia va de ~0.005 (selva) a ~46 (Caracas)
+y en escala lineal el 90% del pais se veria negro.
 
 ## SATV Pulse
 

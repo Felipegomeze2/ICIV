@@ -65,8 +65,9 @@ jobs:
           # Guardian — requiere GUARDIAN_API_KEY en secrets
           python scripts/fetch_guardian.py          || echo "WARN: fetch_guardian falló (continuando)"
           python scripts/fetch_guardian_monthly.py  || echo "WARN: fetch_guardian_monthly falló (continuando)"
-          # GDELT DOC — público, puede rate-limit; el quality gate lo marca como opcional
-          python scripts/fetch_gdelt_monthly.py     || echo "WARN: fetch_gdelt_monthly falló (continuando)"
+          # GDELT DOC — público, rate-limita por frecuencia: se pide por tramos anuales
+          # (4 por corrida) y la serie se acumula semana a semana. Gate lo marca opcional.
+          python scripts/fetch_gdelt_monthly.py --years 4 || echo "WARN: fetch_gdelt_monthly falló (continuando)"
           # IMF IMTS — comercio espejo EEUU-VEN (mirror statistics, sin origen venezolano)
           python scripts/fetch_imts_monthly.py      || echo "WARN: fetch_imts_monthly falló (continuando)"
           # World Bank Pink Sheet — crudo Dubai mensual

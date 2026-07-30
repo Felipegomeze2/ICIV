@@ -164,21 +164,28 @@ relleno.
 
 ## GDELT
 
-GDELT DOC API se conserva como fuente opcional de percepcion mensual. Como su API
-publica puede rate-limit o devolver respuestas no JSON, el fetch escribe un
-archivo de estado:
+GDELT DOC API alimenta dos variables de percepcion mensual del Pulse. Su API
+publica aplica rate limit (HTTP 429) por **frecuencia** de peticiones, no por
+tamano de ventana: se verifico el 2026-07-29 que una ventana de 3 meses pasaba
+mientras otra de 1 mes fallaba segundos antes.
 
-```text
-iciv/data/raw/gdelt_monthly.status.json
-```
+Estrategia vigente (2026-07-29), tras estar vacio varias semanas:
 
-Politica vigente:
-
-- Si GDELT entrega filas reales, se actualiza `gdelt_monthly.csv`.
-- Si falla y existe una serie previa no vacia, se preserva la serie previa y se
-  registra la advertencia.
-- Si falla y no existe serie real previa, el CSV queda vacio.
+- La serie se pide en **tramos anuales** en vez de un unico rango de 11 anos.
+- `--years N` limita los tramos por corrida; el workflow semanal usa 4.
+- Cada tramo reintenta con backoff (10s, 30s, 60s).
+- Los anos ya completos (12 meses y 2 variables) no se vuelven a pedir; el ano
+  en curso siempre se refresca.
+- Lo descargado se **acumula** sobre el CSV previo: una corrida parcial mejora
+  la cobertura sin borrar lo obtenido antes.
 - Nunca se crea fallback sintetico para simular cobertura.
+
+El fetch escribe `iciv/data/raw/gdelt_monthly.status.json` con los anos
+logrados y los tramos que fallaron, para auditar la cobertura real.
+
+Resultado: la serie paso de 0 a **91 meses (2019-2026)** y la cobertura del
+Pulse subio de 43.5% a 57% en el mes en curso, alcanzando **100% con las 15
+variables** en los meses ya publicados por todas las fuentes.
 
 ## Fuentes candidatas para subir coverage o valor
 
