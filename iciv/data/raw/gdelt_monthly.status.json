@@ -1,13 +1,12 @@
 {
   "ok": false,
-  "message": "tramos nuevos [2026, 2022, 2021, 2020, 2019]; total 91 meses; fallaron ['2020/timelinetone', '2019/timelinevolraw']",
-  "rows": 158,
-  "updated_at_utc": "2026-07-30T02:27:48.340841+00:00",
+  "message": "tramos nuevos [2026, 2018]; total 103 meses; fallaron ['2020/timelinetone', '2020/timelinevolraw', '2019/timelinetone', '2019/timelinevolraw', '2018/timelinevolraw']",
+  "rows": 170,
+  "updated_at_utc": "2026-07-30T03:23:55.060504+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; yearly chunks accumulate across runs.",
   "years_complete": [
-    2019,
-    2020,
+    2018,
     2021,
     2022,
     2023,
@@ -17,7 +16,10 @@
   ],
   "failed": [
     "2020/timelinetone",
-    "2019/timelinevolraw"
+    "2020/timelinevolraw",
+    "2019/timelinetone",
+    "2019/timelinevolraw",
+    "2018/timelinevolraw"
   ],
-  "months": 91
+  "months": 103
 }
