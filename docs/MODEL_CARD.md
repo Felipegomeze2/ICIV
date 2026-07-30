@@ -96,22 +96,44 @@ vacia a 91 meses (2019-2026). Si un tramo falla, Pulse no fabrica sustituto y
 la cobertura lo revela; el fetch deja un `gdelt_monthly.status.json` con los
 anos logrados y los fallidos.
 
-## Los dos mapas subnacionales
+## Mapa subnacional: un solo producto (NASA Black Marble)
 
-El dashboard muestra dos mapas de luminosidad por estado que **no son
-redundantes ni contradictorios**: miden lo mismo con lentes distintos.
+El dashboard tiene **un unico mapa por estado**, alimentado por NASA Black
+Marble (VNP46A3): radiancia absoluta en nW/cm2/sr, 25 estados, 149 meses
+(2014-2026), con vistas anual y mensual.
 
-| Mapa | Metrica | Comparabilidad | Uso |
-|---|---|---|---|
-| Li et al. anual (Leaflet, 2000-2024) | % del maximo historico **de cada estado** | temporal, intra-estado | cuanto perdio o recupero cada region frente a su mejor momento |
-| NASA Black Marble (SVG, 2014-2026) | radiancia absoluta nW/cm2/sr | entre estados y en el tiempo | que regiones concentran la actividad nocturna del pais |
+### Por que se retiro el segundo mapa (2026-07-29)
 
-Concuerdan en el ordenamiento del territorio (Pearson 0.90 en 2024: Distrito
-Capital primero, estados del sur al fondo). La normalizacion por estado del
-primero explica por que su paleta se ve mas uniforme; se documenta en la propia
-leyenda para no inducir a leerlo como brillo absoluto. El mapa Black Marble usa
-escala **logaritmica** porque la radiancia va de ~0.005 (selva) a ~46 (Caracas)
-y en escala lineal el 90% del pais se veria negro.
+Hasta esa fecha convivia un mapa de la serie armonizada Li et al. Se retiro
+tras auditar su metodo de extraccion subnacional:
+
+| Criterio | Li et al. subnacional (retirado) | NASA Black Marble (vigente) |
+|---|---|---|
+| Extraccion por estado | **bbox rectangular** | **mascara poligonal exacta** |
+| Sesgo de area | bbox mide en **mediana 2x** el territorio real; 11 de 25 estados >2x; Dependencias Federales 386x | cada pixel se asigna a un solo estado |
+| Doble conteo | **56 pares de estados con bbox solapado** (Bolivar y Amazonas comparten 9 grados cuadrados) | ninguno |
+| Unidad | DN 0-63, sin significado fisico | nW/cm2/sr, radiancia calibrada |
+| Comparabilidad | normalizada por estado (100 = maximo de ese estado): solo temporal | absoluta: entre estados y en el tiempo |
+| Frecuencia y alcance | anual, 2000-2024 | mensual, 2014-2026 |
+
+Ambas series concordaban (Pearson 0.90 en 2024, mismo ordenamiento del
+territorio), por lo que retirar una no elimina informacion: elimina un metodo
+menos preciso y una ambiguedad de lectura. Mantener dos mapas que parecian
+contradecirse restaba credibilidad sin aportar evidencia nueva.
+
+**Lo que NO se retiro:** la serie **nacional** de Li et al. (`viirs.csv`) sigue
+alimentando la variable `luminosidad_nocturna_idx` del score anual, porque
+cubre 2000-2013 (previo a VIIRS) y es la base de la validacion externa
+(r=+0.84 en la era VIIRS). A escala nacional el encuadre es constante en el
+tiempo y no hay comparacion entre estados que distorsionar.
+
+`scripts/fetch_viirs_states.py` y `viirs_states.csv` se conservan en el
+repositorio para auditoria y trazabilidad, pero salieron del pipeline: ya no
+alimentan ninguna vista. Reconstruir el historico 2000-2013 subnacional con la
+misma mascara poligonal queda como mejora futura documentada.
+
+El mapa usa escala **logaritmica** porque la radiancia va de ~0.005 (selva) a
+~46 (Caracas); en escala lineal el 90% del pais se veria negro.
 
 ## SATV Pulse
 
@@ -185,9 +207,11 @@ La portada debe mantener una jerarquia sencilla:
 4. SATV Pulse, noticias y mapa satelital.
 5. Validacion, metodologia y laboratorio.
 
-El mapa satelital encaja en historia/actividad por estado. Da diferenciacion al
-proyecto y permite mostrar heterogeneidad espacial sin convertir el dashboard
-en una galeria separada.
+El mapa satelital vive en la pestana "Actividad por Estado" (bloque Historia).
+Da diferenciacion al proyecto y permite mostrar heterogeneidad espacial sin
+convertir el dashboard en una galeria separada. Es un solo mapa (Black Marble)
+para que la lectura sea inequivoca. Se dibuja en SVG nativo, sin librerias de
+mapas externas, lo que reduce dependencias del entregable.
 
 ## Riesgos metodologicos abiertos
 

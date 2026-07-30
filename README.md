@@ -122,10 +122,12 @@ manifest con hashes y copias de los CSV publicos.
 3. SATV no es un segundo indice: traduce el Pulse en alertas de cobertura,
    nivel y tendencia reciente.
 4. El mapa satelital no es decoracion: un coropletico animado de los 25 estados
-   con la luminosidad nocturna mensual de NASA Black Marble (VNP46A3, 2014-2026)
-   muestra la evidencia subnacional de actividad — el apagon economico y su
-   recuperacion parcial vistos desde el espacio, imposibles de manipular desde
-   Venezuela. Complementa la dimension energetica y la historia.
+   con la luminosidad nocturna de NASA Black Marble (VNP46A3, 149 meses
+   2014-2026, vistas anual y mensual) muestra la evidencia subnacional de
+   actividad — el apagon economico y su recuperacion parcial vistos desde el
+   espacio, imposibles de manipular desde Venezuela. Usa radiancia absoluta
+   (nW/cm2/sr) con mascara poligonal exacta por estado, en escala logaritmica.
+   Complementa la dimension energetica y la historia.
 
 ## Capas auxiliares contextuales
 

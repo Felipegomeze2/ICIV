@@ -96,6 +96,7 @@ historia mensual real y reproducible.
 | `ghi_score` | apartada | cobertura y periodicidad mas debiles que salud/HDI |
 | `fao_calorias_per_capita` | apartada | solape social y menor foco inversion |
 | `google_trends_vzla` | apartada | rate limits y cobertura inestable |
+| `viirs_states.csv` (Li et al. por estado) | apartada 2026-07-29 | extraia por **bbox rectangular**: mediana 2x el area real del estado, 11 de 25 estados >2x, 56 pares de bboxes solapados (doble conteo de pixeles). El mapa subnacional usa ahora Black Marble con mascara poligonal exacta. Script y CSV se conservan para auditoria; fuera del pipeline. La serie **nacional** `viirs.csv` sigue en el score |
 
 Apartar no significa borrar el fetch inmediatamente. Una fuente puede quedar
 en el repositorio como evidencia auxiliar o backlog mientras no entre al score

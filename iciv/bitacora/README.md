@@ -1,6 +1,6 @@
 # Bitacora tecnica vigente
 
-Fecha de corte: 2026-07-21.
+Fecha de corte: 2026-07-29.
 
 La bitacora tecnica resume el estado actual del codigo. Las notas antiguas que
 describian versiones con sanciones externas en el core, busquedas web en percepcion, escenarios
@@ -10,6 +10,9 @@ optimista/pesimista/neutro o fuentes descartadas fueron eliminadas.
 
 - `main.py`: orquesta fetch opcional, pipeline, score anual, Pulse mensual,
   SATV mensual, correlacion ICIV-IED, radar sectorial, forecast Pulse y dashboard.
+  El mapa por estado es unico (NASA Black Marble, SVG nativo); el mapa Leaflet
+  de Li et al. por bbox se retiro el 2026-07-29 (ver docs/MODEL_CARD.md) junto
+  con sus dependencias CDN.
 - `src/iciv/index/dimensions.py`: fuente de verdad del core anual, 26 variables.
 - `src/iciv/index/pulse_aggregator.py`: fuente de verdad del Pulse mensual,
   15 variables (ampliado 2026-07 con IMF IMTS, WB Pink Sheet e ICE BofA/FRED).

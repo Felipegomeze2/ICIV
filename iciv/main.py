@@ -104,7 +104,9 @@ def fase_fetch(settings: Settings) -> None:
         ("UNHCR/R4V -- Migración venezolana",     "scripts.fetch_unhcr",         "build_unhcr"),
         ("VIIRS/DMSP   -- Luminosidad nocturna",  "scripts.fetch_viirs",         "build_viirs"),
         ("UNCTAD LSCI -- Conectividad marítima",  "scripts.fetch_unctad",        "fetch_unctad"),
-        ("VIIRS NTL   -- Luminosidad por estado",  "scripts.fetch_viirs_states",  "build_viirs_states"),
+        # fetch_viirs_states (Li et al. por bbox estatal) se retiró del pipeline
+        # el 2026-07-29: el mapa subnacional ahora usa Black Marble con máscara
+        # poligonal. El script y su CSV se conservan para auditoría.
         ("PTS -- Terror Político (Gibney et al.)", "scripts.fetch_pts",           "fetch_pts"),
         ("WHO GHO -- Salud (esperanza/mortalidad)","scripts.fetch_who",           "fetch_who"),
         # ── Fuentes ampliadas (mayo 2026) ─────────────────────────────────────
@@ -885,47 +887,6 @@ def _build_corr_stats_html(corr: dict) -> tuple[str, str, str, str]:
     )
 
     return formula_html, ols1_html, ols2_html, granger_adf_html
-
-
-def _load_map_data(settings: Settings) -> tuple[str, str]:
-    """
-    Carga el GeoJSON de estados venezolanos y los datos NTL por estado.
-    Retorna (geojson_str, viirs_states_json_str).
-    """
-    import json as _json
-    geojson_path = settings.paths.data_raw / "venezuela_states.geojson"
-    viirs_path   = settings.paths.raw_viirs_states
-
-    geojson_str = "{}"
-    viirs_json  = "[]"
-
-    if geojson_path.exists():
-        geojson_str = geojson_path.read_text(encoding="utf-8")
-    else:
-        logger.warning("  WARN GeoJSON de estados no encontrado en %s", geojson_path)
-
-    if viirs_path.exists():
-        df_vs = pd.read_csv(viirs_path, encoding="utf-8-sig")
-        # Normalizar el nombre de la columna de año (puede ser "año" o "ano")
-        if "año" in df_vs.columns:
-            df_vs = df_vs.rename(columns={"año": "ano"})
-        # Normalizar ntl_idx por estado al rango 0-100 (max historico de cada estado = 100)
-        # Los valores raw son DN 0-63; la normalizacion per-estado muestra la dinamica temporal.
-        if "ntl_idx" in df_vs.columns and not df_vs.empty:
-            state_max = df_vs.groupby("estado_cod")["ntl_idx"].transform("max")
-            df_vs["ntl_idx"] = (df_vs["ntl_idx"] / state_max * 100).round(1)
-        # Pivotear: {cod: {año: ntl_idx}}
-        pivot: dict[str, dict[int, float]] = {}
-        for _, row in df_vs.iterrows():
-            cod = str(row["estado_cod"])
-            yr  = int(row["ano"])
-            val = round(float(row["ntl_idx"]), 1)
-            pivot.setdefault(cod, {})[yr] = val
-        viirs_json = _json.dumps(pivot, ensure_ascii=False)
-    else:
-        logger.warning("  WARN viirs_states.csv no encontrado — mapa sin datos NTL")
-
-    return geojson_str, viirs_json
 
 
 def fase_sector_radar(df_ahp: pd.DataFrame) -> dict:
@@ -1966,9 +1927,8 @@ def fase_dashboard(
             f'{slabel}</button>'
         )
 
-    # ── Mapa — cargar GeoJSON + NTL por estado ────────────────────────────────
-    _geojson_str, _viirs_states_json = _load_map_data(settings)
-
+    # El mapa por estado se alimenta del payload blackmarble_map_json (arriba);
+    # ya no se carga el geojson aparte para Leaflet.
     html = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1979,8 +1939,6 @@ def fase_dashboard(
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <style>
 :root{{
@@ -2830,67 +2788,19 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 <!-- ===== SECTION 7: MAPA COROPLÉTICO ===== -->
 <section class="section tab-section" id="mapa">
   <div class="section-header">
-    <span class="section-title">Luminosidad Nocturna por Estado — índice relativo</span>
-    <span class="section-sub">Serie anual armonizada Li et al. 2000–2024 · % del máximo histórico de cada estado · proxy de actividad económica (Henderson et al., 2012)</span>
+    <span class="section-title">Actividad Nocturna por Estado — NASA Black Marble</span>
+    <span class="section-sub">Radiancia nocturna satelital VNP46A3 · 25 estados · 149 meses (2014–2026) · proxy de actividad económica subnacional (Henderson et al., 2012)</span>
   </div>
   <div class="alert alert-info" style="margin-bottom:16px">
-    <div class="alert-title">Cómo leer este mapa (y en qué se diferencia del de abajo)</div>
+    <div class="alert-title">Qué muestra este mapa</div>
     <div class="alert-body">
-      Aquí cada estado se compara <strong>consigo mismo</strong>: 100 = su máximo histórico.
-      Sirve para ver <em>cuánto perdió o recuperó cada región</em> frente a su mejor momento, pero
-      <strong>no permite comparar estados entre sí</strong> (Amazonas al 51 % de su máximo sigue
-      siendo mucho más oscuro que Caracas al 100 %). El mapa de NASA Black Marble más abajo usa
-      <strong>radiancia absoluta</strong>, que sí es comparable entre estados. Ambos coinciden en el
-      ordenamiento del territorio (correlación Pearson 0,90 en 2024); miden lo mismo con dos lentes.
+      La luz que emite cada estado de noche, medida por el satélite VIIRS de la NASA en unidades
+      físicas reales (nW/cm²/sr). Es un proxy establecido de actividad económica y, a diferencia de
+      cualquier estadística oficial, <strong>no es manipulable desde Venezuela</strong>.
+      Los valores son <strong>absolutos y comparables entre estados y entre meses</strong>: cada píxel
+      se asigna a un solo estado según su polígono real, y la escala de color es idéntica en todos los
+      cuadros. Anima la serie para ver el apagón económico y su recuperación parcial desde el espacio.
     </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap">
-    <label style="font-size:.82rem;color:var(--muted)">Año:</label>
-    <input type="range" id="mapaYear" min="{settings.series.start_year}" max="{settings.series.end_year}"
-           value="{settings.series.end_year}" step="1"
-           style="flex:1;min-width:200px;max-width:400px;accent-color:var(--accent)">
-    <span id="mapaYearLabel" style="font-size:1.1rem;font-weight:700;color:var(--accent);min-width:48px">
-      {settings.series.end_year}
-    </span>
-    <button id="mapaPlayBtn" style="background:var(--card);border:1px solid var(--border);
-      color:var(--text);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem">
-      ▶ Animar
-    </button>
-    <span id="mapaNoDataNote" style="display:none;font-size:.72rem;color:#e67e22;font-style:italic"></span>
-  </div>
-  <div style="display:flex;gap:16px;flex-wrap:wrap">
-    <div id="mapaContainer" style="flex:2;min-width:300px;height:480px;
-      background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-    </div>
-    <div style="flex:1;min-width:200px">
-      <div style="background:var(--card);border:1px solid var(--border);
-        border-radius:10px;padding:16px;margin-bottom:12px">
-        <div style="font-size:.78rem;font-weight:600;margin-bottom:4px">Escala NTL relativa</div>
-        <div style="font-size:.66rem;color:var(--muted);margin-bottom:10px;line-height:1.4">
-          % del máximo histórico <em>de cada estado</em>. Compara un estado consigo mismo
-          en el tiempo, <strong>no</strong> entre estados.
-        </div>
-        <div id="mapaLegend" style="display:flex;flex-direction:column;gap:6px"></div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);
-        border-radius:10px;padding:16px">
-        <div style="font-size:.78rem;font-weight:600;margin-bottom:10px">Top estados (año seleccionado)</div>
-        <div id="mapaRanking" style="font-size:.78rem;color:var(--muted)"></div>
-      </div>
-    </div>
-  </div>
-  <p style="font-size:.72rem;color:var(--muted);margin-top:12px">
-    Límites estatales: GADM Venezuela Level-1 (https://gadm.org).
-    NTL por estado: Li et al. (2020/2024) Figshare DOI:10.6084/m9.figshare.9828827.v10 —
-    datos reales extraídos de raster GeoTIFF por bbox estatal (rasterio). Cobertura 2000–2024.
-    Para 2025–2026 sin dato satelital se muestra el último año disponible (indicado en tooltip).
-    Mapa visualizado con Leaflet.js (BSD-2). Proyección: WGS84.
-  </p>
-
-  <!-- Mapa coroplético mensual NASA Black Marble (2014-2026) -->
-  <div class="section-header" style="margin-top:36px">
-    <span class="section-title">Mapa mensual NASA Black Marble (2014–2026)</span>
-    <span class="section-sub">Radiancia nocturna por estado del producto satelital VNP46A3 · promedio anual · animación del apagón económico y su recuperación parcial</span>
   </div>
   <div class="chart-card" style="margin-top:14px">
     <div class="ct">Actividad nocturna por estado — <span id="bmMapYear">—</span></div>
@@ -3800,8 +3710,8 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <strong>Lenguaje:</strong> Python 3.10+ &nbsp;·&nbsp;
       <strong>Análisis:</strong> pandas, numpy, scipy, statsmodels &nbsp;·&nbsp;
       <strong>NLP:</strong> vaderSentiment (Hutto &amp; Gilbert, 2014) &nbsp;·&nbsp;
-      <strong>Raster:</strong> rasterio (VIIRS nighttime lights) &nbsp;·&nbsp;
-      <strong>Visualización:</strong> Chart.js, D3.js, matplotlib &nbsp;·&nbsp;
+      <strong>Raster:</strong> h5py + numpy (NASA Black Marble VNP46A3, máscara poligonal por estado) &nbsp;·&nbsp;
+      <strong>Visualización:</strong> Chart.js, D3.js, SVG nativo (mapa coroplético), matplotlib &nbsp;·&nbsp;
       <strong>HTTP:</strong> requests, BeautifulSoup4
     </div>
   </div>
@@ -4690,219 +4600,20 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   if (window.location.hash === '#noticias') {{ newsLoaded = true; setTimeout(loadNews, 200); }}
 }})();
 
-// ── MAPA COROPLÉTICO — Luminosidad Nocturna por Estado ─────────────────────
+// ── MAPA POR ESTADO — init del coroplético NASA Black Marble ───────────────
+// El mapa Leaflet de la serie Li et al. se retiró (2026-07-29): extraía la
+// luminosidad por BBOX rectangular (mediana 2x el área real del estado, 56
+// pares de bboxes solapados) y normalizaba cada estado contra su propio máximo,
+// lo que no es comparable entre estados. El mapa Black Marble usa máscara
+// poligonal exacta y radiancia absoluta. La serie NACIONAL de Li et al. sigue
+// alimentando el score anual (cubre 2000-2013, previo a VIIRS).
 (function() {{
-  const GEOJSON    = {_geojson_str};
-  const NTL_DATA   = {_viirs_states_json};
-  const START_YEAR = {settings.series.start_year};
-  const END_YEAR   = {settings.series.end_year};
-
-  if (!GEOJSON || !GEOJSON.features || !GEOJSON.features.length) return;
-
-  let map = null, geojsonLayer = null, currentYear = END_YEAR, animTimer = null;
-
-  function ntlColor(val) {{
-    // Escala oscuro (colapso) → amarillo brillante (activo)
-    if (val === null || val === undefined) return '#2a2a2a';
-    if (val < 10)  return '#1a1a2e';
-    if (val < 20)  return '#16213e';
-    if (val < 30)  return '#0f3460';
-    if (val < 40)  return '#1b4f72';
-    if (val < 50)  return '#1a5276';
-    if (val < 60)  return '#2471a3';
-    if (val < 70)  return '#c8a400';
-    if (val < 80)  return '#d4ac0d';
-    if (val < 90)  return '#f1c40f';
-    return '#f9e400';
-  }}
-
-  // Devuelve el valor NTL para un estado y un año.
-  // Si el año exacto no tiene dato (ej. 2025-2026 sin datos satelitales),
-  // usa el último año disponible hacia atras (el usuario pidió esto explícitamente).
-  function getVal(cod, yr) {{
-    const stateData = NTL_DATA[cod];
-    if (!stateData) return {{ val: null, dataYear: null }};
-    // Intenta año exacto
-    let val = stateData[yr] ?? stateData[String(yr)] ?? null;
-    if (val !== null) return {{ val: val, dataYear: yr }};
-    // Fallback: último año con dato <= yr
-    const years = Object.keys(stateData).map(Number).sort((a,b) => b - a);
-    const lastYr = years.find(y => y <= yr);
-    if (lastYr !== undefined) {{
-      val = stateData[lastYr] ?? stateData[String(lastYr)] ?? null;
-      return {{ val: val, dataYear: lastYr }};
-    }}
-    return {{ val: null, dataYear: null }};
-  }}
-
-  function styleFeature(feature) {{
-    const cod = feature.properties.cod;
-    const {{ val }} = getVal(cod, currentYear);
-    return {{
-      fillColor: ntlColor(val),
-      fillOpacity: 0.82,
-      color: '#444',
-      weight: 0.8,
-    }};
-  }}
-
-  function onEachFeature(feature, layer) {{
-    layer.on({{
-      mouseover: function(e) {{
-        const cod  = feature.properties.cod;
-        const nombre = feature.properties.nombre;
-        const {{ val, dataYear }} = getVal(cod, currentYear);
-        const valStr = val !== null ? val.toFixed(1) + '/100' : 'sin dato';
-        const yearNote = (dataYear !== null && dataYear !== currentYear)
-          ? ` <span style="color:#e67e22;font-size:.8em">(dato: ${{dataYear}})</span>` : '';
-        layer.setStyle({{ weight: 2, color: '#00d4aa', fillOpacity: 0.95 }});
-        layer.bindTooltip(
-          `<b>${{nombre}}</b><br>NTL Index: <b>${{valStr}}</b><br>Año: ${{currentYear}}${{yearNote}}`,
-          {{ direction: 'top', sticky: true, className: 'leaflet-ven-tooltip' }}
-        ).openTooltip();
-      }},
-      mouseout: function() {{
-        geojsonLayer.resetStyle(layer);
-        layer.closeTooltip();
-      }}
-    }});
-  }}
-
-  function updateRanking(yr) {{
-    const stateVals = GEOJSON.features
-      .filter(f => f.properties.cod !== 'DF')
-      .map(f => {{ const {{ val }} = getVal(f.properties.cod, yr); return {{ cod: f.properties.cod, nombre: f.properties.nombre, val }}; }})
-      .filter(s => s.val !== null)
-      .sort((a,b) => b.val - a.val);
-    const top5 = stateVals.slice(0,5);
-    const bot3 = stateVals.slice(-3);
-    const el = document.getElementById('mapaRanking');
-    if (!el) return;
-    let html = '<div style="margin-bottom:8px;font-size:.7rem;color:var(--accent);font-weight:600">MAYOR ACTIVIDAD</div>';
-    top5.forEach((s,i) => {{
-      const bar = Math.round(s.val);
-      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-        <span style="width:16px;text-align:right;color:var(--muted);font-size:.7rem">${{i+1}}</span>
-        <div style="flex:1;background:#333;border-radius:3px;height:10px;overflow:hidden">
-          <div style="width:${{bar}}%;height:100%;background:${{ntlColor(s.val)}}"></div>
-        </div>
-        <span style="font-size:.7rem;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${{s.nombre.replace('DistritoCapital','D.Capital').replace('NuevaEsparta','Nva.Esparta')}}</span>
-        <span style="font-size:.7rem;color:var(--muted);width:30px;text-align:right">${{s.val.toFixed(0)}}</span>
-      </div>`;
-    }});
-    html += '<div style="margin-top:10px;margin-bottom:6px;font-size:.7rem;color:#e05c5c;font-weight:600">MENOR ACTIVIDAD</div>';
-    bot3.forEach(s => {{
-      const bar = Math.round(s.val);
-      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-        <div style="flex:1;background:#333;border-radius:3px;height:10px;overflow:hidden">
-          <div style="width:${{bar}}%;height:100%;background:${{ntlColor(s.val)}}"></div>
-        </div>
-        <span style="font-size:.7rem;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${{s.nombre}}</span>
-        <span style="font-size:.7rem;color:var(--muted);width:30px;text-align:right">${{s.val.toFixed(0)}}</span>
-      </div>`;
-    }});
-    el.innerHTML = html;
-  }}
-
-  function buildLegend() {{
-    const el = document.getElementById('mapaLegend');
-    if (!el) return;
-    // El indice esta normalizado POR ESTADO (100 = maximo historico de ese
-    // estado), asi que la leyenda describe posicion temporal, no brillo absoluto.
-    const steps = [[0,'< 10 %','Colapso vs su máximo'],[30,'30–50 %','Muy por debajo'],[50,'50–70 %','Por debajo'],[70,'70–90 %','Cerca de su máximo'],[90,'> 90 %','En su máximo histórico']];
-    el.innerHTML = steps.map(([v,label,desc]) =>
-      `<div style="display:flex;align-items:center;gap:8px">
-        <div style="width:18px;height:18px;background:${{ntlColor(v+1)}};border-radius:3px;border:1px solid #555"></div>
-        <span style="font-size:.72rem;color:var(--muted)">${{label}} — ${{desc}}</span>
-      </div>`
-    ).join('');
-  }}
-
-  function initMap() {{
-    const container = document.getElementById('mapaContainer');
-    if (!container || map) return;
-
-    map = L.map('mapaContainer', {{
-      center: [7.5, -66.0],
-      zoom: 5,
-      zoomControl: true,
-      attributionControl: true,
-    }});
-
-    // Tile oscuro (compatible con el tema dark del dashboard)
-    L.tileLayer('https://{{s}}.basemaps.cartocdn.com/dark_nolabels/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-      attribution: '© CartoDB | © OpenStreetMap contributors',
-      subdomains: 'abcd',
-      maxZoom: 10,
-    }}).addTo(map);
-
-    geojsonLayer = L.geoJSON(GEOJSON, {{
-      style: styleFeature,
-      onEachFeature: onEachFeature,
-    }}).addTo(map);
-
-    map.fitBounds(geojsonLayer.getBounds().pad(0.05));
-    buildLegend();
-    updateRanking(currentYear);
-  }}
-
-  function updateMap(yr) {{
-    currentYear = yr;
-    // Detectar si el año seleccionado tiene datos o se usa el ultimo disponible
-    const firstState = GEOJSON.features.find(f => f.properties.cod !== 'DF');
-    const {{ dataYear }} = firstState ? getVal(firstState.properties.cod, yr) : {{ dataYear: yr }};
-    const noDataNote = document.getElementById('mapaNoDataNote');
-    if (noDataNote) {{
-      if (dataYear !== null && dataYear !== yr) {{
-        noDataNote.textContent = `(mostrando datos de ${{dataYear}} — sin satelital para ${{yr}})`;
-        noDataNote.style.display = 'inline';
-      }} else {{
-        noDataNote.style.display = 'none';
-      }}
-    }}
-    document.getElementById('mapaYearLabel').textContent = yr;
-    if (geojsonLayer) geojsonLayer.setStyle(styleFeature);
-    updateRanking(yr);
-  }}
-
-  // Slider
-  const slider = document.getElementById('mapaYear');
-  if (slider) {{
-    slider.addEventListener('input', () => updateMap(parseInt(slider.value)));
-  }}
-
-  // Animate button
-  const playBtn = document.getElementById('mapaPlayBtn');
-  if (playBtn) {{
-    playBtn.addEventListener('click', () => {{
-      if (animTimer) {{
-        clearInterval(animTimer);
-        animTimer = null;
-        playBtn.textContent = '▶ Animar';
-        return;
-      }}
-      playBtn.textContent = '⏹ Detener';
-      let yr = START_YEAR;
-      slider.value = yr;
-      updateMap(yr);
-      animTimer = setInterval(() => {{
-        yr++;
-        if (yr > END_YEAR) {{ yr = START_YEAR; }}
-        slider.value = yr;
-        updateMap(yr);
-      }}, 700);
-    }});
-  }}
-
-  // Initialize map when tab is clicked (compatible con nuevo nav 2 niveles)
   function initMapTab() {{
-    setTimeout(initMap, 100);
-    setTimeout(function() {{ if (window.__buildBMMap) window.__buildBMMap(); }}, 120);
+    setTimeout(function() {{ if (window.__buildBMMap) window.__buildBMMap(); }}, 60);
   }}
   if (typeof _tabInits !== 'undefined') {{
     _tabInits['mapa'] = initMapTab;
   }}
-  // Fallback: escucha clicks en cualquier link que lleve a #mapa
   document.querySelectorAll('[href="#mapa"]').forEach(function(el) {{
     el.addEventListener('click', initMapTab);
   }});

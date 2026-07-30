@@ -1,6 +1,6 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-07-30T02:28:29.449261+00:00",
+  "generated_at_utc": "2026-07-30T03:03:10.686151+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -35,18 +35,18 @@
       "rows": 27
     },
     "pulse_forecast_backtest.csv": {
-      "bytes": 36598,
-      "sha256": "f2fb0a58d31302050e4349b08df1a53c964f5fe397402e14f9c62e90533a845e",
+      "bytes": 36700,
+      "sha256": "11c7b4d8399831fffaf523a68a2dc59b0cc59ac38e2e54481f73ea73c6dc4cf4",
       "rows": 429
     },
     "pulse_forecast_backtest_summary.csv": {
-      "bytes": 523,
-      "sha256": "7683d198c523ede9db048de421e404a7e9e7acfdd47a5d76eb3de78d8e31d5dd",
+      "bytes": 525,
+      "sha256": "2e9ba668d3ae3712659fc65ed188ee43ad53bd3f1747dda4789f8641d540af0c",
       "rows": 12
     },
     "README.md": {
       "bytes": 1619,
-      "sha256": "d143115a41a4823632b759c3e41a8cf4a83a6a313d69bb2c4d230df4b86dc9f9",
+      "sha256": "cf9f65599aa933f1517b9d87c5968b6e7bbf0722198a28defc319cb268d1dafe",
       "rows": null
     },
     "source_provenance.csv": {

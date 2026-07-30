@@ -26,7 +26,7 @@ del bloque institucional/humano. Detalle completo en
 | Grupo | Fuente | Archivo principal |
 |---|---|---|
 | Macro | IMF, World Bank WDI, FRED | `imf.csv`, `wdi.csv`, `fred.csv` |
-| Energia | U.S. EIA, Li et al./Figshare | `eia.csv`, `viirs.csv` |
+| Energia | U.S. EIA, Li et al./Figshare (serie nacional) | `eia.csv`, `viirs.csv` |
 | Institucional | Transparency International, WGI, Freedom House, WJP, PTS | `cpi.csv`, `wgi.csv`, `freedom_house.csv`, `wjp.csv`, `pts.csv` |
 | Comercial | WDI, IMF, UNHCR/R4V, UNCTADstat | `wdi.csv`, `imf.csv`, `unhcr.csv`, `unctad.csv` |
 
@@ -65,6 +65,12 @@ Si falta, el dashboard debe mostrar menor cobertura, no inventar el dato.
 |---|---|---|---|
 | ACLED (API OAuth oficial) | `acled_monthly.csv` | 2018-01 a hoy menos ~12 meses | el tier de cuenta actual entrega datos con ~12 meses de rezago; solo contexto historico |
 | UN Comtrade v1 (5 socios espejo) | `comtrade_monthly.csv` | 2010-01 a ~2 meses atras | ultimos ~3 meses parciales segun socios que hayan reportado |
+| NASA Black Marble VNP46A3 | `blackmarble_monthly.csv`, `blackmarble_states_monthly.csv` | 2014-01 a ~2 meses atras | 5 agregaciones nacionales + 25 estados; alimenta el unico mapa subnacional del dashboard |
+
+Fuera del pipeline desde 2026-07-29: `viirs_states.csv` (Li et al. por bbox
+estatal). Se conserva el CSV y `scripts/fetch_viirs_states.py` para auditoria,
+pero ninguna vista los consume; el mapa por estado usa Black Marble con
+mascara poligonal. Detalle del porque en `docs/MODEL_CARD.md`.
 
 Ambas requieren credenciales via secrets/entorno (ACLED_EMAIL,
 ACLED_PASSWORD, COMTRADE_API_KEY); sin credenciales el fetch avisa y no
