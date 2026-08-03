@@ -1,6 +1,6 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-07-30T03:31:42.259043+00:00",
+  "generated_at_utc": "2026-08-03T10:51:47.895374+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -11,17 +11,17 @@
   "files": {
     "README.md": {
       "bytes": 1585,
-      "sha256": "b8e9ab2e0bd2658178f6798bf1935897cc825cf1d3fc84b5eeebeba3f4b08c21",
+      "sha256": "e0f94ad40e629fd9e470d4d2a101c9e34ddb6aa5bac8e9a3ce18b0bdcd44b464",
       "rows": null
     },
     "coverage_annual.csv": {
-      "bytes": 2787,
-      "sha256": "a099b225e6da44f7b0726e8460c24bd63716579b7bac6381554c57a74734da13",
+      "bytes": 3033,
+      "sha256": "815457b2f33aa063fbe603aba0749b5b0a6dbae4488c8b99b5037d5edf0a459d",
       "rows": 33
     },
     "data_dictionary.csv": {
-      "bytes": 6553,
-      "sha256": "27e12585861bd673a67886afc4a611f2094cdcad45bae411f80deef3fb7a0bcd",
+      "bytes": 6555,
+      "sha256": "052378ec125ff04ced716f4a1d45bda5e6a7c9a0ffd39a9142b5b3a166ab96b9",
       "rows": 33
     },
     "data_dictionary.md": {
@@ -30,23 +30,23 @@
       "rows": null
     },
     "iciv_dataset_largo.csv": {
-      "bytes": 122215,
-      "sha256": "b5f3ed2c212a1b524306b1eb32602dc79a157c7fc3f03684171769a2384232ec",
-      "rows": 837
+      "bytes": 114116,
+      "sha256": "41a8f65283e95a605d7ebbce74cf4de1fb663b61b108aa7b3af9b75e9474ac99",
+      "rows": 783
     },
     "iciv_dataset_wide.csv": {
-      "bytes": 9144,
-      "sha256": "3e3ff6d3048ce5cb382c7f71611be4638f54437309d53c27523cd6d78559dcd1",
+      "bytes": 8772,
+      "sha256": "9b89fe19ae8d1c58cae9f1d3c13e141f27fb1b26add265cdf55b956e2e88491b",
       "rows": 27
     },
     "pulse_forecast_backtest.csv": {
-      "bytes": 36270,
-      "sha256": "954df30baeee2932d8c7dab90922f94174d9ef53cfa98f11795dd0aaf04685e1",
+      "bytes": 36238,
+      "sha256": "d0370cecf77a66a5f141707bc145f92c09965c8ca86bd42a858616db474ac375",
       "rows": 429
     },
     "pulse_forecast_backtest_summary.csv": {
       "bytes": 512,
-      "sha256": "c6c68da40dd2e046c6f9df4184d04f901cc6a91f0bc0d904cf340de2fb3d26c1",
+      "sha256": "16a1272b7d1cea09610fd7bfddbd952b0f02ffa5df00373e1a9f83dd6067e3b3",
       "rows": 12
     },
     "source_provenance.csv": {
