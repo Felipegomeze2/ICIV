@@ -757,8 +757,8 @@
 2026,pib_crecimiento_real_pct,,,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
 2026,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
 2026,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
-2026,wti_precio_usd,83.67985815602837,78.29828340456318,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
-2026,tasa_fed_funds_pct,3.6366666666666663,42.22282387978883,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
+2026,wti_precio_usd,83.69260273972603,78.31557864616823,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
+2026,tasa_fed_funds_pct,3.6357142857142857,42.238295074358426,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2026,petroleo_crudo_produccion_tbpd,,,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
 2026,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
 2026,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
@@ -778,7 +778,7 @@
 2026,acceso_electricidad_pct,,,WDI,D5_capital_humano,positive,core_anual,True,False,False,Acceso a electricidad,
 2026,ilo_empleo_informal_pct,,,ILOSTAT,D5_capital_humano,negative,core_anual,True,False,False,Empleo informal,
 2026,ied_neta_usd,,,WDI,D4_comercial,positive,outcome_externo,False,False,True,Inversion extranjera directa neta,Outcome externo usado para validacion ICIV -> IED; no entra al score.
-2026,brent_precio_usd,90.24937062937065,75.52508616767021,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
-2026,usd_index_broad,119.36702836879432,10.335237063449664,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
-2026,vix_volatility,19.034295302013422,63.22983095195577,FRED,D1_macro,negative,pulse_mensual,False,True,False,VIX volatilidad financiera,
-2026,ust_10y_yield_pct,4.352344827586207,32.63780103035949,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
+2026,brent_precio_usd,90.2762162162162,75.55590244303328,FRED,D1_macro,positive,pulse_mensual,False,True,False,Precio Brent del petroleo,
+2026,usd_index_broad,119.39943493150686,10.240248587995016,FRED,D1_macro,negative,pulse_mensual,False,True,False,Indice amplio del dolar,
+2026,vix_volatility,18.9312987012987,63.70656504050787,FRED,D1_macro,negative,pulse_mensual,False,True,False,VIX volatilidad financiera,
+2026,ust_10y_yield_pct,4.363266666666667,32.425358348638525,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,

@@ -314,6 +314,7 @@
 2026,1,53,Total petroleum and other liquids,petroleo_crudo_produccion_tbpd,869.100279529,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2026,2,53,Total petroleum and other liquids,petroleo_crudo_produccion_tbpd,1019.254876163,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2026,3,53,Total petroleum and other liquids,petroleo_crudo_produccion_tbpd,1099.009359354,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
+2026,4,53,Total petroleum and other liquids,petroleo_crudo_produccion_tbpd,1138.830508025,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2000,1,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,3116.064,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2000,2,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,3126.064,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2000,3,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,3126.064,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
@@ -629,3 +630,4 @@
 2026,1,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,860.0,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2026,2,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,1010.0,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
 2026,3,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,1090.0,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
+2026,4,55,"Crude oil, NGPL, and other liquids",gas_natural_plant_liquids_tbpd,1130.0,TBPD,"U.S. Energy Information Administration (EIA), International Energy Statistics, monthly series. https://www.eia.gov/international/data/"
