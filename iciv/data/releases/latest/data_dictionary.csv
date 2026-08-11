@@ -23,8 +23,8 @@ esperanza_vida_anos,Esperanza de vida al nacer,core_anual,True,False,False,D5_ca
 mortalidad_infantil_x1000,Mortalidad infantil,core_anual,True,False,False,D5_capital_humano,WHO,World Health Organization,international,muertes por 1.000 nacidos vivos,negative,0.18,0.018,2000,True,
 acceso_electricidad_pct,Acceso a electricidad,core_anual,True,False,False,D5_capital_humano,WDI,World Bank World Development Indicators,international,% poblacion,positive,0.18,0.018,2000,True,
 ilo_empleo_informal_pct,Empleo informal,core_anual,True,False,False,D5_capital_humano,ILOSTAT,International Labour Organization / ILOSTAT,international,% empleo,negative,0.18,0.018,2000,True,
-guardian_tono_titulares,Tono de titulares internacionales,core_anual,True,True,False,D6_percepcion,GUARDIAN,The Guardian Open Platform,international,VADER compound,positive,0.65,0.065,2000,False,
-guardian_articulos_venezuela,Volumen de cobertura internacional,core_anual,True,True,False,D6_percepcion,GUARDIAN,The Guardian Open Platform,international,articulos,negative,0.35,0.035,2000,False,
+guardian_tono_titulares,Tono de titulares internacionales,core_anual,True,True,False,D6_percepcion,GUARDIAN,The Guardian Open Platform,international,VADER compound,positive,0.65,0.065,2000,True,
+guardian_articulos_venezuela,Volumen de cobertura internacional,core_anual,True,True,False,D6_percepcion,GUARDIAN,The Guardian Open Platform,international,articulos,negative,0.35,0.035,2000,True,
 ied_neta_usd,Inversion extranjera directa neta,outcome_externo,False,False,True,D4_comercial,WDI,World Bank World Development Indicators,international,USD,positive,0.0,0.0,2000,True,Outcome externo usado para validacion ICIV -> IED; no entra al score.
 brent_precio_usd,Precio Brent del petroleo,pulse_mensual,False,True,False,D1_macro,FRED,Federal Reserve Bank of St. Louis FRED,international,USD/barril,positive,0.0,0.0,2010,True,
 usd_index_broad,Indice amplio del dolar,pulse_mensual,False,True,False,D1_macro,FRED,Federal Reserve Bank of St. Louis FRED,international,indice,negative,0.0,0.0,2010,True,
