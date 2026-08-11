@@ -33,7 +33,11 @@ ALL_LOADERS: list[type[DataLoader]] = [
     VIIRSLoader,
     UNCTADLoader,
     PTSLoader,
-    WHOLoader,
+    # WHOLoader retirado del panel maestro el 2026-08-11: sus dos variables
+    # (esperanza de vida y mortalidad infantil) pasan a leerse del WDI, que
+    # publica hasta 2024 mientras la OMS se quedaba en 2021 y 2023. El script
+    # fetch_who.py y data/raw/who.csv se conservan para auditoria, igual que
+    # se hizo con viirs_states. Ver docs/METODOLOGIA.md seccion 2.6.
     WJPLoader,
     ILOStatLoader,
 ]

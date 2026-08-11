@@ -195,19 +195,85 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
     # missing publication is carried into coverage.
     master.drop(columns=["pib_crecimiento_imf_pct"], inplace=True, errors="ignore")
 
+    # ── Año en curso de producción petrolera desde la serie mensual ────────────
+    # `petroleo_crudo_produccion_tbpd` pesa 9% del índice, más que ninguna otra
+    # variable, y la serie ANUAL de EIA llega con ~1 año de rezago. La serie
+    # MENSUAL del MISMO producto (57, crude oil incl. lease condensate) ya se
+    # descarga y su promedio reproduce la serie anual con 0,05% de diferencia
+    # media sobre 11 años completos — es el mismo estadístico, no una base
+    # distinta. Por eso se puede completar el año en curso sin inventar nada.
+    #
+    # Reglas, para que esto no se convierta en un relleno silencioso:
+    #   · Solo se rellenan años cuyo valor anual es NaN. Nunca se pisa un dato real.
+    #   · El valor es el promedio de los meses REALMENTE publicados (año corrido).
+    #   · Se exige un mínimo de meses para no extrapolar de una sola observación.
+    #   · Queda registrado en el log y en data/processed/anualizacion_parcial.csv.
+    _MIN_MESES_ANUALIZAR = 3
+    _VAR_ANUAL = "petroleo_crudo_produccion_tbpd"
+    _VAR_MENSUAL = "petroleo_crudo_mensual_anualizable_tbpd"
+    _ruta_eia_m = settings.paths.data_raw / "eia_monthly.csv"
+    _anualizados: list[dict] = []
+    if _VAR_ANUAL in master.columns and _ruta_eia_m.exists():
+        try:
+            _em = pd.read_csv(_ruta_eia_m)
+            _em = _em[_em["variable"] == _VAR_MENSUAL]
+            if not _em.empty:
+                _agg = _em.groupby("año")["valor"].agg(["mean", "count"])
+                for _a, _f in _agg.iterrows():
+                    _fila = master["año"] == int(_a)
+                    if not _fila.any():
+                        continue
+                    _ya_tiene = master.loc[_fila, _VAR_ANUAL].notna().all()
+                    if _ya_tiene or _f["count"] < _MIN_MESES_ANUALIZAR:
+                        continue
+                    master.loc[_fila, _VAR_ANUAL] = float(_f["mean"])
+                    _anualizados.append({
+                        "año": int(_a),
+                        "variable": _VAR_ANUAL,
+                        "valor": round(float(_f["mean"]), 2),
+                        "meses_usados": int(_f["count"]),
+                        "origen": "EIA International mensual, producto 57 (crude oil incl. lease condensate)",
+                        "nota": "promedio de los meses publicados; año incompleto",
+                    })
+                    logger.info(
+                        "  %s %d completado con %d meses reales de EIA -> %.1f tbpd (año corrido)",
+                        _VAR_ANUAL, int(_a), int(_f["count"]), _f["mean"],
+                    )
+        except Exception as _exc:
+            logger.warning("  No se pudo anualizar %s: %s", _VAR_ANUAL, _exc)
+
+    if _anualizados:
+        _ruta_anual_parcial = settings.paths.data_processed / "anualizacion_parcial.csv"
+        pd.DataFrame(_anualizados).to_csv(_ruta_anual_parcial, index=False, encoding="utf-8-sig")
+        logger.info("  Registro de anualizaciones parciales -> %s", _ruta_anual_parcial.name)
+
     # ── Reconversión monetaria + log10 para tipo_cambio_oficial_lcu_usd ─────────
-    # El WDI mezcla 3 denominaciones históricas sin convertir:
-    #   2000-2017 → BsF/USD  (serie nativa del API, ya en BsF)
-    #   2018-2021 → BsS/USD  (1 BsS = 1 000 BsF, reconversión dic-2018)
-    #   2022+     → Bs/USD   (1 Bs = 10^6 BsS = 10^9 BsF, reconversión oct-2021)
-    # Convertimos todo a BsF/USD equivalente y aplicamos log10 para comprimir
-    # el rango de 11 órdenes de magnitud antes de la normalización Min-Max.
+    # El WDI publica la serie en la denominación vigente de cada año, sin unificar:
+    #   2000-2017 → BsF/USD  (el API ya expresa estos años en bolívar fuerte)
+    #   2018-2021 → BsS/USD  (bolívar soberano)
+    #   2022+     → Bs.D/USD (bolívar digital)
+    #
+    # Reconversiones OFICIALES (Gaceta Oficial):
+    #   2008-01-01  BsF  = 1.000 Bs        → quita 3 ceros
+    #   2018-08-20  BsS  = 100.000 BsF     → quita 5 ceros
+    #   2021-10-01  Bs.D = 1.000.000 BsS   → quita 6 ceros
+    #
+    # Para llevar todo a BsF equivalente:
+    #   BsS  → BsF : x 1e5
+    #   Bs.D → BsF : x 1e5 * 1e6 = 1e11
+    #
+    # CORREGIDO 2026-08-11: los factores anteriores (1e3 y 1e9) usaban 1.000 para
+    # la reconversión de 2018, que en realidad quitó 5 ceros y no 3. Ambos estaban
+    # 100x por debajo, lo que comprimía el salto real 2017→2020 de 9,5 a 7,5
+    # órdenes de magnitud y alteraba la normalización Min-Max de toda la serie.
+    _BSS_A_BSF = 100_000            # 1e5
+    _BSD_A_BSF = 100_000_000_000    # 1e11
     if "tipo_cambio_oficial_lcu_usd" in master.columns:
         _tc = master["tipo_cambio_oficial_lcu_usd"].copy()
         _mask_bss = (master["año"] >= 2018) & (master["año"] <= 2021)
         _mask_bs  = master["año"] >= 2022
-        _tc[_mask_bss] = _tc[_mask_bss] * 1_000          # BsS → BsF
-        _tc[_mask_bs]  = _tc[_mask_bs]  * 1_000_000_000  # Bs  → BsF
+        _tc[_mask_bss] = _tc[_mask_bss] * _BSS_A_BSF
+        _tc[_mask_bs]  = _tc[_mask_bs]  * _BSD_A_BSF
         master["tipo_cambio_oficial_lcu_usd"] = np.log10(_tc.clip(lower=1e-9))
         logger.info("  Tipo cambio -> log10(BsF/USD equiv.): rango [%.2f, %.2f]",
                     master["tipo_cambio_oficial_lcu_usd"].min(),

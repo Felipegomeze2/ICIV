@@ -50,9 +50,18 @@ OUTPUT_MONTHLY = Path(__file__).resolve().parents[1] / "data" / "raw" / "eia_mon
 
 _EIA_BASE = "https://api.eia.gov/v2/international/data/"
 # Product IDs (verificados via api.eia.gov/v2/international/facet/productId)
+#
+# OJO con el 53 vs el 57: son productos distintos y NO son intercambiables.
+#   53 = Total petroleum and other liquids  (usado por el Pulse mensual)
+#   57 = Crude oil including lease condensate (el que usa el ICIV ANUAL)
+# Promediar los meses del 53 NO reproduce la serie anual: difiere entre 3% y 13%.
+# El 57 si la reproduce (dif. media 0,05%, max 0,16% sobre 11 anios completos),
+# por eso se descarga aparte y habilita completar el anio en curso del score
+# anual sin mezclar bases. Verificado el 2026-08-11.
 _PRODUCTS = {
-    53: "petroleo_crudo_produccion_tbpd",  # Total petroleum and other liquids
-    55: "gas_natural_plant_liquids_tbpd",  # Natural gas plant liquids
+    53: "petroleo_crudo_produccion_tbpd",         # Total petroleum and other liquids
+    55: "gas_natural_plant_liquids_tbpd",         # Natural gas plant liquids
+    57: "petroleo_crudo_mensual_anualizable_tbpd",  # Crude oil incl. lease condensate
 }
 
 

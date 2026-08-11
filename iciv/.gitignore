@@ -37,3 +37,6 @@ secrets.yaml
 !data/processed/iciv_dataset_wide.csv
 !data/processed/pulse_forecast_backtest.csv
 !data/processed/pulse_forecast_backtest_summary.csv
+# Registro de que anios del score se completaron con meses del anio corrido y
+# con cuantos meses. Se versiona para que la anualizacion sea auditable.
+!data/processed/anualizacion_parcial.csv

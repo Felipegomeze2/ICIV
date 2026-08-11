@@ -43,6 +43,14 @@ sources:
       PA.NUS.FCRF:       tipo_cambio_oficial_lcu_usd
       SE.ADT.LITR.ZS:    tasa_alfabetizacion_adulta_pct
       BX.TRF.PWKR.CD.DT: remesas_recibidas_usd   # remesas personales recibidas (USD)
+      # Salud (D5) — migradas desde WHO GHO el 2026-08-11.
+      # Motivo: la OMS se quedaba en 2021 (esperanza de vida) y 2023 (mortalidad),
+      # mientras el WB publica hasta 2024. Se verifico la comparabilidad antes de
+      # migrar: diferencia media 1,68% en esperanza de vida y 0,62% en mortalidad
+      # sobre 22 y 24 anios solapados. Se toma la serie COMPLETA del WB (vintage
+      # unico), NO se empalma con la de la OMS.
+      SP.DYN.LE00.IN:    esperanza_vida_anos
+      SP.DYN.IMRT.IN:    mortalidad_infantil_x1000
 
   wgi:
     description: "World Governance Indicators — Banco Mundial"

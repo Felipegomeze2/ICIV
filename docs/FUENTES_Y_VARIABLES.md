@@ -36,8 +36,8 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | D4 | `migrantes_vzla_millones` | UNHCR/R4V | negativa | salida poblacional acumulada |
 | D4 | `lsci_conectividad_maritima` | UNCTADstat (trimestral → promedio anual) | positiva | conectividad logistica; serie 2006-2026 base Q1-2023=100 |
 | D5 | `hdi` | UNDP/OWID | positiva | capital humano agregado |
-| D5 | `esperanza_vida_anos` | WHO/WDI | positiva | condicion sanitaria |
-| D5 | `mortalidad_infantil_x1000` | WHO/WDI | negativa | fragilidad social |
+| D5 | `esperanza_vida_anos` | World Bank `SP.DYN.LE00.IN` | positiva | condicion sanitaria; migrada desde WHO GHO el 2026-08-11 |
+| D5 | `mortalidad_infantil_x1000` | World Bank `SP.DYN.IMRT.IN` | negativa | fragilidad social; migrada desde WHO GHO el 2026-08-11 |
 | D5 | `acceso_electricidad_pct` | WDI | positiva | acceso basico de infraestructura |
 | D5 | `ilo_empleo_informal_pct` | ILO/WDI proxy | negativa | calidad del mercado laboral |
 | D6 | `guardian_tono_titulares` | Guardian + VADER | positiva | tono mediatico externo |
@@ -217,6 +217,38 @@ bases con la serie WDI antigua).
 
 Una fuente nueva debe competir con la variable core que reemplazaria. Agregar
 por cantidad baja claridad y puede bajar cobertura efectiva.
+
+## Auditoria de cobertura (2026-08-11)
+
+Se midio variable por variable cuanto peso pierde cada anio y por que causa.
+Detalle metodologico en [METODOLOGIA.md](./METODOLOGIA.md) secciones 2.5, 2.6 y 9.
+
+Resultado de las medidas aplicadas:
+
+| Anio | Cobertura antes | Cobertura despues |
+|---:|---:|---:|
+| 2023 | 90,1 % | 88,9 % |
+| 2024 | 83,7 % | 86,1 % |
+| 2025 | 51,1 % | **61,7 %** |
+| 2026 | 24,7 % | **33,7 %** |
+
+Cambios que la produjeron:
+
+1. **Las fuentes anuales no se refrescaban.** Solo se actualizaban a mano; la
+   ultima vez fue el 2026-07-21. Al re-descargar aparecio un anio mas en cinco
+   indicadores WDI. Ahora hay un job mensual en el workflow.
+2. **Salud migrada de WHO GHO al World Bank** (ver tabla de variables core).
+3. **Produccion petrolera del anio en curso** desde la serie mensual del mismo
+   producto EIA (57), validada al 0,05 % contra la anual.
+
+Retrocesos, declarados:
+
+- 2022 y 2023 bajan 1,2 puntos porque el World Bank **retiro** los valores
+  2020-2024 del tipo de cambio oficial. Ver METODOLOGIA seccion 9.4.
+
+Descartado tras verificarlo: sustituir `desempleo_pct` por la estimacion
+modelada de la OIT. Las series difieren hasta un 85 % y no son empalmables
+(METODOLOGIA seccion 9.6).
 
 ## Politica de coverage
 

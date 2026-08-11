@@ -133,6 +133,15 @@ Definidos en `iciv/src/iciv/index/dimensions.py`.
 | `acceso_electricidad_pct` | 0,18 |
 | `ilo_empleo_informal_pct` | 0,18 |
 
+> **Cambio de fuente en D5 (2026-08-11).** `esperanza_vida_anos` y
+> `mortalidad_infantil_x1000` pasaron de WHO GHO al World Bank
+> (`SP.DYN.LE00.IN`, `SP.DYN.IMRT.IN`), que publica hasta 2024 mientras la OMS
+> se quedaba en 2021 y 2023. Se verificó la comparabilidad antes de migrar:
+> diferencia media de 1,68 % en esperanza de vida (22 años solapados) y 0,62 %
+> en mortalidad (24 años). Se toma la serie **completa** del WB como vintage
+> único; **no se empalman** las dos fuentes. El loader de la OMS salió del panel
+> maestro; `fetch_who.py` y `who.csv` se conservan para auditoría.
+
 **D6 — Percepción Internacional (0,10)**
 
 | Variable | Peso intra-dimensión |
@@ -176,7 +185,55 @@ Valores de la matriz de dimensiones (n = 6):
    redistribuye entre las variables presentes y la cobertura baja. Nunca se
    sustituye por un valor inventado, ni se hace forward-fill sobre el rezago.
 
-### 2.5 Regla fundamental
+### 2.5 Reconversión monetaria del tipo de cambio
+
+El WDI publica el tipo de cambio de cada año en la denominación vigente ese año,
+sin unificar. Venezuela redenominó tres veces:
+
+| Fecha | Nueva unidad | Equivalencia | Ceros |
+|---|---|---|---:|
+| 2008-01-01 | Bolívar Fuerte (Bs.F) | 1 Bs.F = 1.000 Bs | 3 |
+| 2018-08-20 | Bolívar Soberano (Bs.S) | 1 Bs.S = 100.000 Bs.F | 5 |
+| 2021-10-01 | Bolívar Digital (Bs.D) | 1 Bs.D = 1.000.000 Bs.S | 6 |
+
+El pipeline lleva todo a Bs.F equivalente (`Bs.S × 1e5`, `Bs.D × 1e11`) y aplica
+`log10` antes de normalizar.
+
+**Corrección 2026-08-11.** Los factores anteriores eran `1e3` y `1e9`: usaban
+1.000 para la reconversión de 2018, que en realidad quitó cinco ceros y no tres.
+Ambos estaban 100× por debajo, lo que comprimía el salto real 2017→2020 de 9,5 a
+7,5 órdenes de magnitud y desplazaba la normalización Min-Max de toda la serie.
+Hay tests de regresión en `tests/test_processing/test_reconversion_monetaria.py`.
+
+### 2.6 Año en curso de la producción petrolera
+
+`petroleo_crudo_produccion_tbpd` pesa 9 % del índice, más que ninguna otra
+variable, y la serie anual de EIA llega con cerca de un año de rezago. Desde
+2026-08-11 el año en curso se completa con el promedio de los meses ya
+publicados de la serie **mensual del mismo producto**.
+
+Esto no es una estimación ni un relleno: es el mismo estadístico, de la misma
+fuente, en la misma unidad. Se verificó antes de implementarlo.
+
+| Producto EIA | Descripción | Uso |
+|---:|---|---|
+| 53 | Total petroleum and other liquids | Pulse mensual |
+| **57** | **Crude oil including lease condensate** | **ICIV anual** |
+
+El promedio de los meses del producto **57** reproduce la serie anual con una
+diferencia media del **0,05 %** (máx. 0,16 %) sobre 11 años completos. El
+producto 53 **no** la reproduce: difiere entre 3 % y 13 %, porque incluye otros
+líquidos. Confundirlos habría sido mezclar bases.
+
+Reglas de la anualización:
+
+- Solo se completan años cuyo valor anual es NaN. Nunca se pisa un dato real.
+- Se exige un mínimo de 3 meses publicados para no extrapolar de una observación.
+- El valor es el promedio del **año corrido**, no una proyección del año completo.
+- Cada anualización queda registrada en `data/processed/anualizacion_parcial.csv`
+  con el número de meses usados, para que sea auditable.
+
+### 2.7 Regla fundamental
 
 **Cero datos inventados, cero fallbacks estáticos.** Si una fuente no responde o
 no ha publicado, la cobertura lo refleja. No se crean series sustitutas y no se
@@ -426,7 +483,36 @@ verdad del Pulse. El manifest declara 15.
 El comentario y el docstring decían "2 modelos" cuando `candidates` tiene tres
 órdenes SARIMA. Corregidos.
 
-### 9.4 GDELT: tramos que no completan (abierta, sin impacto)
+### 9.4 Variables sin fuente viva — DECISIÓN PENDIENTE
+
+Dos variables del core no tienen ya fuente publicada y arrastran peso muerto:
+
+| Variable | Peso | Último dato | Estado de la fuente |
+|---|---:|---:|---|
+| `reservas_internacionales_usd` | 4,5 % | 2017 | El WB no publica más allá de 2017. Se probaron `FI.RES.XGLD.CD` (2017), `FI.RES.TOTL.MO` (2016) y `FI.RES.TOTL.DT.ZS` (sin serie). Sin sustituto. |
+| `tipo_cambio_oficial_lcu_usd` | 3,0 % | 2017 | El WB **retiró** los valores 2020–2024 entre julio y agosto de 2026. El refetch del 2026-08-11 los perdió. |
+
+Juntas son **7,5 % del modelo** que nunca se llena. Son la razón de que ni
+siquiera un año completo pase de ~90 % de cobertura.
+
+**Consecuencia visible de la retirada del tipo de cambio:** esa variable
+puntuaba 0,00 en 2024 (la peor lectura posible). Al desaparecer, el agregador
+renormaliza sobre las restantes y el score **sube sin que nada haya mejorado**:
+2024 pasó de 28,31 a 36,59 y 2023 de 30,67 a 35,31. Es un artefacto de
+disponibilidad, no una recuperación. Debe explicarse así.
+
+Las tres salidas posibles, ninguna aplicada todavía porque cambian el modelo:
+
+1. **Retirar ambas** y redistribuir su peso entre las 24 variables restantes.
+   Sube la cobertura de todos los años (2024 llegaría a ~93 %) pero reduce el
+   core de 26 a 24 variables. Hay que declararlo, no presentarlo como "subí la
+   cobertura".
+2. **Restaurar el tipo de cambio** desde el histórico de git (los valores son
+   reales y están en `wdi.csv` antes del commit `918cf09`), documentando el
+   vintage. Conserva la serie, pero el dato ya no es verificable en la fuente.
+3. **Dejarlo como está**: NaN honesto y cobertura baja.
+
+### 9.5 GDELT: tramos que no completan (abierta, sin impacto)
 
 `gdelt_monthly.status.json` reporta `ok: false` de forma recurrente. En la
 corrida del 11-ago-2026 fallaron los seis intentos (2026, 2016 y 2015) y no
@@ -435,7 +521,29 @@ este fetcher sí protege los datos previos, así que la serie mantiene sus 232
 filas hasta 2026-08. Los años 2015 y 2016 llevan varias corridas sin cerrar.
 El diseño acumulativo los reintenta cada semana; no requiere acción.
 
-### 9.5 ACLED con 12 meses de rezago (abierta, limitación del proveedor)
+### 9.6 Desempleo: sustitución descartada tras verificarla
+
+El WB publica `SL.UEM.TOTL.ZS` (estimación modelada de la OIT) con datos hasta
+**2025**, mientras la serie actual (IMF WEO `LUR`) muere en **2018**. Parecía la
+mejor oportunidad de cobertura del proyecto: 3,6 % de peso × 7 años.
+
+**Se descartó al comprobar que no son comparables.** En los 19 años solapados la
+diferencia media es del 23 % y llega al 85 %:
+
+| Año | IMF WEO | OIT modelado | Diferencia |
+|---:|---:|---:|---:|
+| 2016 | 20,9 % | 5,3 % | −74,6 % |
+| 2017 | 27,9 % | 5,0 % | −81,9 % |
+| 2018 | 35,6 % | 5,5 % | −84,6 % |
+
+El modelo de la OIT no captura el colapso laboral venezolano ni la emigración
+masiva: sostiene un desempleo del 5 % durante toda la crisis. Empalmarlas habría
+metido en el índice la señal de que el mercado laboral venezolano está sano.
+Es exactamente el error que ya se cometió una vez al mezclar bases del LSCI.
+
+`desempleo_pct` se queda con la fuente del IMF y su hueco desde 2019.
+
+### 9.7 ACLED con 12 meses de rezago (abierta, limitación del proveedor)
 
 El tier gratuito entrega los datos con un año de retraso: la serie termina en
 2025-08. Es limitación de la cuenta, no del código. Para uso en tiempo real

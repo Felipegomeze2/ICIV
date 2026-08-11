@@ -1,15 +1,25 @@
 name: Actualizar Dashboard ICIV
 
 on:
-  # Ejecución automática: todos los lunes a las 7am UTC (2am Venezuela)
   schedule:
+    # Semanal: lunes 7am UTC (2am Venezuela) — fuentes de alta frecuencia
     - cron: '0 7 * * 1'
+    # Mensual: día 1 a las 8am UTC — además refresca las fuentes ANUALES.
+    # Sin esto, WDI/WGI/OIT/UNCTAD/HDI/PTS/WJP/Freedom House solo se actualizaban
+    # cuando alguien las corría a mano, y el índice arrastraba datos viejos
+    # aunque el publicador ya hubiera sacado el año siguiente.
+    - cron: '0 8 1 * *'
 
   # Ejecución manual desde GitHub → Actions → "Run workflow"
   workflow_dispatch:
     inputs:
       fetch_data:
         description: '¿Descargar datos frescos? (true = fetch completo, false = usar CSVs del repo)'
+        required: false
+        default: 'false'
+        type: boolean
+      fetch_anual:
+        description: '¿Refrescar también las fuentes anuales (WDI, WGI, OIT, UNCTAD, HDI, PTS, WJP, FH)?'
         required: false
         default: 'false'
         type: boolean
@@ -84,6 +94,29 @@ jobs:
           # UNHCR — datos públicos
           python scripts/fetch_unhcr.py        || echo "WARN: fetch_unhcr falló (continuando)"
           echo "Fetch completado."
+
+      # ── Fetch de fuentes ANUALES ────────────────────────────────────────────
+      # Solo el día 1 de cada mes o si se pide a mano. Estas fuentes publican una
+      # o dos veces al año (WGI en septiembre, HDI en septiembre, WDI en diciembre,
+      # CPI en enero), así que pedirlas cada lunes no aporta y sí gasta cuota.
+      #
+      # Cada script lleva la guarda de iciv/src/iciv/utils/safe_save.py: si la
+      # descarga viene vacía no sobrescribe el CSV y sale con código distinto de
+      # cero, que el `|| echo WARN` convierte en aviso visible sin abortar el resto.
+      - name: Fetch fuentes anuales (WDI, WGI, OIT, UNCTAD, HDI, PTS, WJP, FH)
+        if: ${{ github.event.schedule == '0 8 1 * *' || github.event.inputs.fetch_anual == 'true' }}
+        working-directory: iciv
+        run: |
+          echo "Refrescando fuentes anuales institucionales..."
+          python scripts/fetch_wdi.py            || echo "WARN: fetch_wdi falló (continuando)"
+          python scripts/fetch_wgi.py            || echo "WARN: fetch_wgi falló (continuando)"
+          python scripts/fetch_ilostat.py        || echo "WARN: fetch_ilostat falló (continuando)"
+          python scripts/fetch_unctad.py         || echo "WARN: fetch_unctad falló (continuando)"
+          python scripts/fetch_hdi.py            || echo "WARN: fetch_hdi falló (continuando)"
+          python scripts/fetch_pts.py            || echo "WARN: fetch_pts falló (continuando)"
+          python scripts/fetch_wjp.py            || echo "WARN: fetch_wjp falló (continuando)"
+          python scripts/fetch_freedom_house.py  || echo "WARN: fetch_freedom_house falló (continuando)"
+          echo "Fetch anual completado."
 
       - name: Verificar vigencia de fuentes Pulse
         working-directory: iciv

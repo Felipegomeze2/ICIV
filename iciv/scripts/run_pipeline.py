@@ -1,13 +1,20 @@
 """
-Pipeline completo del ICIV: carga → limpieza → imputación → normalización → índice.
+OBSOLETO — NO USAR. Conservado solo como referencia histórica.
 
-Lee los CSVs de data/raw/, procesa todas las fuentes y escribe dos archivos en
-data/processed/:
-  - iciv_normalizado.csv   variables normalizadas 0-100 por año
-  - iciv_scores.csv        puntajes por dimensión + ICIV final + categoría de riesgo
+    El pipeline de producción es `python main.py`.
 
-Uso:
-    python scripts/run_pipeline.py
+Motivo de la baja (2026-08-11): este script incluye un paso `GapImputer` con
+`default_strategy="interpolate"` que RELLENA huecos internos por interpolación
+lineal. `main.py` no lo hace: su pipeline es limpieza → normalización, y los
+faltantes se propagan como NaN para que la cobertura los refleje.
+
+Ejecutarlo produce un `iciv_scores.csv` que NO coincide con el publicado y que
+contiene valores interpolados, violando la regla del proyecto de cero datos
+artificiales. Además sobrescribe los mismos archivos de data/processed/ que
+genera main.py, así que dejarlo disponible era una trampa.
+
+Si algún día se quiere evaluar el efecto de imputar, hágase en un cuaderno
+aparte y con salida a otro directorio, nunca sobre los artefactos publicados.
 """
 
 from __future__ import annotations
@@ -15,6 +22,11 @@ from __future__ import annotations
 import sys
 import logging
 from pathlib import Path
+
+print(__doc__)
+raise SystemExit(
+    "run_pipeline.py está obsoleto e interpola datos. Usa: python main.py"
+)
 
 import pandas as pd
 
