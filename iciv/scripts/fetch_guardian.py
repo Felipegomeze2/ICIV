@@ -30,6 +30,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from iciv.config import settings
+from iciv.utils import load_env_key
 
 _CFG_PATH = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
 _CFG = yaml.safe_load(_CFG_PATH.read_text(encoding="utf-8"))
@@ -43,7 +44,7 @@ QUERY        = G_CFG["query"]
 COL_ARTICLES = G_CFG["col_articles"]
 COL_TONE     = G_CFG["col_tone"]
 
-API_KEY = os.environ.get(G_CFG.get("api_key_env", ""), "") or G_CFG.get("api_key", "")
+API_KEY = load_env_key(G_CFG.get("api_key_env", "GUARDIAN_API_KEY")) or G_CFG.get("api_key", "")
 
 OUTPUT = settings.paths.raw_guardian
 

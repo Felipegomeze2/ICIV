@@ -164,8 +164,8 @@ sources:
   guardian:
     description: "The Guardian — noticias internacionales de referencia"
     base_url: "https://content.guardianapis.com/search"
-    api_key: "9d4cf6fc-8864-4693-adda-987c76fc7476"
-    api_key_env: "GUARDIAN_API_KEY"   # env var tiene prioridad si está definida
+    api_key: ""                       # NO poner claves aqui: el repo es publico
+    api_key_env: "GUARDIAN_API_KEY"   # se lee del entorno o de iciv/.env
     query: "Venezuela"
     notes: >
       API abierta gratuita. Artículos desde 1999.

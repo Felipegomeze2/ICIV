@@ -59,6 +59,7 @@ from iciv.processing.transformers.normalizer import MinMaxNormalizer
 from iciv.index.aggregator import ICIVAggregator
 from iciv.index.weighting import AHPWeights, FixedWeights
 from iciv.index.dimensions import DIMENSIONS
+from iciv.utils import load_env_key
 
 # -- Logging -------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -1022,14 +1023,6 @@ def fase_dashboard(
     annual_ref_coverage = float(_reference_row["cobertura_pct"]) \
         if "cobertura_pct" in df_plot.columns else 100.0
 
-    # Year selector buttons (horizontal scrollable bar)
-    _score_years = [int(y) for y in df_plot["año"].tolist()]
-    year_tabs_html = '<div class="score-year-tabs" id="scoreYearTabs">\n'
-    for _syr in _score_years:
-        _syr_cls = " score-yr-active" if _syr == int(_current_row["año"]) else ""
-        year_tabs_html += f'  <button class="score-yr-btn{_syr_cls}" onclick="selectScoreYear({_syr})">{_syr}</button>\n'
-    year_tabs_html += "</div>"
-
     current_score    = float(_current_row["iciv_score"])
     current_year_val = int(_current_row["año"])
     current_label    = _score_to_label(current_score)
@@ -1062,13 +1055,25 @@ def fase_dashboard(
     _tier_label, _tier_color = _cov_tier(current_coverage)
     coverage_badge = f"{current_coverage:.0f}% · {_tier_label}"
 
-    # Para el radar de dimensiones: usar el último año con algún dato en dimensiones
-    # (puede ser que 2026 tenga NaN en todas las dims excepto D1/D6)
+    # Barras de diagnóstico por dimensión.
+    # Cada dimensión se toma de su ÚLTIMO año con dato real, no del año en curso:
+    # en el año corriente varias fuentes anuales aún no publicaron y un 0 se leería
+    # como "colapso total" cuando en realidad significa "todavía sin publicar".
     last_row  = _current_row
-    dim_vals  = [round(float(last_row.get(d, 0) or 0), 2) if not pd.isna(last_row.get(d)) else 0.0
-                 for d in available_dims]
-    dim_lbls  = [dim_names.get(d, d) for d in available_dims]
-    dim_clrs  = DIM_COLORS[:len(available_dims)]
+    dim_vals, dim_lbls, dim_clrs, dim_years = [], [], [], []
+    for _i, _d in enumerate(available_dims):
+        _serie = df_plot[["año", _d]].dropna(subset=[_d]) if _d in df_plot.columns else None
+        if _serie is None or _serie.empty:
+            continue   # dimensión sin ningún dato: se omite en vez de dibujar un cero
+        _fila = _serie.iloc[-1]
+        dim_vals.append(round(float(_fila[_d]), 2))
+        dim_lbls.append(dim_names.get(_d, _d))
+        dim_clrs.append(DIM_COLORS[_i % len(DIM_COLORS)])
+        dim_years.append(int(_fila["año"]))
+    dim_years_js = json.dumps(dim_years)
+    # Año más antiguo entre las dimensiones mostradas — se declara en el subtítulo
+    dim_year_min = min(dim_years) if dim_years else current_year_val
+    dim_year_max = max(dim_years) if dim_years else current_year_val
     has_provisional = False   # kept for template compatibility
 
     radar_vals_js = json.dumps(dim_vals)
@@ -1318,22 +1323,42 @@ def fase_dashboard(
     _esc = escenarios_data or {}
     escenarios_json = json.dumps(_esc, ensure_ascii=False)
 
-    # ── Datos del Simulador — pesos AHP y scores actuales por dimensión ───────
-    _sim_dim_cols = [d_id.value for d_id in DIMENSIONS]
-    _sim_complete = df_plot.dropna(subset=[c for c in _sim_dim_cols if c in df_plot.columns])
+    # ── Clave Guardian para el fetch en vivo del navegador ───────────────────
+    # OJO: la pestaña de Noticias consulta la API desde el navegador del usuario,
+    # así que esta clave viaja dentro del HTML publicado y es PÚBLICA por diseño.
+    # No se versiona en el código: se inyecta al generar, desde GUARDIAN_API_KEY
+    # (secret en Actions, iciv/.env en local). Rotarla solo exige regenerar.
+    guardian_key = load_env_key("GUARDIAN_API_KEY")
+    if not guardian_key:
+        logger.warning(
+            "  GUARDIAN_API_KEY ausente: la pestana de Noticias mostrara el "
+            "enlace a The Guardian en vez de los titulares en vivo."
+        )
+
+    # ── Datos del Simulador ───────────────────────────────────────────────────
+    # Solo entran dimensiones con datos reales: una dimensión vacía tratada como 0
+    # hunde el resultado simulado y lo aleja del índice publicado. Los pesos se
+    # renormalizan sobre las incluidas, igual que hace el índice anual.
+    _sim_usable = [
+        (_d_id.value, _d) for _d_id, _d in DIMENSIONS.items()
+        if _d_id.value in df_plot.columns and df_plot[_d_id.value].notna().any()
+    ]
+    # Año base: el más reciente con dato en TODAS las dimensiones utilizables
+    _sim_complete = df_plot.dropna(subset=[k for k, _ in _sim_usable])
     _sim_base_row = _sim_complete.iloc[-1] if not _sim_complete.empty else df_plot.iloc[-1]
     sim_base_year = int(_sim_base_row["año"])
+
+    _sim_weight_total = sum(_d.iciv_weight for _, _d in _sim_usable) or 1.0
     _sim_dims: list[dict] = []
-    for _d_id, _d in DIMENSIONS.items():
-        _key = _d_id.value
+    for _key, _d in _sim_usable:
         _hist_vals = [round(float(v), 2) if v is not None and str(v) != "nan" else None
-                      for v in df_plot[_key].tolist()] if _key in df_plot.columns else []
+                      for v in df_plot[_key].tolist()]
         _cur_raw = _sim_base_row.get(_key)
         _cur = round(float(_cur_raw), 1) if _cur_raw is not None and not pd.isna(_cur_raw) else 0.0
         _sim_dims.append({
             "id":      _key,
             "label":   _d.name,
-            "weight":  _d.iciv_weight,
+            "weight":  round(_d.iciv_weight / _sim_weight_total, 6),
             "current": _cur,
             "hist":    _hist_vals,
             "max_hist": max((v for v in _hist_vals if v is not None), default=100.0),
@@ -1342,17 +1367,15 @@ def fase_dashboard(
     sim_years_js  = years_js   # same years already computed
     sim_scores_js = scores_ahp_js  # same AHP scores already computed
 
-    # ── Correlación ICIV → IED — gráficas y tablas estáticas ────────────────
-    _corr = correlacion_data or {}
-    correlacion_json = json.dumps(_corr, ensure_ascii=False, cls=_NumpyEncoder)
-    _scatter_b64, _crosscorr_b64 = _generate_corr_charts_b64(_corr)
-    _corr_formula_html, _corr_ols1_html, _corr_ols2_html, _corr_granger_adf_html = _build_corr_stats_html(_corr)
-
-    sanciones_json = "{}"
-    _sanciones_table_html = ""
-
-    # ── Validación externa no circular (leave-one-out) — bloque A2 ───────────
-    _loo_validation_html = _generate_loo_validation_html(df_norm)
+    # ── Validación y correlación ─────────────────────────────────────────────
+    # El dashboard es el producto para el usuario final y ya no incrusta bloques
+    # metodológicos, así que no se generan aquí las figuras matplotlib ni las
+    # tablas de OLS/Granger/leave-one-out: costaban segundos de pipeline y cientos
+    # de KB de base64 para nada. Ese material vive en:
+    #   · iciv/data/processed/iciv_validacion.html  (scripts/validate_model.py)
+    #   · docs/VALIDACION_EXTERNA.md, docs/MODEL_CARD.md, docs/BACKTESTING_FORECAST.md
+    # Las funciones _generate_corr_charts_b64 / _build_corr_stats_html /
+    # _generate_loo_validation_html se conservan por si se necesitan en el anexo.
 
     # ── Validación externa: correlaciones ICIV vs índices internacionales ─────
     # Calcula Pearson/Spearman entre el ICIV y cada índice externo presente como
@@ -1892,9 +1915,10 @@ def fase_dashboard(
         bar_width = f"{score:.1f}%" if score is not None else "0"
         bar = (f'<div style="width:{bar_width};max-width:100%;height:6px;'
                f'background:{r["hex"]};border-radius:3px;margin-top:3px"></div>')
+        # El "racional" se omite en el producto: es texto largo por fila.
+        # Sigue disponible en el payload sector_json para documentación.
         _table_rows_html += (
-            f'<tr style="border-bottom:1px solid var(--border);cursor:pointer" '
-            f'data-sid="{r["sector_id"]}" onclick="sectorShowHist(this.dataset.sid)">'
+            f'<tr style="border-bottom:1px solid var(--border)" data-sid="{r["sector_id"]}">'
             f'<td style="padding:10px 14px;color:var(--muted);font-size:.72rem">{r["rank"]}</td>'
             f'<td style="padding:10px 14px;color:var(--text);font-weight:600">{r["label"]}</td>'
             f'<td style="padding:10px 14px;text-align:center">'
@@ -1906,25 +1930,7 @@ def fase_dashboard(
             f'{r["recomendacion_short"]}</span></td>'
             f'<td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">'
             f'{r["riesgo_principal"]}</td>'
-            f'<td style="padding:10px 14px;color:var(--muted);font-size:.70rem;max-width:280px;'
-            f'line-height:1.4">{r["racional"]}</td>'
             f'</tr>'
-        )
-
-    # Toggle buttons
-    _toggle_btns_html = ""
-    for i, (sid, slabel) in enumerate(_sector_labels.items()):
-        c = _SECTOR_COLORS[i % len(_SECTOR_COLORS)]
-        active = i < 4
-        bg  = f"{c}33" if active else "transparent"
-        col = c if active else "#8b949e"
-        brd = c if active else "#444"
-        _toggle_btns_html += (
-            f'<button data-sid="{sid}" data-idx="{i}" '
-            f'onclick="sectorShowHist(this.dataset.sid)" '
-            f'style="background:{bg};color:{col};border:1px solid {brd};'
-            f'border-radius:4px;padding:3px 10px;font-size:.68rem;cursor:pointer;transition:all .2s">'
-            f'{slabel}</button>'
         )
 
     # El mapa por estado se alimenta del payload blackmarble_map_json (arriba);
@@ -2196,1444 +2202,209 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 .footer{{text-align:center;padding:28px;font-size:.72rem;color:var(--muted);
          border-top:1px solid var(--border)}}
 
+/* ── Diseño minimalista: héroe, KPIs y bloques de la vista de producto ── */
+.lead{{font-size:.9rem;color:var(--muted);line-height:1.6;max-width:640px;margin:0 0 22px}}
+.hero-grid{{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:22px}}
+.hero-card{{background:var(--card);border:1px solid var(--border);border-radius:16px;
+            padding:30px 32px;position:relative;overflow:hidden}}
+.hero-card::before{{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+                    background:var(--accent);opacity:.9}}
+.hero-card.is-annual::before{{background:#f1c40f}}
+.hero-tag{{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;
+           color:var(--muted);margin-bottom:14px}}
+.hero-num{{font-size:4.4rem;font-weight:700;line-height:.92;letter-spacing:-2px;color:var(--text)}}
+.hero-card.is-annual .hero-num{{font-size:3.4rem}}
+.hero-lbl{{font-size:1rem;font-weight:600;margin-top:10px;color:var(--text)}}
+.hero-meta{{font-size:.74rem;color:var(--muted);margin-top:8px}}
+.hero-note{{font-size:.72rem;color:var(--muted);margin-top:14px;padding-top:12px;
+            border-top:1px solid var(--border);line-height:1.5}}
+.kpi-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:22px}}
+.kpi{{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}}
+.kpi-lbl{{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}}
+.kpi-val{{font-size:1.55rem;font-weight:700;color:var(--text);line-height:1}}
+.kpi-sub{{font-size:.65rem;color:#6b7280;margin-top:6px}}
+.block-title{{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:4px}}
+.block-sub{{font-size:.76rem;color:var(--muted);margin-bottom:16px;line-height:1.5}}
+.panel{{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 26px;margin-bottom:20px}}
+.hint{{font-size:.72rem;color:#6b7280;line-height:1.55;margin-top:12px}}
+details.more{{margin-top:14px}}
+details.more summary{{cursor:pointer;color:var(--accent);font-size:.74rem;font-weight:600;list-style:none}}
+details.more summary::-webkit-details-marker{{display:none}}
+details.more summary::before{{content:'ⓘ ';opacity:.8}}
+details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;margin-top:10px}}
+
 @media(max-width:900px){{
   .charts-grid{{grid-template-columns:1fr}}
   .chart-card.wide{{grid-column:span 1}}
   .section{{padding:24px 20px}}
   .header{{padding:24px 20px}}
   .nav{{padding:0 16px}}
+  .hero-grid{{grid-template-columns:1fr}}
+  .hero-num{{font-size:3.4rem}}
 }}
 </style>
 </head>
 <body>
 
-<!-- NAV de 2 niveles — estructura narrativa -->
+<!-- NAV plana — una sola fila, sin sub-pestañas -->
 <div class="nav-wrap">
   <div class="nav-top">
-    <a class="nav-brand" href="#" onclick="event.preventDefault();showSection('portada')" title="Ir a portada">ICIV</a>
-    <a href="#" data-block="inicio">Inicio</a>
-    <a href="#" data-block="historia">Historia</a>
-    <a href="#" data-block="diagnostico">Diagnóstico</a>
-    <a href="#" data-block="proyeccion">Proyección</a>
-    <a href="#" data-block="noticias">Noticias</a>
-    <a href="#" data-block="metodologia">Metodología</a>
-  </div>
-
-  <div class="nav-sub nav-sub-active" data-block="portada">
-    <!-- portada no necesita sub-nav: es una sección única -->
-  </div>
-
-  <div class="nav-sub" data-block="inicio">
-    <a href="#inicio" class="active">Clima Actual</a>
-    <a href="#ven-hoy">Venezuela Hoy</a>
-    <a href="#score">ICIV Anual</a>
-  </div>
-
-  <div class="nav-sub" data-block="historia">
-    <a href="#historia">Evolución 25 años</a>
-    <a href="#pulse">Pulse Mensual</a>
-    <a href="#pulse-componentes">Componentes Pulse</a>
-    <a href="#pulse-metodologia">Metodología Pulse</a>
-    <a href="#mapa">Actividad por Estado</a>
-  </div>
-
-  <div class="nav-sub" data-block="diagnostico">
-    <a href="#dimensiones">Dimensiones</a>
-    <a href="#alertas">Alertas SATV</a>
-    <a href="#sectorial">Radar Sectorial</a>
-  </div>
-
-  <div class="nav-sub" data-block="proyeccion">
-    <a href="#forecast-ml">Predicción Pulse</a>
-    <a href="#forecast-metodologia">Metodología</a>
-    <a href="#proyecciones">Laboratorio</a>
-  </div>
-
-  <div class="nav-sub" data-block="noticias">
-    <!-- Noticias queda como pestaña principal sin submenú. -->
-  </div>
-
-  <div class="nav-sub" data-block="metodologia">
-    <a href="#correlacion">Validación / Coherencia</a>
-    <a href="#bibliografia">Bibliografía</a>
+    <a class="nav-brand" href="#" onclick="event.preventDefault();showSection('hoy')" title="Ir al inicio">ICIV</a>
+    <a href="#hoy">Hoy</a>
+    <a href="#historia">Historia</a>
+    <a href="#mapa">Mapa</a>
+    <a href="#noticias">Noticias</a>
+    <a href="#sectores">Sectores</a>
+    <a href="#laboratorio">Laboratorio</a>
   </div>
 </div>
 
-<!-- ===== PORTADA — Introducción al proyecto ===== -->
-<section class="tab-section tab-active" id="portada" style="border-bottom:1px solid var(--border)">
-
-  <!-- Hero block -->
-  <div style="padding:48px 40px 40px;background:linear-gradient(135deg,rgba(0,212,170,.04) 0%,rgba(52,152,219,.03) 50%,transparent 100%);border-bottom:1px solid var(--border)">
-    <div style="margin-bottom:18px">
-      <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:4px">Felipe Gómez Espinal</div>
-      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.3px">Tesis de Especialización · Big Data e Inteligencia de Negocios · Universidad EIA &nbsp;·&nbsp; {generated_at}</div>
-    </div>
-    <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:10px">
-      <span style="font-size:3.2rem;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-1px">ICIV</span>
-      <span style="font-size:1.3rem;font-weight:300;color:var(--text);line-height:1.2;letter-spacing:-.2px">Indicador de Clima de Inversión Venezuela</span>
-    </div>
-    <p style="font-size:.88rem;color:var(--muted);max-width:700px;line-height:1.7;margin:0 0 26px">
-      Un indicador reproducible del clima de inversión para Venezuela construido
-      con datos satelitales e internacionales auditables, sin fuentes originadas en Venezuela.
-      El ICIV anual describe la trayectoria estructural 2000–{settings.series.end_year}; el Pulse
-      mensual monitorea señales de alta frecuencia desde 2010.
-    </p>
-
-    <!-- Scores actuales -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:30px">
-      <div style="background:var(--card);border:1px solid var(--border);border-left:3px solid {current_color};
-                  border-radius:8px;padding:12px 20px">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:4px">ICIV Anual {current_year_val}</div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <span style="font-size:1.5rem;font-weight:700;color:{current_color}">{current_score:.1f}</span>
-          <span style="font-size:.75rem;color:{current_color}">{current_label}</span>
-        </div>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:6px">
-          {coverage_badge}{f" · último confiable: {annual_ref_year} · {annual_ref_score:.1f} · {annual_ref_coverage:.0f}% cob." if current_year_val != annual_ref_year else ""}
-        </div>
-      </div>
-      <div id="portadaPCard" style="background:var(--card);border:1px solid var(--border);border-left:3px solid #8b949e;
-                  border-radius:8px;padding:12px 20px">
-        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:4px">Pulse Mensual</div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <span id="portadaPS" style="font-size:1.5rem;font-weight:700;color:#8b949e">—</span>
-          <span id="portadaPF" style="font-size:.75rem;color:var(--muted)">—</span>
-        </div>
-        <div id="portadaPR" style="font-size:.68rem;color:var(--muted);margin-top:6px">—</div>
-      </div>
-    </div>
-
-    <!-- CTAs -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <a href="#" class="portada-cta-sec" onclick="event.preventDefault();showSection('inicio')">Ver clima actual</a>
-      <a href="#" class="portada-cta-sec" onclick="event.preventDefault();showSection('historia')">25 años de historia</a>
-      <a href="#" class="portada-cta-sec" onclick="event.preventDefault();showSection('dimensiones')">Ver diagnóstico</a>
-    </div>
-  </div>
-
-  <!-- 3 Pilares diferenciadores -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)">
-    <div class="portada-pillar">
-      <div class="portada-pillar-bar" style="background:var(--accent)"></div>
-      <div class="portada-pillar-title">Datos satelitales VIIRS</div>
-      <div class="portada-pillar-body">
-        Luminosidad nocturna (Li et al.) como proxy de actividad económica.
-        25 años de imágenes reales sin interpolación. Verificable con datos Figshare públicos.
-      </div>
-    </div>
-    <div class="portada-pillar">
-      <div class="portada-pillar-bar" style="background:#3498db"></div>
-      <div class="portada-pillar-title">Frecuencia mensual — ICIV Pulse</div>
-      <div class="portada-pillar-body">
-        Señales mensuales desde enero 2010. El Pulse combina variables reales de
-        FRED, EIA, Guardian y GDELT para leer el tramo entre publicaciones anuales.
-      </div>
-    </div>
-    <div class="portada-pillar">
-      <div class="portada-pillar-bar" style="background:#e74c3c"></div>
-      <div class="portada-pillar-title">Cero datos venezolanos</div>
-      <div class="portada-pillar-body">
-        Ninguna variable del gobierno venezolano (BCV, INE, PDVSA).
-        Todo construido con IMF · World Bank · EIA · UNHCR · The Guardian · Li et al.
-        Reproducible y auditable.
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)">
-    <div class="portada-stat">
-      <div class="portada-stat-num" style="color:var(--accent)">25</div>
-      <div class="portada-stat-lbl">años · 2000–{settings.series.end_year}</div>
-    </div>
-    <div class="portada-stat">
-      <div class="portada-stat-num" style="color:#3498db">197</div>
-      <div class="portada-stat-lbl">meses Pulse mensual</div>
-    </div>
-    <div class="portada-stat">
-      <div class="portada-stat-num" style="color:var(--text)">26</div>
-      <div class="portada-stat-lbl">variables · 6 dimensiones</div>
-    </div>
-    <div class="portada-stat">
-      <div class="portada-stat-num" style="color:var(--text)">15+</div>
-      <div class="portada-stat-lbl">fuentes internacionales</div>
-    </div>
-  </div>
-
-  <!-- 6 Dimensiones + Metodología -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;padding:32px 40px">
-    <div style="border-right:1px solid var(--border);padding-right:36px">
-      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px">Las 6 dimensiones del ICIV</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#3498db;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D1 Macroeconomía externa</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">35%</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#e67e22;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D2 Energía Venezuela</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">25%</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#9b59b6;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D3 Institucional</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">10%</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#1abc9c;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D4 Comercial / Migración</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">15%</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#e74c3c;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D5 Capital humano</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">10%</span></div>
-        <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:#f39c12;flex-shrink:0"></div><span style="font-size:.8rem;color:var(--text)">D6 Percepción mediática</span><span style="font-size:.7rem;color:var(--muted);margin-left:auto">5%</span></div>
-      </div>
-    </div>
-    <div style="padding-left:36px">
-      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:16px">Metodología y temporalidad</div>
-      <div style="display:flex;flex-direction:column;gap:12px;font-size:.8rem;color:var(--muted)">
-        <div><span style="color:var(--text);font-weight:600">ICIV Anual (oficial):</span> Datos 2000–{settings.series.end_year} · Pesos AHP (CR=0.008) · Normalización Min-Max · Score 0–100</div>
-        <div><span style="color:var(--text);font-weight:600">ICIV Pulse (mensual):</span> 2010–{settings.series.end_year} · 15 variables mensuales · Pesos renormalizados según cobertura real · Stock &amp; Watson (2002)</div>
-        <div><span style="color:var(--text);font-weight:600">Forecast:</span> SARIMA(1,1,2)(1,1,1,12) · 6 meses horizon · IC 80%/95%</div>
-        <div><span style="color:var(--text);font-weight:600">VIIRS NTL:</span> Li et al. (2020) Figshare · bbox Venezuela + 25 estados · Extracción raster real</div>
-        <div style="margin-top:4px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem">
-          <span style="color:var(--accent);font-weight:600">CR = 0.008 &lt; 0.10</span> — consistencia AHP validada ·
-          <span style="color:var(--accent);font-weight:600">SI = 0.041</span> — robustez a cambios de pesos
-        </div>
-      </div>
-    </div>
-  </div>
-
-</section>
-
-<!-- ===== SECTION 0: INICIO — HERO (Pulse como protagonista) ===== -->
-<section class="section tab-section" id="inicio">
+<!-- ===== HOY ===== -->
+<section class="section tab-section tab-active" id="hoy">
   <div class="section-header">
-    <span class="section-title">Monitor de Clima · Actual</span>
-    <span class="section-sub">ICIV Pulse mensual como protagonista · ICIV Anual como referencia estructural · Datos FRED / EIA / UNHCR / IMF</span>
+    <span class="section-title">Clima de inversión</span>
+    <span class="section-sub">Venezuela · actualizado {generated_at}</span>
   </div>
 
-  <!-- Hero: Pulse (protagonista) + ICIV Anual (contexto) -->
-  <div id="inicioHero" style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:24px">
+  <p class="lead">
+    Dos lecturas del mismo país: la señal mensual se mueve rápido, el índice anual mide el fondo estructural.
+    Ninguna cifra viene de fuentes venezolanas.
+  </p>
 
-    <!-- Pulse: el número principal -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 32px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#3498db,#00d4aa)"></div>
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">ICIV Pulse — Mensual</div>
-      <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:8px">
-        <div id="inicioPS" style="font-size:4rem;font-weight:700;line-height:1;color:#3498db">—</div>
-        <div style="padding-bottom:6px">
-          <div id="inicioPL" style="font-size:.9rem;font-weight:600;color:var(--text)">—</div>
-          <div id="inicioPF" style="font-size:.72rem;color:var(--muted);margin-top:2px">—</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:20px;font-size:.75rem;color:var(--muted)">
-        <span>vs. mes anterior: <strong id="inicioPD" style="color:var(--text)">—</strong></span>
-        <span>cobertura directa: <strong id="inicioPC" style="color:var(--accent)">—</strong></span>
-      </div>
-      <div id="inicioPR" style="font-size:.72rem;color:var(--muted);margin-top:10px">—</div>
-      <!-- Sparkline 12 meses (oculta, usada internamente) -->
-      <canvas id="cInicioSparkline" style="display:none"></canvas>
-      <div style="font-size:.65rem;color:#555;margin-top:16px">15 variables internacionales · FRED macro · EIA petróleo · IMF IMTS comercio espejo · WB Pink Sheet · Guardian y GDELT noticias · cobertura visible por mes</div>
+  <div class="hero-grid">
+    <div class="hero-card">
+      <div class="hero-tag">Señal mensual</div>
+      <div class="hero-num" id="inicioPS">—</div>
+      <div class="hero-lbl" id="inicioPL">—</div>
+      <div class="hero-meta"><span id="inicioPF">—</span> · cobertura <span id="inicioPC">—</span></div>
+      <div class="hero-note">Cambio vs. mes anterior: <span id="inicioPD">—</span><br><span id="inicioPR">—</span></div>
     </div>
-
-    <!-- ICIV Anual: contexto estructural -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px 32px;position:relative;overflow:hidden;display:flex;flex-direction:column">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)"></div>
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">ICIV Anual — Referencia</div>
-      <div id="inicioAS" style="font-size:3.2rem;font-weight:700;line-height:1;color:var(--accent);margin-bottom:6px">—</div>
-      <div id="inicioAL" style="font-size:.88rem;font-weight:600;color:var(--text)">—</div>
-      <div id="inicioAD" style="font-size:.72rem;color:var(--muted);margin-top:4px">—</div>
-      <div id="inicioAY" style="font-size:.68rem;color:#555;margin-top:4px">—</div>
-      <div id="inicioAR" style="font-size:.68rem;color:var(--muted);margin-top:6px;line-height:1.4">—</div>
-      <div style="flex:1"></div>
-      <!-- Mini gauge — misma estructura que el gauge principal: bandas tenues,
-           banda activa resaltada y aguja del color de la categoría -->
-      <svg id="inicioGauge" viewBox="0 0 220 130" style="width:100%;max-width:220px;margin:16px auto 0">
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#21262d" stroke-width="20" stroke-linecap="butt"/>
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e05c5c" stroke-width="20" stroke-linecap="butt"
-              stroke-dasharray="84.8 282.74" stroke-dashoffset="0" opacity="0.18"/>
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e67e22" stroke-width="20" stroke-linecap="butt"
-              stroke-dasharray="56.5 282.74" stroke-dashoffset="-84.8" opacity="0.18"/>
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#f1c40f" stroke-width="20" stroke-linecap="butt"
-              stroke-dasharray="42.4 282.74" stroke-dashoffset="-141.3" opacity="0.18"/>
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#2ecc71" stroke-width="20" stroke-linecap="butt"
-              stroke-dasharray="42.4 282.74" stroke-dashoffset="-183.7" opacity="0.18"/>
-        <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#00d4aa" stroke-width="20" stroke-linecap="butt"
-              stroke-dasharray="56.5 282.74" stroke-dashoffset="-226.1" opacity="0.18"/>
-        <path id="inicioActiveBand" d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="{current_color}" stroke-width="22" stroke-linecap="butt"
-              stroke-dasharray="{active_dash_len:.1f} 282.74" stroke-dashoffset="-{active_dash_offset:.1f}" opacity="1"/>
-        <line id="inicioNeedle" x1="110" y1="112" x2="110" y2="38"
-              stroke="{current_color}" stroke-width="3.5" stroke-linecap="round"
-              transform="rotate({gauge_angle},110,110)"/>
-        <circle id="inicioNeedleBase" cx="110" cy="110" r="7" fill="{current_color}" opacity="0.95"/>
-        <circle cx="110" cy="110" r="3.5" fill="#0d1117"/>
-      </svg>
+    <div class="hero-card is-annual">
+      <div class="hero-tag">Índice anual</div>
+      <div class="hero-num" id="inicioAS">—</div>
+      <div class="hero-lbl" id="inicioAL">—</div>
+      <div class="hero-meta" id="inicioAY">—</div>
+      <div class="hero-note">Cambio vs. año anterior: <span id="inicioAD">—</span><br><span id="inicioAR">—</span></div>
     </div>
   </div>
 
-  <!-- Indicadores clave: 6 cards -->
-  <div id="inicioGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px">
-    <!-- filled by JS from VH data -->
+  <div class="block-title">Señales del momento</div>
+  <div class="block-sub">Precios, producción y contexto global que mueven la aguja.</div>
+  <div class="kpi-grid" id="inicioGrid"></div>
+
+  <div id="satvWrap">
+    <div class="block-title">Alertas</div>
+    <div class="block-sub">Lo que cambió y merece atención.</div>
+    <div id="satvAlertas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px"></div>
   </div>
 
-  <!-- Serie completa Pulse mensual 2010–2026: el corazón del ICIV -->
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:20px">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-      <div>
-        <div style="font-size:.8rem;font-weight:600;color:var(--text)">ICIV Pulse — Evolución mensual 2010–2026</div>
-        <div style="font-size:.7rem;color:var(--muted);margin-top:3px">197 meses · Línea verde = Pulse mensual · Línea amarilla = ICIV Anual referencia · Puntos huecos = cobertura &lt;70%</div>
-      </div>
-      <a href="#" onclick="event.preventDefault();showSection('pulse')" style="font-size:.7rem;color:var(--accent);text-decoration:none;white-space:nowrap;margin-left:16px">Ver análisis completo →</a>
-    </div>
-    <div style="height:260px">
-      <canvas id="cInicioFullPulse"></canvas>
-    </div>
+  <div class="panel">
+    <div class="block-title">Dónde está el problema</div>
+    <div class="block-sub">Cada área puntuada de 0 a 100. Más bajo, peor. Se muestra el último dato publicado de cada una ({dim_year_min}–{dim_year_max}).</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="cDimBar"></canvas></div>
   </div>
 
-  <!-- Nota de actualización -->
-  <div style="background:rgba(0,212,170,.04);border:1px solid rgba(0,212,170,.12);border-radius:8px;padding:12px 18px;font-size:.72rem;color:#6b7280;line-height:1.65">
-    <strong style="color:var(--muted)">Actualización:</strong>
-    Pulse mensual — datos FRED/EIA hasta el último mes disponible (lag EIA: 3–4 meses).
-    ICIV Anual — actualización anual (WGI sep · HDI sep · WDI dic · CPI ene).
-    Ninguna variable proviene de fuentes del gobierno venezolano.
+  <div class="hint">
+    La escala va de 0 a 100. Por debajo de 30 el riesgo es alto; sobre 65, bajo.
+    La cobertura indica cuántos datos ya publicaron las fuentes para ese periodo.
   </div>
 </section>
 
-<!-- ===== SECTION 1: SCORE ACTUAL (ICIV Anual detalle) ===== -->
-<section class="section tab-section" id="score">
-  <div class="section-header">
-    <span class="section-title">Score Actual</span>
-    <span class="section-sub" id="scoreHeaderSub">Venezuela · {current_year_val}</span>
-  </div>
-
-  <!-- Year selector -->
-  {year_tabs_html}
-
-  <!-- Coverage badge — always visible, color-coded by coverage level -->
-  <div id="scoreCoverageWarn" style="display:flex;background:#1c2128;border:1px solid {'#e6a817' if is_low_coverage else '#00d4aa'};border-radius:8px;padding:10px 16px;margin-bottom:16px;align-items:center;gap:12px">
-    <span id="scoreCovWarnIcon" style="font-size:1.1rem">{'&#9888;' if is_low_coverage else '&#10003;'}</span>
-    <div style="flex:1">
-      <strong id="scoreCovWarnPct" style="color:{'#e6a817' if is_low_coverage else '#00d4aa'}">Cobertura de datos: {current_coverage:.0f}%</strong><br>
-      <span style="color:#8b949e;font-size:.8rem" id="scoreCovWarnTxt">El score {current_year_val} se calcula con {current_coverage:.0f}% del peso total del modelo. {'Para años recientes, las fuentes con lag publican sus datos meses después.' if is_low_coverage else 'Cobertura suficiente para considerar el score estadísticamente representativo.'}</span>
-    </div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label" id="scoreMainLbl">ICIV {current_year_val}</div>
-      <div class="stat-val" id="scoreMainVal" style="color:{current_color}">{current_score:.1f}</div>
-      <div class="stat-sub" id="scoreMainSub">{current_label} · {coverage_badge}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label" id="scoreDeltaLbl">Variación vs año anterior</div>
-      <div class="stat-val {delta_cls}" id="scoreDeltaVal">{delta_sign}{delta_val:.1f}</div>
-      <div class="stat-sub" id="scoreDeltaSub">puntos respecto a {current_year_val - 1}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Mínimo histórico</div>
-      <div class="stat-val stat-down">{score_min:.1f}</div>
-      <div class="stat-sub">{year_min}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Máximo histórico</div>
-      <div class="stat-val stat-up">{score_max:.1f}</div>
-      <div class="stat-sub">{year_max}</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Promedio histórico</div>
-      <div class="stat-val stat-neu">{score_avg:.1f}</div>
-      <div class="stat-sub">{n_years} años calculados</div>
-    </div>
-  </div>
-
-  <!-- Recommendation -->
-  <div class="alert {'alert-bad' if current_score <= 30 else 'alert-warn' if current_score <= 50 else 'alert-info'}" id="scoreAlertDiv">
-    <div class="alert-title" id="scoreAlertTitle">Recomendación de inversión {current_year_val}</div>
-    <div class="alert-body" id="scoreAlertBody">{_get_recommendation(current_score)}</div>
-  </div>
-
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="ct" id="gaugeTitle">Indicador ICIV {current_year_val}</div>
-      <div class="cs">Escala 0–100 · Metodología AHP Saaty (1980)</div>
-      <div class="gauge-wrap">
-        <svg class="gauge-svg" viewBox="0 0 220 130">
-          <!-- arc background (dark track) -->
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#21262d" stroke-width="20" stroke-linecap="butt"/>
-          <!-- Inactive bands — dim opacity so active band stands out clearly -->
-          <!-- Total arc length = π*90 ≈ 282.74. Bands: 0-30=84.8 | 31-50=56.5 | 51-65=42.4 | 66-80=42.4 | 81-100=56.5 -->
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e05c5c" stroke-width="20" stroke-linecap="butt"
-                stroke-dasharray="84.8 282.74" stroke-dashoffset="0" opacity="0.18"/>
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#e67e22" stroke-width="20" stroke-linecap="butt"
-                stroke-dasharray="56.5 282.74" stroke-dashoffset="-84.8" opacity="0.18"/>
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#f1c40f" stroke-width="20" stroke-linecap="butt"
-                stroke-dasharray="42.4 282.74" stroke-dashoffset="-141.3" opacity="0.18"/>
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#2ecc71" stroke-width="20" stroke-linecap="butt"
-                stroke-dasharray="42.4 282.74" stroke-dashoffset="-183.7" opacity="0.18"/>
-          <path d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="#00d4aa" stroke-width="20" stroke-linecap="butt"
-                stroke-dasharray="56.5 282.74" stroke-dashoffset="-226.1" opacity="0.18"/>
-          <!-- Active band highlight (dynamic) — full opacity, slightly thicker -->
-          <path id="gaugeActiveBand" d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="{current_color}" stroke-width="22" stroke-linecap="butt"
-                stroke-dasharray="{active_dash_len:.1f} 282.74" stroke-dashoffset="-{active_dash_offset:.1f}" opacity="1"/>
-          <!-- Fill arc removed: caused visual overlap when score crossed band boundaries.
-               The needle + active band already communicate position clearly. -->
-          <path id="gaugeFillArc" d="M20,110 A90,90,0,0,1,200,110" fill="none" stroke="transparent" stroke-width="0"/>
-          <!-- needle (dynamic) -->
-          <line id="gaugeNeedle" x1="110" y1="112" x2="110" y2="38"
-                stroke="{current_color}" stroke-width="3.5" stroke-linecap="round"
-                transform="rotate({gauge_angle},110,110)"/>
-          <circle id="gaugeNeedleBase" cx="110" cy="110" r="7" fill="{current_color}" opacity="0.95"/>
-          <circle cx="110" cy="110" r="3.5" fill="#0d1117"/>
-        </svg>
-        <div style="text-align:center;margin-top:4px">
-          <span id="gaugeScoreNum" style="font-size:2.6rem;font-weight:700;color:{current_color};line-height:1">{current_score:.1f}</span>
-          <span style="font-size:.8rem;color:var(--muted);display:block;margin-top:2px">/ 100 pts</span>
-        </div>
-        <div id="gaugeCatLbl" class="gauge-cat" style="color:{current_color}">{current_label}</div>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="ct">Categorías de riesgo</div>
-      <div class="cs">Escala de bandas de riesgo del ICIV</div>
-      <div class="risk-bands" id="riskBands">
-        <div class="rb {'active' if current_score <= 30 else ''}" id="rb0" style="color:#e05c5c">
-          <div class="rb-dot" style="background:#e05c5c"></div>
-          <div><strong>0–30 · Alto Riesgo</strong><br><span style="color:var(--muted)">No se recomienda inversión directa</span></div>
-        </div>
-        <div class="rb {'active' if 30 < current_score <= 50 else ''}" id="rb1" style="color:#e67e22">
-          <div class="rb-dot" style="background:#e67e22"></div>
-          <div><strong>31–50 · Riesgo Moderado-Alto</strong><br><span style="color:var(--muted)">Solo sectores con alta tolerancia al riesgo</span></div>
-        </div>
-        <div class="rb {'active' if 50 < current_score <= 65 else ''}" id="rb2" style="color:#f1c40f">
-          <div class="rb-dot" style="background:#f1c40f"></div>
-          <div><strong>51–65 · Riesgo Moderado</strong><br><span style="color:var(--muted)">Viable con due diligence reforzado</span></div>
-        </div>
-        <div class="rb {'active' if 65 < current_score <= 80 else ''}" id="rb3" style="color:#2ecc71">
-          <div class="rb-dot" style="background:#2ecc71"></div>
-          <div><strong>66–80 · Bajo Riesgo</strong><br><span style="color:var(--muted)">Condiciones favorables con análisis sectorial</span></div>
-        </div>
-        <div class="rb {'active' if current_score > 80 else ''}" id="rb4" style="color:#00d4aa">
-          <div class="rb-dot" style="background:#00d4aa"></div>
-          <div><strong>81–100 · Muy Bajo Riesgo</strong><br><span style="color:var(--muted)">Comparable a mercados emergentes estables</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SECTION 2: EVOLUCIÓN HISTÓRICA ===== -->
+<!-- ===== HISTORIA ===== -->
 <section class="section tab-section" id="historia">
   <div class="section-header">
-    <span class="section-title">Evolución Histórica</span>
-    <span class="section-sub">2000–{settings.series.end_year} · AHP vs Pesos Fijos</span>
+    <span class="section-title">Historia</span>
+    <span class="section-sub">2000–{settings.series.end_year}</span>
   </div>
 
-  <!-- Sub-tabs: Gráfico / Tabla -->
-  <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--border)">
-    <button class="hist-tab hist-tab-active" data-view="grafico"
-      style="background:none;border:none;color:var(--text);font-size:.82rem;font-weight:600;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid var(--accent)">
-      Gráfico
-    </button>
-    <button class="hist-tab" data-view="tabla"
-      style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid transparent">
-      Tabla de datos
-    </button>
+  <p class="lead">
+    Veinticinco años en dos gráficos: el arco largo del país y hacia dónde apunta la señal mensual.
+  </p>
+
+  <div class="panel">
+    <div class="block-title">El arco de 25 años</div>
+    <div class="block-sub">Índice anual con las bandas de riesgo de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
+    <div class="chart-wrap" style="height:400px"><canvas id="cHistoria"></canvas></div>
   </div>
 
-  <!-- Vista: Gráfico -->
-  <div id="histView-grafico">
-    <div class="alert alert-info" style="margin-bottom:20px">
-      <div class="alert-title">Cómo leer esta sección</div>
-      <div class="alert-body">
-        La <strong>línea continua</strong> refleja el ICIV calculado con pesos AHP (juicio de expertos via Saaty 1980);
-        la <strong>línea punteada</strong> usa pesos fijos iguales (1/6 por dimensión), que sirve como benchmark neutro.
-        La <strong>diferencia entre ambas curvas</strong> cuantifica el impacto del juicio experto frente a una distribución
-        sin preferencias. Las bandas de color indican el nivel de riesgo de inversión.<br><br>
-        <strong>Hitos clave:</strong> El colapso post-2013 coincide con la caída del precio del petróleo y el inicio
-        de las colapso macroinstitucional. El mínimo histórico ({score_min:.1f} pts) se alcanza en {year_min}, durante la hiperinflación
-        y el aislamiento internacional máximo. La recuperación parcial post-2021 refleja el aperturismo económico
-        del régimen y la dolarización de facto, no una normalización institucional.
-      </div>
-    </div>
-    <div class="charts-grid single">
-      <div class="chart-card wide">
-        <div class="ct">Serie histórica del ICIV — Venezuela</div>
-        <div class="cs">Línea principal: pesos AHP · Línea punteada: pesos fijos · Bandas: categorías de riesgo</div>
-        <div class="chart-wrap" style="height:380px">
-          <canvas id="cHistoria"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vista: Tabla -->
-  <div id="histView-tabla" style="display:none">
-    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">
-      Serie completa del ICIV con pesos AHP (Saaty 1980) · {n_years} años · rango {score_min:.1f}–{score_max:.1f} pts
-    </p>
-    <div style="overflow-x:auto">
-      <table class="gap-table">
-        <thead><tr><th>Año</th><th>ICIV (AHP)</th><th>Categoría</th></tr></thead>
-        <tbody>
-          {hist_rows_html}
-        </tbody>
-      </table>
-    </div>
+  <div class="panel">
+    <div class="block-title">Hacia dónde va</div>
+    <div class="block-sub">Señal mensual reciente y proyección a seis meses. La franja verde es el margen de error: cuanto más ancha, menos certeza.</div>
+    <div class="chart-wrap" style="height:360px"><canvas id="cPulseTrend"></canvas></div>
   </div>
 </section>
 
-<!-- ===== SECTION 3: DIMENSIONES ===== -->
-<section class="section tab-section" id="dimensiones">
-  <div class="section-header">
-    <span class="section-title">Dimensiones</span>
-    <span class="section-sub">Puntaje por dimensión 2000–{settings.series.end_year}</span>
-  </div>
-
-  <!-- Sub-tab navigation -->
-  <div class="dim-subtabs">
-{dim_subtab_buttons_html}
-  </div>
-
-  <!-- View: Todas las dimensiones -->
-  <div class="dim-view dim-view-active" id="dimview-todas">
-    <div class="alert alert-info" style="margin-bottom:20px">
-      <div class="alert-title">Cómo leer esta sección</div>
-      <div class="alert-body">
-        El ICIV descompone el clima de inversión en <strong>6 dimensiones</strong> independientes,
-        cada una con su propio peso en el índice final (AHP Saaty 1980).
-        El gráfico de evolución muestra cómo cada dimensión ha variado desde 2000 — las caídas
-        sincronizadas post-2016 reflejan el colapso sistémico del modelo rentista venezolano.
-        El radar y la barra horizontal muestran el perfil dimensional del <strong>año más reciente</strong>.
-        Usa las pestañas D1–D6 para explorar cada dimensión en detalle con sus variables, fuentes y evolución histórica.
-      </div>
-    </div>
-    <div class="charts-grid">
-      <div class="chart-card wide">
-        <div class="ct">Evolución de las 6 dimensiones</div>
-        <div class="cs">Score 0–100 por dimensión a través del tiempo</div>
-        <div class="chart-wrap" style="height:340px">
-          <canvas id="cDimensiones"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="ct">Perfil dimensional {current_year_val}</div>
-        <div class="cs">Radar de puntajes por dimensión — año más reciente</div>
-        <div class="chart-wrap" style="height:320px">
-          <canvas id="cRadar"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="ct">Comparativa de dimensiones {current_year_val}</div>
-        <div class="cs">Barra horizontal — puntajes del último año</div>
-        <div class="chart-wrap" style="height:320px">
-          <canvas id="cDimBar"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dimension detail cards -->
-    <div class="section-header" style="margin-top:32px">
-      <span class="section-title">Detalle por dimensión</span>
-      <span class="section-sub">Variables, fuentes de datos y dirección por dimensión — año {current_year_val}</span>
-    </div>
-    <div class="dim-detail-grid">
-      {dim_detail_cards_html}
-    </div>
-  </div>
-
-  <!-- Per-dimension detail views (populated by JS on first click) -->
-{dim_view_divs_html}
-</section>
-
-<!-- ===== SECTION 4: METODOLOGÍA AHP ===== -->
-<!-- AHP section fusionada dentro de #correlacion como bloque E (ver arriba) -->
-
-<!-- ===== SECTION 6: SATV ===== -->
-<section class="section tab-section" id="alertas">
-  <div class="section-header">
-    <span class="section-title">SATV — Alertas del Pulse</span>
-    <span class="section-sub">Señales mensuales · Cobertura · Umbrales · Tendencias recientes</span>
-  </div>
-
-  <div class="alert alert-info" style="margin-bottom:20px">
-    <div class="alert-title">Cómo leer esta sección</div>
-    <div class="alert-body">
-      El SATV se pega al Pulse para no mezclar alertas de frecuencia anual y mensual.
-      Resume tres grupos de señales observadas: macro global, energía y noticias internacionales;
-      marca cobertura parcial, Pulse bajo y deterioros de tres meses. La alerta es un monitor
-      operacional, no una predicción ni una validación retrospectiva del ICIV anual.
-    </div>
-  </div>
-
-  <!-- Panel resumen -->
-  <div id="satvResumen" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px"></div>
-
-  <!-- Alertas activas -->
-  <div class="section-header" style="margin-top:0;margin-bottom:12px">
-    <span class="section-title" style="font-size:1rem">Alertas activas</span>
-  </div>
-  <div id="satvAlertas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px"></div>
-
-  <!-- Semáforo de señales -->
-  <div class="section-header" style="margin-top:0;margin-bottom:12px">
-    <span class="section-title" style="font-size:1rem">Estado por grupo de señales</span>
-  </div>
-  <div id="satvDims" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px"></div>
-
-  <!-- Variables críticas + Timeline -->
-  <div class="charts-grid" style="margin-bottom:0">
-    <div class="chart-card">
-      <div class="ct">Señales con score más bajo</div>
-      <div class="cs">Último mes disponible · ordenadas de peor a mejor</div>
-      <div id="satvVarTable" style="margin-top:12px"></div>
-    </div>
-    <div class="chart-card">
-      <div class="ct">Timeline Pulse de alertas</div>
-      <div class="cs">Meses con Pulse en zona crítica desde 2010</div>
-      <div class="chart-wrap" style="height:280px">
-        <canvas id="cSatvTimeline"></canvas>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SECTION 7: MAPA COROPLÉTICO ===== -->
+<!-- ===== MAPA ===== -->
 <section class="section tab-section" id="mapa">
   <div class="section-header">
-    <span class="section-title">Actividad Nocturna por Estado — NASA Black Marble</span>
-    <span class="section-sub">Radiancia nocturna satelital VNP46A3 · 25 estados · 149 meses (2014–2026) · proxy de actividad económica subnacional (Henderson et al., 2012)</span>
+    <span class="section-title">Mapa</span>
+    <span class="section-sub">Actividad nocturna por estado · 2014–{settings.series.end_year}</span>
   </div>
-  <div class="alert alert-info" style="margin-bottom:16px">
-    <div class="alert-title">Qué muestra este mapa</div>
-    <div class="alert-body">
-      La luz que emite cada estado de noche, medida por el satélite VIIRS de la NASA en unidades
-      físicas reales (nW/cm²/sr). Es un proxy establecido de actividad económica y, a diferencia de
-      cualquier estadística oficial, <strong>no es manipulable desde Venezuela</strong>.
-      Los valores son <strong>absolutos y comparables entre estados y entre meses</strong>: cada píxel
-      se asigna a un solo estado según su polígono real, y la escala de color es idéntica en todos los
-      cuadros. Anima la serie para ver el apagón económico y su recuperación parcial desde el espacio.
+
+  <p class="lead">
+    La luz que emite cada estado de noche, medida por satélite de la NASA.
+    Más brillo, más actividad económica. Es la única cifra de este proyecto que nadie puede manipular desde Venezuela.
+  </p>
+
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+      <div class="block-title">Venezuela de noche — <span id="bmMapYear">—</span></div>
+      <div style="font-size:.72rem;color:var(--muted)">Pulsa Animar para ver el apagón y su recuperación</div>
     </div>
-  </div>
-  <div class="chart-card" style="margin-top:14px">
-    <div class="ct">Actividad nocturna por estado — <span id="bmMapYear">—</span></div>
-    <div class="cs">Radiancia por estado (NASA Black Marble VNP46A3, nW/cm²/sr). Elige vista <strong>anual</strong> (promedio del año, menos ruido) o <strong>mensual</strong> (149 meses, ciclos intra-año). Escala logarítmica fija en ambas vistas: un mismo color = misma radiancia siempre. La escala es logarítmica porque Caracas concentra ~46 nW/cm²/sr frente a &lt;1 en los estados del sur; en escala lineal el resto del país se vería uniformemente negro.</div>
-    <div style="display:flex;align-items:center;gap:10px;margin:14px 0 8px;flex-wrap:wrap">
-      <div style="display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden">
-        <button id="bmModeYear" style="background:var(--accent);color:#0d1117;border:0;padding:6px 14px;cursor:pointer;font-size:.78rem;font-weight:600">Anual</button>
-        <button id="bmModeMonth" style="background:var(--card);color:var(--text);border:0;padding:6px 14px;cursor:pointer;font-size:.78rem">Mensual</button>
+    <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap">
+      <div style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <button id="bmModeYear" style="background:var(--accent);color:#0d1117;border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit">Por año</button>
+        <button id="bmModeMonth" style="background:var(--card);color:var(--text);border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-family:inherit">Por mes</button>
       </div>
-      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;min-width:180px;accent-color:#e6a817">
-      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:.8rem">▶ Animar</button>
+      <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;min-width:180px;accent-color:var(--accent)">
+      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;font-size:.78rem;font-family:inherit">▶ Animar</button>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+    <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
       <div style="flex:2 1 440px;min-width:300px">
         <svg id="bmMapSvg" viewBox="0 0 1000 880" preserveAspectRatio="xMidYMid meet"
-             style="width:100%;max-height:460px;height:auto;display:block;background:#0d1117;border-radius:8px"></svg>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)">
-          <span id="bmLegMin">—</span>
-          <span id="bmMapGradient" style="flex:1;height:12px;border-radius:6px;display:block"></span>
-          <span id="bmLegMax">—</span>
+             style="width:100%;max-height:460px;height:auto;display:block;background:#0d1117;border-radius:10px"></svg>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.68rem;color:var(--muted)">
+          <span>Menos luz</span>
+          <span id="bmMapGradient" style="flex:1;height:10px;border-radius:5px;display:block"></span>
+          <span>Más luz</span>
+          <span id="bmLegMin" style="display:none"></span><span id="bmLegMax" style="display:none"></span>
         </div>
       </div>
       <div style="flex:1 1 240px;min-width:220px">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Top estados por radiancia (<span id="bmRankYear">—</span>)</div>
+        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Estados más activos</div>
         <div id="bmMapRanking" style="font-size:.75rem;line-height:1.5"></div>
       </div>
     </div>
-    <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:10px;min-height:1.2em"></div>
-    <div style="font-size:.68rem;color:var(--muted);margin-top:8px;opacity:.8">
-      Encuadre: Venezuela continental e islas principales. Isla de Aves (15.7°N) queda fuera del marco visual
-      pero sus datos están en la serie. Radiancia media de los píxeles de cada estado, sin corregir por
-      flaring de gas (Monagas y Anzoátegui incluyen quema petrolera del Orinoco).
-    </div>
+    <div id="bmMapTip" style="font-size:.72rem;color:var(--muted);margin-top:12px;min-height:1.2em"></div>
   </div>
 </section>
 
-<!-- ===== SECTION 8: LABORATORIO ===== -->
-<section class="section tab-section" id="proyecciones">
-  <div class="section-header">
-    <span class="section-title">Laboratorio ICIV</span>
-    <span class="section-sub">Simulador interactivo para explorar sensibilidad del índice anual</span>
-  </div>
-
-  <!-- El laboratorio conserva solo el simulador defendible en la vista principal. -->
-  <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap">
-    <button class="esc-tab esc-tab-active" data-esc="simulador"
-      style="background:none;border:none;color:var(--muted);font-size:.82rem;font-weight:500;
-             padding:8px 20px;cursor:pointer;border-bottom:2px solid var(--accent)">
-      Simulador Interactivo
-    </button>
-  </div>
-
-  <!-- Vista: Simulador Interactivo -->
-  <div class="esc-view" id="escView-simulador">
-    <div class="alert alert-info" style="margin-bottom:16px">
-      <div class="alert-title">Simulador de Escenarios ICIV</div>
-      <div class="alert-body">
-        Ajusta el puntaje de cada dimensión con los controles deslizantes para ver el impacto en el ICIV.
-        Los pesos de cada dimensión corresponden al modelo AHP calibrado (CR={cr_val:.4f}).
-        El ICIV resultante es la suma ponderada: ICIV = Σ(score_dimensión × peso_AHP).
-        Esto permite evaluar, por ejemplo, qué pasaría con el índice si la institucionalidad mejora
-        o si la producción energética cae aún más.
-      </div>
-    </div>
-    <div style="display:flex;gap:20px;flex-wrap:wrap">
-      <!-- Sliders panel -->
-      <div style="flex:1;min-width:280px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <span style="font-size:.82rem;font-weight:600">Dimensiones (score 0–100)</span>
-          <button id="simReset" style="background:var(--card);border:1px solid var(--border);
-            color:var(--muted);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-            Restablecer {sim_base_year}
-          </button>
-        </div>
-        <div id="simSliders"></div>
-
-        <!-- Presets rápidos -->
-        <div style="margin-top:16px">
-          <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Presets históricos</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="sim-preset" data-preset="peak"
-              style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                     padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-              Pico 2007
-            </button>
-            <button class="sim-preset" data-preset="min"
-              style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                     padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.75rem">
-              Mínimo 2020
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Result panel -->
-      <div style="flex:1;min-width:240px">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;
-          padding:20px;text-align:center;margin-bottom:16px">
-          <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">
-            ICIV Simulado
-          </div>
-          <div id="simScore" style="font-size:3.5rem;font-weight:700;line-height:1;color:var(--accent)">—</div>
-          <div id="simCategory" style="font-size:.9rem;font-weight:600;margin-top:8px;color:var(--muted)">—</div>
-          <div id="simAnalog" style="font-size:.75rem;color:var(--muted);margin-top:8px">—</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px">
-          <div style="font-size:.75rem;font-weight:600;margin-bottom:10px">Contribución por dimensión</div>
-          <div id="simContribBars"></div>
-        </div>
-      </div>
-    </div>
-    <!-- Mini chart -->
-    <div class="chart-card" style="margin-top:20px">
-      <div class="ct">Posición del escenario simulado en la serie histórica</div>
-      <div class="cs">Línea horizontal = ICIV simulado · Serie histórica 2000–2026</div>
-      <div class="chart-wrap" style="height:260px"><canvas id="cSimChart"></canvas></div>
-    </div>
-  </div>
-
-</section>
-
-<!-- ===== SECTION 9: CORRELACIÓN ICIV → IED ===== -->
-<section class="section tab-section" id="correlacion">
-  <div class="section-header">
-    <span class="section-title">Validación del Indicador</span>
-    <span class="section-sub">A) Outcome externo ICIV→IED · A2) Leave-one-out UNHCR/VIIRS · B) Benchmarks internacionales · C) Eventos políticos · D) Validaciones internas · E) Metodología AHP</span>
-  </div>
-
-  <!-- Sub-encabezado bloque A -->
-  <div style="margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid var(--accent);border-radius:6px">
-    <strong style="color:var(--accent);font-size:.85rem">A · Outcome externo — ICIV → IED</strong>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      Análisis exploratorio de la relación entre el ICIV y la IED observada. Pearson · OLS · Causalidad de Granger 2000–2026.
-      <em>IED se reserva fuera del score core para funcionar como outcome económico externo.</em>
-    </div>
-  </div>
-  <!-- Nota metodológica IED -->
-  <div style="margin-bottom:16px;padding:10px 14px;background:#2d2007;border-left:3px solid #f1c40f;border-radius:6px;font-size:.72rem;color:#f8d775;line-height:1.6">
-    <strong>Nota metodológica — alcance de la IED:</strong>
-    <code>ied_neta_usd</code> no entra al score core. Se conserva como resultado económico
-    externo de interés para preguntar si un mejor clima antecede flujos de inversión más favorables.
-    El tamaño muestral anual, los rezagos de publicación y la dinámica de desinversión en Venezuela
-    obligan a leer este bloque como evidencia exploratoria, no como prueba causal suficiente.
-  </div>
-
-  <!-- Fila superior: scatter + cross-correlation — imágenes estáticas matplotlib -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-
-    <!-- Scatter ICIV(t-1) vs IED(t) -->
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
-        Scatter: ICIV<sub>t−1</sub> → IED<sub>t</sub>
-      </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
-        Cada punto es un año (2001–2026). La línea de regresión OLS muestra la relación predictiva.
-      </div>
-      {'<img src="data:image/png;base64,' + _scatter_b64 + '" style="width:100%;border-radius:6px" alt="Scatter ICIV-IED">' if _scatter_b64 else '<div style="color:#8b949e;text-align:center;padding:32px;font-size:.8rem">Datos insuficientes para el gráfico.</div>'}
-    </div>
-
-    <!-- Cross-correlación -->
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
-        Cross-Correlación Pearson por Rezago
-      </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
-        Pearson r entre ICIV<sub>t−k</sub> e IED<sub>t</sub>. Rezago óptimo: máxima |r| significativo (p &lt; 0.05).
-      </div>
-      {'<img src="data:image/png;base64,' + _crosscorr_b64 + '" style="width:100%;border-radius:6px" alt="Cross-correlación">' if _crosscorr_b64 else '<div style="color:#8b949e;text-align:center;padding:32px;font-size:.8rem">Datos insuficientes para el gráfico.</div>'}
-    </div>
-  </div>
-
-  <!-- Fila inferior: OLS stats + Granger + ADF — renderizado server-side -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-
-    <!-- Tabla OLS -->
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:12px">
-        Regresión OLS — Coeficientes
-      </div>
-      <div style="font-family:monospace;font-size:.75rem;color:var(--muted);
-           background:#0d1117;padding:8px 12px;border-radius:6px;margin-bottom:12px">
-        {_corr_formula_html}
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Modelo 1 rezago</div>
-          <table style="width:100%;font-size:.72rem;border-collapse:collapse">
-            <thead><tr style="color:var(--muted)">
-              <th style="text-align:left;padding:3px 0">Parámetro</th>
-              <th style="text-align:right">&beta;</th><th style="text-align:right">p-valor</th>
-            </tr></thead>
-            <tbody>{_corr_ols1_html}</tbody>
-          </table>
-        </div>
-        <div>
-          <div style="font-size:.68rem;color:var(--muted);margin-bottom:6px">Modelo 2 rezagos</div>
-          <table style="width:100%;font-size:.72rem;border-collapse:collapse">
-            <thead><tr style="color:var(--muted)">
-              <th style="text-align:left;padding:3px 0">Parámetro</th>
-              <th style="text-align:right">&beta;</th><th style="text-align:right">p-valor</th>
-            </tr></thead>
-            <tbody>{_corr_ols2_html}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Granger + ADF -->
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:12px">
-        Causalidad de Granger &amp; Estacionariedad ADF
-      </div>
-      {_corr_granger_adf_html}
-    </div>
-  </div>
-
-  <!-- Nota metodológica -->
-  <div class="card" style="border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
-      <strong style="color:var(--text)">Nota metodológica.</strong>
-      El análisis de correlación y causalidad entre el ICIV y los flujos de Inversión Extranjera
-      Directa (IED) sigue la metodología estándar de series de tiempo económicas (Granger, 1969;
-      Greene, 2018). La cross-correlación de Pearson para rezagos 0–4 años permite identificar
-      el horizonte temporal en que el ICIV anticipa cambios en la IED. La regresión OLS con rezagos
-      formales estima el efecto cuantitativo: un punto adicional en el ICIV<sub>t−1</sub> se
-      se asocia con β₁ miles de millones USD de IED al año siguiente. El test de Granger
-      (H₀: el ICIV no Granger-causa la IED) se aplica sobre primeras diferencias cuando el test ADF
-      indica no-estacionariedad (I(1)), preservando la validez asintótica de los estimadores.
-      <br><strong>Nota sobre Venezuela:</strong> la IED venezolana es estructuralmente negativa
-      desde 2015 (desinversión neta). Los valores negativos son válidos para el análisis de
-      correlación lineal (Pearson) y no requieren transformación.
-      <br><em>Fuentes: World Bank WDI (IED); ICIV AHP (este estudio). Período: 2000–2026 (n={int(n_years)} obs.).</em>
-    </div>
-  </div>
-
-{_loo_validation_html}
-
-  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
-  <!-- B · VALIDACIÓN EXTERNA vs índices internacionales -->
-  <div style="margin-top:32px;margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid #2ecc71;border-radius:6px">
-    <strong style="color:#2ecc71;font-size:.85rem">B · Benchmarks — Correlación con índices internacionales</strong>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      Comparación con índices establecidos. Algunos benchmarks también aportan variables al modelo, por lo que esta tabla evalúa convergencia y no independencia estricta.
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <div class="ct">Correlación ICIV vs 10 índices internacionales</div>
-    <div class="cs">Pearson r y Spearman ρ — solo años con ambos datos disponibles (n ≥ 10)</div>
-    <div style="margin-top:14px;overflow-x:auto">
-      <table class="ahp-table" style="width:100%">
-        <thead><tr><th>Índice externo</th><th>Pearson r</th><th>Spearman ρ</th><th>n años</th><th>Interpretación</th></tr></thead>
-        <tbody>
-          {_validacion_externa_rows}
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:.7rem;color:var(--muted);margin-top:10px;line-height:1.5">
-      Esperaríamos <strong>correlaciones positivas y fuertes (r &gt; 0.7)</strong> con índices establecidos
-      de gobernanza, libertades y desarrollo humano, ya que el ICIV está construido sobre dimensiones similares.
-    </div>
-  </div>
-
-  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
-  <!-- C · VALIDACIÓN HISTÓRICA — eventos políticos venezolanos -->
-  <div style="margin-top:32px;margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid #f1c40f;border-radius:6px">
-    <strong style="color:#f1c40f;font-size:.85rem">C · Validación histórica — Eventos políticos venezolanos</strong>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      ¿El ICIV reacciona en la dirección esperada ante eventos políticos conocidos? {_eventos_resumen}
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <div class="ct">Δ ICIV vs eventos clave 2002–2024</div>
-    <div class="cs">Variación observada respecto al año anterior · ✓ = dirección coincide con expectativa cualitativa</div>
-    <div style="margin-top:10px;overflow-x:auto">
-      <table class="ahp-table" style="width:100%">
-        <thead><tr><th>Año</th><th>Evento</th><th>Δ ICIV (observado)</th><th>Validación</th></tr></thead>
-        <tbody>
-          {_eventos_validados_html}
-        </tbody>
-      </table>
-    </div>
-    <div style="font-size:.7rem;color:var(--muted);margin-top:10px;line-height:1.5">
-      Δ ICIV calculado como ICIV(año) − ICIV(año-1). La columna de validación marca <span style="color:#2ecc71">✓</span>
-      cuando la dirección del cambio observado coincide con la dirección esperada según la narrativa histórica.
-    </div>
-  </div>
-
-  <!-- D · Validaciones internas (resumen) -->
-  <div class="card" style="margin-top:20px;border-left:3px solid var(--accent)">
-    <div style="font-size:.78rem;line-height:1.7">
-      <strong style="color:var(--text)">D · Validaciones internas adicionales (calculadas en pipeline):</strong>
-      <ul style="margin:8px 0;padding-left:20px;color:var(--muted)">
-        <li><strong>Sensibilidad:</strong> SI = 0.042 → modelo <strong>robusto</strong> a ±10% en pesos AHP</li>
-        <li><strong>Consistencia AHP:</strong> CR = 0.0081 &lt;&lt; 0.10 (umbral Saaty 1980)</li>
-        <li><strong>AHP vs PCA:</strong> MAD = 2.04 pts, correlación ρ = 0.99 → robustez metodológica</li>
-        <li><strong>Lineal vs Geométrica:</strong> MAD = 3.05 pts, ρ = 0.99 → modelo no muy sensible al método de agregación</li>
-      </ul>
-      Ver pestaña <strong>Bibliografía</strong> para detalles metodológicos completos.
-    </div>
-  </div>
-
-  <!-- E · Metodología AHP -->
-  <div style="margin-top:24px;padding:10px 14px;background:var(--card);border-left:3px solid var(--accent);border-radius:6px">
-    <strong style="color:var(--accent);font-size:.85rem">E · Metodología AHP — Proceso Analítico Jerárquico</strong>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      Pesos de dimensiones derivados por comparaciones por pares · Saaty (1980) · CR = {cr_val:.4f} &lt; 0.10 validado
-    </div>
-  </div>
-  <div class="alert alert-info" style="margin:14px 0">
-    <div class="alert-title">Proceso Analítico Jerárquico (AHP)</div>
-    <div class="alert-body">
-      El ICIV usa el <strong>AHP de Saaty (1980)</strong> para derivar los pesos de cada dimensión a partir de
-      comparaciones por pares de importancia relativa. El método garantiza consistencia lógica mediante la
-      <strong>Razón de Consistencia (CR)</strong>: se acepta un juicio como válido si CR &lt; 0.10.
-      Un CR = 0 indica consistencia perfecta; el ICIV presenta CR = {cr_val:.4f}, validado.<br><br>
-      La <strong>comparativa AHP vs Pesos Fijos</strong> permite evaluar si el juicio experto altera
-      materialmente las conclusiones del índice. Una diferencia pequeña entre ambas curvas indica que
-      el ranking de Venezuela es robusto y no depende de la asignación específica de pesos,
-      lo que refuerza la credibilidad del indicador como herramienta de análisis.
-    </div>
-  </div>
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="ct">Pesos AHP de dimensiones
-        <span class="cr-badge">CR = {cr_val:.4f} &lt; 0.10 ✓</span>
-      </div>
-      <div class="cs">Razón de Consistencia validada (Saaty exige CR &lt; 0.10)</div>
-      <table class="ahp-table">
-        <thead><tr><th>Dimensión</th><th>Peso</th><th>%</th><th>Barra</th></tr></thead>
-        <tbody>
-          {ahp_rows_html}
-        </tbody>
-      </table>
-    </div>
-    <div class="chart-card">
-      <div class="ct">AHP vs Pesos Fijos — Comparativa</div>
-      <div class="cs">Evolución del ICIV con dos estrategias de ponderación</div>
-      <div class="chart-wrap" style="height:300px">
-        <canvas id="cAHPvsFixed"></canvas>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SECTION 10 REMOVED: Riesgo regulatorio (decisión usuario: poco valor para el foco)
-     Riesgo regulatorio se mantiene como variable D3 institucional pero sin sección dedicada. -->
-
-
-<!-- ===== SECTION 11: RADAR SECTORIAL ===== -->
-<section class="section tab-section" id="sectorial">
-  <div class="section-header">
-    <span class="section-title">Investment Entry Radar Sectorial</span>
-    <span class="section-sub">¿En qué sectores tiene sentido entrar primero? · Score 0–100 por sensibilidad a las dimensiones ICIV · Ajustadores: colapso macroinstitucional · CAPEX · Demanda defensiva</span>
-  </div>
-
-  <!-- KPI strip (server-side rendered) -->
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px">{_kpi_html}</div>
-
-  <!-- Ranking + gráfico -->
-  <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
-    <!-- Tabla ranking (server-side rendered) -->
-    <div class="chart-card" style="padding:0;overflow:hidden">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
-        <div class="ct">Ranking Sectorial — {_sector_year}</div>
-        <div class="cs">Ordenado por Score de Entrada · Click en fila para ver evolución histórica</div>
-      </div>
-      <div style="overflow-x:auto">
-        <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
-          <thead>
-            <tr style="background:var(--border-subtle,#21262d);color:var(--muted);text-align:left">
-              <th style="padding:8px 14px;font-weight:600">#</th>
-              <th style="padding:8px 14px;font-weight:600">Sector</th>
-              <th style="padding:8px 14px;font-weight:600;text-align:center">Score</th>
-              <th style="padding:8px 14px;font-weight:600">Recomendación</th>
-              <th style="padding:8px 14px;font-weight:600">Riesgo Principal</th>
-              <th style="padding:8px 14px;font-weight:600;max-width:280px">Racional</th>
-            </tr>
-          </thead>
-          <tbody>{_table_rows_html}</tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Barchart sectorial -->
-    <div class="chart-card">
-      <div class="ct">Score por Sector</div>
-      <div class="cs">Bandas de recomendación · ICIV actual: {_sector_iciv:.1f}/100</div>
-      <div class="chart-wrap" style="height:380px"><canvas id="cSectorBar"></canvas></div>
-    </div>
-  </div>
-
-  <!-- Evolución histórica -->
-  <div class="chart-card" style="margin-top:16px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div>
-        <div class="ct">Evolución Histórica por Sector (2000–{_sector_year})</div>
-        <div class="cs">Score sectorial ajustado · Seleccionar sectores con los botones</div>
-      </div>
-      <!-- Toggle buttons (server-side rendered) -->
-      <div id="sectorToggleBtns" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">{_toggle_btns_html}</div>
-    </div>
-    <div class="chart-wrap" style="height:320px"><canvas id="cSectorHist"></canvas></div>
-  </div>
-
-  <!-- Metodología (server-side rendered) -->
-  <details style="margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
-    <summary style="cursor:pointer;color:var(--accent);font-size:.8rem;font-weight:600">Metodología del Radar Sectorial</summary>
-    <div style="margin-top:10px;font-size:.75rem;color:var(--muted);line-height:1.7">{_sector_met}</div>
-  </details>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     BLOQUE B — ICIV PULSE MENSUAL (CO-INDICADOR HIGH-FREQUENCY)
-     ═══════════════════════════════════════════════════════════════════════════ -->
-
-<!-- ===== SECTION: PULSE MENSUAL ===== -->
-<section class="section tab-section" id="pulse">
-  <div class="section-header">
-    <span class="section-title">ICIV Pulse Mensual</span>
-    <span class="section-sub">Co-indicador high-frequency · 15 variables internacionales mensuales · Stock-Watson (2002)</span>
-  </div>
-
-  <div class="alert alert-info" style="margin-bottom:20px">
-    <div class="alert-title">¿Qué es el ICIV Pulse?</div>
-    <div class="alert-body">
-      El <strong>ICIV Pulse</strong> es un <strong>co-indicador mensual</strong> construido con 11 señales
-      internacionales de frecuencia mensual. <strong>NO reemplaza el ICIV Anual oficial</strong>:
-      lo complementa con señales en tiempo casi real para inversores que necesitan
-      actualización entre publicaciones anuales (WGI, HDI, CPI). Cubre desde enero 2010.
-      Metodología: agregación lineal con pesos AHP renormalizados (Stock &amp; Watson 2002).
-    </div>
-  </div>
-
-  <!-- Stats Pulse -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label">Último mes disponible</div>
-      <div class="stat-val" id="pulseScoreActual">—</div>
-      <div class="stat-sub" id="pulseFechaActual">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Último mes confiable</div>
-      <div class="stat-val" id="pulseCategoria" style="font-size:1rem">—</div>
-      <div class="stat-sub" id="pulseCobertura">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Meses calculados</div>
-      <div class="stat-val stat-neu" id="pulseNMeses">—</div>
-      <div class="stat-sub">desde 2010-01</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">vs ICIV Anual {current_year_val}</div>
-      <div class="stat-val stat-neu" id="pulseVsAnual">—</div>
-      <div class="stat-sub">diferencia en puntos</div>
-    </div>
-  </div>
-
-  <!-- Gráfica serie temporal mensual -->
-  <div class="chart-card">
-    <div class="ct">ICIV Pulse — Serie histórica mensual (2010–2026) · 197 meses</div>
-    <div class="cs">Línea verde = Pulse mensual (cob ≥70%) · Puntos huecos = provisional (cob &lt;70%) · Línea amarilla = ICIV Anual referencia</div>
-    <div class="chart-wrap" style="height:380px">
-      <canvas id="cPulseMonthly"></canvas>
-    </div>
-  </div>
-
-  <!-- Comparación Pulse vs Anual -->
-  <div class="chart-card" style="margin-top:18px">
-    <div class="ct">Pulse Anualizado vs ICIV Oficial</div>
-    <div class="cs">Promedio anual del Pulse comparado contra el score anual oficial. Convergencia esperada ρ &gt; 0.8</div>
-    <div class="chart-wrap" style="height:280px">
-      <canvas id="cPulseVsAnnual"></canvas>
-    </div>
-  </div>
-
-  <!-- Disclaimer académico -->
-  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text)">Metodología del Pulse:</strong>
-      Variables incluidas: WTI, Brent, Fed Funds, USD index, VIX, UST 10Y, producción petrolera Venezuela
-      (EIA International monthly), volumen y tono Guardian, volumen y tono GDELT.
-      No incluye D5 (Capital Humano) porque sus variables son intrínsecamente anuales.
-      Normalización Min-Max sobre rango histórico mensual disponible. Pesos renormalizados
-      sobre el peso Pulse disponible. Cuando EIA o GDELT aún no publica una observación,
-      la cobertura baja en vez de fabricar continuidad. Score &lt; 70 % cobertura debe
-      considerarse provisional.
-    </div>
-  </div>
-</section>
-
-<!-- ===== SECTION: PULSE COMPONENTES ===== -->
-<section class="section tab-section" id="pulse-componentes">
-  <div class="section-header">
-    <span class="section-title">Componentes Pulse — Series mensuales</span>
-    <span class="section-sub">Las 15 variables mensuales normalizadas (0–100) que alimentan el ICIV Pulse cuando cada fuente está disponible</span>
-  </div>
-
-  <div class="chart-card">
-    <div class="ct">Series mensuales normalizadas (Min-Max 0–100)</div>
-    <div class="cs">Mayor valor = mejor clima (variables negativas ya invertidas). Haz clic en la leyenda para mostrar/ocultar.</div>
-    <div class="chart-wrap" style="height:520px">
-      <canvas id="cPulseComponents"></canvas>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <div class="ct">Pesos renormalizados del Pulse (suman 100 %)</div>
-    <div id="pulseWeightsTable" style="margin-top:10px"></div>
-  </div>
-
-  <!-- Comercio espejo multi-socio (capa contextual, no entra al score) -->
-  <div class="section-header" style="margin-top:32px">
-    <span class="section-title">Comercio espejo multi-socio</span>
-    <span class="section-sub">Lo que las aduanas de los socios reportan comerciar con Venezuela · IMF IMTS (EEUU) y UN Comtrade (España, Brasil, India, Türkiye, China) · capa contextual — no entra al score</span>
-  </div>
-
-  <div class="chart-card">
-    <div class="ct">Importaciones venezolanas según los socios (millones USD/mes)</div>
-    <div class="cs">Exportaciones de cada bloque de socios hacia Venezuela = proxy de demanda interna. Los últimos ~3 meses de Comtrade son parciales: no todos los socios han reportado aún.</div>
-    <div class="chart-wrap" style="height:300px"><canvas id="cMirrorImports"></canvas></div>
-  </div>
-
-  <div class="chart-card" style="margin-top:18px">
-    <div class="ct">Exportaciones venezolanas según los socios (millones USD/mes)</div>
-    <div class="cs">Compras de los socios a Venezuela (mayormente crudo). La serie EEUU muestra el cese de 2019 (sanciones) y la reanudación desde 2023 (licencias OFAC). Últimos meses de Comtrade parciales.</div>
-    <div class="chart-wrap" style="height:300px"><canvas id="cMirrorExports"></canvas></div>
-  </div>
-
-  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text)">Mirror statistics:</strong>
-      Venezuela dejó de publicar comercio exterior confiable, pero sus socios sí reportan el suyo.
-      Estas series provienen exclusivamente de las aduanas de los socios (vía IMF IMTS y UN Comtrade),
-      por lo que son observaciones reales de actividad económica no manipulables desde Venezuela.
-      Es práctica estándar (mirror statistics) cuando un país deja de reportar. Esta capa es contextual:
-      el Pulse solo usa el flujo EEUU (IMF IMTS); la serie Comtrade multi-socio sirve de validación
-      cruzada y contexto, y no entra al score.
-    </div>
-  </div>
-
-  <!-- Black Marble — luminosidad nocturna mensual (capa satelital contextual) -->
-  <div class="section-header" style="margin-top:32px">
-    <span class="section-title">Luminosidad nocturna mensual (satélite)</span>
-    <span class="section-sub">NASA Black Marble VNP46A3 · radiancia promedio de Venezuela, mensual 2014–2026 · capa satelital contextual — no entra al score</span>
-  </div>
-
-  <div class="chart-card">
-    <div class="ct">Radiancia nocturna mensual de Venezuela (nW/cm²/sr)</div>
-    <div class="cs">Línea azul = Black Marble mensual (VNP46A3, promedio país). Línea amarilla punteada = serie anual Li et al. (VIIRS armonizado, ya usada en el score anual) reescalada al mismo eje para comparar tendencia. Ambas coinciden en el colapso 2014–2020; divergen desde 2022 (Black Marble muestra recuperación parcial).</div>
-    <div class="chart-wrap" style="height:320px"><canvas id="cBlackMarble"></canvas></div>
-  </div>
-
-  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text)">Validación cruzada:</strong>
-      agregando la serie mensual por año y correlacionándola contra la serie anual Li et al.
-      (11 años completos 2014–2024) da Pearson r=+0.65 (p=0.03): consistencia positiva significativa.
-      Las diferencias esperables vienen de que son productos distintos (VNP46A3 radiancia cruda vs
-      serie armonizada tipo DMSP) y del tratamiento del flaring petrolero del Orinoco. Esta capa es
-      contextual y de mayor frecuencia; su eventual entrada al Pulse exige antes analizar variantes de
-      agregación (media logarítmica, mediana, píxeles urbanos) que atenúen el flaring, y re-backtest.
-    </div>
-  </div>
-
-</section>
-
-<!-- ===== SUB-SECCIÓN: PULSE METODOLOGÍA ===== -->
-<section class="section tab-section" id="pulse-metodologia">
-  <div class="section-header">
-    <span class="section-title">Pulse Mensual — Metodología</span>
-    <span class="section-sub">Diseño del co-indicador high-frequency · AHP renormalizado · Decisiones técnicas</span>
-  </div>
-
-  <div class="alert alert-info" style="margin-bottom:20px">
-    <div class="alert-title">¿Por qué un co-indicador mensual?</div>
-    <div class="alert-body">
-      Las fuentes anuales del ICIV (WGI, HDI, CPI, WDI) tienen un <strong>lag de publicación de 12–18 meses</strong>.
-      El ICIV Pulse cubre esta brecha usando variables internacionales con frecuencia mensual,
-      disponibilidad auditable y cobertura visible por mes. <strong>No reemplaza el ICIV Anual</strong>: lo complementa con señales
-      en tiempo casi real entre publicaciones anuales. Marco teórico: Aruoba, Diebold &amp; Scotti
-      (2009) <em>ADS Business Conditions Index</em>; Stock &amp; Watson (2002) nowcasting.
-    </div>
-  </div>
-
-  <!-- Variables incluidas -->
-  <div class="card" style="margin-bottom:16px">
-    <div class="ct">Variables incluidas en el Pulse (15)</div>
-    <div class="cs">Solo series mensuales observadas de fuentes internacionales (ninguna de origen venezolano); los pesos se renormalizan cuando una fuente aún no publicó dato</div>
-    <table class="ahp-table" style="margin-top:10px">
-      <thead><tr><th>Variable</th><th>Fuente</th><th>Frecuencia</th><th>Dirección</th><th>Peso AHP renorm.</th></tr></thead>
-      <tbody>
-        <tr><td>WTI precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>6.5%</td></tr>
-        <tr><td>Brent precio (USD/bbl)</td><td>FRED</td><td>Diaria → Mensual</td><td>Positivo</td><td>4%</td></tr>
-        <tr><td>Crudo Dubai (USD/bbl)</td><td>World Bank Pink Sheet</td><td>Mensual</td><td>Positivo</td><td>4%</td></tr>
-        <tr><td>Fed Funds Rate (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
-        <tr><td>USD Index</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>3.5%</td></tr>
-        <tr><td>VIX volatilidad</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>6%</td></tr>
-        <tr><td>US Treasury 10Y (%)</td><td>FRED</td><td>Diaria → Mensual</td><td>Negativo</td><td>3%</td></tr>
-        <tr><td>Spread bonos EM (%)</td><td>FRED / ICE BofA</td><td>Diaria → Mensual</td><td>Negativo</td><td>4%</td></tr>
-        <tr><td>Producción petróleo VEN (tbpd)</td><td>EIA International</td><td>Mensual</td><td>Positivo</td><td>25%</td></tr>
-        <tr><td>Importaciones espejo desde EEUU (M USD)</td><td>IMF IMTS (reporta EEUU)</td><td>Mensual</td><td>Positivo</td><td>5%</td></tr>
-        <tr><td>Exportaciones espejo a EEUU (M USD)</td><td>IMF IMTS (reporta EEUU)</td><td>Mensual</td><td>Positivo</td><td>5%</td></tr>
-        <tr><td>Artículos Guardian (VEN)</td><td>Guardian API</td><td>Mensual</td><td>Negativo</td><td>6.5%</td></tr>
-        <tr><td>Tono titulares Guardian</td><td>Guardian + VADER</td><td>Mensual</td><td>Positivo</td><td>10%</td></tr>
-        <tr><td>Cobertura GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Negativo</td><td>5.5%</td></tr>
-        <tr><td>Tono GDELT</td><td>GDELT DOC API</td><td>Mensual</td><td>Positivo</td><td>8%</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Decisiones técnicas -->
-  <div class="charts-grid">
-    <div class="card">
-      <div class="ct">Algoritmo de construcción</div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.9;margin-top:10px">
-        <ol style="padding-left:18px;margin:0">
-          <li>Para cada mes t: recopilar todas las variables con dato real disponible</li>
-          <li>Normalizar cada variable con Min-Max sobre el rango histórico 2020-presente</li>
-          <li>Invertir variables con dirección negativa: score_inv = 100 − score_norm</li>
-          <li>Calcular peso disponible = suma de pesos AHP de variables con dato ese mes</li>
-          <li>Si peso disponible &lt; 30% → Pulse(t) = NaN (dato insuficiente, no fabricar)</li>
-          <li>Renormalizar pesos sobre variables disponibles (suman 1.0)</li>
-          <li>Pulse(t) = suma ponderada de scores normalizados</li>
-        </ol>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct">Interpretación y limitaciones</div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:10px">
-        <strong style="color:var(--text)">Escala:</strong> 0–100 (igual que el ICIV Anual).
-        <strong style="color:var(--text)">Referencia:</strong> Pulse promedio 2020-2026 ≈ 57.
-        No es directamente comparable al ICIV Anual (diferentes variables y cobertura).<br><br>
-        <strong style="color:var(--text)">Limitaciones:</strong>
-        <ul style="padding-left:16px;margin:6px 0">
-          <li>Fuentes originadas en Venezuela excluidas por política del proyecto</li>
-          <li>Cobertura variable mes a mes según disponibilidad de APIs</li>
-          <li>GDELT puede rate-limit; si falta, la cobertura baja y no se fabrica una serie sustituta</li>
-          <li>WTI/Brent son factores exógenos, no directamente sobre Venezuela</li>
-        </ul>
-        <strong style="color:var(--text)">Referencias:</strong><br>
-        Aruoba, Diebold &amp; Scotti (2009) · Stock &amp; Watson (2002) ·
-        Hyndman &amp; Athanasopoulos (2018)
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     BLOQUE C — MACHINE LEARNING (FORECAST + NOWCAST)
-     ═══════════════════════════════════════════════════════════════════════════ -->
-
-<!-- ===== SECTION: FORECAST ML ===== -->
-<section class="section tab-section" id="forecast-ml">
-  <div class="section-header">
-    <span class="section-title">Predicción Pulse</span>
-    <span class="section-sub">Forecast mensual univariado sobre la serie Pulse observada</span>
-  </div>
-
-  <div class="alert alert-info" style="margin-bottom:20px">
-    <div class="alert-title">Modelos implementados</div>
-    <div class="alert-body">
-      Se expone una sola predicción: <strong>SARIMA(p,d,q)(P,D,Q,12)</strong> sobre el Pulse mensual
-      observado para los próximos 6 meses, con intervalos de confianza 80 % y 95 % y
-      auto-selección de orden por AIC. El simulador queda separado en el laboratorio porque
-      explora sensibilidad del ICIV anual y no pretende pronosticar un escenario político.
-    </div>
-  </div>
-
-  <!-- Stats forecast -->
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-label">SARIMA orden</div>
-      <div class="stat-val stat-neu" id="mlSarimaOrder" style="font-size:.95rem">—</div>
-      <div class="stat-sub" id="mlSarimaAic">AIC: —</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Horizonte</div>
-      <div class="stat-val stat-neu" style="font-size:1.2rem">6 meses</div>
-      <div class="stat-sub">una trayectoria media</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Bandas</div>
-      <div class="stat-val stat-neu" style="font-size:1.2rem">80% / 95%</div>
-      <div class="stat-sub">incertidumbre del forecast</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Backtesting</div>
-      <div class="stat-val stat-neu" id="mlBacktestBest" style="font-size:1rem">—</div>
-      <div class="stat-sub" id="mlBacktestSub">rolling-origin</div>
-    </div>
-  </div>
-
-  <!-- Gráfico forecast SARIMA -->
-  <div class="chart-card" style="margin-top:18px">
-    <div class="ct">Forecast SARIMA — Últimos 30 meses + 6 meses de predicción</div>
-    <div class="cs">Línea sólida = Pulse histórico (alta cobertura) · Línea punteada amarilla = forecast SARIMA · Bandas = IC 80% y 95%</div>
-    <div class="chart-wrap" style="height:380px">
-      <canvas id="cMlForecast"></canvas>
-    </div>
-  </div>
-
-  <!-- Metodología compacta inline -->
-  <div class="card" style="margin-top:18px;border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--text)">Resumen metodológico:</strong>
-      SARIMA auto-selección por AIC entre especificaciones candidatas sobre observaciones
-      Pulse con cobertura suficiente. Ver metodología para supuestos y límites.
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px;border-left:3px solid #f1c40f">
-    <div class="ct">Backtesting rolling-origin</div>
-    <div id="mlBacktestSummary" style="font-size:.75rem;color:var(--muted);line-height:1.7;margin-top:8px">
-      Ejecuta <code>python scripts/backtest_pulse_forecast.py</code> para generar la evidencia fuera de muestra.
-    </div>
-    <div id="mlBacktestTable" style="margin-top:12px"></div>
-  </div>
-</section>
-
-<!-- ===== SUB-SECCIÓN: NOWCAST ANUAL ===== -->
-<section class="section tab-section" id="forecast-metodologia">
-  <div class="section-header">
-    <span class="section-title">Forecast ML — Metodología</span>
-    <span class="section-sub">SARIMA · OLS Nowcast · Validación · Referencias académicas</span>
-  </div>
-
-  <div class="charts-grid">
-
-    <!-- SARIMA -->
-    <div class="card">
-      <div class="ct">Modelo A — SARIMA Univariado</div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:10px">
-        <strong style="color:var(--text)">Especificación:</strong>
-        SARIMA(p,d,q)(P,D,Q)<sub>s=12</sub> — captura tendencia, estacionalidad anual y autocorrelación del Pulse.<br><br>
-        <strong style="color:var(--text)">Selección de orden:</strong>
-        Se prueban 3 configuraciones candidatas y se elige la de menor AIC (Akaike Information Criterion):
-        <ul style="padding-left:16px;margin:6px 0">
-          <li>(1,1,1)(1,1,1,12)</li>
-          <li>(1,1,2)(1,1,1,12) — <em>generalmente el mejor</em></li>
-          <li>(2,1,1)(1,1,1,12)</li>
-        </ul>
-        <strong style="color:var(--text)">Forecast:</strong> 6 meses con intervalos de confianza 80 % y 95 %.<br>
-        Los valores forecast se recortan al rango [0, 100] (dominio del Pulse).<br><br>
-        <strong style="color:var(--text)">Referencia:</strong>
-        Hyndman &amp; Athanasopoulos (2018) <em>Forecasting: Principles and Practice</em>, 3ª ed., cap. 8-9.
-      </div>
-    </div>
-
-    <!-- OLS Nowcast -->
-    <div class="card">
-      <div class="ct">Modelo B — OLS Nowcast Pulse → ICIV Anual</div>
-      <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:10px">
-        <strong style="color:var(--text)">Especificación:</strong>
-        Regresión OLS con features derivados del Pulse mensual del año en curso:<br>
-        <ul style="padding-left:16px;margin:6px 0">
-          <li>pulse_avg: promedio de meses disponibles</li>
-          <li>pulse_trend: cambio vs año anterior</li>
-          <li>pulse_min, pulse_max, pulse_std (si n ≥ 11 años)</li>
-        </ul>
-        <strong style="color:var(--text)">Anti-overfit:</strong>
-        Si n &lt; 11 años de entrenamiento → solo 2 features (evita sobreajuste).
-        Si n ≥ 11 → 5 features (mayor poder explicativo).<br><br>
-        <strong style="color:var(--text)">Validación:</strong>
-        Leave-One-Out Cross-Validation (LOO-CV) — más honesto que R² in-sample cuando n es pequeño.
-        CERO datos artificiales: se usa <code>dropna()</code>, no <code>fillna(0)</code>.<br><br>
-        <strong style="color:var(--text)">Referencia:</strong>
-        Stock &amp; Watson (2002) <em>JBES</em> 20(2): 147–162.
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Pipeline de datos -->
-  <div class="card" style="margin-top:16px">
-    <div class="ct">Pipeline de datos para los modelos ML</div>
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.9;margin-top:10px">
-      <ol style="padding-left:18px;margin:0">
-        <li>PulseAggregator genera DataFrame mensual [año, mes, pulse_score, cobertura_pct]</li>
-        <li>PulseForecaster filtra observaciones con cobertura ≥ 70% para el SARIMA</li>
-        <li>Serie temporal indexada por fecha (freq=MS), gaps internos imputados linealmente (limit=2)</li>
-        <li>Si serie &lt; 24 observaciones → SARIMA omitido (muestra insuficiente)</li>
-        <li>Para Nowcast: features calculados sobre años con ≥ 6 meses de Pulse disponibles</li>
-        <li>Merge con ICIV Anual para entrenamiento (solo años con ambos datos reales)</li>
-        <li>Predicción del año en curso con los meses Pulse ya disponibles</li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<!-- ===== SECTION 12: NOTICIAS ===== -->
+<!-- ===== NOTICIAS ===== -->
 <section class="section tab-section" id="noticias">
   <div class="section-header">
-    <span class="section-title">Noticias Venezuela</span>
-    <span class="section-sub">Guardian en vivo + snapshot RSS internacional filtrado</span>
+    <span class="section-title">Noticias</span>
+    <span class="section-sub">Prensa internacional sobre Venezuela</span>
   </div>
 
-  <div class="card" style="margin-bottom:16px">
-    <div class="ct">Fuentes complementarias</div>
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.8;margin-top:8px">
-      Esta pestana combina The Guardian por API abierta con un snapshot de Google News RSS filtrado
-      por una lista cerrada de medios internacionales. Se excluyen fuentes locales venezolanas y la
-      seccion no modifica el ICIV ni el Pulse: solo sirve como evidencia cualitativa de contexto.
-    </div>
-    <div class="news-srclinks">
-      <a class="news-srclink" href="https://api.gdeltproject.org/api/v2/doc/doc?query=Venezuela%20investment&mode=artlist&format=html" target="_blank" rel="noopener">GDELT</a>
-      <a class="news-srclink" href="https://www.reuters.com/site-search/?query=Venezuela%20investment" target="_blank" rel="noopener">Reuters</a>
-      <a class="news-srclink" href="https://apnews.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">AP</a>
-      <a class="news-srclink" href="https://www.bbc.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">BBC</a>
-      <a class="news-srclink" href="https://www.ft.com/search?q=Venezuela%20economy" target="_blank" rel="noopener">Financial Times</a>
-      <a class="news-srclink" href="https://www.bloomberg.com/search?query=Venezuela%20economy" target="_blank" rel="noopener">Bloomberg</a>
-      <a class="news-srclink" href="https://news.google.com/search?q=Venezuela%20investment%20economy&hl=en-US&gl=US&ceid=US%3Aen" target="_blank" rel="noopener">Google News</a>
-    </div>
+  <p class="lead">
+    Lo que se está publicando fuera del país. Solo medios internacionales; ningún medio venezolano entra aquí.
+  </p>
+
+  <div class="block-title">Portada internacional</div>
+  <div class="block-sub">Titulares recientes de agencias y diarios globales.</div>
+  <div class="news-grid" id="intlNewsGrid" style="margin-bottom:32px">
+    <div class="news-status">Cargando…</div>
   </div>
 
-  <div class="card" style="margin-bottom:16px">
-    <div class="ct">Prensa internacional agregada</div>
-    <div class="cs">RSS filtrado · sin fuentes venezolanas · no entra al score</div>
-    <div class="news-grid" id="intlNewsGrid" style="margin-top:12px">
-      <div class="news-status">Cargando snapshot internacional...</div>
-    </div>
-  </div>
-
-  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
     <div>
-      <div class="ct">The Guardian — en vivo</div>
-      <div class="cs">Cobertura Venezuela vía API abierta · filtra por categoría</div>
+      <div class="block-title">The Guardian — en vivo</div>
+      <div class="block-sub" style="margin-bottom:0">Cobertura de los últimos 90 días.</div>
     </div>
     <div class="news-filter" id="newsFilter" style="margin-bottom:0">
       <span class="news-chip active" data-tag="all">Todas</span>
-      <span class="news-chip" data-tag="economy">Economia</span>
-      <span class="news-chip" data-tag="politics">Politica</span>
+      <span class="news-chip" data-tag="economy">Economía</span>
+      <span class="news-chip" data-tag="politics">Política</span>
       <span class="news-chip" data-tag="world">Internacional</span>
       <span class="news-chip" data-tag="business">Negocios</span>
     </div>
@@ -3642,147 +2413,124 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="news-grid" id="newsGrid">
     <div class="news-status" id="newsStatus">
       <div class="news-skeleton" style="height:14px;width:220px;margin:0 auto 8px"></div>
-      <div>Cargando noticias desde The Guardian...</div>
+      <div>Cargando noticias…</div>
     </div>
   </div>
 
-  <div style="text-align:center;margin-top:20px">
+  <div style="text-align:center;margin-top:24px">
     <button id="newsLoadMore" style="display:none;background:rgba(0,212,170,.1);border:1px solid var(--accent);
-      color:var(--accent);padding:8px 24px;border-radius:20px;cursor:pointer;font-size:.82rem;font-family:inherit">
-      Cargar mas
+      color:var(--accent);padding:9px 26px;border-radius:20px;cursor:pointer;font-size:.82rem;font-family:inherit">
+      Ver más
     </button>
   </div>
 </section>
 
-<!-- ===== SECTION: BIBLIOGRAFÍA ===== -->
-<section class="section tab-section" id="bibliografia">
+<!-- ===== SECTORES ===== -->
+<section class="section tab-section" id="sectores">
   <div class="section-header">
-    <span class="section-title">Bibliografía y Referencias</span>
-    <span class="section-sub">Marco teórico · Fuentes de datos · Metodología</span>
+    <span class="section-title">Sectores</span>
+    <span class="section-sub">Dónde entrar primero · {_sector_year}</span>
   </div>
 
-  <div class="charts-grid" style="grid-template-columns:1fr 1fr">
-    <div class="chart-card">
-      <div class="ct">Marco metodológico</div>
-      <div class="cs">Índices compuestos · AHP · Normalización · Validación</div>
-      <ol style="font-size:.78rem;line-height:1.8;color:var(--muted);margin-top:12px;padding-left:20px">
-        <li><strong>Saaty, T. L. (1980).</strong> <em>The Analytic Hierarchy Process: Planning, Priority Setting, Resource Allocation</em>. McGraw-Hill. — Base metodológica del cálculo de pesos AHP, CR.</li>
-        <li><strong>OECD &amp; JRC. (2008).</strong> <em>Handbook on Constructing Composite Indicators: Methodology and User Guide</em>. París: OECD Publishing. — Estándar para construcción de índices compuestos.</li>
-        <li><strong>Nardo, M., Saisana, M., Saltelli, A., et al. (2005).</strong> Tools for composite indicators building. EUR 21682 EN. JRC.</li>
-        <li><strong>Bekaert, G., &amp; Harvey, C. R. (2003).</strong> Emerging markets finance. <em>Journal of Empirical Finance</em>, 10(1-2), 3-55.</li>
-        <li><strong>Stock, J. H., &amp; Watson, M. W. (2002).</strong> Macroeconomic forecasting using diffusion indexes. <em>JBES</em>, 20(2), 147-162. — Base teórica para nowcasting.</li>
-        <li><strong>Jerven, M. (2013).</strong> <em>Poor Numbers: How We Are Misled by African Development Statistics</em>. Cornell University Press. — Limitaciones de datos en países en crisis.</li>
-        <li><strong>Granger, C. W. J. (1969).</strong> Investigating causal relations by econometric models and cross-spectral methods. <em>Econometrica</em>, 37(3), 424-438.</li>
-      </ol>
+  <p class="lead">
+    Cada sector reacciona distinto al clima del país. Este es el orden de atractivo hoy, y el riesgo que domina en cada uno.
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px">{_kpi_html}</div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start">
+    <div class="chart-card" style="padding:0;overflow:hidden">
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border)">
+        <div class="block-title">Ranking</div>
+        <div class="block-sub" style="margin-bottom:0">Ordenado de mayor a menor atractivo.</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
+          <thead>
+            <tr style="background:#21262d;color:var(--muted);text-align:left">
+              <th style="padding:9px 14px;font-weight:600">#</th>
+              <th style="padding:9px 14px;font-weight:600">Sector</th>
+              <th style="padding:9px 14px;font-weight:600;text-align:center">Score</th>
+              <th style="padding:9px 14px;font-weight:600">Recomendación</th>
+              <th style="padding:9px 14px;font-weight:600">Riesgo principal</th>
+            </tr>
+          </thead>
+          <tbody>{_table_rows_html}</tbody>
+        </table>
+      </div>
     </div>
 
     <div class="chart-card">
-      <div class="ct">Fuentes de datos (internacionales)</div>
-      <div class="cs">27 fuentes académicamente reconocidas · cero fuentes gubernamentales venezolanas</div>
-      <ol style="font-size:.78rem;line-height:1.8;color:var(--muted);margin-top:12px;padding-left:20px">
-        <li><strong>World Bank Group.</strong> World Development Indicators (WDI). <a href="https://databank.worldbank.org/source/world-development-indicators" target="_blank">databank.worldbank.org</a></li>
-        <li><strong>Kaufmann, D., Kraay, A., &amp; Mastruzzi, M. (2010).</strong> The Worldwide Governance Indicators. <em>World Bank Policy Research</em> 5430.</li>
-        <li><strong>IMF. (2026).</strong> World Economic Outlook Database, April 2026.</li>
-        <li><strong>U.S. EIA.</strong> International Energy Statistics (monthly + annual). <a href="https://www.eia.gov/international/data/" target="_blank">eia.gov</a></li>
-        <li><strong>Federal Reserve Bank of St. Louis.</strong> FRED Economic Data. <a href="https://fred.stlouisfed.org" target="_blank">fred.stlouisfed.org</a></li>
-        <li><strong>UNDP. (2024).</strong> Human Development Report 2024. <a href="https://hdr.undp.org" target="_blank">hdr.undp.org</a></li>
-        <li><strong>WHO.</strong> Global Health Observatory data repository. <a href="https://www.who.int/data/gho" target="_blank">who.int/data/gho</a></li>
-        <li><strong>UNHCR.</strong> Refugee Data Finder. <a href="https://www.unhcr.org/refugee-statistics" target="_blank">unhcr.org/refugee-statistics</a></li>
-        <li><strong>Transparency International. (2025).</strong> Corruption Perceptions Index 2024. <a href="https://www.transparency.org/en/cpi" target="_blank">transparency.org/cpi</a></li>
-        <li><strong>Freedom House. (2026).</strong> Freedom in the World 2026.</li>
-        <li><strong>World Justice Project. (2025).</strong> WJP Rule of Law Index 2025.</li>
-        <li><strong>Gibney, M., Cornett, L., Wood, R., et al.</strong> Political Terror Scale 1976-2024 (ed. 2025). <a href="https://www.politicalterrorscale.org" target="_blank">politicalterrorscale.org</a></li>
-        <li><strong>Li, X., Zhou, Y., et al. (2020).</strong> A harmonized global nighttime light dataset 1992-2024. <em>Scientific Data</em>, 7(1). Figshare DOI: 10.6084/m9.figshare.9828827</li>
-        <li><strong>Our World in Data.</strong> Redistribución licencia abierta (HDI, GHI, FAO).</li>
-        <li><strong>UNDP.</strong> Human Development Report — HDI series (via Our World in Data).</li>
-        <li><strong>ILO ILOSTAT.</strong> Labour Statistics Database (via WB proxy).</li>
-        <li><strong>The Guardian Open Platform.</strong> Articles API + VADER sentiment (Hutto &amp; Gilbert, 2014).</li>
-        <li><strong>Hutto, C. J., &amp; Gilbert, E. (2014).</strong> VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text. <em>ICWSM</em>.</li>
-        <li><strong>Saisana, M., Saltelli, A., &amp; Tarantola, S. (2005).</strong> Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. <em>JRSS A</em>, 168(2).</li>
-      </ol>
-    </div>
-  </div>
-
-  <!-- Software y herramientas -->
-  <div class="card" style="margin-top:18px">
-    <div class="ct">Software y herramientas (open source)</div>
-    <div style="font-size:.74rem;color:var(--muted);line-height:1.8;margin-top:10px">
-      <strong>Lenguaje:</strong> Python 3.10+ &nbsp;·&nbsp;
-      <strong>Análisis:</strong> pandas, numpy, scipy, statsmodels &nbsp;·&nbsp;
-      <strong>NLP:</strong> vaderSentiment (Hutto &amp; Gilbert, 2014) &nbsp;·&nbsp;
-      <strong>Raster:</strong> h5py + numpy (NASA Black Marble VNP46A3, máscara poligonal por estado) &nbsp;·&nbsp;
-      <strong>Visualización:</strong> Chart.js, D3.js, SVG nativo (mapa coroplético), matplotlib &nbsp;·&nbsp;
-      <strong>HTTP:</strong> requests, BeautifulSoup4
-    </div>
-  </div>
-
-  <!-- Cita sugerida -->
-  <div class="alert alert-info" style="margin-top:18px">
-    <div class="alert-title">Cita sugerida del proyecto</div>
-    <div class="alert-body">
-      Gómez, F. (2026). <em>ICIV — Indicador de Clima de Inversión Venezuela: Diseño metodológico,
-      pipeline ETL automatizado y dashboard interactivo</em>. Tesis de Especialización en Big Data
-      e Inteligencia de Negocios, Universidad EIA. Disponible en:
-      <code>github.com/Felipegomeze2/ICIV</code>
+      <div class="block-title">Comparación</div>
+      <div class="block-sub">Score de 0 a 100 por sector.</div>
+      <div class="chart-wrap" style="height:400px"><canvas id="cSectorBar"></canvas></div>
     </div>
   </div>
 </section>
 
-
-
-<!-- ===== SECTION: VENEZUELA HOY ===== -->
-<section class="section tab-section" id="ven-hoy">
+<!-- ===== LABORATORIO ===== -->
+<section class="section tab-section" id="laboratorio">
   <div class="section-header">
-    <span class="section-title">Venezuela Hoy</span>
-    <span class="section-sub">Panel de indicadores clave · Alta frecuencia + anuales · Fuentes internacionales verificadas</span>
+    <span class="section-title">Laboratorio</span>
+    <span class="section-sub">Simula tus propios escenarios</span>
   </div>
 
-  <!-- KPI Hero: ICIV + Pulse -->
-  <div id="vhHero" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center">
-      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px">ICIV Score Anual</div>
-      <div id="vhIcivScore" style="font-size:2.8rem;font-weight:700;line-height:1;color:var(--accent)">—</div>
-      <div id="vhIcivLabel" style="font-size:.75rem;color:var(--muted);margin-top:6px">—</div>
-      <div id="vhIcivDelta" style="font-size:.72rem;margin-top:4px;color:var(--muted)">—</div>
-      <div id="vhIcivYear" style="font-size:.65rem;color:#555;margin-top:8px">—</div>
+  <p class="lead">
+    Mueve cada palanca y mira cómo cambia el índice. Las áreas no pesan igual: mejorar la institucionalidad mueve más la aguja que subir el petróleo.
+  </p>
+
+  <div style="display:flex;gap:22px;flex-wrap:wrap">
+    <div style="flex:1;min-width:290px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span style="font-size:.8rem;font-weight:600">Ajusta cada área</span>
+        <button id="simReset" style="background:var(--card);border:1px solid var(--border);
+          color:var(--muted);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.74rem;font-family:inherit">
+          Volver a {sim_base_year}
+        </button>
+      </div>
+      <div id="simSliders"></div>
+      <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="sim-preset" data-preset="peak"
+          style="background:var(--card);border:1px solid var(--border);color:var(--muted);
+                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+          El mejor año
+        </button>
+        <button class="sim-preset" data-preset="min"
+          style="background:var(--card);border:1px solid var(--border);color:var(--muted);
+                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+          El peor año
+        </button>
+      </div>
     </div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:center">
-      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px">ICIV Pulse Mensual</div>
-      <div id="vhPulseScore" style="font-size:2.8rem;font-weight:700;line-height:1;color:#3498db">—</div>
-      <div id="vhPulseLabel" style="font-size:.75rem;color:var(--muted);margin-top:6px">—</div>
-      <div id="vhPulseDelta" style="font-size:.72rem;margin-top:4px;color:var(--muted)">—</div>
-      <div id="vhPulseYear" style="font-size:.65rem;color:#555;margin-top:8px">—</div>
+
+    <div style="flex:1;min-width:250px">
+      <div class="hero-card" style="text-align:center;margin-bottom:16px">
+        <div class="hero-tag">Resultado</div>
+        <div id="simScore" class="hero-num" style="font-size:3.6rem">—</div>
+        <div id="simCategory" class="hero-lbl">—</div>
+        <div id="simAnalog" class="hero-meta">—</div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div style="font-size:.78rem;font-weight:600;margin-bottom:12px">Cuánto aporta cada área</div>
+        <div id="simContribBars"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Grid de indicadores -->
-  <div id="vhGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px">
-    <!-- filled by JS -->
-  </div>
-
-  <!-- Nota de fuentes -->
-  <div style="background:rgba(0,212,170,.04);border:1px solid rgba(0,212,170,.15);border-radius:8px;padding:14px 18px;font-size:.73rem;color:var(--muted);line-height:1.7">
-    <strong style="color:var(--text)">Fuentes:</strong>
-    Precios WTI/Brent · Fed Funds · VIX · USD Index · UST 10Y: <em>FRED, Federal Reserve Bank of St. Louis</em> &nbsp;·&nbsp;
-    Producción petróleo Venezuela: <em>EIA International Energy Statistics (mensual)</em> &nbsp;·&nbsp;
-    PIB / Inflación: <em>IMF World Economic Outlook Abril 2026</em> &nbsp;·&nbsp;
-    Freedom House: <em>Freedom in the World 2026</em> &nbsp;·&nbsp;
-    CPI: <em>Transparency International 2025</em> &nbsp;·&nbsp;
-    WGI: <em>World Bank Governance Indicators 2024</em> &nbsp;·&nbsp;
-    Migrantes: <em>UNHCR Refugee Data Finder 2025</em> &nbsp;·&nbsp;
-    HDI: <em>UNDP Human Development Report 2024</em>
+  <div class="panel" style="margin-top:20px">
+    <div class="block-title">Tu escenario frente a la historia</div>
+    <div class="block-sub">La línea amarilla es el valor que acabas de simular.</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="cSimChart"></canvas></div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer class="footer">
-  <a href="#" onclick="event.preventDefault();showSection('portada')"
+  <a href="#" onclick="event.preventDefault();showSection('hoy')"
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
-  &nbsp;·&nbsp; Tesis de Especialización — Big Data e Inteligencia de Negocios · Universidad EIA &nbsp;·&nbsp; {generated_at}<br>
-  <span style="font-size:.65rem">
-    &nbsp;·&nbsp; AHP Saaty (1980) · OCDE Handbook (2008) · Stock &amp; Watson (2002)
-  </span>
+  &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA
+  &nbsp;·&nbsp; {generated_at}
 </footer>
 
 <script>
@@ -3881,70 +2629,14 @@ new Chart(document.getElementById('cHistoria'), {{
   }}
 }});
 
-// ── Chart 2: Dimensiones ─────────────────────────────────────────────────────
-const dimKeys = Object.keys(dimSeries);
-new Chart(document.getElementById('cDimensiones'), {{
-  type: 'line',
-  data: {{
-    labels: years,
-    datasets: dimKeys.map((k, i) => ({{
-      label: dimLbls[i] || k,
-      data: dimSeries[k],
-      borderColor: DIM_COLORS[i % DIM_COLORS.length],
-      borderWidth: 2,
-      pointRadius: 2,
-      tension: 0.3,
-      fill: false,
-    }}))
-  }},
-  options: {{
-    responsive: true, maintainAspectRatio: false,
-    interaction: {{ mode:'index', intersect:false }},
-    plugins: {{ legend:{{ position:'top', labels:{{boxWidth:12, font:{{size:10}}}} }} }},
-    scales: {{
-      y: {{ min:0, max:100, grid:{{color:'#21262d'}} }},
-      x: {{ grid:{{color:'#21262d'}} }}
-    }}
-  }}
-}});
-
-// ── Chart 3: Radar ───────────────────────────────────────────────────────────
-new Chart(document.getElementById('cRadar'), {{
-  type: 'radar',
-  data: {{
-    labels: radarLbls,
-    datasets: [{{
-      label: '{current_year_val}',
-      data: radarVals,
-      borderColor: '{current_color}',
-      backgroundColor: '{current_color}33',
-      pointBackgroundColor: radarClrs,
-      borderWidth: 2,
-      pointRadius: 5,
-    }}]
-  }},
-  options: {{
-    responsive: true, maintainAspectRatio: false,
-    plugins: {{ legend:{{ display:false }} }},
-    scales: {{
-      r: {{
-        min:0, max:100,
-        grid:{{color:'#30363d'}},
-        angleLines:{{color:'#30363d'}},
-        ticks:{{backdropColor:'transparent', stepSize:25, font:{{size:9}}}},
-        pointLabels:{{font:{{size:10}},color:'#8b949e'}}
-      }}
-    }}
-  }}
-}});
-
-// ── Chart 4: DimBar ──────────────────────────────────────────────────────────
+// ── Diagnóstico por área — último dato publicado de cada una ────────────────
+const dimYears = {dim_years_js};
 new Chart(document.getElementById('cDimBar'), {{
   type: 'bar',
   data: {{
     labels: dimLbls,
     datasets: [{{
-      label: 'Score {current_year_val}',
+      label: 'Puntaje',
       data: radarVals,
       backgroundColor: radarClrs.map(c => c + '99'),
       borderColor: radarClrs,
@@ -3955,7 +2647,12 @@ new Chart(document.getElementById('cDimBar'), {{
   options: {{
     indexAxis: 'y',
     responsive: true, maintainAspectRatio: false,
-    plugins: {{ legend:{{ display:false }} }},
+    plugins: {{
+      legend:{{ display:false }},
+      tooltip:{{ callbacks:{{
+        label: c => c.parsed.x.toFixed(1) + ' / 100  ·  dato de ' + (dimYears[c.dataIndex] ?? '—')
+      }}}}
+    }},
     scales: {{
       x: {{ min:0, max:100, grid:{{color:'#21262d'}} }},
       y: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }}
@@ -3963,103 +2660,18 @@ new Chart(document.getElementById('cDimBar'), {{
   }}
 }});
 
-// ── Chart 5: AHP vs Fixed ────────────────────────────────────────────────────
-new Chart(document.getElementById('cAHPvsFixed'), {{
-  type: 'line',
-  data: {{
-    labels: years,
-    datasets: [
-      {{
-        label: 'Pesos Fijos',
-        data: (() => {{
-          const map = {{}};
-          yearsFix.forEach((y,i) => map[y] = scoresFix[i]);
-          return years.map(y => map[y] ?? null);
-        }})(),
-        borderColor: '#6e7681',
-        borderWidth: 1.5,
-        borderDash: [4,3],
-        pointRadius: 0,
-        tension: 0.3,
-        fill: false,
-      }},
-      {{
-        label: 'AHP (Saaty)',
-        data: scoresAHP,
-        borderColor: ACCENT,
-        borderWidth: 2,
-        pointRadius: 3,
-        pointBackgroundColor: ACCENT,
-        tension: 0.3,
-        fill: false,
-      }}
-    ]
-  }},
-  options: {{
-    responsive: true, maintainAspectRatio: false,
-    interaction: {{ mode:'index', intersect:false }},
-    plugins: {{ legend:{{ position:'top' }} }},
-    scales: {{
-      y: {{ min:0, max:100, grid:{{color:'#21262d'}} }},
-      x: {{ grid:{{color:'#21262d'}} }}
-    }}
-  }}
-}});
+// ── Navegación plana (SPA) ───────────────────────────────────────────────────
+// Una sola fila de pestañas: cada enlace apunta directo a su sección.
 
-// ── Tab switching de 2 niveles (SPA) ─────────────────────────────────────────
-// Estructura: pestañas top (.nav-top a) activan bloques de sub-navs (.nav-sub),
-// y las sub-pestañas (.nav-sub a) cambian la sección visible (.tab-section).
-
-const topLinks    = document.querySelectorAll('.nav-top a[data-block]');
-const subNavs     = document.querySelectorAll('.nav-sub[data-block]');
-const subLinks    = document.querySelectorAll('.nav-sub a[href^="#"]');
+const navLinks    = document.querySelectorAll('.nav-top a[href^="#"]');
 const tabSections = document.querySelectorAll('.tab-section');
+const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio'];
 
-const _tabInits = {{}};   // id → fn — populated lazily by section IIFEs
-
-// Mapeo section_id → bloque narrativo
-const SECTION_TO_BLOCK = {{
-  // Portada
-  'portada':'portada',
-  // Inicio (Monitor de clima actual)
-  'inicio':'inicio', 'score':'inicio', 'ven-hoy':'inicio',
-  // Historia — anual + mensual + geográfico
-  'historia':'historia', 'pulse':'historia',
-  'pulse-componentes':'historia', 'pulse-metodologia':'historia',
-  'mapa':'historia',
-  // Diagnóstico — qué está fallando y dónde invertir
-  'dimensiones':'diagnostico', 'alertas':'diagnostico', 'sectorial':'diagnostico',
-  // Proyección
-  'proyecciones':'proyeccion',
-  'forecast-ml':'proyeccion', 'forecast-metodologia':'proyeccion',
-  // Noticias
-  'noticias':'noticias',
-  // Metodología
-  'correlacion':'metodologia', 'bibliografia':'metodologia',
-}};
-
-// Sección por defecto al activar cada bloque
-const DEFAULT_SECTION = {{
-  'portada':    'portada',
-  'inicio':     'inicio',
-  'historia':   'historia',
-  'diagnostico':'dimensiones',
-  'proyeccion': 'proyecciones',
-  'noticias':   'noticias',
-  'metodologia':'correlacion',
-}};
-
-function activateBlock(block) {{
-  topLinks.forEach(a => a.classList.toggle('nav-top-active', a.dataset.block === block));
-  subNavs.forEach(s => s.classList.toggle('nav-sub-active', s.dataset.block === block));
-}}
+const _tabInits = {{}};   // id → fn — se llena de forma perezosa desde cada IIFE
 
 function showSection(targetId) {{
-  // Determinar bloque
-  const block = SECTION_TO_BLOCK[targetId] || 'anual';
-  activateBlock(block);
+  if (SECTIONS.indexOf(targetId) === -1) targetId = 'hoy';
 
-  // Mostrar sección
   tabSections.forEach(s => s.classList.remove('tab-active'));
   const section = document.getElementById(targetId);
   if (section) {{
@@ -4067,10 +2679,8 @@ function showSection(targetId) {{
     window.dispatchEvent(new Event('resize'));
   }}
 
-  // Marcar sub-link activo
-  subLinks.forEach(a => a.classList.remove('active'));
-  const link = document.querySelector(`.nav-sub a[href="#${{targetId}}"]`);
-  if (link) link.classList.add('active');
+  navLinks.forEach(a => a.classList.toggle(
+    'nav-top-active', a.getAttribute('href') === '#' + targetId));
 
   if (_tabInits[targetId]) {{
     var _fn = _tabInits[targetId];
@@ -4079,19 +2689,7 @@ function showSection(targetId) {{
   }}
 }}
 
-// Click en pestaña top → activa bloque + muestra sección default
-topLinks.forEach(link => {{
-  link.addEventListener('click', e => {{
-    e.preventDefault();
-    const block = link.dataset.block;
-    const targetId = DEFAULT_SECTION[block];
-    showSection(targetId);
-    history.pushState(null, '', '#' + targetId);
-  }});
-}});
-
-// Click en sub-pestaña → muestra esa sección
-subLinks.forEach(link => {{
+navLinks.forEach(link => {{
   link.addEventListener('click', e => {{
     e.preventDefault();
     const targetId = link.getAttribute('href').slice(1);
@@ -4100,238 +2698,22 @@ subLinks.forEach(link => {{
   }});
 }});
 
-// Handle browser back/forward
-window.addEventListener('popstate', () => {{
-  const id = location.hash.slice(1) || 'portada';
-  showSection(id);
-}});
+window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 'hoy'));
 
-// Init from URL hash if present
-(function() {{
-  const initId = location.hash.slice(1) || 'portada';
-  showSection(initId);
-}})();
-
-// Compatibilidad: algunos handlers viejos usan '.nav a[href="..."]'
-// Los redirigimos para que sigan funcionando con la nueva estructura
-const navLinks = document.querySelectorAll('.nav-sub a[href^="#"]');
-function showTab(id) {{ showSection(id); }}
-
-// ── Dimension sub-tabs ───────────────────────────────────────────────────────
-const DIM_TAB_DATA = {dim_tab_data_json};
-
-function scoreToColor(s) {{
-  if (s <= 30) return '#e05c5c';
-  if (s <= 50) return '#e67e22';
-  if (s <= 65) return '#f1c40f';
-  if (s <= 80) return '#2ecc71';
-  return '#00d4aa';
-}}
-
-const dimInitialized = {{}};
-
-function initDimTab(dimId) {{
-  const d = DIM_TAB_DATA[dimId];
-  if (!d) return;
-  const el = document.getElementById('dimview-' + dimId);
-  if (!el) return;
-  const color = scoreToColor(d.current);
-
-  const varRows = d.vars.map(v => {{
-    const dc = v.direction === 'positive' ? '#00d4aa' : '#e05c5c';
-    const da = v.direction === 'positive' ? '&#9650; positiva' : '&#9660; negativa';
-    const noData = v.val === null || v.val === undefined;
-    const isWorst = !noData && v.val === 0;
-    const vc = noData ? '#666' : (isWorst ? '#e05c5c' : (v.val >= 50 ? '#00d4aa' : (v.val >= 30 ? '#e67e22' : '#e05c5c')));
-    const yrBadge = (!noData && v.val_yr) ? `<span style="margin-left:5px;color:#666;font-size:.62rem">${{v.val_yr}}</span>` : '';
-    const badge = isWorst
-      ? `<span style="margin-left:6px;background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c44;padding:1px 6px;border-radius:8px;font-size:.62rem">Peor registro histórico</span>`
-      : (noData
-        ? `<span style="margin-left:6px;background:#55555522;color:#888;border:1px solid #55555544;padding:1px 6px;border-radius:8px;font-size:.62rem">sin dato</span>`
-        : '');
-    const scoreDisplay = noData ? '—' : v.val;
-    return `<tr>
-      <td style="font-size:.78rem;padding:6px 8px">${{v.label}}${{badge}}</td>
-      <td style="text-align:center;font-weight:600;padding:6px 8px">${{Math.round(v.weight*100)}}%</td>
-      <td style="padding:6px 8px"><span style="background:#21262d;padding:2px 7px;border-radius:10px;font-size:.68rem">${{v.source}}</span></td>
-      <td style="color:${{dc}};font-size:.72rem;padding:6px 8px">${{da}}</td>
-      <td style="text-align:right;font-weight:700;color:${{vc}};padding:6px 8px">${{scoreDisplay}}${{yrBadge}}</td>
-    </tr>`;
-  }}).join('');
-
-  const chartHeight = Math.max(180, d.vars.length * 40);
-
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-      <div class="chart-card">
-        <div class="ct">${{d.name}}</div>
-        <div class="cs">Peso en el ICIV: ${{Math.round(d.weight*100)}}%</div>
-        <div class="stats-row" style="margin-bottom:16px">
-          <div class="stat">
-            <div class="stat-label">Score actual</div>
-            <div class="stat-val" style="color:${{color}}">${{d.current}}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Promedio</div>
-            <div class="stat-val stat-neu">${{d.avg}}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Mínimo</div>
-            <div class="stat-val stat-down">${{d.min_val}}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">Máximo</div>
-            <div class="stat-val stat-up">${{d.max_val}}</div>
-          </div>
-        </div>
-        <div style="font-size:.84rem;color:var(--text);line-height:1.65;padding-top:12px;border-top:1px solid var(--border)">${{d.description}}</div>
-      </div>
-      <div class="chart-card">
-        <div class="ct">Score por variable — último dato real disponible</div>
-        <div class="cs">Valor normalizado (0–100) · verde = dirección positiva · [año] = último dato real</div>
-        <div class="chart-wrap" style="height:${{chartHeight}}px">
-          <canvas id="cDimVars-${{dimId}}"></canvas>
-        </div>
-      </div>
-    </div>
-    <div class="chart-card" style="margin-bottom:20px">
-      <div class="ct">Evolución histórica — ${{d.name}}</div>
-      <div class="cs">Score de dimensión 0–100 · serie completa 2000–presente</div>
-      <div class="chart-wrap" style="height:260px">
-        <canvas id="cDimHist-${{dimId}}"></canvas>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="ct">Variables de la dimensión</div>
-      <div class="cs">Desglose metodológico — peso, fuente, dirección y score actual</div>
-      <table class="dim-var-table" style="margin-top:8px">
-        <thead><tr>
-          <th>Variable</th><th style="text-align:center">Peso</th>
-          <th>Fuente</th><th>Dirección</th><th style="text-align:right">Score</th>
-        </tr></thead>
-        <tbody>${{varRows}}</tbody>
-      </table>
-    </div>`;
-
-  // Historical line chart
-  new Chart(document.getElementById('cDimHist-' + dimId), {{
-    type: 'line',
-    data: {{
-      labels: years,
-      datasets: [{{
-        label: d.name,
-        data: d.hist,
-        borderColor: color,
-        backgroundColor: color + '22',
-        borderWidth: 2.5,
-        pointRadius: 3,
-        pointBackgroundColor: color,
-        tension: 0.3,
-        fill: true,
-      }}]
-    }},
-    options: {{
-      responsive: true, maintainAspectRatio: false,
-      interaction: {{ mode: 'index', intersect: false }},
-      plugins: {{ legend: {{ display: false }} }},
-      scales: {{
-        y: {{ min: 0, max: 100, grid: {{ color: '#21262d' }} }},
-        x: {{ grid: {{ color: '#21262d' }} }}
-      }}
-    }}
-  }});
-
-  // Variable bar chart
-  // v.val === null  → sin dato (variable con NaN real, ej. reservas sin reportar)
-  // v.val === 0     → dato real, peor registro historico de Venezuela
-  const varBg  = d.vars.map(v => v.val === null ? '#55555533' : (v.direction === 'positive' ? '#00d4aa66' : '#e05c5c66'));
-  const varBdr = d.vars.map(v => v.val === null ? '#888888'   : (v.direction === 'positive' ? '#00d4aa'   : '#e05c5c'));
-  new Chart(document.getElementById('cDimVars-' + dimId), {{
-    type: 'bar',
-    data: {{
-      labels: d.vars.map(v => v.val === null ? v.label + ' (sin dato)' : v.label + (v.label_yr || '')),
-      datasets: [{{
-        label: 'Score (0-100)',
-        data: d.vars.map(v => v.val === null ? 0 : v.val),
-        backgroundColor: varBg,
-        borderColor: varBdr,
-        borderWidth: 1,
-        borderRadius: 4,
-        minBarLength: 2,
-      }}]
-    }},
-    options: {{
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: {{
-        legend: {{ display: false }},
-        tooltip: {{ callbacks: {{ label: ctx => {{
-          const v = d.vars[ctx.dataIndex];
-          if (v.val === null) return 'Sin dato — Venezuela no publica esta variable';
-          if (v.val === 0)    return 'Score: 0 — Peor registro historico';
-          return `Score: ${{v.val}}`;
-        }} }} }}
-      }},
-      scales: {{
-        x: {{ min: 0, max: 100, grid: {{ color: '#21262d' }} }},
-        y: {{ grid: {{ display: false }}, ticks: {{ font: {{ size: 10 }} }} }}
-      }}
-    }}
-  }});
-}}
-
-function showDimTab(dimId) {{
-  document.querySelectorAll('.dim-stab').forEach(b => b.classList.remove('dim-stab-active'));
-  document.querySelectorAll('.dim-view').forEach(v => v.classList.remove('dim-view-active'));
-  const btn  = document.querySelector(`.dim-stab[data-dim="${{dimId}}"]`);
-  const view = document.getElementById('dimview-' + dimId);
-  if (btn)  btn.classList.add('dim-stab-active');
-  if (view) view.classList.add('dim-view-active');
-  if (dimId !== 'todas' && !dimInitialized[dimId]) {{
-    dimInitialized[dimId] = true;
-    initDimTab(dimId);
-  }}
-  window.dispatchEvent(new Event('resize'));
-}}
-
-document.querySelectorAll('.dim-stab').forEach(btn => {{
-  btn.addEventListener('click', () => showDimTab(btn.dataset.dim));
-}});
+(function() {{ showSection(location.hash.slice(1) || 'hoy'); }})();
 
 // ── SATV ──────────────────────────────────────────────────────────────────────
 (function() {{
   const SATV = {satv_json};
   if (!SATV || !SATV.resumen) return;
 
-  const r   = SATV.resumen;
   const NIV_COLOR = {{ critico:'#e05c5c', precaucion:'#e67e22', normal:'#2ecc71' }};
-  const NIV_EMOJI = {{ critico:'', precaucion:'', normal:'' }};
-  const TEND_LABEL = {{
-    deterioro_acelerado:'Deterioro acelerado', deterioro:'Deterioro',
-    estable:'Estable', recuperacion:'Recuperación', recuperacion_acelerada:'Recuperación acelerada'
-  }};
 
-  // ── Resumen KPIs ────────────────────────────────────────────────────────────
-  const tendColor = r.iciv_tendencia === 'deterioro' ? '#e05c5c'
-                  : r.iciv_tendencia === 'recuperacion' ? '#2ecc71' : '#8b949e';
-  const tendLabel = r.iciv_tendencia === 'deterioro' ? '↓ Deterioro'
-                  : r.iciv_tendencia === 'recuperacion' ? '↑ Recuperación' : '→ Estable';
-  const kpiData = [
-    {{ val: r.dims_criticas,   lbl: 'Señales críticas',        color: '#e05c5c' }},
-    {{ val: r.dims_precaucion, lbl: 'En precaución',           color: '#e67e22' }},
-    {{ val: r.dims_normales,   lbl: 'En zona normal',          color: '#2ecc71' }},
-    {{ val: `${{r.iciv_delta_1y > 0 ? '+' : ''}}${{r.iciv_delta_1y}}`, lbl: tendLabel, color: tendColor }},
-  ];
-  document.getElementById('satvResumen').innerHTML = kpiData.map(k => `
-    <div class="satv-kpi">
-      <div class="satv-kpi-val" style="color:${{k.color}}">${{k.val}}</div>
-      <div class="satv-kpi-lbl">${{k.lbl}}</div>
-    </div>`).join('');
-
-  // ── Alertas activas ─────────────────────────────────────────────────────────
+  // ── Alertas activas — único bloque SATV visible en el producto ──────────────
   const alertasEl = document.getElementById('satvAlertas');
-  if (SATV.alertas_activas.length === 0) {{
-    alertasEl.innerHTML = '<div class="satv-alert normal"><div class="satv-alert-msg">Sin alertas activas en el período actual.</div></div>';
+  if (!alertasEl) return;
+  if (!SATV.alertas_activas || SATV.alertas_activas.length === 0) {{
+    alertasEl.innerHTML = '<div class="satv-alert normal"><div class="satv-alert-msg">Sin alertas activas este mes.</div></div>';
   }} else {{
     alertasEl.innerHTML = SATV.alertas_activas.map(a => `
       <div class="satv-alert ${{a.nivel}}">
@@ -4342,125 +2724,12 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         </div>
       </div>`).join('');
   }}
-
-  // ── Dimensiones ─────────────────────────────────────────────────────────────
-  const dimsEl = document.getElementById('satvDims');
-  const dimEntries = Object.entries(SATV.dimensiones);
-  dimsEl.innerHTML = dimEntries.map(([id, d]) => {{
-    const noData  = d.score_actual === null || d.score_actual === undefined;
-    const nivel   = noData ? 'sin_dato' : d.nivel;
-    const c       = NIV_COLOR[nivel] || '#8b949e';
-    const score_display = noData ? '—' : d.score_actual.toFixed !== undefined ? d.score_actual.toFixed(1) : d.score_actual;
-    const badge_labels  = {{'critico':'CRÍTICO','precaucion':'PRECAUCIÓN','normal':'NORMAL','sin_dato':'SIN DATO'}};
-    const sign = d.delta_1y >= 0 ? '+' : '';
-    const nVars = d.n_vars_disponibles !== undefined ? `${{d.n_vars_disponibles}}/${{d.n_vars_total}} vars` : '';
-    return `
-      <div class="satv-dim-card">
-        <div class="satv-dim-header">
-          <span class="satv-dim-name">${{d.nombre}}</span>
-          <span class="satv-badge ${{nivel}}">${{badge_labels[nivel] || nivel.toUpperCase()}}</span>
-        </div>
-        <div class="satv-dim-score" style="color:${{c}}">${{score_display}}</div>
-        ${{noData ? `<div style="font-size:.72rem;color:#8b949e;margin-top:4px">Sin datos para ${{typeof CURRENT_YEAR !== 'undefined' ? CURRENT_YEAR : ''}}</div>` : ''}}
-        <div class="satv-dim-deltas">
-          ${{!noData ? `<span>Δ1m: <strong style="color:${{d.delta_1y<0?'#e05c5c':'#2ecc71'}}">${{sign}}${{d.delta_1y}}</strong></span>
-          <span>Δ3m: <strong>${{d.delta_3y >= 0 ? '+' : ''}}${{d.delta_3y}}</strong></span>
-          <span>Δ6m: <strong>${{d.delta_5y >= 0 ? '+' : ''}}${{d.delta_5y}}</strong></span>
-          <span style="margin-left:auto">${{d.arrow}} ${{TEND_LABEL[d.tendencia] || d.tendencia}}</span>` : `<span style="color:#8b949e">Ver última tendencia disponible →</span>`}}
-        </div>
-        <div class="satv-dim-var">
-          ${{noData
-            ? `<span style="color:#8b949e">Sin indicadores disponibles en ${{typeof CURRENT_YEAR !== 'undefined' ? CURRENT_YEAR : 'año actual'}}</span>`
-            : `Var. crítica: <strong>${{d.variable_critica.replace(/_/g,' ')}}</strong> (${{d.variable_critica_score}} pts)
-               ${{nVars ? `<span style="color:#8b949e;font-size:.68rem;margin-left:6px">· ${{nVars}}</span>` : ''}}`
-          }}
-        </div>
-      </div>`;
-  }}).join('');
-
-  // ── Variables críticas ───────────────────────────────────────────────────────
-  document.getElementById('satvVarTable').innerHTML = `
-    <table class="satv-var-table">
-      <thead><tr><th>Señal</th><th>Score</th><th>Δ1m</th><th>Grupo</th></tr></thead>
-      <tbody>
-        ${{SATV.variables_criticas.map(v => {{
-          const barW = Math.max(2, v.score);
-          const barC = v.score < 25 ? '#e05c5c' : v.score < 50 ? '#e67e22' : '#00d4aa';
-          const dSign = v.delta_1y >= 0 ? '+' : '';
-          const dCol  = v.delta_1y < 0 ? '#e05c5c' : '#2ecc71';
-          return `<tr>
-            <td style="font-size:.76rem">${{v.label}}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div class="satv-bar-mini" style="width:${{barW}}%;background:${{barC}}"></div>
-                <span style="font-weight:700;color:${{barC}}">${{v.score}}</span>
-              </div>
-            </td>
-            <td style="color:${{dCol}};font-weight:600">${{dSign}}${{v.delta_1y}}</td>
-            <td style="font-size:.72rem;color:var(--muted)">${{v.dimension.replace('_',' ')}}</td>
-          </tr>`;
-        }}).join('')}}
-      </tbody>
-    </table>`;
-
-  // ── Timeline histórico (Chart.js scatter) ────────────────────────────────────
-  const timelineEvents = SATV.timeline_historico || [];
-  // Agrupar por monitor para el eje Y.
-  const dimOrder = ['pulse'];
-  const dimLabel = {{
-    pulse:'Pulse mensual'
-  }};
-
-  const datasets = dimOrder.map(dim => {{
-    const pts = timelineEvents
-      .filter(e => e.dimension === dim)
-      .map(e => ({{ x: e.año + ((e.mes || 1) - 1) / 12, y: dimOrder.indexOf(dim), nivel: e.nivel, evento: e.tipo, mes: e.mes }}));
-    return {{
-      label: dimLabel[dim] || dim,
-      data: pts,
-      pointBackgroundColor: pts.map(p => NIV_COLOR[p.nivel] || '#8b949e'),
-      pointBorderColor:     pts.map(p => NIV_COLOR[p.nivel] || '#8b949e'),
-      pointRadius: 8,
-      pointHoverRadius: 10,
-      showLine: false,
-    }};
-  }}).filter(ds => ds.data.length > 0);
-
-  new Chart(document.getElementById('cSatvTimeline'), {{
-    type: 'scatter',
-    data: {{ datasets }},
-    options: {{
-      responsive: true, maintainAspectRatio: false,
-      plugins: {{
-        legend: {{ display: false }},
-        tooltip: {{ callbacks: {{
-          label: ctx => `${{ctx.raw.evento}} (${{Math.floor(ctx.raw.x)}}-${{String(ctx.raw.mes || 1).padStart(2,'0')}})`,
-          title: () => '',
-        }}}}
-      }},
-      scales: {{
-        x: {{
-          min: 2010, max: {settings.series.end_year} + 1,
-          grid: {{ color: '#21262d' }},
-          ticks: {{ stepSize: 2, font: {{ size: 9 }} }}
-        }},
-        y: {{
-          min: -0.5, max: dimOrder.length - 0.5,
-          grid: {{ color: '#21262d' }},
-          ticks: {{
-            callback: val => dimLabel[dimOrder[val]] || '',
-            font: {{ size: 9 }}
-          }}
-        }}
-      }}
-    }}
-  }});
 }})();
 
 // ── Guardian News ─────────────────────────────────────────────────────────────
 (function() {{
   const INTL_NEWS = {intl_news_json};
-  const GUARDIAN_KEY = '9d4cf6fc-8864-4693-adda-987c76fc7476';
+  const GUARDIAN_KEY = '{guardian_key}';
   const PAGE_SIZE    = 12;
   let   allArticles  = [];
   let   filtered     = [];
@@ -4620,322 +2889,8 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   if (window.location.hash === '#mapa') setTimeout(initMapTab, 200);
 }})();
 
-// ── HISTORIA — sub-tabs Gráfico / Tabla ─────────────────────────────────────
+// ── LABORATORIO — simulador interactivo ────────────────────────────────────────
 (function() {{
-  const tabs = document.querySelectorAll('.hist-tab');
-  tabs.forEach(btn => {{
-    btn.addEventListener('click', () => {{
-      const view = btn.dataset.view;
-      tabs.forEach(b => {{
-        b.style.color = 'var(--muted)';
-        b.style.fontWeight = '500';
-        b.style.borderBottomColor = 'transparent';
-      }});
-      btn.style.color = 'var(--text)';
-      btn.style.fontWeight = '600';
-      btn.style.borderBottomColor = view === 'grafico' ? 'var(--accent)' : 'var(--accent)';
-      document.getElementById('histView-grafico').style.display = view === 'grafico' ? '' : 'none';
-      document.getElementById('histView-tabla').style.display  = view === 'tabla'   ? '' : 'none';
-    }});
-  }});
-}})();
-
-// ── SCORE ACTUAL — year selector ────────────────────────────────────────────
-(function() {{
-  const SBY = {score_by_year_json};  // {{year: {{iciv, coverage, prev, dims}}}}
-
-  // Gauge constants
-  const ARC_TOTAL = 282.74;
-  const BAND_BREAKS = [
-    [0,  30,   0.0,  84.8,  '#e05c5c'],
-    [30, 50,  84.8,  56.5,  '#e67e22'],
-    [50, 65, 141.3,  42.4,  '#f1c40f'],
-    [65, 80, 183.7,  42.4,  '#2ecc71'],
-    [80, 100,226.1,  56.5,  '#00d4aa'],
-  ];
-
-  function scoreColor(s) {{
-    if (s <= 30) return '#e05c5c';
-    if (s <= 50) return '#e67e22';
-    if (s <= 65) return '#f1c40f';
-    if (s <= 80) return '#2ecc71';
-    return '#00d4aa';
-  }}
-
-  function scoreLabel(s) {{
-    if (s <= 30) return 'Alto Riesgo';
-    if (s <= 50) return 'Riesgo Moderado-Alto';
-    if (s <= 65) return 'Riesgo Moderado';
-    if (s <= 80) return 'Bajo Riesgo';
-    return 'Muy Bajo Riesgo';
-  }}
-
-  function scoreRecommendation(s) {{
-    if (s <= 30) return 'El clima de inversión en Venezuela presenta condiciones de <strong>Alto Riesgo</strong>. No se recomienda inversión directa en este período. Las condiciones macroeconómicas, institucionales y energéticas representan barreras estructurales significativas.';
-    if (s <= 50) return 'Las condiciones reflejan un entorno de <strong>Riesgo Moderado-Alto</strong>. Solo sectores con alta tolerancia al riesgo y cobertura específica (commodity extraction, remesas, telecomunicaciones) pueden considerar operaciones bajo análisis de riesgo político exhaustivo.';
-    if (s <= 65) return 'El ICIV indica un entorno de <strong>Riesgo Moderado</strong>. Viable con due diligence reforzado, estructura contractual de mitigación de riesgo y estrategia de salida definida. Preferible a través de joint-ventures con socios locales.';
-    if (s <= 80) return 'El indicador señala condiciones de <strong>Bajo Riesgo</strong>. Ambiente favorable para inversión con análisis sectorial estándar. Se recomienda diversificación entre múltiples sectores para capturar el ciclo de recuperación.';
-    return 'El ICIV presenta condiciones de <strong>Muy Bajo Riesgo</strong>, comparable a mercados emergentes estables de la región. Inversión recomendada con análisis sectorial convencional.';
-  }}
-
-  function alertClass(s) {{
-    if (s <= 30) return 'alert alert-bad';
-    if (s <= 50) return 'alert alert-warn';
-    return 'alert alert-info';
-  }}
-
-  window.selectScoreYear = function(yr) {{
-    const data = SBY[yr];
-    if (!data) return;
-    const s = data.iciv;
-    const col = scoreColor(s);
-    const lbl = scoreLabel(s);
-    const cov = data.coverage;
-
-    // Update header subtitle
-    const hdr = document.getElementById('scoreHeaderSub');
-    if (hdr) hdr.textContent = 'Venezuela · ' + yr;
-
-    // Update year buttons
-    document.querySelectorAll('.score-yr-btn').forEach(btn => {{
-      btn.classList.toggle('score-yr-active', parseInt(btn.textContent) === yr);
-    }});
-
-    // Coverage tier function (mirrors Python _cov_tier)
-    function covTier(pct) {{
-      if (pct >= 85) return ['Histórico',   '#00d4aa'];
-      if (pct >= 70) return ['Útil',        '#2ecc71'];
-      if (pct >= 50) return ['Parcial',     '#e6a817'];
-      return                ['Provisional', '#e74c3c'];
-    }}
-    const [tierLbl, tierCol] = covTier(cov);
-
-    // Coverage badge — always visible, color-coded by tier
-    const warn = document.getElementById('scoreCoverageWarn');
-    const warnPct = document.getElementById('scoreCovWarnPct');
-    const warnTxt = document.getElementById('scoreCovWarnTxt');
-    const warnIcon = document.getElementById('scoreCovWarnIcon');
-    if (warn) {{
-      const low = cov < 60;
-      warn.style.display = 'flex';
-      warn.style.borderColor = tierCol;
-      if (warnIcon) warnIcon.innerHTML = low ? '&#9888;' : '&#10003;';
-      if (warnPct) {{
-        warnPct.textContent = 'Cobertura de datos: ' + cov.toFixed(0) + '% · ' + tierLbl;
-        warnPct.style.color = tierCol;
-      }}
-      if (warnTxt) {{
-        const tierDesc = {{
-          'Histórico':   'Series completas. Cobertura suficiente para análisis estadístico robusto.',
-          'Útil':        'Mayoría de fuentes disponibles. Score representativo con pequeñas brechas de lag.',
-          'Parcial':     'Fuentes anuales con lag de publicación. Resultado indicativo — confirmar cuando se publiquen WGI/HDI/WDI.',
-          'Provisional': 'Solo fuentes de alta frecuencia disponibles. Score preliminar — uso exploratorio únicamente.'
-        }};
-        warnTxt.textContent = 'El score ' + yr + ' usa ' + cov.toFixed(0) + '% del peso del modelo. ' + (tierDesc[tierLbl] || '');
-      }}
-    }}
-
-    // Stats cards
-    const mainLbl = document.getElementById('scoreMainLbl');
-    const mainVal = document.getElementById('scoreMainVal');
-    const mainSub = document.getElementById('scoreMainSub');
-    if (mainLbl) mainLbl.textContent = 'ICIV ' + yr;
-    if (mainVal) {{ mainVal.textContent = s.toFixed(1); mainVal.style.color = col; }}
-    if (mainSub) mainSub.textContent = lbl + ' · ' + cov.toFixed(0) + '% · ' + tierLbl;
-
-    // Delta vs prev year
-    const deltaVal = document.getElementById('scoreDeltaVal');
-    const deltaSub = document.getElementById('scoreDeltaSub');
-    if (data.prev !== null && data.prev !== undefined) {{
-      const delta = s - data.prev;
-      if (deltaVal) {{
-        deltaVal.textContent = (delta >= 0 ? '+' : '') + delta.toFixed(1);
-        deltaVal.className = 'stat-val ' + (delta >= 0 ? 'stat-up' : 'stat-down');
-      }}
-      if (deltaSub) deltaSub.textContent = 'puntos respecto a ' + (yr - 1);
-    }} else {{
-      if (deltaVal) {{ deltaVal.textContent = '—'; deltaVal.className = 'stat-val stat-neu'; }}
-      if (deltaSub) deltaSub.textContent = 'primer año disponible';
-    }}
-
-    // Recommendation
-    const alertDiv = document.getElementById('scoreAlertDiv');
-    const alertTitle = document.getElementById('scoreAlertTitle');
-    const alertBody  = document.getElementById('scoreAlertBody');
-    if (alertDiv) alertDiv.className = alertClass(s);
-    if (alertTitle) alertTitle.textContent = 'Recomendación de inversión ' + yr;
-    if (alertBody) alertBody.innerHTML = scoreRecommendation(s);
-
-    // Gauge
-    const bandIdx = BAND_BREAKS.findIndex(([lo, hi]) => s <= hi) ?? 4;
-    const band = BAND_BREAKS[Math.max(0, bandIdx)];
-    const activeDashLen    = band[3];
-    const activeDashOffset = band[2];
-    const scoreArc = (s / 100) * ARC_TOTAL;
-    const needleAngle = -90 + (s / 100) * 180;  // 180° arc (semicircle), not 270°
-
-    const gaugeBand = document.getElementById('gaugeActiveBand');
-    const gaugeFill = document.getElementById('gaugeFillArc');
-    const gaugeNdl  = document.getElementById('gaugeNeedle');
-    const gaugeBase = document.getElementById('gaugeNeedleBase');
-    const gaugeNum  = document.getElementById('gaugeScoreNum');
-    const gaugeCat  = document.getElementById('gaugeCatLbl');
-    const gaugeTitle= document.getElementById('gaugeTitle');
-
-    if (gaugeBand) {{
-      gaugeBand.setAttribute('stroke', col);
-      gaugeBand.setAttribute('stroke-dasharray', activeDashLen + ' 282.74');
-      gaugeBand.setAttribute('stroke-dashoffset', '-' + activeDashOffset);
-    }}
-    // gaugeFill kept transparent (removed visual overlap issue)
-    if (gaugeNdl) {{
-      gaugeNdl.setAttribute('stroke', col);
-      gaugeNdl.setAttribute('transform', 'rotate(' + needleAngle.toFixed(1) + ',110,110)');
-    }}
-    if (gaugeBase) gaugeBase.setAttribute('fill', col);
-    if (gaugeNum) {{ gaugeNum.textContent = s.toFixed(1); gaugeNum.style.color = col; }}
-    if (gaugeCat) {{ gaugeCat.textContent = lbl; gaugeCat.style.color = col; }}
-    if (gaugeTitle) gaugeTitle.textContent = 'Indicador ICIV ' + yr;
-
-    // Risk bands
-    const rbIds = ['rb0','rb1','rb2','rb3','rb4'];
-    const rbThresholds = [30, 50, 65, 80, 100];
-    rbIds.forEach((id, i) => {{
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('active',
-        (i === 0 && s <= 30) ||
-        (i === 1 && s > 30 && s <= 50) ||
-        (i === 2 && s > 50 && s <= 65) ||
-        (i === 3 && s > 65 && s <= 80) ||
-        (i === 4 && s > 80)
-      );
-    }});
-  }};
-}})();
-
-// ── ESCENARIOS 2027–2030 ────────────────────────────────────────────────────
-(function() {{
-  const ESC = {escenarios_json} || {{}};
-
-  const LABELS = {{ optimista: 'Optimista', base: 'Base', pesimista: 'Pesimista' }};
-  const COLORS_MAP = {{ optimista:'#2ecc71', base:'#3498db', pesimista:'#e74c3c' }};
-  const SC_NAMES   = ['base','optimista','pesimista'];
-  const CANVAS_IDS = {{ base:'cEscBase', optimista:'cEscOpt', pesimista:'cEscPess' }};
-  const KPI_IDS    = {{ base:'escKpiBase', optimista:'escKpiOpt', pesimista:'escKpiPess' }};
-  const SUP_IDS    = {{ base:'escSupBase', optimista:'escSupOpt', pesimista:'escSupPess' }};
-
-  const hist = ESC.historico;
-  const chartInsts = {{}};
-
-  // ── Esc tab switching ──────────────────────────────────────────────────────
-  const escTabs  = document.querySelectorAll('.esc-tab');
-  const escViews = document.querySelectorAll('.esc-view');
-  escTabs.forEach(btn => {{
-    btn.addEventListener('click', () => {{
-      const name = btn.dataset.esc;
-      escTabs.forEach(b => {{
-        b.style.color = 'var(--muted)';
-        b.style.fontWeight = '500';
-        b.style.borderBottomColor = 'transparent';
-      }});
-      btn.style.color = 'var(--text)';
-      btn.style.fontWeight = '600';
-      btn.style.borderBottomColor = COLORS_MAP[name] || 'var(--accent)';
-      escViews.forEach(v => v.style.display = 'none');
-      const view = document.getElementById('escView-' + name);
-      if (view) view.style.display = '';
-      if (SC_NAMES.includes(name) && !chartInsts[name]) buildScChart(name);
-      if (name === 'simulador' && !chartInsts['simulador']) initSimulator();
-      if (name === 'montecarlo' && !chartInsts['montecarlo']) {{ buildMCChart(); buildProbCards(); buildParamsCard(); chartInsts['montecarlo'] = true; }}
-    }});
-  }});
-
-  // ── Build per-scenario chart ───────────────────────────────────────────────
-  function buildScChart(sc) {{
-    const ctx = document.getElementById(CANVAS_IDS[sc]);
-    if (!ctx) return;
-    const existing = Chart.getChart ? Chart.getChart(ctx) : null;
-    if (existing) existing.destroy();
-    const d   = ESC.escenarios[sc];
-    const col = COLORS_MAP[sc];
-    const projYears = d.años;
-
-    const datasets = [
-      {{
-        label: 'Histórico ICIV (2000–2026)',
-        data: hist.años.map((y,i) => ({{ x:y, y:hist.valores[i] }})),
-        borderColor: '#00d4aa', backgroundColor: 'transparent',
-        borderWidth: 2.5, pointRadius: 2.5, tension: 0.3, order: 10,
-      }},
-      // CI band top
-      {{
-        label: '_ci_hi',
-        data: projYears.map((y,i) => ({{ x:y, y:d.ci_hi[i] }})),
-        borderColor: 'transparent', backgroundColor: col + '28',
-        fill: '+1', pointRadius: 0, tension: 0.3, order: 5,
-      }},
-      // CI band bottom
-      {{
-        label: '_ci_lo',
-        data: projYears.map((y,i) => ({{ x:y, y:d.ci_lo[i] }})),
-        borderColor: 'transparent', backgroundColor: col + '28',
-        fill: false, pointRadius: 0, tension: 0.3, order: 5,
-      }},
-      // Scenario line
-      {{
-        label: LABELS[sc],
-        data: projYears.map((y,i) => ({{ x:y, y:d.valores[i] }})),
-        borderColor: col, backgroundColor: 'transparent',
-        borderWidth: 2.5, borderDash: sc==='base'?[]:[5,3],
-        pointRadius: 5, pointHoverRadius: 7, tension: 0.3, order: 1,
-      }},
-    ];
-
-    chartInsts[sc] = new Chart(ctx, {{
-      type: 'line',
-      data: {{ datasets }},
-      options: {{
-        responsive: true, maintainAspectRatio: false, parsing: false,
-        plugins: {{
-          legend: {{ labels: {{ color:'#8b949e', filter: item => !item.text.startsWith('_'), boxWidth:22, font:{{size:11}} }} }},
-          tooltip: {{ callbacks: {{ label: c => c.dataset.label.startsWith('_') ? null : `${{c.dataset.label}}: ${{c.parsed.y?.toFixed(1)}}` }} }},
-          annotation: {{
-            annotations: {{
-              vline: {{ type:'line', xMin:2026.5, xMax:2026.5, borderColor:'#555', borderWidth:1, borderDash:[4,4],
-                label: {{ content:'Proyección →', display:true, color:'#8b949e', font:{{size:10}}, position:'start' }} }},
-              risk30: {{ type:'box', xMin:2000, xMax:2031, yMin:0, yMax:30, backgroundColor:'rgba(224,92,92,.05)', borderWidth:0 }},
-              risk50: {{ type:'box', xMin:2000, xMax:2031, yMin:30, yMax:50, backgroundColor:'rgba(230,126,34,.04)', borderWidth:0 }},
-            }}
-          }}
-        }},
-        scales: {{
-          x: {{ type:'linear', min:2000, max:2031, ticks:{{color:'#8b949e',stepSize:2,callback:v=>v}}, grid:{{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks:{{color:'#8b949e',stepSize:10}}, grid:{{color:'#21262d'}},
-                title:{{display:true,text:'ICIV (0–100)',color:'#8b949e',font:{{size:11}}}} }}
-        }}
-      }}
-    }});
-
-    // KPI cards
-    const kpiEl = document.getElementById(KPI_IDS[sc]);
-    if (kpiEl) {{
-      kpiEl.innerHTML = d.años.map((yr,i) => `
-        <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid ${{col}};
-          border-radius:10px;padding:14px;text-align:center">
-          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${{yr}}</div>
-          <div style="font-size:1.8rem;font-weight:700;color:${{col}}">${{d.valores[i].toFixed(1)}}</div>
-          <div style="font-size:.68rem;color:var(--muted);margin-top:4px">IC: ${{d.ci_lo[i].toFixed(1)}}–${{d.ci_hi[i].toFixed(1)}}</div>
-        </div>`).join('');
-    }}
-
-    // Supuestos
-    const supEl = document.getElementById(SUP_IDS[sc]);
-    if (supEl && d.supuestos) {{
-      supEl.innerHTML = `<div style="font-size:.78rem;font-weight:600;margin-bottom:10px;color:${{col}}">${{LABELS[sc]}} — Supuestos documentados</div>
-        <ul style="font-size:.76rem;color:var(--muted);padding-left:18px;line-height:1.8">${{d.supuestos.map(s=>`<li>${{s}}</li>`).join('')}}</ul>`;
-    }}
-  }}
-
   // ── SIMULADOR ────────────────────────────────────────────────────────────────
   const SIM_DIMS  = {sim_dims_json};
   const SIM_YEARS = {sim_years_js};
@@ -5085,7 +3040,7 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
 
   function setPreset(preset) {{
-    // preset: 'peak' (2007), 'min' (2020), 'opt2030', 'pess2030'
+    // preset: 'peak' (mejor año histórico), 'min' (peor año), 'current' (reset)
     SIM_DIMS.forEach(d => {{
       let val;
       if (preset === 'peak') {{
@@ -5095,18 +3050,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         // Usar el año con ICIV más bajo — buscar valores de ese año
         const minIdx = SIM_HIST.indexOf(Math.min(...SIM_HIST));
         val = d.hist[minIdx] !== null ? d.hist[minIdx] : d.current;
-      }} else if (preset === 'opt2030') {{
-        // Base 2026 + ajuste optimista
-        const optDeltas = {{ 0:2.5, 1:5.5, 2:8.0, 3:10.5 }}; // year idx→delta
-        const baseLast = SIM_HIST[SIM_HIST.length-1];
-        const optVal   = ESC.escenarios.optimista.valores[3]; // 2030
-        const ratio    = optVal / Math.max(baseLast, 1);
-        val = Math.min(100, d.current * ratio);
-      }} else if (preset === 'pess2030') {{
-        const baseLast = SIM_HIST[SIM_HIST.length-1];
-        const pessVal  = ESC.escenarios.pesimista.valores[3];
-        const ratio    = pessVal / Math.max(baseLast, 1);
-        val = Math.max(0, d.current * ratio);
       }} else {{
         val = d.current;
       }}
@@ -5123,119 +3066,19 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     buildSliders();
     buildSimChart();
     updateSimDisplay();
-    chartInsts['simulador'] = true;
-
-    // Reset button
     document.getElementById('simReset')?.addEventListener('click', () => setPreset('current'));
-
-    // Preset buttons
     document.querySelectorAll('.sim-preset').forEach(btn => {{
       btn.addEventListener('click', () => setPreset(btn.dataset.preset));
     }});
   }}
 
-  // ── Simulacion probabilistica retirada — en el mismo scope para llamada directa sin bridge ─────────
-  var MC = {mc_json};
-  var buildMCChart = function() {{}};
-  var buildProbCards = function() {{}};
-  var buildParamsCard = function() {{}};
-  if (MC && MC.percentiles) {{
-    var allYears  = {years_js};
-    var allScores = {scores_ahp_js};
-    var mcYears   = MC.años;
-    var pct       = MC.percentiles;
-
-    buildMCChart = function() {{
-      var ctx = document.getElementById('cMonteCarlo');
-      if (!ctx) return;
-      var existing = (typeof Chart !== 'undefined' && Chart.getChart) ? Chart.getChart(ctx) : null;
-      if (existing) existing.destroy();
-      new Chart(ctx, {{
-        type: 'line',
-        data: {{
-          datasets: [
-            {{ label:'P5', data:mcYears.map((y,i)=>({{x:y,y:pct.p5[i]}})),
-               borderColor:'transparent', backgroundColor:'rgba(52,152,219,0.10)', fill:'+6', pointRadius:0, tension:0.4 }},
-            {{ label:'P10', data:mcYears.map((y,i)=>({{x:y,y:pct.p10[i]}})),
-               borderColor:'transparent', backgroundColor:'rgba(52,152,219,0.13)', fill:'+4', pointRadius:0, tension:0.4 }},
-            {{ label:'P25', data:mcYears.map((y,i)=>({{x:y,y:pct.p25[i]}})),
-               borderColor:'transparent', backgroundColor:'rgba(52,152,219,0.20)', fill:'+2', pointRadius:0, tension:0.4 }},
-            {{ label:'Mediana (P50)', data:mcYears.map((y,i)=>({{x:y,y:pct.p50[i]}})),
-               borderColor:'#3498db', borderWidth:2.5, backgroundColor:'transparent',
-               pointRadius:4, pointBackgroundColor:'#3498db', tension:0.4 }},
-            {{ label:'_p75', data:mcYears.map((y,i)=>({{x:y,y:pct.p75[i]}})),
-               borderColor:'transparent', backgroundColor:'transparent', fill:false, pointRadius:0, tension:0.4 }},
-            {{ label:'_p90', data:mcYears.map((y,i)=>({{x:y,y:pct.p90[i]}})),
-               borderColor:'transparent', backgroundColor:'transparent', fill:false, pointRadius:0, tension:0.4 }},
-            {{ label:'_p95', data:mcYears.map((y,i)=>({{x:y,y:pct.p95[i]}})),
-               borderColor:'transparent', backgroundColor:'transparent', fill:false, pointRadius:0, tension:0.4 }},
-            {{ label:'Histórico ICIV', data:allYears.map((y,i)=>({{x:y,y:allScores[i]}})),
-               borderColor:'#00d4aa', borderWidth:2.5, backgroundColor:'transparent', pointRadius:2, tension:0.3 }},
-          ]
-        }},
-        options: {{
-          responsive:true, maintainAspectRatio:false,
-          interaction:{{mode:'index', intersect:false}},
-          plugins:{{
-            legend:{{display:true, labels:{{filter:(item)=>!item.text.startsWith('_')&&!['P5','P10','P25'].includes(item.text)}}}},
-            annotation:{{
-              annotations:{{
-                lineRec:{{type:'line', yMin:45, yMax:45, borderColor:'#2ecc7155', borderWidth:1, borderDash:[4,3],
-                          label:{{content:'Recuperación parcial (45)',display:true,position:'end',color:'#2ecc71',font:{{size:9}}}}}},
-                lineRisk:{{type:'line', yMin:25, yMax:25, borderColor:'#e05c5c55', borderWidth:1, borderDash:[4,3],
-                           label:{{content:'Alto riesgo (25)',display:true,position:'end',color:'#e05c5c',font:{{size:9}}}}}},
-              }}
-            }}
-          }},
-          scales:{{
-            x:{{type:'linear', min:2000, max:2031, grid:{{color:'#21262d'}}, ticks:{{stepSize:5}}}},
-            y:{{min:0, max:100, grid:{{color:'#21262d'}},
-               title:{{display:true, text:'ICIV (0–100)', color:'#8b949e', font:{{size:9}}}}}}
-          }}
-        }}
-      }});
-    }};
-
-    buildProbCards = function() {{
-      var el = document.getElementById('mcProbCards');
-      if (!el) return;
-      var cards = [
-        {{label:'Probabilidad de Recuperación', sub:'ICIV 2030 > 45 pts', val:(MC.prob_recuperacion*100).toFixed(1)+'%', color:'#2ecc71'}},
-        {{label:'Probabilidad Estable', sub:'25 ≤ ICIV 2030 ≤ 45 pts', val:(MC.prob_estable*100).toFixed(1)+'%', color:'#e67e22'}},
-        {{label:'Probabilidad Alto Riesgo', sub:'ICIV 2030 < 25 pts', val:(MC.prob_colapso*100).toFixed(1)+'%', color:'#e05c5c'}},
-      ];
-      el.innerHTML = cards.map(c=>`
-        <div style="background:var(--card);border:1px solid ${{c.color}}44;border-radius:10px;padding:16px;text-align:center">
-          <div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">${{c.label}}</div>
-          <div style="font-size:2rem;font-weight:700;color:${{c.color}};line-height:1">${{c.val}}</div>
-          <div style="font-size:.68rem;color:var(--muted);margin-top:4px">${{c.sub}}</div>
-        </div>`).join('');
-    }};
-
-    buildParamsCard = function() {{
-      var el = document.getElementById('mcParamsCard');
-      if (!el || !MC.parametros) return;
-      var etiquetas = {{
-        wti_precio_usd:'WTI Precio USD',
-        petroleo_crudo_produccion_tbpd:'Producción Petróleo (tbpd)',
-        wgi_promedio_sc:'WGI Gobernanza',
-      }};
-      var rows = Object.entries(MC.parametros).map(([k,p])=>
-        `<span style="color:var(--text);font-weight:600">${{etiquetas[k]||k}}:</span> `+
-        `µ_anual=${{p.mu_anual?.toFixed(2)}}, σ=${{p.sigma_anual?.toFixed(2)}}, peso_AHP=${{p.peso_ahp?.toFixed(4)}}`
-      ).join(' &nbsp;·&nbsp; ');
-      el.innerHTML = `<strong style="color:var(--text)">${{MC.n_simulations?.toLocaleString()}} simulaciones.</strong> `+
-        `Variables estocásticas: ${{rows}}. ${{MC.metodologia||''}}`;
-    }};
+  // El laboratorio se arma al abrir la pestaña: así el canvas ya tiene tamaño real.
+  var simReady = false;
+  function initOnce() {{ if (!simReady) {{ simReady = true; initSimulator(); }} }}
+  if (typeof _tabInits !== 'undefined') {{
+    _tabInits['laboratorio'] = initOnce;
   }}
-
-  // The public laboratory starts with the interactive simulator.
-  initSimulator();
-
-  // Init on hash
-  if (window.location.hash === '#proyecciones') {{
-    initSimulator();
-  }}
+  if (window.location.hash === '#laboratorio') initOnce();
 }})();
 
 // ── Correlación y Sanciones — renderizadas server-side (matplotlib / HTML) ──
@@ -5246,42 +3089,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
 (function() {{
   var SR = {sector_json};
   if (!SR || !SR.ranking || !SR.ranking.length) return;
-
-  var series = SR.series_historicas;
-  var SECTOR_COLORS = [
-    '#00d4aa','#3498db','#2ecc71','#e67e22','#e74c3c',
-    '#9b59b6','#f1c40f','#1abc9c','#e91e63','#ff5722',
-  ];
-  var sectorIds    = Object.keys(SR.sector_labels || {{}});
-  var yearsArr     = (series && series.a\u00f1os) ? series.a\u00f1os : [];
-  var activeSectors = new Set(
-    SR.ranking.slice(0,4).map(function(r) {{ return r.sector_id; }})
-  );
-
-  // ── Global: click en filas HTML o toggle buttons ───────────────────────
-  window.sectorShowHist = function(sid) {{
-    if (activeSectors.has(sid)) {{ activeSectors.delete(sid); }}
-    else {{ activeSectors.add(sid); }}
-    // Actualizar estilos de botones
-    document.querySelectorAll('#sectorToggleBtns button').forEach(function(btn) {{
-      var i = parseInt(btn.dataset.idx);
-      var c = SECTOR_COLORS[i % SECTOR_COLORS.length];
-      if (activeSectors.has(btn.dataset.sid)) {{
-        btn.style.background = c+'33'; btn.style.color = c; btn.style.borderColor = c;
-      }} else {{
-        btn.style.background = 'transparent'; btn.style.color = '#8b949e'; btn.style.borderColor = '#444';
-      }}
-    }});
-    // Actualizar datasets del chart histórico sin rebuilding
-    if (histChart) {{
-      histChart.data.datasets.forEach(function(ds, i) {{
-        var dsid = sectorIds[i];
-        ds.hidden = !activeSectors.has(dsid);
-        ds.borderWidth = activeSectors.has(dsid) ? 2 : 0;
-      }});
-      histChart.update('none');
-    }}
-  }};
 
   // ── Bar chart — creado en page load ───────────────────────────────────────
   var barChart = null;
@@ -5311,378 +3118,17 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
     }});
   }}
 
-  // ── Histórico — creado en page load ───────────────────────────────────────
-  var histChart = null;
-  var ctxH = document.getElementById('cSectorHist');
-  if (ctxH) {{
-    histChart = new Chart(ctxH, {{
-      type: 'line',
-      data: {{
-        datasets: sectorIds.map(function(sid, i) {{
-          var isActive = activeSectors.has(sid);
-          return {{
-            label: SR.sector_labels[sid] || sid,
-            data: yearsArr.map(function(y, j) {{
-              return {{x: y, y: (series.sectores[sid] || [])[j]}};
-            }}),
-            borderColor: SECTOR_COLORS[i % SECTOR_COLORS.length],
-            backgroundColor: 'transparent',
-            borderWidth: isActive ? 2 : 0,
-            pointRadius: 0, tension: 0.3, hidden: !isActive,
-          }};
-        }})
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: false,
-        interaction: {{mode:'index', intersect:false}},
-        plugins: {{ legend: {{display:false}} }},
-        scales: {{
-          x: {{type:'linear', grid:{{color:'#21262d'}}, ticks:{{stepSize:5, color:'#8b949e'}}}},
-          y: {{min:0, max:100, grid:{{color:'#21262d'}},
-               title:{{display:true, text:'Score sectorial', color:'#8b949e', font:{{size:9}}}}}},
-        }}
-      }}
-    }});
-  }}
-
   // ── Tab activation: solo resize (charts ya existen) ───────────────────────
   if (typeof _tabInits !== 'undefined') {{
-    _tabInits['sectorial'] = function() {{
-      if (barChart) barChart.resize();
-      if (histChart) histChart.resize();
-    }};
+    _tabInits['sectores'] = function() {{ if (barChart) barChart.resize(); }};
   }}
 }})();
 // ── [INDICADORES LÍDERES y COMPARACIÓN REGIONAL eliminados] ─────────────────
 
-// ── ICIV PULSE MENSUAL ──────────────────────────────────────────────────────
+// ── MAPA NOCTURNO POR ESTADO (NASA Black Marble) ────────────────────────────
 (function() {{
-  var PULSE = {pulse_json};
-  var PCOMP = {pulse_components_json};
-  var MIRROR = {mirror_trade_json};
-  var BLACKMARBLE = {blackmarble_json};
   var BMMAP = {blackmarble_map_json};
-  if (!PULSE || !PULSE.data || !PULSE.data.scores || !PULSE.data.scores.length) return;
 
-  var D = PULSE.data;
-  var S = PULSE.summary;
-
-  // Pesos AHP renormalizados Pulse (para tabla) — sincronizado con
-  // iciv.index.pulse_aggregator.PULSE_WEIGHTS
-  var PULSE_WEIGHTS = {{
-    "wti_precio_usd": 0.065, "brent_precio_usd": 0.04,
-    "crudo_dubai_usd": 0.04,
-    "tasa_fed_funds_pct": 0.04, "usd_index_broad": 0.035,
-    "vix_volatility": 0.06, "ust_10y_yield_pct": 0.03,
-    "em_bond_spread_pct": 0.04,
-    "petroleo_crudo_produccion_tbpd": 0.25,
-    "importaciones_espejo_usa_musd": 0.05,
-    "exportaciones_espejo_usa_musd": 0.05,
-    "guardian_articulos_venezuela": 0.065,
-    "guardian_tono_titulares": 0.10,
-    "gdelt_cobertura_vol": 0.055,
-    "gdelt_tono_noticias": 0.08,
-  }};
-  var PULSE_LABELS = {{
-    "wti_precio_usd": "WTI Oil Price",
-    "brent_precio_usd": "Brent Oil Price",
-    "crudo_dubai_usd": "Crudo Dubai (Pink Sheet)",
-    "tasa_fed_funds_pct": "Fed Funds Rate",
-    "usd_index_broad": "USD Index (Broad)",
-    "vix_volatility": "VIX Volatility",
-    "ust_10y_yield_pct": "UST 10Y Yield",
-    "em_bond_spread_pct": "Spread Bonos EM (ICE BofA)",
-    "petroleo_crudo_produccion_tbpd": "Producción Petróleo VEN",
-    "importaciones_espejo_usa_musd": "Import. espejo desde EEUU",
-    "exportaciones_espejo_usa_musd": "Export. espejo a EEUU",
-    "guardian_articulos_venezuela": "Vol. Artículos Guardian",
-    "guardian_tono_titulares": "Tono VADER Guardian",
-    "gdelt_cobertura_vol": "Cobertura GDELT",
-    "gdelt_tono_noticias": "Tono GDELT",
-  }};
-
-  // Llenar stats
-  if (S) {{
-    var elScore = document.getElementById('pulseScoreActual');
-    var elCat   = document.getElementById('pulseCategoria');
-    var elFecha = document.getElementById('pulseFechaActual');
-    var elCov   = document.getElementById('pulseCobertura');
-    var elN     = document.getElementById('pulseNMeses');
-    var elVA    = document.getElementById('pulseVsAnual');
-    if (elScore) {{ elScore.textContent = S.score_actual != null ? S.score_actual.toFixed(1) : '—'; elScore.style.color = S.color; }}
-    if (elCat)   {{ elCat.textContent = S.score_confiable != null ? S.score_confiable.toFixed(1) + ' · ' + S.categoria_confiable : '—'; elCat.style.color = S.color_confiable || '#8b949e'; }}
-    if (elFecha) elFecha.textContent = S.fecha_actual + ' · cobertura directa ' + S.cobertura + '%' + (S.es_confiable ? '' : ' · provisional');
-    if (elCov)   elCov.textContent = S.fecha_confiable + ' · cobertura ' + S.cobertura_confiable + '%';
-    if (elN)     elN.textContent = S.n_meses;
-
-    // Diferencia vs ICIV Anual del año actual
-    if (elVA) {{
-      var iciv_actual = {current_score};
-      var refScore = S.score_confiable != null ? S.score_confiable : S.score_actual;
-      if (refScore != null) {{
-        var diff = refScore - iciv_actual;
-        elVA.textContent = (diff >= 0 ? '+' : '') + diff.toFixed(1);
-        elVA.className = 'stat-val ' + (diff >= 0 ? 'stat-up' : 'stat-down');
-      }}
-    }}
-  }}
-
-  // Tabla de pesos
-  var wtBox = document.getElementById('pulseWeightsTable');
-  if (wtBox) {{
-    var rows = Object.keys(PULSE_WEIGHTS).map(function(k) {{
-      return '<tr><td>' + (PULSE_LABELS[k] || k) + '</td>' +
-             '<td style="text-align:right;color:var(--accent);font-weight:600">' +
-             (PULSE_WEIGHTS[k] * 100).toFixed(0) + '%</td></tr>';
-    }}).join('');
-    wtBox.innerHTML = '<table class="ahp-table" style="width:100%;max-width:500px">' +
-      '<thead><tr><th>Componente</th><th style="text-align:right">Peso renormalizado</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>';
-  }}
-
-  // Construir gráfico Pulse mensual
-  function buildPulseChart() {{
-    var ctx = document.getElementById('cPulseMonthly');
-    if (!ctx) return;
-    if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-
-    var data_low_cov = D.scores.map(function(s, i) {{
-      return D.cobertura[i] < 70 ? s : null;
-    }});
-
-    new Chart(ctx, {{
-      type: 'line',
-      data: {{
-        labels: D.meses,
-        datasets: [
-          {{
-            label: 'Pulse mensual (cob ≥70%)',
-            data: D.scores.map(function(s, i) {{ return D.cobertura[i] >= 70 ? s : null; }}),
-            borderColor: '#00d4aa', backgroundColor: 'rgba(0,212,170,.1)',
-            borderWidth: 2.5, pointRadius: 2, tension: 0.25, fill: false,
-          }},
-          {{
-            label: 'Pulse mensual (cob <70%, provisional)',
-            data: data_low_cov,
-            borderColor: '#8b949e', backgroundColor: 'transparent',
-            borderWidth: 1.5, borderDash: [4, 3], pointRadius: 2,
-          }},
-          {{
-            label: 'ICIV Anual {current_year_val} (referencia)',
-            data: D.meses.map(function() {{ return {current_score}; }}),
-            borderColor: '#f1c40f', backgroundColor: 'transparent',
-            borderWidth: 1.5, borderDash: [8, 4], pointRadius: 0, fill: false,
-          }},
-        ]
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: false,
-        plugins: {{
-          legend: {{ position: 'top', labels: {{ color: '#8b949e', font: {{size: 10}} }} }},
-          tooltip: {{ callbacks: {{
-            afterLabel: function(c) {{
-              if (c.datasetIndex < 2) return 'Cobertura: ' + D.cobertura[c.dataIndex] + '%';
-            }}
-          }} }},
-        }},
-        scales: {{
-          x: {{ ticks: {{ color:'#8b949e', maxTicksLimit:14 }}, grid: {{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks: {{color:'#8b949e', stepSize:20}}, grid: {{color:'#21262d'}} }},
-        }}
-      }}
-    }});
-  }}
-
-  // Construir gráfico Pulse Anual vs Oficial
-  function buildPulseVsAnnual() {{
-    var ctx = document.getElementById('cPulseVsAnnual');
-    if (!ctx) return;
-    if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-
-    // Pulse anualizado: promedio por año
-    var byYear = {{}};
-    D.meses.forEach(function(m, i) {{
-      var y = m.split('-')[0];
-      if (!byYear[y]) byYear[y] = [];
-      if (D.scores[i] != null && D.cobertura[i] >= 70) byYear[y].push(D.scores[i]);
-    }});
-    var years_pulse = Object.keys(byYear).sort();
-    var pulse_avg = years_pulse.map(function(y) {{
-      var vs = byYear[y];
-      return vs.length ? vs.reduce(function(a,b) {{return a+b;}}, 0) / vs.length : null;
-    }});
-
-    // ICIV oficial — pull from window globals if available
-    var iciv_years = {years_js};
-    var iciv_scores = {scores_ahp_js};
-    var oficial_aligned = years_pulse.map(function(y) {{
-      var idx = iciv_years.indexOf(parseInt(y));
-      return idx >= 0 ? iciv_scores[idx] : null;
-    }});
-
-    new Chart(ctx, {{
-      type: 'line',
-      data: {{
-        labels: years_pulse,
-        datasets: [
-          {{
-            label: 'Pulse anualizado (promedio mensual)',
-            data: pulse_avg,
-            borderColor: '#00d4aa', backgroundColor: 'rgba(0,212,170,.1)',
-            borderWidth: 2.5, pointRadius: 4, tension: 0.25,
-          }},
-          {{
-            label: 'ICIV Anual oficial',
-            data: oficial_aligned,
-            borderColor: '#f1c40f', backgroundColor: 'rgba(241,196,15,.1)',
-            borderWidth: 2.5, pointRadius: 4, tension: 0.25,
-          }},
-        ]
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: false,
-        plugins: {{ legend: {{ position: 'top', labels: {{color:'#8b949e'}} }} }},
-        scales: {{
-          x: {{ ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}} }},
-        }}
-      }}
-    }});
-  }}
-
-  // Componentes — multi-line chart
-  function buildPulseComponents() {{
-    var ctx = document.getElementById('cPulseComponents');
-    if (!ctx) return;
-    if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-    if (!PCOMP.meses || !PCOMP.meses.length) return;
-
-    var COLORS = ['#00d4aa','#f1c40f','#e67e22','#3498db','#9b59b6','#2ecc71',
-                  '#e74c3c','#1abc9c','#e91e63','#ff5722','#34495e'];
-    var datasets = [];
-    var i = 0;
-    Object.keys(PULSE_WEIGHTS).forEach(function(k) {{
-      var series = PCOMP.componentes[k];
-      if (!series) return;
-      datasets.push({{
-        label: PULSE_LABELS[k] || k,
-        data: series,
-        borderColor: COLORS[i % COLORS.length],
-        backgroundColor: 'transparent',
-        borderWidth: 1.8, pointRadius: 1, tension: 0.2, hidden: i >= 5,
-      }});
-      i++;
-    }});
-
-    new Chart(ctx, {{
-      type: 'line',
-      data: {{ labels: PCOMP.meses, datasets: datasets }},
-      options: {{
-        responsive: true, maintainAspectRatio: false,
-        plugins: {{ legend: {{ position: 'right', labels: {{color:'#8b949e', font:{{size:10}}, boxWidth:14}} }} }},
-        scales: {{
-          x: {{ ticks: {{color:'#8b949e', maxTicksLimit:14}}, grid: {{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}} }},
-        }}
-      }}
-    }});
-  }}
-
-  // Comercio espejo multi-socio — dos charts (importaciones / exportaciones)
-  function buildMirrorTrade() {{
-    if (!MIRROR || !MIRROR.meses || !MIRROR.meses.length) return;
-    var configs = [
-      {{ id: 'cMirrorImports', usa: MIRROR.imts_imp, socios: MIRROR.ct_imp }},
-      {{ id: 'cMirrorExports', usa: MIRROR.imts_exp, socios: MIRROR.ct_exp }},
-    ];
-    configs.forEach(function(cfg) {{
-      var ctx = document.getElementById(cfg.id);
-      if (!ctx) return;
-      if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-      new Chart(ctx, {{
-        type: 'line',
-        data: {{
-          labels: MIRROR.meses,
-          datasets: [
-            {{
-              label: 'EEUU (IMF IMTS)',
-              data: cfg.usa,
-              borderColor: '#3498db', backgroundColor: 'transparent',
-              borderWidth: 1.8, pointRadius: 0, tension: 0.2, spanGaps: false,
-            }},
-            {{
-              label: '5 socios: ESP+BRA+IND+TUR+CHN (Comtrade)',
-              data: cfg.socios,
-              borderColor: '#00d4aa', backgroundColor: 'transparent',
-              borderWidth: 1.8, pointRadius: 0, tension: 0.2, spanGaps: false,
-            }},
-          ]
-        }},
-        options: {{
-          responsive: true, maintainAspectRatio: false,
-          interaction: {{ mode: 'index', intersect: false }},
-          plugins: {{ legend: {{ position: 'top', labels: {{color:'#8b949e'}} }} }},
-          scales: {{
-            x: {{ ticks: {{color:'#8b949e', maxTicksLimit:14}}, grid: {{color:'#21262d'}} }},
-            y: {{ beginAtZero: true, ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}},
-                 title: {{display:true, text:'millones USD/mes', color:'#8b949e', font:{{size:10}}}} }},
-          }}
-        }}
-      }});
-    }});
-  }}
-
-  // Black Marble — luminosidad nocturna mensual + overlay anual Li et al.
-  function buildBlackMarble() {{
-    if (!BLACKMARBLE || !BLACKMARBLE.meses || !BLACKMARBLE.meses.length) return;
-    var ctx = document.getElementById('cBlackMarble');
-    if (!ctx) return;
-    if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-    // El overlay anual se alinea por etiqueta de mes (YYYY-06) sobre el eje mensual
-    var anualMap = {{}};
-    (BLACKMARBLE.anual_meses || []).forEach(function(m, i) {{ anualMap[m] = BLACKMARBLE.anual_li[i]; }});
-    var anualData = BLACKMARBLE.meses.map(function(m) {{ return (m in anualMap) ? anualMap[m] : null; }});
-    new Chart(ctx, {{
-      type: 'line',
-      data: {{
-        labels: BLACKMARBLE.meses,
-        datasets: [
-          {{
-            label: 'Media mensual (VNP46A3)',
-            data: BLACKMARBLE.mensual,
-            borderColor: '#3498db', backgroundColor: 'transparent',
-            borderWidth: 1.8, pointRadius: 0, tension: 0.25,
-          }},
-          {{
-            label: 'Log-media mensual (atenúa flaring petrolero)',
-            data: BLACKMARBLE.robusta && BLACKMARBLE.robusta.length ? BLACKMARBLE.robusta : null,
-            borderColor: '#00d4aa', backgroundColor: 'transparent',
-            borderWidth: 1.8, pointRadius: 0, tension: 0.25, hidden: false,
-          }},
-          {{
-            label: 'Li et al. anual (VIIRS armonizado, reescalado)',
-            data: anualData,
-            borderColor: '#f1c40f', backgroundColor: 'transparent',
-            borderWidth: 1.6, borderDash: [6,4], pointRadius: 3, spanGaps: true,
-          }},
-        ]
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: false,
-        interaction: {{ mode: 'index', intersect: false }},
-        plugins: {{ legend: {{ position: 'top', labels: {{color:'#8b949e'}} }} }},
-        scales: {{
-          x: {{ ticks: {{color:'#8b949e', maxTicksLimit:14}}, grid: {{color:'#21262d'}} }},
-          y: {{ ticks: {{color:'#8b949e'}}, grid: {{color:'#21262d'}},
-               title: {{display:true, text:'nW/cm²/sr', color:'#8b949e', font:{{size:10}}}} }},
-        }}
-      }}
-    }});
-  }}
-
-  // Mapa coroplético subnacional Black Marble — SVG, escala log, modo anual/mensual
-  // Escala LOGARITMICA: la radiancia va de ~0.005 (selva) a ~46 (Caracas). En
-  // escala lineal el 90% del pais se veria negro; en log se distingue el relieve.
   function _bmColor(v) {{
     var vmin = BMMAP.vmin || 0.01, vmax = BMMAP.vmax || 1;
     if (v == null || !isFinite(v)) return '#161b22';
@@ -5747,7 +3193,6 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
         paths[e.cod].setAttribute('fill', _bmColor(rad[e.cod]));
       }});
       document.getElementById('bmMapYear').textContent = k;
-      document.getElementById('bmRankYear').textContent = k;
       var ranked = BMMAP.estados.map(function(e){{return {{n:e.nombre, v:rad[e.cod]}}}})
                     .filter(function(x){{return x.v!=null}}).sort(function(a,b){{return b.v-a.v}}).slice(0,8);
       var l0 = Math.log(BMMAP.vmin), l1 = Math.log(BMMAP.vmax);
@@ -5805,130 +3250,23 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   // se expone para que ese tab lo construya al activarse.
   window.__buildBMMap = buildBlackMarbleMap;
 
-  // Render on tab activation (lazy)
-  if (typeof _tabInits !== 'undefined') {{
-    _tabInits['pulse'] = function() {{
-      buildPulseChart();
-      buildPulseVsAnnual();
-    }};
-    _tabInits['pulse-componentes'] = function() {{
-      buildPulseComponents();
-      buildMirrorTrade();
-      buildBlackMarble();
-    }};
-  }}
-
-  // Also try to build immediately if already on this tab
-  if (window.location.hash === '#pulse') {{
-    buildPulseChart();
-    buildPulseVsAnnual();
-  }}
-  if (window.location.hash === '#pulse-componentes') {{
-    buildPulseComponents();
-    buildMirrorTrade();
-    buildBlackMarble();
-    buildBlackMarbleMap();
-  }}
 }})();
 
-// ── ML FORECAST (SARIMA + Nowcast) ──────────────────────────────────────────
+// ── PROYECCIÓN A 6 MESES (se dibuja dentro de Historia) ──────────────────────────────────────────
 (function() {{
   var ML = {ml_forecast_json};
   var PULSE = {pulse_json};
   if (!ML || (!ML.sarima && !ML.nowcast)) return;
 
-  // SARIMA stats
-  if (ML.sarima && ML.sarima.order) {{
-    var elO = document.getElementById('mlSarimaOrder');
-    var elA = document.getElementById('mlSarimaAic');
-    if (elO) elO.textContent = ML.sarima.order;
-    if (elA) elA.textContent = 'AIC: ' + (ML.sarima.aic != null ? ML.sarima.aic.toFixed(2) : '—');
-  }}
-
-  if (ML.backtest && ML.backtest.available) {{
-    var bt = ML.backtest;
-    var best1 = (bt.best_by_horizon || []).find(function(r) {{ return r.horizon === 1; }}) || (bt.best_by_horizon || [])[0];
-    var elBt = document.getElementById('mlBacktestBest');
-    var elBtSub = document.getElementById('mlBacktestSub');
-    if (elBt && best1) elBt.textContent = best1.model + ' · MAE ' + Number(best1.mae).toFixed(2);
-    if (elBtSub) elBtSub.textContent = bt.n_origins + ' orígenes · ' + bt.n_predictions + ' predicciones';
-    var elBtSummary = document.getElementById('mlBacktestSummary');
-    if (elBtSummary) {{
-      elBtSummary.innerHTML = 'Evaluación fuera de muestra con rolling-origin, usando meses con cobertura ≥ '
-        + bt.config.min_coverage_pct + '%. Si SARIMA no es el mejor en MAE, el dashboard lo conserva como baseline técnico y muestra el ganador.';
-    }}
-    var elBtTable = document.getElementById('mlBacktestTable');
-    if (elBtTable) {{
-      var rows = (bt.best_by_horizon || []).map(function(r) {{
-        return '<tr><td>' + r.horizon + 'm</td><td>' + r.model + '</td><td style="text-align:right">' +
-          Number(r.mae).toFixed(2) + '</td><td style="text-align:right">' + Number(r.rmse).toFixed(2) + '</td></tr>';
-      }}).join('');
-      elBtTable.innerHTML = '<table class="ahp-table" style="width:100%;max-width:620px">' +
-        '<thead><tr><th>Horizonte</th><th>Mejor modelo</th><th style="text-align:right">MAE</th><th style="text-align:right">RMSE</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody></table>';
-    }}
-  }} else if (ML.backtest) {{
-    var elBtNote = document.getElementById('mlBacktestSummary');
-    if (elBtNote) elBtNote.textContent = 'Backtesting no disponible: ' + (ML.backtest.reason || 'muestra insuficiente');
-  }}
-
-  // Nowcast stats
-  if (ML.nowcast && ML.nowcast.r2_train != null) {{
-    var elR2 = document.getElementById('mlR2Train');
-    var elR2cv = document.getElementById('mlR2LooCv');
-    var elMae = document.getElementById('mlMae');
-    if (elR2) elR2.textContent = ML.nowcast.r2_train.toFixed(3);
-    if (elR2cv) {{
-      var v = ML.nowcast.r2_loo_cv;
-      elR2cv.textContent = v != null ? v.toFixed(3) : '—';
-      elR2cv.className = 'stat-val ' + (v != null && v >= 0.5 ? 'stat-up' : (v != null && v >= 0 ? 'stat-neu' : 'stat-down'));
-    }}
-    if (elMae) elMae.textContent = ML.nowcast.mae_train != null ? ML.nowcast.mae_train.toFixed(2) : '—';
-  }}
-
-  // Nowcast prediction
-  if (ML.nowcast && ML.nowcast.prediccion_actual) {{
-    var P = ML.nowcast.prediccion_actual;
-    var elYr = document.getElementById('mlNowcastYear');
-    var elVal = document.getElementById('mlNowcastValue');
-    var elNote = document.getElementById('mlNowcastNote');
-    if (elYr) elYr.textContent = P.año || '—';
-    if (P.iciv_predicho != null) {{
-      if (elVal) elVal.textContent = P.iciv_predicho.toFixed(2);
-      if (elNote) elNote.textContent = '(usando ' + P.n_meses_usados + ' meses Pulse · ' + P.modelo + ')';
-    }} else {{
-      // Cuando hay pocos meses disponibles (< 3 con cobertura ≥70%)
-      if (elVal) {{ elVal.textContent = 'Sin predicción'; elVal.style.fontSize = '.9rem'; elVal.style.color = '#8b949e'; }}
-      if (elNote) elNote.textContent = P.nota || 'Datos insuficientes para nowcast este año';
-    }}
-  }}
-
-  // Coeficientes table
-  if (ML.nowcast && ML.nowcast.coefficients) {{
-    var coefBox = document.getElementById('mlCoeffsTable');
-    if (coefBox) {{
-      var rows = Object.keys(ML.nowcast.coefficients).map(function(k) {{
-        var v = ML.nowcast.coefficients[k];
-        var color = v >= 0 ? '#2ecc71' : '#e74c3c';
-        return '<tr><td>' + k + '</td><td style="text-align:right;color:' + color + ';font-weight:600">' + v.toFixed(4) + '</td></tr>';
-      }}).join('');
-      rows += '<tr><td><strong>Intercept</strong></td><td style="text-align:right">' +
-              (ML.nowcast.intercept || 0).toFixed(2) + '</td></tr>';
-      coefBox.innerHTML = '<table class="ahp-table" style="width:100%;max-width:500px">' +
-        '<thead><tr><th>Feature</th><th style="text-align:right">Coeficiente</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody></table>';
-    }}
-  }}
-
   // Forecast chart
   function buildForecastChart() {{
-    var ctx = document.getElementById('cMlForecast');
+    var ctx = document.getElementById('cPulseTrend');
     if (!ctx) return;
     if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
     if (!ML.sarima || !ML.sarima.fecha || !ML.sarima.fecha.length) return;
 
     // Datos históricos del Pulse — SOLO últimos 30 meses para que el forecast sea visible
-    var N_HIST = 30;  // ventana visible: ~2.5 años histórico + 6 meses forecast = 36 puntos
+    var N_HIST = 60;  // ventana visible: 5 años de historia + 6 meses de proyección
     var all_hist_dates  = PULSE.data.meses;
     var all_hist_scores = PULSE.data.scores;
     var all_hist_cov    = PULSE.data.cobertura;
@@ -6056,164 +3394,22 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
 
   if (typeof _tabInits !== 'undefined') {{
-    _tabInits['forecast-ml'] = buildForecastChart;
+    _tabInits['historia'] = buildForecastChart;
   }}
-  if (window.location.hash === '#forecast-ml') {{
+  if (window.location.hash === '#historia') {{
     buildForecastChart();
   }}
 }})();
 
-(function() {{
-  var ML = {ml_forecast_json};
-  if (!ML || !ML.nowcast) return;
-  function fillNowcastTab() {{
-    // Stats cards
-    var nc = ML.nowcast;
-    var p  = nc.prediccion_actual || {{}};
-    var el;
-    el = document.getElementById('nc2NowcastValue');
-    if (el) {{
-      if (p.iciv_predicho != null) {{ el.textContent = p.iciv_predicho.toFixed(2); }}
-      else {{ el.textContent = 'Sin predicción'; el.style.fontSize = '.85rem'; el.style.color = '#8b949e'; }}
-    }}
-    el = document.getElementById('nc2NowcastYear');
-    if (el) el.textContent = p.año ? 'Estimado ' + p.año : '—';
-    el = document.getElementById('nc2NMeses');
-    if (el) el.textContent = p.n_meses_usados != null ? p.n_meses_usados : (p.nota || '—');
-    el = document.getElementById('nc2R2Loo');
-    if (el) {{
-      var v = nc.r2_loo_cv;
-      el.textContent = v != null ? v.toFixed(3) : '—';
-      el.className = 'stat-val ' + (v != null && v >= 0.5 ? 'stat-up' : (v != null && v >= 0 ? 'stat-neu' : 'stat-down'));
-    }}
-    el = document.getElementById('nc2Mae');
-    if (el) el.textContent = nc.mae_train != null ? nc.mae_train.toFixed(2) : '—';
-    // Coeficientes
-    var coefBox = document.getElementById('nc2CoeffsTable');
-    if (coefBox && nc.coefficients) {{
-      var rows = Object.keys(nc.coefficients).map(function(k) {{
-        var v = nc.coefficients[k];
-        var color = v >= 0 ? '#2ecc71' : '#e74c3c';
-        return '<tr><td>' + k + '</td><td style="text-align:right;color:' + color + ';font-weight:600">' + v.toFixed(4) + '</td></tr>';
-      }}).join('');
-      rows += '<tr><td><strong>Intercept</strong></td><td style="text-align:right">' +
-              (nc.intercept || 0).toFixed(2) + '</td></tr>';
-      coefBox.innerHTML = '<table class="ahp-table" style="width:100%;max-width:500px">' +
-        '<thead><tr><th>Feature</th><th style="text-align:right">Coeficiente</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody></table>';
-    }}
-  }}
-  if (typeof _tabInits !== 'undefined') {{
-    _tabInits['forecast-metodologia'] = function() {{}};  // sección estática
-    _tabInits['pulse-metodologia']    = function() {{}};  // sección estática
-  }}
-}})();
-
-// ── Venezuela Hoy panel ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// HOY — dos cifras protagonistas + señales del momento
+// ─────────────────────────────────────────────────────────────────────────────
 (function() {{
   var VH = {ven_hoy_json};
   if (!VH) return;
 
-  function _delta(d, decimals, suffix) {{
-    if (d == null) return '';
-    var s = d >= 0 ? '▲ +' : '▼ ';
-    var v = Math.abs(d).toFixed(decimals);
-    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + ';font-size:.68rem">'
-           + s + v + (suffix || '') + ' vs año ant.</span>';
-  }}
-  function _deltaM(d, decimals, suffix) {{
-    if (d == null) return '';
-    var s = d >= 0 ? '▲ +' : '▼ ';
-    var v = Math.abs(d).toFixed(decimals);
-    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + ';font-size:.68rem">'
-           + s + v + (suffix || '') + ' vs 12m</span>';
-  }}
+  var MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
-  // === Hero cards ===
-  if (VH.iciv) {{
-    var ic = VH.iciv;
-    var el = document.getElementById('vhIcivScore');
-    if (el) el.textContent = ic.score.toFixed(2);
-    el = document.getElementById('vhIcivLabel');
-    if (el) {{ el.textContent = ic.label; el.style.color = ic.color; }}
-    el = document.getElementById('vhIcivDelta');
-    if (el) el.innerHTML = _delta(ic.delta, 1, ' pts');
-    el = document.getElementById('vhIcivYear');
-    if (el) {{
-      el.textContent = 'ICIV ' + ic.year + (ic.coverage != null ? ' · ' + ic.coverage + '% cob.' : '')
-        + (ic.is_reliable ? '' : ' · confiable: ' + ic.reliable_year + ' (' + ic.reliable_score.toFixed(1) + ')');
-    }}
-    // color del score
-    var sc = document.getElementById('vhIcivScore');
-    if (sc) sc.style.color = ic.color;
-  }}
-  if (VH.pulse) {{
-    var pc = VH.pulse;
-    var pelScore = document.getElementById('vhPulseScore');
-    if (pelScore) pelScore.textContent = pc.score.toFixed(2);
-    var pelLabel = document.getElementById('vhPulseLabel');
-    if (pelLabel) pelLabel.textContent = pc.score >= 50 ? 'Ambiente favorable' : pc.score >= 35 ? 'Ambiente adverso' : 'Deterioro marcado';
-    var pelDelta = document.getElementById('vhPulseDelta');
-    if (pelDelta) pelDelta.innerHTML = _delta(pc.delta, 1, ' pts');
-    var pelYear = document.getElementById('vhPulseYear');
-    if (pelYear) pelYear.textContent = 'Pulse ' + pc.label_mes + ' ' + pc.year
-                                       + (pc.coverage != null ? ' · ' + pc.coverage + '% cob.' : '');
-  }}
-
-  // === Indicadores grid ===
-  var CARDS = [
-    {{ key:'wti',        label:'WTI Oil',          fmt:function(v){{return '$'+v.toFixed(1)}}, unit:'USD/bbl',  icon:'', monthly:true }},
-    {{ key:'brent',      label:'Brent Oil',         fmt:function(v){{return '$'+v.toFixed(1)}}, unit:'USD/bbl',  icon:'', monthly:true }},
-    {{ key:'petroleo_ven',label:'Petróleo VEN',     fmt:function(v){{return v.toFixed(0)}},     unit:'TBPD',    icon:'', monthly:true }},
-    {{ key:'pib_crec',   label:'PIB Crecimiento',  fmt:function(v){{return v.toFixed(1)+'%'}},  unit:'IMF 2026', icon:'', monthly:false }},
-    {{ key:'inflacion',  label:'Inflación',         fmt:function(v){{return v.toFixed(0)+'%'}}, unit:'IMF 2026', icon:'', monthly:false }},
-    {{ key:'fh',         label:'Freedom House',    fmt:function(v){{return v.toFixed(0)+'/100'}},unit:'FH 2026', icon:'', monthly:false }},
-    {{ key:'cpi',        label:'CPI Corrupción',   fmt:function(v){{return v.toFixed(0)+'/100'}},unit:'TI 2025', icon:'', monthly:false }},
-    {{ key:'wgi',        label:'WGI Gobernanza',   fmt:function(v){{return v.toFixed(2)}},      unit:'z-score',  icon:'', monthly:false }},
-    {{ key:'migrantes',  label:'Migrantes',        fmt:function(v){{return v.toFixed(2)+'M'}}, unit:'UNHCR 2025',icon:'', monthly:false }},
-    {{ key:'hdi',        label:'IDH / HDI',        fmt:function(v){{return v.toFixed(3)}},      unit:'UNDP 2024',icon:'', monthly:false }},
-    {{ key:'vix',        label:'VIX Volatilidad',  fmt:function(v){{return v.toFixed(1)}},      unit:'puntos',   icon:'', monthly:true }},
-    {{ key:'ust10y',     label:'UST 10Y Yield',    fmt:function(v){{return v.toFixed(2)+'%'}},  unit:'FRED',     icon:'', monthly:true }},
-  ];
-
-  var grid = document.getElementById('vhGrid');
-  if (!grid) return;
-  var html = '';
-  CARDS.forEach(function(card) {{
-    var d = VH[card.key];
-    if (!d) return;
-    var valStr = card.fmt(d.valor);
-    var dateStr = d.mes ? (d.label_mes + ' ' + d.año) : d.año.toString();
-    var dStr = card.monthly
-      ? _deltaM(d.delta_12m, 1, (card.unit.indexOf('USD')>=0||card.unit.indexOf('bbl')>=0?'$':
-                                  card.unit.indexOf('TBPD')>=0?' TBPD':' pts'))
-      : _delta(d.delta, 1, (card.unit.indexOf('%')>=0?'%':' pts'));
-    html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 14px">'
-          + '<div style="font-size:.65rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">'
-          + '<span>' + (card.icon ? card.icon + ' ' : '') + card.label + '</span>'
-          + '<span style="font-size:.6rem;color:#555">' + card.unit + '</span>'
-          + '</div>'
-          + '<div style="font-size:1.6rem;font-weight:700;color:var(--text);line-height:1.1;margin-bottom:4px">' + valStr + '</div>'
-          + '<div style="font-size:.63rem;color:#555;margin-bottom:4px">' + dateStr + '</div>'
-          + (dStr ? '<div>' + dStr + '</div>' : '')
-          + '</div>';
-  }});
-  grid.innerHTML = html;
-
-  if (typeof _tabInits !== 'undefined') {{
-    _tabInits['ven-hoy'] = function() {{}};  // already rendered
-  }}
-  if (window.location.hash === '#ven-hoy') showSection('ven-hoy');
-}})();
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INICIO — Hero (Pulse como protagonista) + sparkline + 6 indicadores clave
-// ─────────────────────────────────────────────────────────────────────────────
-(function() {{
-  var VH = {ven_hoy_json};
-  var PULSE_JS = {pulse_json};
-
-  // ── Helpers ──
   function _col(score) {{
     if (score == null) return '#8b949e';
     if (score > 65) return '#27ae60';
@@ -6224,248 +3420,77 @@ document.querySelectorAll('.dim-stab').forEach(btn => {{
   }}
   function _lbl(score) {{
     if (score == null) return '—';
-    if (score > 65) return 'Muy Bajo Riesgo';
-    if (score > 50) return 'Bajo Riesgo';
-    if (score > 35) return 'Riesgo Moderado';
-    if (score > 20) return 'Riesgo Moderado-Alto';
-    return 'Alto Riesgo';
+    if (score > 65) return 'Riesgo muy bajo';
+    if (score > 50) return 'Riesgo bajo';
+    if (score > 35) return 'Riesgo moderado';
+    if (score > 20) return 'Riesgo alto';
+    return 'Riesgo muy alto';
   }}
   function _deltaStr(d, dec, suf) {{
-    if (d == null) return '';
-    var s = d >= 0 ? '+' : '';
-    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + '">' + s + d.toFixed(dec) + (suf||'') + '</span>';
+    if (d == null) return '—';
+    var flecha = d >= 0 ? '▲ +' : '▼ ';
+    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + ';font-weight:600">'
+           + flecha + Math.abs(d).toFixed(dec) + (suf || '') + '</span>';
+  }}
+  function _set(id, txt, color) {{
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = txt;
+    if (color) el.style.color = color;
   }}
 
-  // ── Pulse hero (INICIO + PORTADA badge) ──
+  // ── Señal mensual ──
   if (VH.pulse) {{
     var p = VH.pulse;
-    var el;
     var pColor = p.is_reliable ? _col(p.score) : '#e6a817';
-    var pLabel = p.is_reliable ? _lbl(p.score) : 'Provisional';
-    el = document.getElementById('inicioPS');
-    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = pColor; }}
-    el = document.getElementById('inicioPL');
-    if (el) {{ el.textContent = pLabel; el.style.color = pColor; }}
-    el = document.getElementById('inicioPF');
-    if (el) el.textContent = (p.label_mes || '') + ' ' + (p.year || '') + (p.is_reliable ? '' : ' · provisional');
-    el = document.getElementById('inicioPD');
-    if (el) el.innerHTML = _deltaStr(p.delta, 1, ' pts');
-    el = document.getElementById('inicioPC');
-    if (el) el.textContent = p.coverage != null ? p.coverage + '%' : '—';
-    el = document.getElementById('inicioPR');
-    if (el) el.textContent = p.is_reliable ? 'Lectura con cobertura alta.' : 'Último mes confiable: ' + p.reliable_label_mes + ' ' + p.reliable_year + ' · ' + p.reliable_score.toFixed(1) + ' · cobertura ' + p.reliable_coverage + '%';
-    // También llena portada (score + color borde dinámico)
-    el = document.getElementById('portadaPS');
-    if (el) {{ el.textContent = p.score.toFixed(1); el.style.color = pColor; }}
-    el = document.getElementById('portadaPF');
-    if (el) el.textContent = pLabel + ' · ' + (p.label_mes || '') + ' ' + (p.year || '') + ' · ' + p.coverage + '% cob.';
-    el = document.getElementById('portadaPR');
-    if (el) el.textContent = p.is_reliable ? 'Lectura con cobertura alta.' : 'Último mes confiable: ' + p.reliable_label_mes + ' ' + p.reliable_year + ' · ' + p.reliable_score.toFixed(1) + ' · ' + p.reliable_coverage + '% cob.';
-    el = document.getElementById('portadaPCard');
-    if (el) el.style.borderLeftColor = pColor;
+    _set('inicioPS', p.score.toFixed(1), pColor);
+    _set('inicioPL', p.is_reliable ? _lbl(p.score) : 'Lectura provisional', pColor);
+    _set('inicioPF', (p.label_mes || '') + ' ' + (p.year || ''));
+    _set('inicioPC', p.coverage != null ? p.coverage + '%' : '—');
+    var elPD = document.getElementById('inicioPD');
+    if (elPD) elPD.innerHTML = _deltaStr(p.delta, 1, ' pts');
+    _set('inicioPR', p.is_reliable
+      ? 'Todas las fuentes del mes ya publicaron.'
+      : 'Faltan fuentes por publicar. Último mes completo: ' + p.reliable_label_mes + ' ' +
+        p.reliable_year + ' con ' + p.reliable_score.toFixed(1) + '.');
   }}
 
-  // ── ICIV Anual hero ──
+  // ── Índice anual ──
   if (VH.iciv) {{
     var ic = VH.iciv;
-    var el2;
-    el2 = document.getElementById('inicioAS');
-    if (el2) {{ el2.textContent = ic.score.toFixed(1); el2.style.color = ic.color || _col(ic.score); }}
-    el2 = document.getElementById('inicioAL');
-    if (el2) {{ el2.textContent = ic.label; el2.style.color = ic.color || _col(ic.score); }}
-    el2 = document.getElementById('inicioAD');
-    if (el2) el2.innerHTML = _deltaStr(ic.delta, 1, ' pts');
-    el2 = document.getElementById('inicioAY');
-    if (el2) el2.textContent = 'ICIV ' + ic.year + (ic.coverage != null ? ' · ' + ic.coverage + '% cob.' : '');
-    el2 = document.getElementById('inicioAR');
-    if (el2) {{
-      el2.textContent = ic.is_reliable
-        ? 'Lectura anual con cobertura alta.'
-        : 'Último anual confiable: ' + ic.reliable_year + ' · ' + ic.reliable_score.toFixed(1) + ' · ' + ic.reliable_coverage + '% cob.';
-    }}
-    // Mini gauge: misma lógica que el gauge principal (banda activa + aguja).
-    // Bandas: [lo, hi, dashOffset, dashLen] sobre arco total 282.74 (π·90).
-    var _IC_BANDS = [
-      [0,  30,   0.0,  84.8],
-      [30, 50,  84.8,  56.5],
-      [50, 65, 141.3,  42.4],
-      [65, 80, 183.7,  42.4],
-      [80, 100,226.1,  56.5],
-    ];
-    var icCol = ic.color || _col(ic.score);
-    var icAngle = -90 + (ic.score / 100) * 180;
-    var icBand = _IC_BANDS[0];
-    for (var bi = 0; bi < _IC_BANDS.length; bi++) {{
-      if (ic.score > _IC_BANDS[bi][0] && ic.score <= _IC_BANDS[bi][1]) icBand = _IC_BANDS[bi];
-    }}
-    var inBand = document.getElementById('inicioActiveBand');
-    if (inBand) {{
-      inBand.setAttribute('stroke', icCol);
-      inBand.setAttribute('stroke-dasharray', icBand[3] + ' 282.74');
-      inBand.setAttribute('stroke-dashoffset', '-' + icBand[2]);
-    }}
-    var needle = document.getElementById('inicioNeedle');
-    if (needle) {{
-      needle.setAttribute('stroke', icCol);
-      needle.setAttribute('transform', 'rotate(' + icAngle.toFixed(1) + ',110,110)');
-    }}
-    var inBase = document.getElementById('inicioNeedleBase');
-    if (inBase) inBase.setAttribute('fill', icCol);
+    var icColor = ic.color || _col(ic.score);
+    _set('inicioAS', ic.score.toFixed(1), icColor);
+    _set('inicioAL', _lbl(ic.score), icColor);
+    _set('inicioAY', ic.year + ' · cobertura ' + (ic.coverage != null ? ic.coverage + '%' : '—'));
+    var elAD = document.getElementById('inicioAD');
+    if (elAD) elAD.innerHTML = _deltaStr(ic.delta, 1, ' pts');
+    _set('inicioAR', ic.is_reliable
+      ? 'Todas las fuentes del año ya publicaron.'
+      : 'Faltan fuentes por publicar. Último año completo: ' + ic.reliable_year +
+        ' con ' + ic.reliable_score.toFixed(1) + '.');
   }}
 
-  // ── Sparkline Pulse: últimos 12 meses ──
-  // Canvas es display:none (sustituido por cInicioFullPulse).
-  // Guard: solo renderizar si visible Y datos correctos (PULSE_JS.data es objeto, no array).
-  var sparkCanvas = document.getElementById('cInicioSparkline');
-  if (sparkCanvas && sparkCanvas.style.display !== 'none'
-      && PULSE_JS && PULSE_JS.data && PULSE_JS.data.meses) {{
-    var _pd2   = PULSE_JS.data;
-    var _n2    = _pd2.meses.length;
-    var _st2   = Math.max(0, _n2 - 12);
-    var _MES   = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    var slabels = _pd2.meses.slice(_st2).map(function(m) {{
-      var p = m.split('-');
-      return _MES[parseInt(p[1])] + ' ' + p[0].slice(2);
-    }});
-    var svals   = _pd2.scores.slice(_st2);
-    var scolors = svals.map(function(v) {{ return _col(v); }});
-    new Chart(sparkCanvas, {{
-      type: 'line',
-      data: {{
-        labels: slabels,
-        datasets: [{{
-          data: svals,
-          borderColor: '#3498db', backgroundColor: 'rgba(52,152,219,.08)',
-          borderWidth: 2, pointRadius: 3,
-          pointBackgroundColor: scolors, pointBorderColor: 'transparent',
-          tension: 0.35, fill: true, spanGaps: true,
-        }}]
-      }},
-      options: {{
-        responsive: true, maintainAspectRatio: false, animation: false,
-        plugins: {{ legend: {{ display: false }}, tooltip: {{
-          callbacks: {{ label: function(c) {{ return 'Pulse: ' + (c.raw != null ? c.raw.toFixed(1) : '—'); }} }}
-        }} }},
-        scales: {{
-          x: {{ grid: {{ display: false }}, ticks: {{ font: {{ size: 9 }}, maxRotation: 0 }} }},
-          y: {{ min: 20, max: 90, grid: {{ color: 'rgba(255,255,255,.04)' }},
-               ticks: {{ font: {{ size: 9 }}, stepSize: 20 }} }}
-        }}
-      }}
-    }});
-  }}
-
-  // ── 6 indicadores clave en grid INICIO ──
+  // ── Señales del momento ──
   var ICARDS = [
-    {{ key:'wti',         label:'WTI Oil',        fmt:function(v){{return '$'+v.toFixed(1)}}, unit:'USD/bbl' }},
-    {{ key:'brent',       label:'Brent Oil',       fmt:function(v){{return '$'+v.toFixed(1)}}, unit:'USD/bbl' }},
-    {{ key:'petroleo_ven',label:'Petróleo VEN',    fmt:function(v){{return v.toFixed(0)+' TBPD'}}, unit:'EIA mensual' }},
-    {{ key:'inflacion',   label:'Inflación VEN',   fmt:function(v){{return v.toFixed(0)+'%'}}, unit:'IMF 2026' }},
-    {{ key:'migrantes',   label:'Diáspora',        fmt:function(v){{return v.toFixed(2)+'M'}}, unit:'UNHCR' }},
-    {{ key:'vix',         label:'VIX Volatilidad', fmt:function(v){{return v.toFixed(1)}}, unit:'riesgo global' }},
+    {{ key:'wti',          label:'Petróleo WTI',   fmt:function(v){{return '$' + v.toFixed(1)}},        unit:'por barril' }},
+    {{ key:'petroleo_ven', label:'Producción VEN', fmt:function(v){{return (v/1000).toFixed(2) + 'M'}}, unit:'barriles/día' }},
+    {{ key:'inflacion',    label:'Inflación',      fmt:function(v){{return v.toFixed(0) + '%'}},        unit:'anual' }},
+    {{ key:'migrantes',    label:'Diáspora',       fmt:function(v){{return v.toFixed(1) + 'M'}},        unit:'personas fuera' }},
+    {{ key:'fh',           label:'Libertades',     fmt:function(v){{return v.toFixed(0) + '/100'}},     unit:'Freedom House' }},
+    {{ key:'vix',          label:'Nervios global', fmt:function(v){{return v.toFixed(1)}},              unit:'índice VIX' }},
   ];
   var igrid = document.getElementById('inicioGrid');
   if (igrid) {{
-    var ihtml = '';
-    ICARDS.forEach(function(c) {{
+    igrid.innerHTML = ICARDS.map(function(c) {{
       var d = VH[c.key];
-      if (!d) return;
-      var valStr = c.fmt(d.valor);
-      var dateStr = d.mes ? (['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.mes] + ' ' + d.año) : d.año;
-      ihtml += '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 16px">'
-             + '<div style="font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">' + c.label + ' <span style="color:#555;font-size:.58rem">' + c.unit + '</span></div>'
-             + '<div style="font-size:1.7rem;font-weight:700;color:var(--text);line-height:1">' + valStr + '</div>'
-             + '<div style="font-size:.63rem;color:#555;margin-top:5px">' + dateStr + '</div>'
-             + '</div>';
-    }});
-    igrid.innerHTML = ihtml;
-  }}
-
-  // ── Gráfico completo Pulse 2010–2026 — se inicia al mostrar #inicio ──
-  if (typeof _tabInits !== 'undefined') {{
-    _tabInits['inicio'] = function() {{
-      var ctx2 = document.getElementById('cInicioFullPulse');
-      // PULSE_JS.data es un objeto {{ meses:[...], scores:[...], cobertura:[...] }}
-      // NO es un array de objetos — usar las claves directamente
-      if (!ctx2 || !PULSE_JS || !PULSE_JS.data || !PULSE_JS.data.meses) return;
-      var pd     = PULSE_JS.data;           // {{ meses, scores, cobertura, n_vars }}
-      var meses  = pd.meses;                // ["2010-01", "2010-02", ...]
-      var scores = pd.scores;               // [float|null, ...]
-      var cov    = pd.cobertura;            // [float, ...]
-      var MONTHS_ES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      // Etiquetas: año en enero, mes abreviado en múltiplos de 3, vacío el resto
-      var labels = meses.map(function(m) {{
-        var parts = m.split('-');
-        var yr = parts[0], mo = parseInt(parts[1]);
-        if (mo === 1) return yr;
-        if (mo % 3 === 0) return MONTHS_ES[mo] + "'" + yr.slice(2);
-        return '';
-      }});
-      var hi_cov = scores.map(function(s,i) {{ return (cov[i] != null && cov[i] >= 70) ? s : null; }});
-      var lo_cov = scores.map(function(s,i) {{ return (cov[i] != null && cov[i] < 70)  ? s : null; }});
-      var icivRef     = {scores_ahp_js}[{scores_ahp_js}.length - 1];
-      var icivRefLine = scores.map(function() {{ return icivRef; }});
-      new Chart(ctx2, {{
-        type: 'line',
-        data: {{
-          labels: labels,
-          datasets: [
-            {{
-              label: 'Pulse mensual (cob ≥70%)',
-              data: hi_cov,
-              borderColor: '#00d4aa', backgroundColor: 'rgba(0,212,170,.06)',
-              borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true, spanGaps: false,
-            }},
-            {{
-              label: 'Pulse mensual (cob <70%, provisional)',
-              data: lo_cov,
-              borderColor: 'rgba(0,212,170,0.4)', backgroundColor: 'transparent',
-              borderWidth: 1.5, pointRadius: 3, pointStyle: 'circle',
-              pointBackgroundColor: 'transparent', pointBorderColor: 'rgba(0,212,170,0.5)',
-              tension: 0.3, fill: false, borderDash: [4,3], spanGaps: false,
-            }},
-            {{
-              label: 'ICIV Anual {current_year_val} (referencia)',
-              data: icivRefLine,
-              borderColor: '#f1c40f', backgroundColor: 'transparent',
-              borderWidth: 1.5, pointRadius: 0, borderDash: [6,4], fill: false,
-            }},
-          ]
-        }},
-        options: {{
-          responsive: true, maintainAspectRatio: false, animation: {{duration: 400}},
-          plugins: {{
-            legend: {{ position: 'top', labels: {{ color:'#8b949e', font:{{size:10}}, boxWidth:18 }} }},
-            tooltip: {{
-              callbacks: {{
-                label: function(ctx) {{
-                  if (ctx.dataset.label.startsWith('Pulse')) return 'Pulse: ' + (ctx.raw != null ? ctx.raw.toFixed(1) : '—');
-                  return ctx.dataset.label + ': ' + (ctx.raw != null ? ctx.raw.toFixed(1) : '—');
-                }}
-              }}
-            }}
-          }},
-          scales: {{
-            x: {{ ticks: {{ color:'#8b949e', font:{{size:9}}, maxRotation:0,
-                            callback: function(v,i) {{ return labels[i]; }} }},
-                 grid: {{ color:'rgba(255,255,255,.03)' }} }},
-            y: {{ min:20, max:100,
-                 ticks: {{ color:'#8b949e', font:{{size:9}}, stepSize:20 }},
-                 grid: {{ color:'rgba(255,255,255,.05)' }} }},
-          }}
-        }}
-      }});
-    }};
-    _tabInits['portada'] = function() {{}};  // rendered on load
-
-    // Si INICIO ya está activo cuando este IIFE corre (ej. URL con #inicio),
-    // ejecutar el chart ahora mismo (no esperar click de nav).
-    var _inicioSec = document.getElementById('inicio');
-    if (_inicioSec && _inicioSec.classList.contains('tab-active')) {{
-      var _chartFn = _tabInits['inicio'];
-      _tabInits['inicio'] = null;
-      setTimeout(_chartFn, 60);
-    }}
+      if (!d) return '';
+      var fecha = d.mes ? (MESES[d.mes] + ' ' + d.año) : String(d.año);
+      return '<div class="kpi">'
+           + '<div class="kpi-lbl">' + c.label + '</div>'
+           + '<div class="kpi-val">' + c.fmt(d.valor) + '</div>'
+           + '<div class="kpi-sub">' + c.unit + ' · ' + fecha + '</div>'
+           + '</div>';
+    }}).join('');
   }}
 }})();
 
