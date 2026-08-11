@@ -73,9 +73,12 @@ PULSE_WEIGHTS: dict[str, float] = {
     "em_bond_spread_pct":              0.040,  # NEGATIVO (spread alto → estrés EM)
     # D2 Energía VEN (25%) — driver doméstico clave
     "petroleo_crudo_produccion_tbpd":  0.250,
-    # D4 Actividad comercial espejo (10%) — IMF IMTS, reportado por EEUU
-    "importaciones_espejo_usa_musd":   0.050,  # POSITIVO (demanda interna)
-    "exportaciones_espejo_usa_musd":   0.050,  # POSITIVO (ingreso exportador)
+    # D4 Comercio espejo EEUU-VEN (10%) — aduana de EEUU vía FRED.
+    # Sustituye a IMF IMTS desde 2026-08-11: mismo concepto (comercio real
+    # observado por el socio) con 2 meses de rezago en vez de 4, volumen físico
+    # en vez de valor declarado, y 395 meses de historia. Ver METODOLOGIA §3.3.
+    "importaciones_eeuu_crudo_ven_tbpd":     0.050,  # POSITIVO (flujo exportador VEN)
+    "importaciones_eeuu_productos_ven_tbpd": 0.050,  # POSITIVO (actividad refinadora)
     # D6 Percepción internacional (30%) — dos sistemas de cobertura
     "guardian_articulos_venezuela":    0.065,  # NEGATIVO (más cobertura → crisis)
     "guardian_tono_titulares":         0.100,  # POSITIVO (tono positivo es bueno)

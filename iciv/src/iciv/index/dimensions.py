@@ -80,17 +80,22 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         name="Estabilidad Macroeconómica",
         iciv_weight=0.25,
         description=(
-            "Salud del entorno económico general: inflación, crecimiento, reservas, "
-            "tipo de cambio. Ampliada con precio WTI (driver externo del ciclo fiscal "
-            "venezolano) y tasa Fed Funds (costo de oportunidad de capital global)."
+            "Salud del entorno económico general: inflación y crecimiento. "
+            "Ampliada con precio WTI (driver externo del ciclo fiscal venezolano) "
+            "y tasa Fed Funds (costo de oportunidad de capital global)."
         ),
+        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        #   reservas_internacionales_usd (era 0.18): el WB no publica desde 2017 y
+        #     no existe sustituto (probados FI.RES.XGLD.CD, FI.RES.TOTL.MO,
+        #     FI.RES.TOTL.DT.ZS). Nueve años de peso muerto.
+        #   tipo_cambio_oficial_lcu_usd (era 0.12): el WB RETIRÓ los valores
+        #     2020-2024 en agosto de 2026; la serie muere en 2017.
+        # Los pesos restantes se renormalizan sobre 0.70 conservando su proporción.
         variables=[
-            VariableWeight("inflacion_deflactor_pib_pct",  0.28),
-            VariableWeight("pib_crecimiento_real_pct",     0.22),
-            VariableWeight("reservas_internacionales_usd", 0.18),
-            VariableWeight("tipo_cambio_oficial_lcu_usd",  0.12),
-            VariableWeight("wti_precio_usd",               0.12),
-            VariableWeight("tasa_fed_funds_pct",           0.08),
+            VariableWeight("inflacion_deflactor_pib_pct",  0.40),   # 0.28 / 0.70
+            VariableWeight("pib_crecimiento_real_pct",     0.3143), # 0.22 / 0.70
+            VariableWeight("wti_precio_usd",               0.1714), # 0.12 / 0.70
+            VariableWeight("tasa_fed_funds_pct",           0.1143), # 0.08 / 0.70
         ],
     ),
 
@@ -100,15 +105,20 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         iciv_weight=0.20,
         description=(
             "Venezuela es petro-dependiente. Esta dimensión captura el estado "
-            "de la industria petrolera como motor de ingresos fiscales y divisas. "
-            "Ampliada con luminosidad nocturna satelital (VIIRS/DMSP) como proxy "
-            "independiente del colapso del sistema eléctrico y la actividad real."
+            "de la industria petrolera como motor de ingresos fiscales y divisas, "
+            "más la luminosidad nocturna satelital como proxy independiente de la "
+            "actividad real y del sistema eléctrico. Ambas variables son de alta "
+            "frecuencia y observación física, no declaraciones."
         ),
+        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        #   gas_natural_produccion_bcf (era 0.25) y electricidad_generacion_bkwh
+        #   (era 0.15) solo existen en EIA con frecuencia ANUAL y llegan con ~2 años
+        #   de rezago (último 2024). Se verificó contra la API que NO tienen serie
+        #   mensual para Venezuela, así que no hay forma de adelantarlas.
+        # Los pesos restantes se renormalizan sobre 0.60.
         variables=[
-            VariableWeight("petroleo_crudo_produccion_tbpd", 0.45),
-            VariableWeight("gas_natural_produccion_bcf",      0.25),
-            VariableWeight("electricidad_generacion_bkwh",    0.15),
-            VariableWeight("luminosidad_nocturna_idx",         0.15),
+            VariableWeight("petroleo_crudo_produccion_tbpd", 0.75),  # 0.45 / 0.60
+            VariableWeight("luminosidad_nocturna_idx",       0.25),  # 0.15 / 0.60
         ],
     ),
 
@@ -142,11 +152,17 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
             "migracion y conectividad logistica. La IED se reserva como outcome "
             "externo para validar el indice, no como componente del score."
         ),
+        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        #   desempleo_pct (era 0.24): el IMF WEO dejó de publicarlo en 2018. Se
+        #   evaluó sustituirlo por la estimación modelada de la OIT (WB
+        #   SL.UEM.TOTL.ZS, con datos hasta 2025) y se DESCARTÓ: las series
+        #   difieren hasta un 85% (IMF 35,6% vs OIT 5,5% en 2018). La OIT no
+        #   captura el colapso laboral venezolano. Ver §9.6.
+        # Los pesos restantes se renormalizan sobre 0.76.
         variables=[
-            VariableWeight("exportaciones_pct_pib",      0.34),
-            VariableWeight("desempleo_pct",              0.24),
-            VariableWeight("migrantes_vzla_millones",    0.24),
-            VariableWeight("lsci_conectividad_maritima", 0.18),
+            VariableWeight("exportaciones_pct_pib",      0.4474),  # 0.34 / 0.76
+            VariableWeight("migrantes_vzla_millones",    0.3158),  # 0.24 / 0.76
+            VariableWeight("lsci_conectividad_maritima", 0.2368),  # 0.18 / 0.76
         ],
     ),
 

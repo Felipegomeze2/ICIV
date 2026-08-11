@@ -1,21 +1,21 @@
 ﻿year,variable,valor_crudo,valor_normalizado,fuente,dimension,direccion,rol,entra_iciv_anual,entra_pulse_mensual,entra_validacion_outcome,descripcion,nota
 2000,inflacion_deflactor_pib_pct,1.209515014542631,96.97175927266998,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2000,pib_crecimiento_real_pct,3.53535353535352,69.45374555871787,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2000,reservas_internacionales_usd,15898851162.5221,18.348458166050335,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2000,tipo_cambio_oficial_lcu_usd,-0.1675123767607597,100.0,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2000,reservas_internacionales_usd,15898851162.5221,18.348458166050335,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2000,tipo_cambio_oficial_lcu_usd,-0.1675123767607597,100.0,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2000,wti_precio_usd,30.37852,5.964848029116164,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2000,tasa_fed_funds_pct,6.235833333333333,0.0,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2000,petroleo_crudo_produccion_tbpd,2893.620218579235,100.0,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2000,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2000,electricidad_generacion_bkwh,85.271,21.074385118442883,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2000,luminosidad_nocturna_idx,11.634,0.03579232913872377,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2000,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2000,electricidad_generacion_bkwh,85.271,21.074385118442883,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2000,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2000,cpi_score,27.0,100.0,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2000,wgi_promedio_sc,42.894742433333334,100.0,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2000,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2000,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2000,pts_terror_politico,2.5,100.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2000,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2000,desempleo_pct,14.0,76.59574468085107,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2000,desempleo_pct,14.0,76.59574468085107,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2000,migrantes_vzla_millones,0.0006,100.0,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2000,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2000,hdi,0.703,9.090909090909092,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -32,21 +32,21 @@
 2000,ust_10y_yield_pct,6.030278884462151,0.0,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2001,inflacion_deflactor_pib_pct,1.0969100130080565,100.0,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2001,pib_crecimiento_real_pct,3.41463414634147,69.20241357109701,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2001,reservas_internacionales_usd,12264400222.6423,7.424809542402473,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2001,tipo_cambio_oficial_lcu_usd,-0.14046643238203688,97.68129645194557,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2001,reservas_internacionales_usd,12264400222.6423,7.424809542402473,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2001,tipo_cambio_oficial_lcu_usd,-0.14046643238203688,97.68129645194557,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2001,wti_precio_usd,25.98312,0.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2001,tasa_fed_funds_pct,3.8875,38.14809801001759,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2001,petroleo_crudo_produccion_tbpd,2806.9134410958904,96.33616415455528,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2001,gas_natural_produccion_bcf,1119.83865,100.0,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2001,electricidad_generacion_bkwh,90.119,28.74839252198493,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2001,luminosidad_nocturna_idx,12.7433,10.484326727450826,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2001,gas_natural_produccion_bcf,1119.83865,100.0,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2001,electricidad_generacion_bkwh,90.119,28.74839252198493,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2001,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2001,cpi_score,25.0,88.23529411764706,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2001,wgi_promedio_sc,,,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2001,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2001,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2001,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2001,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2001,desempleo_pct,13.4,78.72340425531915,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2001,desempleo_pct,13.4,78.72340425531915,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2001,migrantes_vzla_millones,0.0008,99.98843663274745,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2001,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2001,hdi,0.708,15.584415584415584,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -63,21 +63,21 @@
 2001,ust_10y_yield_pct,5.0206854838709685,19.637785165055043,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2002,inflacion_deflactor_pib_pct,1.3502480183341627,93.18708356596834,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2002,pib_crecimiento_real_pct,-8.72641509433961,43.92533039137337,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2002,reservas_internacionales_usd,12106510810.7652,6.950259607551271,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2002,tipo_cambio_oficial_lcu_usd,0.06481351586975793,80.08223103604809,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2002,reservas_internacionales_usd,12106510810.7652,6.950259607551271,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2002,tipo_cambio_oficial_lcu_usd,0.06481351586975793,80.08223103604809,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2002,wti_precio_usd,26.18496,0.2739102075344246,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2002,tasa_fed_funds_pct,1.6666666666666667,74.22498984702855,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2002,petroleo_crudo_produccion_tbpd,2435.3080191780823,80.63380149385542,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2002,gas_natural_produccion_bcf,1003.29915,75.152473458324,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2002,electricidad_generacion_bkwh,91.852,31.49159690118014,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2002,luminosidad_nocturna_idx,13.6748,19.25815688343003,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2002,gas_natural_produccion_bcf,1003.29915,75.152473458324,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2002,electricidad_generacion_bkwh,91.852,31.49159690118014,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2002,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2002,cpi_score,25.0,88.23529411764706,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2002,wgi_promedio_sc,36.35360618333334,66.36451389133013,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2002,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2002,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2002,pts_terror_politico,4.0,40.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2002,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2002,desempleo_pct,16.0,69.50354609929079,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2002,desempleo_pct,16.0,69.50354609929079,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2002,migrantes_vzla_millones,0.0013,99.95952821461609,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2002,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2002,hdi,0.716,25.97402597402597,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -94,21 +94,21 @@
 2002,ust_10y_yield_pct,4.61308,27.566193690377467,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2003,inflacion_deflactor_pib_pct,1.4927603890268375,89.35455606542565,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2003,pib_crecimiento_real_pct,-7.75193798449614,45.95414507402169,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2003,reservas_internacionales_usd,20820560020.6513,33.14106895745548,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2003,tipo_cambio_oficial_lcu_usd,0.20600461612985876,67.97763226358455,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2003,reservas_internacionales_usd,20820560020.6513,33.14106895745548,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2003,tipo_cambio_oficial_lcu_usd,0.20600461612985876,67.97763226358455,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2003,wti_precio_usd,31.07524,6.910343073673156,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2003,tasa_fed_funds_pct,1.1275,82.98361987274941,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2003,petroleo_crudo_produccion_tbpd,2303.495602739726,75.06400556510803,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2003,gas_natural_produccion_bcf,861.686,44.95896393343888,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2003,electricidad_generacion_bkwh,91.944,31.63722575454769,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2003,luminosidad_nocturna_idx,13.8906,21.290784417150167,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2003,gas_natural_produccion_bcf,861.686,44.95896393343888,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2003,electricidad_generacion_bkwh,91.944,31.63722575454769,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2003,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2003,cpi_score,23.0,76.47058823529412,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2003,wgi_promedio_sc,36.19188885,65.53293954232238,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2003,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2003,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2003,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2003,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2003,desempleo_pct,18.2,61.702127659574465,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2003,desempleo_pct,18.2,61.702127659574465,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2003,migrantes_vzla_millones,0.0026,99.88436632747457,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2003,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2003,hdi,0.707,14.285714285714285,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -125,21 +125,21 @@
 2003,ust_10y_yield_pct,4.01388,39.221342054075826,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2004,inflacion_deflactor_pib_pct,1.3364597338485296,93.55788631957948,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2004,pib_crecimiento_real_pct,18.2072829131653,100.0,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2004,reservas_internacionales_usd,23408050057.2128,40.91798834476805,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2004,tipo_cambio_oficial_lcu_usd,0.2767680767401703,61.91093757205729,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2004,reservas_internacionales_usd,23408050057.2128,40.91798834476805,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2004,tipo_cambio_oficial_lcu_usd,0.2767680767401703,61.91093757205729,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2004,wti_precio_usd,41.506024096385545,21.065605839169244,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2004,tasa_fed_funds_pct,1.3491666666666668,79.38269933667253,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2004,petroleo_crudo_produccion_tbpd,2563.9085601092897,86.06787810566178,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2004,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2004,electricidad_generacion_bkwh,98.552,42.09717643990369,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2004,luminosidad_nocturna_idx,12.713,10.198929997739421,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2004,gas_natural_produccion_bcf,960.568,66.0417137263761,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2004,electricidad_generacion_bkwh,98.552,42.09717643990369,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2004,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2004,cpi_score,23.0,76.47058823529412,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2004,wgi_promedio_sc,36.48780166666666,67.0545668336617,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2004,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2004,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2004,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2004,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2004,desempleo_pct,15.1,72.6950354609929,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2004,desempleo_pct,15.1,72.6950354609929,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2004,migrantes_vzla_millones,0.0039,99.80920444033302,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2004,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2004,hdi,0.718,28.57142857142857,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -156,21 +156,21 @@
 2004,ust_10y_yield_pct,4.271319999999999,34.213829713036944,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2005,inflacion_deflactor_pib_pct,1.2041199826559248,97.11684568146107,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2005,pib_crecimiento_real_pct,10.1895734597156,83.30751282297445,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2005,reservas_internacionales_usd,29802940547.6946,60.13837069694821,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2005,tipo_cambio_oficial_lcu_usd,0.32009433390309644,58.196489860383785,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2005,reservas_internacionales_usd,29802940547.6946,60.13837069694821,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2005,tipo_cambio_oficial_lcu_usd,0.32009433390309644,58.196489860383785,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2005,wti_precio_usd,56.637250996015936,41.59967985982033,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2005,tasa_fed_funds_pct,3.2133333333333334,49.099769865980775,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2005,petroleo_crudo_produccion_tbpd,2839.5498273972603,97.71523007612882,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2005,gas_natural_produccion_bcf,827.92486,37.760710789850286,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2005,electricidad_generacion_bkwh,105.384,52.91170172476326,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2005,luminosidad_nocturna_idx,11.6302,0.0,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2005,gas_natural_produccion_bcf,827.92486,37.760710789850286,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2005,electricidad_generacion_bkwh,105.384,52.91170172476326,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2005,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2005,cpi_score,23.0,76.47058823529412,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2005,wgi_promedio_sc,36.95172916666667,69.44015037531017,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2005,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2005,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2005,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2005,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2005,desempleo_pct,12.2,82.97872340425532,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2005,desempleo_pct,12.2,82.97872340425532,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2005,migrantes_vzla_millones,0.0054,99.72247918593894,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2005,lsci_conectividad_maritima,,,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2005,hdi,0.728,41.55844155844156,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -187,21 +187,21 @@
 2005,ust_10y_yield_pct,4.28888,33.872266953913865,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2006,inflacion_deflactor_pib_pct,1.1367205671564067,98.92939088134024,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2006,pib_crecimiento_real_pct,9.89247311827957,82.68896413790368,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2006,reservas_internacionales_usd,36715128120.2438,80.91353302883266,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2006,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2006,reservas_internacionales_usd,36715128120.2438,80.91353302883266,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2006,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2006,wti_precio_usd,66.05465863453816,54.37972385855144,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2006,tasa_fed_funds_pct,4.964166666666666,20.657912549072694,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2006,petroleo_crudo_produccion_tbpd,2785.042293150685,95.4119884655434,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2006,gas_natural_produccion_bcf,918.19,57.00624952940302,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2006,electricidad_generacion_bkwh,110.422,60.88646436895567,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2006,luminosidad_nocturna_idx,12.4738,7.945897068796628,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2006,gas_natural_produccion_bcf,918.19,57.00624952940302,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2006,electricidad_generacion_bkwh,110.422,60.88646436895567,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2006,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2006,cpi_score,23.0,76.47058823529412,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2006,wgi_promedio_sc,35.69860455,62.996399010809235,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2006,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2006,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2006,pts_terror_politico,3.5,60.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2006,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2006,desempleo_pct,10.0,90.78014184397163,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2006,desempleo_pct,10.0,90.78014184397163,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2006,migrantes_vzla_millones,0.0062,99.67622571692877,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2006,lsci_conectividad_maritima,115.87,97.22525671837448,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2006,hdi,0.736,51.94805194805194,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -218,21 +218,21 @@
 2006,ust_10y_yield_pct,4.795,24.02763462775396,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2007,inflacion_deflactor_pib_pct,1.271841606536499,95.29563546200993,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2007,pib_crecimiento_real_pct,8.80626223091976,80.4275250805183,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2007,reservas_internacionales_usd,33759218864.9235,72.02929862792054,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2007,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2007,reservas_internacionales_usd,33759218864.9235,72.02929862792054,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2007,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2007,wti_precio_usd,72.34059523809525,62.91015489119389,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2007,tasa_fed_funds_pct,5.019166666666666,19.76445106267768,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2007,petroleo_crudo_produccion_tbpd,2819.733887671233,96.8778981813604,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2007,gas_natural_produccion_bcf,732.044635,17.31797304419865,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2007,electricidad_generacion_bkwh,114.214,66.88890580340936,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2007,luminosidad_nocturna_idx,12.3236,6.531158164418661,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2007,gas_natural_produccion_bcf,732.044635,17.31797304419865,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2007,electricidad_generacion_bkwh,114.214,66.88890580340936,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2007,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2007,cpi_score,20.0,58.82352941176471,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2007,wgi_promedio_sc,34.1463098,55.01427075286532,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2007,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2007,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2007,pts_terror_politico,3.5,60.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2007,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2007,desempleo_pct,8.5,96.09929078014184,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2007,desempleo_pct,8.5,96.09929078014184,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2007,migrantes_vzla_millones,0.0068,99.64153561517114,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2007,lsci_conectividad_maritima,118.41,100.0,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2007,hdi,0.753,74.02597402597402,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -249,21 +249,21 @@
 2007,ust_10y_yield_pct,4.634661354581673,27.146410830666223,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2008,inflacion_deflactor_pib_pct,1.4969296480732148,89.24243386947548,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2008,pib_crecimiento_real_pct,5.21582733812949,72.9524115514218,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2008,reservas_internacionales_usd,43065463087.2778,100.0,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2008,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2008,reservas_internacionales_usd,43065463087.2778,100.0,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2008,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2008,wti_precio_usd,99.6715019762846,100.0,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2008,tasa_fed_funds_pct,1.9275,69.98781643427643,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2008,petroleo_crudo_produccion_tbpd,2510.0,83.78994643022074,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2008,gas_natural_produccion_bcf,732.78625,17.47609366764568,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2008,electricidad_generacion_bkwh,119.297,74.93489995196633,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2008,luminosidad_nocturna_idx,12.857,11.555270891417367,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2008,gas_natural_produccion_bcf,732.78625,17.47609366764568,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2008,electricidad_generacion_bkwh,119.297,74.93489995196633,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2008,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2008,cpi_score,19.0,52.94117647058824,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2008,wgi_promedio_sc,33.18207833333333,50.0560505197049,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2008,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2008,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2008,pts_terror_politico,3.5,60.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2008,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2008,desempleo_pct,7.4,100.0,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2008,desempleo_pct,7.4,100.0,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2008,migrantes_vzla_millones,0.0073,99.61262719703977,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2008,lsci_conectividad_maritima,117.71,99.23530696963076,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2008,hdi,0.759,81.81818181818183,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -280,21 +280,21 @@
 2008,ust_10y_yield_pct,3.6642629482071714,46.021807022574215,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2009,inflacion_deflactor_pib_pct,1.414973347970818,91.44645147481386,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2009,pib_crecimiento_real_pct,-3.07692307692308,55.687302261887886,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2009,reservas_internacionales_usd,34317956993.5458,73.7086331658374,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2009,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2009,reservas_internacionales_usd,34317956993.5458,73.7086331658374,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2009,tipo_cambio_oficial_lcu_usd,0.33183204443624864,57.190192181214286,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2009,wti_precio_usd,61.95043650793651,48.81002343016841,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2009,tasa_fed_funds_pct,0.16,98.7004196561527,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2009,petroleo_crudo_produccion_tbpd,2520.0,84.2125011545211,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2009,gas_natural_produccion_bcf,650.820134999999,0.0,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2009,electricidad_generacion_bkwh,119.58,75.38286696830346,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2009,luminosidad_nocturna_idx,14.7043,28.955052369828948,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2009,gas_natural_produccion_bcf,650.820134999999,0.0,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2009,electricidad_generacion_bkwh,119.58,75.38286696830346,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2009,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2009,cpi_score,19.0,52.94117647058824,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2009,wgi_promedio_sc,33.71498166666667,52.79631795651258,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2009,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2009,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2009,pts_terror_politico,3.5,60.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2009,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2009,desempleo_pct,7.9,98.22695035460993,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2009,desempleo_pct,7.9,98.22695035460993,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2009,migrantes_vzla_millones,0.0078,99.58371877890842,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2009,lsci_conectividad_maritima,108.74,89.4363119947564,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2009,hdi,0.76,83.11688311688312,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -311,21 +311,21 @@
 2009,ust_10y_yield_pct,3.26412,53.80506040715741,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2010,inflacion_deflactor_pib_pct,1.4502491083193612,90.49779473027138,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2010,pib_crecimiento_real_pct,-1.5873015873016,58.78862287702062,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2010,reservas_internacionales_usd,29665473906.3905,59.72520312035445,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2010,tipo_cambio_oficial_lcu_usd,0.4119663832573614,50.32011313558532,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2010,reservas_internacionales_usd,29665473906.3905,59.72520312035445,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2010,tipo_cambio_oficial_lcu_usd,0.4119663832573614,50.32011313558532,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2010,wti_precio_usd,79.47571428571429,72.59298257211022,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2010,tasa_fed_funds_pct,0.175,98.45674834168133,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2010,petroleo_crudo_produccion_tbpd,2410.0,79.56439918721713,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2010,gas_natural_produccion_bcf,696.69432,9.78088999322358,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2010,electricidad_generacion_bkwh,113.767,66.18133952672137,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2010,luminosidad_nocturna_idx,11.7575,1.1990430261472382,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2010,gas_natural_produccion_bcf,696.69432,9.78088999322358,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2010,electricidad_generacion_bkwh,113.767,66.18133952672137,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2010,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2010,cpi_score,20.0,58.82352941176471,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2010,wgi_promedio_sc,32.39720761666667,46.02012968293235,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2010,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2010,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2010,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2010,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2010,desempleo_pct,8.5,96.09929078014184,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2010,desempleo_pct,8.5,96.09929078014184,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2010,migrantes_vzla_millones,0.0073,99.61262719703977,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2010,lsci_conectividad_maritima,98.77,78.54489840506882,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2010,hdi,0.764,88.31168831168831,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -342,21 +342,21 @@
 2010,ust_10y_yield_pct,3.2150597609561755,54.75934005471128,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2011,inflacion_deflactor_pib_pct,1.416640507338281,91.40161723275801,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2011,pib_crecimiento_real_pct,4.12186379928315,70.67483184485498,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2011,reservas_internacionales_usd,27934651458.8556,54.52307037470822,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2011,tipo_cambio_oficial_lcu_usd,0.632386422501182,31.4230570779303,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2011,reservas_internacionales_usd,27934651458.8556,54.52307037470822,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2011,tipo_cambio_oficial_lcu_usd,0.632386422501182,31.4230570779303,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2011,wti_precio_usd,94.880873015873,93.49880017456023,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2011,tasa_fed_funds_pct,0.1016666666666666,99.64803032354136,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2011,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2011,gas_natural_produccion_bcf,733.457235,17.61915518409775,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2011,electricidad_generacion_bkwh,117.963,72.82328157813689,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2011,luminosidad_nocturna_idx,12.4966,8.16065104362897,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2011,gas_natural_produccion_bcf,733.457235,17.61915518409775,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2011,electricidad_generacion_bkwh,117.963,72.82328157813689,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2011,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2011,cpi_score,19.0,52.94117647058824,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2011,wgi_promedio_sc,33.109031716666664,49.68043405701816,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2011,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2011,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2011,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2011,exportaciones_pct_pib,0.0,0.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2011,desempleo_pct,8.2,97.16312056737588,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2011,desempleo_pct,8.2,97.16312056737588,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2011,migrantes_vzla_millones,0.0081,99.5663737280296,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2011,lsci_conectividad_maritima,84.51,62.96700895783265,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2011,hdi,0.77,96.1038961038961,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -373,21 +373,21 @@
 2011,ust_10y_yield_pct,2.78164,63.189866786525215,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2012,inflacion_deflactor_pib_pct,1.3242824552976926,93.88536494267035,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2012,pib_crecimiento_real_pct,5.67986230636832,73.91851013630945,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2012,reservas_internacionales_usd,29468789162.686,59.13405054589399,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2012,tipo_cambio_oficial_lcu_usd,0.632386422501182,31.4230570779303,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2012,reservas_internacionales_usd,29468789162.686,59.13405054589399,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2012,tipo_cambio_oficial_lcu_usd,0.632386422501182,31.4230570779303,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2012,wti_precio_usd,94.05333333333331,92.37577418274783,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2012,tasa_fed_funds_pct,0.14,99.02531474211453,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2012,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2012,gas_natural_produccion_bcf,802.56869,32.35449137866138,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2012,electricidad_generacion_bkwh,128.3161,89.21143464117552,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2012,luminosidad_nocturna_idx,14.8636,30.45550448346017,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2012,gas_natural_produccion_bcf,802.56869,32.35449137866138,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2012,electricidad_generacion_bkwh,128.3161,89.21143464117552,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2012,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2012,cpi_score,19.0,52.94117647058824,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2012,wgi_promedio_sc,32.77905235,47.98363154756665,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2012,freedom_house_score,39.0,100.0,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2012,wjp_rule_of_law,0.3586,100.0,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2012,pts_terror_politico,3.5,60.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2012,exportaciones_pct_pib,29.5953757225434,62.707745515678525,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2012,desempleo_pct,7.8,98.58156028368793,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2012,desempleo_pct,7.8,98.58156028368793,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2012,migrantes_vzla_millones,0.0087,99.53168362627197,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2012,lsci_conectividad_maritima,96.48,76.04325977714662,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2012,hdi,0.772,98.7012987012987,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -404,21 +404,21 @@
 2012,ust_10y_yield_pct,1.80344,82.21701319735588,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2013,inflacion_deflactor_pib_pct,1.608526033577194,86.24131744480043,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2013,pib_crecimiento_real_pct,1.30293159609121,64.80594997430528,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2013,reservas_internacionales_usd,20275216409.4457,31.501992770569824,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2013,tipo_cambio_oficial_lcu_usd,0.7816090424128124,18.629899871289073,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2013,reservas_internacionales_usd,20275216409.4457,31.501992770569824,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2013,tipo_cambio_oficial_lcu_usd,0.7816090424128124,18.629899871289073,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2013,wti_precio_usd,97.98253968253968,97.70796664487968,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2013,tasa_fed_funds_pct,0.1075,99.5532692568025,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2013,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2013,gas_natural_produccion_bcf,770.537985,25.525186356449233,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2013,electricidad_generacion_bkwh,135.1317,100.0,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2013,luminosidad_nocturna_idx,15.2122,33.73897973023886,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2013,gas_natural_produccion_bcf,770.537985,25.525186356449233,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2013,electricidad_generacion_bkwh,135.1317,100.0,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2013,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2013,cpi_score,20.0,58.82352941176471,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2013,wgi_promedio_sc,31.172532116666662,39.7226678668941,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2013,freedom_house_score,38.0,96.15384615384616,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2013,wjp_rule_of_law,0.3586,100.0,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2013,pts_terror_politico,3.0,80.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2013,exportaciones_pct_pib,30.2459016393443,64.08610320319494,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2013,desempleo_pct,7.5,99.64539007092198,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2013,desempleo_pct,7.5,99.64539007092198,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2013,migrantes_vzla_millones,0.0095,99.48543015726179,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2013,lsci_conectividad_maritima,96.55,76.11972908018353,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2013,hdi,0.773,100.0,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -435,21 +435,21 @@
 2013,ust_10y_yield_pct,2.35016,71.58266287459026,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2014,inflacion_deflactor_pib_pct,1.7937903846908188,81.25907823944519,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2014,pib_crecimiento_real_pct,-3.85852090032154,54.06005301814578,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2014,reservas_internacionales_usd,21454894042.4243,35.047613323714785,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2014,tipo_cambio_oficial_lcu_usd,0.7982499983784683,17.203237037842612,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2014,reservas_internacionales_usd,21454894042.4243,35.047613323714785,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2014,tipo_cambio_oficial_lcu_usd,0.7982499983784683,17.203237037842612,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2014,wti_precio_usd,93.17222222222225,91.18004822503222,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2014,tasa_fed_funds_pct,0.0891666666666666,99.85108975226751,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2014,petroleo_crudo_produccion_tbpd,2500.0,83.3673917059204,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2014,gas_natural_produccion_bcf,772.62157,25.969430012800405,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2014,electricidad_generacion_bkwh,115.2271,68.49256440500349,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2014,luminosidad_nocturna_idx,22.247,100.0,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2014,gas_natural_produccion_bcf,772.62157,25.969430012800405,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2014,electricidad_generacion_bkwh,115.2271,68.49256440500349,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2014,luminosidad_nocturna_idx,1.0175666666666667,100.0,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2014,cpi_score,19.0,52.94117647058824,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2014,wgi_promedio_sc,30.06898008333333,34.04804075797587,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2014,freedom_house_score,35.0,84.61538461538461,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2014,wjp_rule_of_law,0.3105,51.36501516683521,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2014,pts_terror_politico,3.33,66.8,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2014,exportaciones_pct_pib,43.4511434511435,92.06584405090254,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2014,desempleo_pct,8.0,97.87234042553192,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2014,desempleo_pct,8.0,97.87234042553192,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2014,migrantes_vzla_millones,0.0128,99.29463459759482,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2014,lsci_conectividad_maritima,87.61,66.35350666375355,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2014,hdi,0.77,96.1038961038961,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -466,21 +466,21 @@
 2014,ust_10y_yield_pct,2.53956,67.89860896924233,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2015,inflacion_deflactor_pib_pct,2.085290578230065,73.41988152464305,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2015,pib_crecimiento_real_pct,-6.18729096989966,49.21166523976998,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2015,reservas_internacionales_usd,15625329211.5224,17.526364888963986,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2015,tipo_cambio_oficial_lcu_usd,0.7982499983784683,17.203237037842612,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2015,reservas_internacionales_usd,15625329211.5224,17.526364888963986,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2015,tipo_cambio_oficial_lcu_usd,0.7982499983784683,17.203237037842612,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2015,wti_precio_usd,48.656706349206345,30.76955381718582,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2015,tasa_fed_funds_pct,0.1325,99.14715039935021,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2015,petroleo_crudo_produccion_tbpd,2489.47397260274,82.92260944543767,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2015,gas_natural_produccion_bcf,918.295945,57.028838189895424,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2015,electricidad_generacion_bkwh,127.5083,87.93274999171568,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2015,luminosidad_nocturna_idx,21.6393,94.27605304799938,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2015,gas_natural_produccion_bcf,918.295945,57.028838189895424,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2015,electricidad_generacion_bkwh,127.5083,87.93274999171568,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2015,luminosidad_nocturna_idx,0.9696083333333334,84.44174101108408,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2015,cpi_score,17.0,41.17647058823529,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2015,wgi_promedio_sc,29.172213216666666,29.436733435569618,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2015,freedom_house_score,35.0,84.61538461538461,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2015,wjp_rule_of_law,0.3128,53.69059656218407,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2015,pts_terror_politico,3.33,66.8,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2015,exportaciones_pct_pib,40.7547169811321,86.35255875699707,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2015,desempleo_pct,12.5,81.91489361702128,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2015,desempleo_pct,12.5,81.91489361702128,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2015,migrantes_vzla_millones,0.0225,98.73381128584644,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2015,lsci_conectividad_maritima,73.1,50.50251256281406,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2015,hdi,0.768,93.5064935064935,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -497,21 +497,21 @@
 2015,ust_10y_yield_pct,2.138286852589641,75.70384606442914,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2016,inflacion_deflactor_pib_pct,2.4063698354692677,64.78522702242643,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2016,pib_crecimiento_real_pct,-17.1122994652406,26.466320665215804,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2016,reservas_internacionales_usd,10150000483.5116,1.069802917671331,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2016,tipo_cambio_oficial_lcu_usd,0.966486423126211,2.779987861841567,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2016,reservas_internacionales_usd,10150000483.5116,1.069802917671331,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2016,tipo_cambio_oficial_lcu_usd,0.966486423126211,2.779987861841567,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2016,wti_precio_usd,43.29365079365079,23.491533304696393,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2016,tasa_fed_funds_pct,0.395,94.88290239610126,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2016,petroleo_crudo_produccion_tbpd,2254.4535519125684,72.99171053846865,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2016,gas_natural_produccion_bcf,971.9389743,68.46613279222046,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2016,electricidad_generacion_bkwh,116.933,71.19287158934807,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2016,luminosidad_nocturna_idx,21.9392,97.10082133976339,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2016,gas_natural_produccion_bcf,971.9389743,68.46613279222046,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2016,electricidad_generacion_bkwh,116.933,71.19287158934807,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2016,luminosidad_nocturna_idx,0.8934333333333333,59.72965666396321,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2016,cpi_score,17.0,41.17647058823529,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2016,wgi_promedio_sc,28.79841801666667,27.5146234570338,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2016,freedom_house_score,30.0,65.38461538461539,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2016,wjp_rule_of_law,0.2775,17.997977755308433,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2016,pts_terror_politico,3.67,53.2,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2016,exportaciones_pct_pib,31.1977715877437,66.10295945289562,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2016,desempleo_pct,20.9,52.12765957446809,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2016,desempleo_pct,20.9,52.12765957446809,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2016,migrantes_vzla_millones,0.0526,96.99352451433857,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2016,lsci_conectividad_maritima,63.46,39.97159711601486,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2016,hdi,0.761,84.4155844155844,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -528,21 +528,21 @@
 2016,ust_10y_yield_pct,1.83744,81.55567300315404,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2017,inflacion_deflactor_pib_pct,2.6415732531781755,58.459996712877214,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2017,pib_crecimiento_real_pct,-15.6989247311828,29.40889918612251,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2017,reservas_internacionales_usd,9794062064.62109,0.0,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2017,tipo_cambio_oficial_lcu_usd,0.9989129043587858,0.0,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2017,reservas_internacionales_usd,9794062064.62109,0.0,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2017,tipo_cambio_oficial_lcu_usd,0.9989129043587858,0.0,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2017,wti_precio_usd,50.80032,33.67857908453874,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2017,tasa_fed_funds_pct,1.0016666666666667,85.02775145525924,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2017,petroleo_crudo_produccion_tbpd,1997.4054794520548,62.130022799419514,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2017,gas_natural_produccion_bcf,956.3651916,65.14562790767448,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2017,electricidad_generacion_bkwh,103.8015,50.406727154609534,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2017,luminosidad_nocturna_idx,18.9578,69.01891342023961,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2017,gas_natural_produccion_bcf,956.3651916,65.14562790767448,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2017,electricidad_generacion_bkwh,103.8015,50.406727154609534,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2017,luminosidad_nocturna_idx,0.7093166666666666,0.0,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2017,cpi_score,18.0,47.05882352941176,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2017,wgi_promedio_sc,27.462250049999998,20.643850954524538,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2017,freedom_house_score,26.0,50.0,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2017,wjp_rule_of_law,0.2861,26.693629929221473,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2017,pts_terror_politico,4.33,26.799999999999997,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2017,exportaciones_pct_pib,33.3333333333333,70.62786441544502,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2017,desempleo_pct,27.9,27.3049645390071,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2017,desempleo_pct,27.9,27.3049645390071,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2017,migrantes_vzla_millones,0.1574,90.93432007400554,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2017,lsci_conectividad_maritima,49.91,25.169324885296042,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2017,hdi,0.749,68.83116883116884,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -559,21 +559,21 @@
 2017,ust_10y_yield_pct,2.32948,71.98491332212242,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2018,inflacion_deflactor_pib_pct,4.815405723019128,0.0,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2018,pib_crecimiento_real_pct,-19.6428571428571,21.197820748925842,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2018,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2018,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2018,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2018,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2018,wti_precio_usd,65.22746987951807,53.25717409855494,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2018,tasa_fed_funds_pct,1.8316666666666668,71.5446053878435,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2018,petroleo_crudo_produccion_tbpd,1485.6219178082192,40.50436662023278,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2018,gas_natural_produccion_bcf,823.1799863,36.749050578525804,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2018,electricidad_generacion_bkwh,99.71,43.93020048555171,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2018,luminosidad_nocturna_idx,18.0646,60.60583226584281,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2018,gas_natural_produccion_bcf,823.1799863,36.749050578525804,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2018,electricidad_generacion_bkwh,99.71,43.93020048555171,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2018,luminosidad_nocturna_idx,0.8520666666666666,46.30981346309812,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2018,cpi_score,18.0,47.05882352941176,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2018,wgi_promedio_sc,23.819372266666665,1.9116367957244533,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2018,freedom_house_score,19.0,23.076923076923077,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2018,wjp_rule_of_law,0.2861,26.693629929221473,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2018,pts_terror_politico,4.0,40.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2018,exportaciones_pct_pib,42.5471249801996,90.15037723105603,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2018,desempleo_pct,35.6,0.0,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2018,desempleo_pct,35.6,0.0,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2018,migrantes_vzla_millones,0.4853,71.97617946345976,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2018,lsci_conectividad_maritima,50.1,25.376884422110557,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2018,hdi,0.741,58.44155844155844,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -590,21 +590,21 @@
 2018,ust_10y_yield_pct,2.9112449799196787,60.66889671036032,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2019,inflacion_deflactor_pib_pct,4.298983999733384,13.887920373160972,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2019,pib_crecimiento_real_pct,-27.6190476190476,4.591774094536618,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2019,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2019,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2019,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2019,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2019,wti_precio_usd,56.98832,42.07610367938126,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2019,tasa_fed_funds_pct,2.158333333333333,66.23798565046704,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2019,petroleo_crudo_produccion_tbpd,877.668493150685,14.815007445870359,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2019,gas_natural_produccion_bcf,702.2743063,10.97060556340743,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2019,electricidad_generacion_bkwh,85.1383,20.864331326683388,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2019,luminosidad_nocturna_idx,19.7205,76.2028106397408,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2019,gas_natural_produccion_bcf,702.2743063,10.97060556340743,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2019,electricidad_generacion_bkwh,85.1383,20.864331326683388,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2019,luminosidad_nocturna_idx,0.9132583333333333,66.16112462827789,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2019,cpi_score,16.0,35.294117647058826,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2019,wgi_promedio_sc,23.4476138,0.0,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2019,freedom_house_score,16.0,11.538461538461538,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2019,wjp_rule_of_law,0.2763,16.784630940343785,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2019,pts_terror_politico,4.67,13.200000000000003,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2019,exportaciones_pct_pib,47.195725949267,100.0,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2019,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2019,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2019,migrantes_vzla_millones,0.8877,48.710684551341345,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2019,lsci_conectividad_maritima,47.28,22.29626392833734,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2019,hdi,0.724,36.36363636363637,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -621,21 +621,21 @@
 2019,ust_10y_yield_pct,2.1414,75.64329166698957,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2020,inflacion_deflactor_pib_pct,3.3720093524526633,38.8166743524942,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2020,pib_crecimiento_real_pct,-29.8245614035088,0.0,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2020,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2020,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2020,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2020,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2020,wti_precio_usd,39.16043650793651,17.88248860203962,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2020,tasa_fed_funds_pct,0.3758333333333333,95.19426018681467,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2020,petroleo_crudo_produccion_tbpd,527.0628415300547,0.0,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2020,gas_natural_produccion_bcf,675.3392956,5.227759633327256,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2020,electricidad_generacion_bkwh,80.5017,13.524953701422856,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2020,luminosidad_nocturna_idx,16.9879,50.46435837540501,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2020,gas_natural_produccion_bcf,675.3392956,5.227759633327256,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2020,electricidad_generacion_bkwh,80.5017,13.524953701422856,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2020,luminosidad_nocturna_idx,0.7719916666666666,20.332522303325227,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2020,cpi_score,15.0,29.411764705882355,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2020,wgi_promedio_sc,23.809497066666665,1.8608570627047767,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2020,freedom_house_score,14.0,3.8461538461538463,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2020,wjp_rule_of_law,0.2691,9.504550050556137,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2020,pts_terror_politico,5.0,0.0,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2020,exportaciones_pct_pib,13.0054444362771,27.556402989239515,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2020,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2020,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2020,migrantes_vzla_millones,1.0224,40.922756706753006,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2020,lsci_conectividad_maritima,42.79,17.391304347826086,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2020,hdi,0.699,3.896103896103896,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -652,21 +652,21 @@
 2020,ust_10y_yield_pct,0.889203187250996,100.0,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2021,inflacion_deflactor_pib_pct,3.2009872191631663,43.41590335870402,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2021,pib_crecimiento_real_pct,0.625000000000014,63.39452885205649,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2021,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2021,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2021,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2021,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2021,wti_precio_usd,68.13509960159362,57.20301962276706,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2021,tasa_fed_funds_pct,0.08,100.0,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2021,petroleo_crudo_produccion_tbpd,594.8082191780821,2.8626129374686027,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2021,gas_natural_produccion_bcf,750.8798251,21.33384651136869,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2021,electricidad_generacion_bkwh,82.9235,17.35847497409162,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2021,luminosidad_nocturna_idx,17.6514,56.71388742370581,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2021,gas_natural_produccion_bcf,750.8798251,21.33384651136869,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2021,electricidad_generacion_bkwh,82.9235,17.35847497409162,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2021,luminosidad_nocturna_idx,0.8224,36.68559070018925,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2021,cpi_score,14.0,23.52941176470588,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2021,wgi_promedio_sc,24.347235166666668,4.625985581874915,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2021,freedom_house_score,14.0,3.8461538461538463,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2021,wjp_rule_of_law,0.2651,5.460060667340765,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2021,pts_terror_politico,4.67,13.200000000000003,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2021,exportaciones_pct_pib,15.3500529409223,32.52424373644093,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2021,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2021,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2021,migrantes_vzla_millones,1.1703,32.371646623496765,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2021,lsci_conectividad_maritima,31.38,4.926807952807514,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2021,hdi,0.696,0.0,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -683,21 +683,21 @@
 2021,ust_10y_yield_pct,1.4468525896414344,89.15305988019313,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2022,inflacion_deflactor_pib_pct,2.2706788361447066,68.43431014384159,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2022,pib_crecimiento_real_pct,8.07453416149069,78.9041022766701,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2022,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2022,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2022,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2022,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2022,wti_precio_usd,94.9028685258964,93.52864953402978,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2022,tasa_fed_funds_pct,1.6833333333333331,73.95424394206039,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2022,petroleo_crudo_produccion_tbpd,723.6575342465753,8.307201617974341,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2022,gas_natural_produccion_bcf,833.3942476,38.92684547858427,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2022,electricidad_generacion_bkwh,82.3546,16.45795046669165,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2022,luminosidad_nocturna_idx,17.0088,50.661216185668,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2022,gas_natural_produccion_bcf,833.3942476,38.92684547858427,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2022,electricidad_generacion_bkwh,82.3546,16.45795046669165,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2022,luminosidad_nocturna_idx,0.8437749999999999,43.619897269532295,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2022,cpi_score,14.0,23.52941176470588,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2022,wgi_promedio_sc,25.479927383333333,10.450455805850167,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2022,freedom_house_score,15.0,7.6923076923076925,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2022,wjp_rule_of_law,0.2614,1.7189079878665672,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2022,pts_terror_politico,4.33,26.799999999999997,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2022,exportaciones_pct_pib,16.3490943080464,34.641048483120784,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2022,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2022,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2022,migrantes_vzla_millones,1.3676,20.96438482886217,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2022,lsci_conectividad_maritima,26.87,0.0,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2022,hdi,0.706,12.987012987012985,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -714,21 +714,21 @@
 2022,ust_10y_yield_pct,2.9505622489959835,59.904129346642385,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2023,inflacion_deflactor_pib_pct,2.5282737771670436,61.506913661203996,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2023,pib_crecimiento_real_pct,4.02298850574712,70.46897821807325,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2023,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2023,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2023,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2023,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2023,wti_precio_usd,77.57653225806452,70.01566715723112,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2023,tasa_fed_funds_pct,5.024166666666667,19.68322729118721,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2023,petroleo_crudo_produccion_tbpd,770.5068493150685,10.286841559217127,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2023,gas_natural_produccion_bcf,847.2156673,41.87372694657919,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2023,electricidad_generacion_bkwh,71.957405983,0.0,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2023,luminosidad_nocturna_idx,15.425,35.743350162007395,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2023,gas_natural_produccion_bcf,847.2156673,41.87372694657919,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2023,electricidad_generacion_bkwh,71.957405983,0.0,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2023,luminosidad_nocturna_idx,0.8105916666666667,32.85482562854828,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2023,cpi_score,13.0,17.647058823529413,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2023,wgi_promedio_sc,26.180388866666664,14.052331931319436,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2023,freedom_house_score,15.0,7.6923076923076925,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2023,wjp_rule_of_law,0.2638,4.145601617795746,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2023,pts_terror_politico,4.33,26.799999999999997,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2023,exportaciones_pct_pib,18.0663666874328,38.279666906391526,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2023,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2023,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2023,migrantes_vzla_millones,1.5478,10.545790934320069,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2023,lsci_conectividad_maritima,31.39,4.937732138955648,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2023,hdi,0.709,16.883116883116884,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -745,21 +745,21 @@
 2023,ust_10y_yield_pct,3.959,40.28882293224633,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2024,inflacion_deflactor_pib_pct,1.6937269489236468,83.95004371502115,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2024,pib_crecimiento_real_pct,5.52486187845305,73.59580666714147,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2024,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2024,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2024,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2024,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2024,wti_precio_usd,76.63224000000001,68.73420021123628,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2024,tasa_fed_funds_pct,5.1433333333333335,17.747394070664672,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2024,petroleo_crudo_produccion_tbpd,863.4699453551913,14.215041100951325,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2024,gas_natural_produccion_bcf,898.0486073,52.71187903957277,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2024,electricidad_generacion_bkwh,80.129574082,12.935907280263237,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2024,luminosidad_nocturna_idx,15.0957,32.641662271117475,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2024,gas_natural_produccion_bcf,898.0486073,52.71187903957277,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2024,electricidad_generacion_bkwh,80.129574082,12.935907280263237,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2024,luminosidad_nocturna_idx,0.8503,45.736685590700176,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2024,cpi_score,10.0,0.0,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2024,wgi_promedio_sc,23.94001985,2.5320244406466843,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2024,freedom_house_score,13.0,0.0,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2024,wjp_rule_of_law,0.2607,1.0111223458038432,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2024,pts_terror_politico,4.33,26.799999999999997,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2024,exportaciones_pct_pib,16.7350337150912,35.458790766520906,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2024,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2024,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2024,migrantes_vzla_millones,1.7302,0.0,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2024,lsci_conectividad_maritima,37.22,11.306532663316581,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2024,hdi,,,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -776,21 +776,21 @@
 2024,ust_10y_yield_pct,4.20796,35.446256616114255,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2025,inflacion_deflactor_pib_pct,2.401400540781544,64.91886425305023,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2025,pib_crecimiento_real_pct,1.57068062827224,65.36339063891053,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2025,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2025,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2025,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2025,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2025,wti_precio_usd,65.38810483870968,53.47516634493552,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2025,tasa_fed_funds_pct,4.2125,32.868552863137936,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2025,petroleo_crudo_produccion_tbpd,972.6164383561644,18.827077726789064,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2025,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2025,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2025,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2025,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2025,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2025,luminosidad_nocturna_idx,0.8945416666666667,60.08921330089213,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2025,cpi_score,10.0,0.0,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2025,wgi_promedio_sc,,,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2025,freedom_house_score,13.0,0.0,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2025,wjp_rule_of_law,0.2597,0.0,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2025,pts_terror_politico,,,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2025,exportaciones_pct_pib,14.9031673538596,31.5773664968725,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2025,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2025,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2025,migrantes_vzla_millones,1.5982,7.631822386678995,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2025,lsci_conectividad_maritima,36.51,10.530915446799211,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2025,hdi,,,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,
@@ -807,21 +807,21 @@
 2025,ust_10y_yield_pct,4.293212851405622,33.78798787185381,FRED,D1_macro,negative,pulse_mensual,False,True,False,Treasury 10Y yield,
 2026,inflacion_deflactor_pib_pct,2.5881596163830918,59.89642802705841,IMF,D1_macro,negative,core_anual,True,False,False,"Inflacion, deflactor del PIB",Transformada a log10 antes de normalizar para no inflar anos recientes por el maximo de hiperinflacion.
 2026,pib_crecimiento_real_pct,,,WDI,D1_macro,positive,core_anual,True,False,False,Crecimiento real del PIB,
-2026,reservas_internacionales_usd,,,WDI,D1_macro,positive,core_anual,True,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
-2026,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,core_anual,True,False,False,Tipo de cambio oficial homogeneizado,
+2026,reservas_internacionales_usd,,,WDI,D1_macro,positive,auxiliar,False,False,False,Reservas internacionales,Faltantes recientes se muestran como faltantes; no se hace forward-fill.
+2026,tipo_cambio_oficial_lcu_usd,,,WDI,D1_macro,negative,auxiliar,False,False,False,Tipo de cambio oficial homogeneizado,
 2026,wti_precio_usd,83.69260273972603,78.31557864616823,FRED,D1_macro,positive,core_anual,True,True,False,Precio WTI del petroleo,
 2026,tasa_fed_funds_pct,3.6357142857142857,42.238295074358426,FRED,D1_macro,negative,core_anual,True,True,False,Tasa efectiva de fondos federales de EE. UU.,
 2026,petroleo_crudo_produccion_tbpd,992.5,19.667267017641084,EIA,D2_energia,positive,core_anual,True,True,False,Produccion de petroleo crudo,
-2026,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,core_anual,True,False,False,Produccion de gas natural,
-2026,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,core_anual,True,False,False,Generacion electrica,
-2026,luminosidad_nocturna_idx,,,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
+2026,gas_natural_produccion_bcf,,,EIA,D2_energia,positive,auxiliar,False,False,False,Produccion de gas natural,
+2026,electricidad_generacion_bkwh,,,EIA,D2_energia,positive,auxiliar,False,False,False,Generacion electrica,
+2026,luminosidad_nocturna_idx,0.94495,76.44228169775612,VIIRS,D2_energia,positive,core_anual,True,False,False,Luminosidad nocturna satelital,Proxy independiente de actividad real basado en Li et al./Figshare.
 2026,cpi_score,,,CPI,D3_institucional,positive,core_anual,True,False,False,Indice de percepcion de corrupcion,
 2026,wgi_promedio_sc,,,WGI,D3_institucional,positive,core_anual,True,False,False,Promedio WGI de gobernanza,
 2026,freedom_house_score,,,FREEDOM_HOUSE,D3_institucional,positive,core_anual,True,False,False,Freedom House aggregate score,
 2026,wjp_rule_of_law,,,WJP,D3_institucional,positive,core_anual,True,False,False,World Justice Project Rule of Law,
 2026,pts_terror_politico,,,PTS,D3_institucional,negative,core_anual,True,False,False,Political Terror Scale,
 2026,exportaciones_pct_pib,,,WDI,D4_comercial,positive,core_anual,True,False,False,Exportaciones de bienes y servicios,
-2026,desempleo_pct,,,IMF,D4_comercial,negative,core_anual,True,False,False,Tasa de desempleo,
+2026,desempleo_pct,,,IMF,D4_comercial,negative,auxiliar,False,False,False,Tasa de desempleo,
 2026,migrantes_vzla_millones,,,UNHCR,D4_comercial,negative,core_anual,True,False,False,Migrantes y refugiados venezolanos,
 2026,lsci_conectividad_maritima,38.6,12.814070351758797,UNCTAD,D4_comercial,positive,core_anual,True,False,False,Liner Shipping Connectivity Index,
 2026,hdi,,,HDI,D5_capital_humano,positive,core_anual,True,False,False,Indice de Desarrollo Humano,

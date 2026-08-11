@@ -95,22 +95,20 @@ def _consistent_ratio_matrix(weights: list[float]) -> np.ndarray:
 _D1_VARIABLE_LABELS = [
     "inflacion_deflactor_pib_pct",
     "pib_crecimiento_real_pct",
-    "reservas_internacionales_usd",
-    "tipo_cambio_oficial_lcu_usd",
     "wti_precio_usd",
     "tasa_fed_funds_pct",
 ]
-# Pesos core: 28%, 22%, 18%, 12%, 12%, 8%
-_D1_VARIABLE_MATRIX = _consistent_ratio_matrix([0.28, 0.22, 0.18, 0.12, 0.12, 0.08])
+# Pesos core renormalizados tras la purga 2026-08-11 (salieron reservas y tipo
+# de cambio, que sumaban 30%): 40%, 31.43%, 17.14%, 11.43%
+_D1_VARIABLE_MATRIX = _consistent_ratio_matrix([0.40, 0.3143, 0.1714, 0.1143])
 
 _D2_VARIABLE_LABELS = [
     "petroleo_crudo_produccion_tbpd",
-    "gas_natural_produccion_bcf",
-    "electricidad_generacion_bkwh",
     "luminosidad_nocturna_idx",
 ]
-# Pesos core: 45%, 25%, 15%, 15%
-_D2_VARIABLE_MATRIX = _consistent_ratio_matrix([0.45, 0.25, 0.15, 0.15])
+# Pesos core renormalizados tras la purga 2026-08-11 (salieron gas y
+# electricidad, que sumaban 40%): 75%, 25%
+_D2_VARIABLE_MATRIX = _consistent_ratio_matrix([0.75, 0.25])
 
 _D3_VARIABLE_LABELS = [
     "cpi_score",
@@ -124,12 +122,12 @@ _D3_VARIABLE_MATRIX = _consistent_ratio_matrix([0.24, 0.24, 0.18, 0.18, 0.16])
 
 _D4_VARIABLE_LABELS = [
     "exportaciones_pct_pib",
-    "desempleo_pct",
     "migrantes_vzla_millones",
     "lsci_conectividad_maritima",
 ]
-# Pesos core: 34%, 24%, 24%, 18%
-_D4_VARIABLE_MATRIX = _consistent_ratio_matrix([0.34, 0.24, 0.24, 0.18])
+# Pesos core renormalizados tras la purga 2026-08-11 (salio desempleo, 24%):
+# 44.74%, 31.58%, 23.68%
+_D4_VARIABLE_MATRIX = _consistent_ratio_matrix([0.4474, 0.3158, 0.2368])
 
 _D5_VARIABLE_LABELS = [
     "hdi",

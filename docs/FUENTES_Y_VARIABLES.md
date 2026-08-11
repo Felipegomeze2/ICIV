@@ -218,6 +218,43 @@ bases con la serie WDI antigua).
 Una fuente nueva debe competir con la variable core que reemplazaria. Agregar
 por cantidad baja claridad y puede bajar cobertura efectiva.
 
+## Purga de variables y resultado de cobertura (2026-08-11, segunda ronda)
+
+El core paso de **26 a 21 variables**. Detalle y criterio en
+[METODOLOGIA.md](./METODOLOGIA.md) seccion 2.8.
+
+Eliminadas: `reservas_internacionales_usd`, `tipo_cambio_oficial_lcu_usd`,
+`desempleo_pct`, `gas_natural_produccion_bcf`, `electricidad_generacion_bkwh`.
+Sus fetchers y CSV se conservan; solo dejan de contar en el score.
+
+Migrada: `luminosidad_nocturna_idx` de Li et al. (rezago ~2 anios) a NASA Black
+Marble (rezago 2 meses). Serie completa 2014-2026, sin empalmar con la anterior.
+
+### Cobertura anual
+
+| Anio | Antes | Ahora |
+|---:|---:|---:|
+| 2020 | 91,9 % | **100 %** |
+| 2022 | 88,9 % | **100 %** |
+| 2023 | 88,9 % | **100 %** |
+| 2024 | 86,1 % | **97,2 %** |
+| 2025 | 61,7 % | **83,8 %** |
+| 2026 | 33,7 % | **50,7 %** |
+
+Media 2000-2024: **92,6 %**. Diez anios al 100 %.
+
+**Coste declarado:** 2000-2013 bajan (2000: 88,9 % → 84,2 %) porque Black Marble
+empieza en 2014 y esos anios pierden la luminosidad. Se acepta: el indice debe
+poder describir el presente, y D2 conserva la produccion petrolera con historia
+completa.
+
+### Cobertura mensual (Pulse)
+
+- 198 de 200 meses con cobertura >= 70 % (99 %).
+- Cobertura media: **90,4 %**.
+- El ultimo mes con cobertura suficiente paso de **t-4 a t-2** al sustituir el
+  comercio espejo de IMF IMTS por las series de aduana de EEUU en FRED.
+
 ## Auditoria de cobertura (2026-08-11)
 
 Se midio variable por variable cuanto peso pierde cada anio y por que causa.

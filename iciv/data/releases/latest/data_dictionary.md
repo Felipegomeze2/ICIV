@@ -2,25 +2,25 @@
 
 | Variable | Rol | ICIV anual | Pulse mensual | Dimension | Fuente | Unidad | Direccion | Peso ICIV | Descripcion |
 |---|---|---:|---:|---|---|---|---|---:|---|
-| inflacion_deflactor_pib_pct | core_anual | True | False | D1_macro | IMF | % log10 | negative | 0.07 | Inflacion, deflactor del PIB |
-| pib_crecimiento_real_pct | core_anual | True | False | D1_macro | WDI | % | positive | 0.055 | Crecimiento real del PIB |
-| reservas_internacionales_usd | core_anual | True | False | D1_macro | WDI | USD | positive | 0.045 | Reservas internacionales |
-| tipo_cambio_oficial_lcu_usd | core_anual | True | False | D1_macro | WDI | log10 BsF/USD equivalente | negative | 0.03 | Tipo de cambio oficial homogeneizado |
-| wti_precio_usd | core_anual | True | True | D1_macro | FRED | USD/barril | positive | 0.03 | Precio WTI del petroleo |
-| tasa_fed_funds_pct | core_anual | True | True | D1_macro | FRED | % | negative | 0.02 | Tasa efectiva de fondos federales de EE. UU. |
-| petroleo_crudo_produccion_tbpd | core_anual | True | True | D2_energia | EIA | mil barriles/dia | positive | 0.09 | Produccion de petroleo crudo |
-| gas_natural_produccion_bcf | core_anual | True | False | D2_energia | EIA | BCF | positive | 0.05 | Produccion de gas natural |
-| electricidad_generacion_bkwh | core_anual | True | False | D2_energia | EIA | bkWh | positive | 0.03 | Generacion electrica |
-| luminosidad_nocturna_idx | core_anual | True | False | D2_energia | VIIRS | indice 0-100 | positive | 0.03 | Luminosidad nocturna satelital |
+| inflacion_deflactor_pib_pct | core_anual | True | False | D1_macro | IMF | % log10 | negative | 0.1 | Inflacion, deflactor del PIB |
+| pib_crecimiento_real_pct | core_anual | True | False | D1_macro | WDI | % | positive | 0.078575 | Crecimiento real del PIB |
+| reservas_internacionales_usd | auxiliar | False | False | D1_macro | WDI | USD | positive | 0.0 | Reservas internacionales |
+| tipo_cambio_oficial_lcu_usd | auxiliar | False | False | D1_macro | WDI | log10 BsF/USD equivalente | negative | 0.0 | Tipo de cambio oficial homogeneizado |
+| wti_precio_usd | core_anual | True | True | D1_macro | FRED | USD/barril | positive | 0.04285 | Precio WTI del petroleo |
+| tasa_fed_funds_pct | core_anual | True | True | D1_macro | FRED | % | negative | 0.028575 | Tasa efectiva de fondos federales de EE. UU. |
+| petroleo_crudo_produccion_tbpd | core_anual | True | True | D2_energia | EIA | mil barriles/dia | positive | 0.15 | Produccion de petroleo crudo |
+| gas_natural_produccion_bcf | auxiliar | False | False | D2_energia | EIA | BCF | positive | 0.0 | Produccion de gas natural |
+| electricidad_generacion_bkwh | auxiliar | False | False | D2_energia | EIA | bkWh | positive | 0.0 | Generacion electrica |
+| luminosidad_nocturna_idx | core_anual | True | False | D2_energia | VIIRS | indice 0-100 | positive | 0.05 | Luminosidad nocturna satelital |
 | cpi_score | core_anual | True | False | D3_institucional | CPI | 0-100 | positive | 0.048 | Indice de percepcion de corrupcion |
 | wgi_promedio_sc | core_anual | True | False | D3_institucional | WGI | percentil 0-100 | positive | 0.048 | Promedio WGI de gobernanza |
 | freedom_house_score | core_anual | True | False | D3_institucional | FREEDOM_HOUSE | 0-100 | positive | 0.036 | Freedom House aggregate score |
 | wjp_rule_of_law | core_anual | True | False | D3_institucional | WJP | 0-1 | positive | 0.036 | World Justice Project Rule of Law |
 | pts_terror_politico | core_anual | True | False | D3_institucional | PTS | 1-5 | negative | 0.032 | Political Terror Scale |
-| exportaciones_pct_pib | core_anual | True | False | D4_comercial | WDI | % PIB | positive | 0.051 | Exportaciones de bienes y servicios |
-| desempleo_pct | core_anual | True | False | D4_comercial | IMF | % | negative | 0.036 | Tasa de desempleo |
-| migrantes_vzla_millones | core_anual | True | False | D4_comercial | UNHCR | millones | negative | 0.036 | Migrantes y refugiados venezolanos |
-| lsci_conectividad_maritima | core_anual | True | False | D4_comercial | UNCTAD | 0-100 | positive | 0.027 | Liner Shipping Connectivity Index |
+| exportaciones_pct_pib | core_anual | True | False | D4_comercial | WDI | % PIB | positive | 0.06711 | Exportaciones de bienes y servicios |
+| desempleo_pct | auxiliar | False | False | D4_comercial | IMF | % | negative | 0.0 | Tasa de desempleo |
+| migrantes_vzla_millones | core_anual | True | False | D4_comercial | UNHCR | millones | negative | 0.04737 | Migrantes y refugiados venezolanos |
+| lsci_conectividad_maritima | core_anual | True | False | D4_comercial | UNCTAD | 0-100 | positive | 0.03552 | Liner Shipping Connectivity Index |
 | hdi | core_anual | True | False | D5_capital_humano | HDI | 0-1 | positive | 0.028 | Indice de Desarrollo Humano |
 | esperanza_vida_anos | core_anual | True | False | D5_capital_humano | WHO | anos | positive | 0.018 | Esperanza de vida al nacer |
 | mortalidad_infantil_x1000 | core_anual | True | False | D5_capital_humano | WHO | muertes por 1.000 nacidos vivos | negative | 0.018 | Mortalidad infantil |

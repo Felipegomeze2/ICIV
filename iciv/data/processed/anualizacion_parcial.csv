@@ -1,2 +1,3 @@
 ﻿año,variable,valor,meses_usados,origen,nota
 2026,petroleo_crudo_produccion_tbpd,992.5,4,"EIA International mensual, producto 57 (crude oil incl. lease condensate)",promedio de los meses publicados; año incompleto
+2026,luminosidad_nocturna_idx,0.9449,6,"NASA Black Marble VNP46A3, media nacional mensual",promedio de los meses publicados; año incompleto

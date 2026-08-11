@@ -233,7 +233,33 @@ Reglas de la anualización:
 - Cada anualización queda registrada en `data/processed/anualizacion_parcial.csv`
   con el número de meses usados, para que sea auditable.
 
-### 2.7 Regla fundamental
+### 2.8 Purga de variables sin fuente viva (2026-08-11)
+
+El core pasó de **26 a 21 variables**. Se eliminaron cinco que arrastraban peso
+muerto: o su fuente dejó de publicar, o publica con un rezago que impide
+describir el presente.
+
+| Variable | Dim | Peso que tenía | Motivo |
+|---|---|---:|---|
+| `reservas_internacionales_usd` | D1 | 4,5 % | El WB no publica desde 2017. Probados sin éxito `FI.RES.XGLD.CD` (2017), `FI.RES.TOTL.MO` (2016), `FI.RES.TOTL.DT.ZS` (sin serie). |
+| `tipo_cambio_oficial_lcu_usd` | D1 | 3,0 % | El WB **retiró** los valores 2020-2024 en agosto de 2026. Muere en 2017. |
+| `desempleo_pct` | D4 | 3,6 % | El IMF WEO dejó de publicarlo en 2018. Sustitución por OIT descartada (§9.6). |
+| `gas_natural_produccion_bcf` | D2 | 5,0 % | Solo existe anual en EIA, con ~2 años de rezago. Verificado: **no hay serie mensual** para Venezuela. |
+| `electricidad_generacion_bkwh` | D2 | 3,0 % | Igual que el gas: solo anual, sin equivalente mensual. |
+
+Los pesos internos de D1, D2 y D4 se renormalizaron conservando la proporción
+entre las variables que quedan. Las matrices AHP se actualizaron en paralelo;
+la consistencia se mantiene (CR = 0,008 en la matriz de dimensiones).
+
+**Los datos no se borran.** Los fetchers siguen descargando estas series y los
+CSV permanecen en `data/raw/` como contexto y para auditoría. Lo que cambia es
+que dejan de contar en el score y en la cobertura.
+
+**Criterio para futuras purgas:** una variable sale del core cuando su fuente
+no publica desde hace más de tres años y no existe sustituto verificado, o
+cuando su rezago estructural le impide cubrir el año anterior al corriente.
+
+### 2.9 Regla fundamental
 
 **Cero datos inventados, cero fallbacks estáticos.** Si una fuente no responde o
 no ha publicado, la cobertura lo refleja. No se crean series sustitutas y no se
@@ -254,6 +280,41 @@ La tabla completa de variables, fuentes y pesos está en
 [FUENTES_Y_VARIABLES.md](./FUENTES_Y_VARIABLES.md#variables-pulse).
 Estructura por bloques tras la ampliación de julio de 2026: macro externo 35 %,
 energía 25 %, comercio espejo 10 %, percepción 30 %.
+
+### 3.3 Comercio espejo: de IMF IMTS a aduana de EEUU vía FRED (2026-08-11)
+
+El bloque de comercio espejo (10 % del Pulse) usaba IMF IMTS, que llega con
+**cuatro meses** de rezago. Se sustituyó por dos series de FRED:
+
+| Serie | Qué mide | Historia | Rezago |
+|---|---|---:|---:|
+| `IR14270` → `importaciones_eeuu_crudo_ven_tbpd` | Importaciones de crudo venezolano por EEUU (miles b/d) | 198 meses | **2 meses** |
+| `IR14260` → `importaciones_eeuu_productos_ven_tbpd` | Importaciones de productos petroleros | 198 meses | **2 meses** |
+
+Mismo concepto económico —comercio real observado por el socio, sin tocar
+fuentes venezolanas— pero con la mitad del rezago, volumen físico en lugar de
+valor declarado, y más historia. `imts_monthly.csv` se conserva como capa de
+contexto y validación cruzada.
+
+**Efecto en la oportunidad del Pulse:** el último mes con cobertura ≥70 % pasó
+de **t−4 a t−2**. La cobertura media de la serie completa es del 90,4 % y 198 de
+200 meses superan el umbral del 70 %.
+
+Estructura de rezago resultante:
+
+| Rezago | Peso | Fuentes |
+|---|---:|---|
+| 0 meses | 61 % | FRED global (7), Guardian (2), GDELT (2) |
+| 1 mes | 4 % | WB Pink Sheet |
+| 2 meses | 10 % | Comercio espejo EEUU (FRED) |
+| 4 meses | 25 % | Producción petrolera EIA |
+
+El mes en curso no puede superar el 61 % porque ese es el peso de las fuentes
+sin rezago. No es un defecto corregible añadiendo fuentes: es la consecuencia de
+que la producción petrolera —la variable más importante para Venezuela— se
+publica con cuatro meses de retraso. Bajarle el peso para maquillar la cobertura
+sería falsear la metodología. Por eso el producto muestra como referencia el
+último mes con cobertura suficiente, y el mes corriente como avance.
 
 ### 3.1 Algoritmo de construcción
 

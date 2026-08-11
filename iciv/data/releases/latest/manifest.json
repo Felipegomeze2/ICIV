@@ -1,37 +1,37 @@
 {
   "release_id": "latest",
-  "generated_at_utc": "2026-08-11T19:53:38.468602+00:00",
+  "generated_at_utc": "2026-08-11T20:28:35.251405+00:00",
   "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
   "n_catalog_variables": 33,
-  "n_core_variables": 26,
+  "n_core_variables": 21,
   "n_pulse_variables": 15,
   "n_outcome_variables": 1,
   "files": {
     "coverage_annual.csv": {
-      "bytes": 2808,
-      "sha256": "c864b2b10d27874c8cf8470872e74d2fd0d585789241aaa03d2118427be728ff",
+      "bytes": 2858,
+      "sha256": "ee50f829abc2793fb68e8bcef4f87bd559b6737a11c7f68afc2aac9481c3fa3f",
       "rows": 33
     },
     "data_dictionary.csv": {
-      "bytes": 6587,
-      "sha256": "aedb2f388e4b4b2dbb62ecebf588a8d948cad56673f786439cd08395b65875da",
+      "bytes": 6590,
+      "sha256": "7945491574daf46ce03391759241650b194311abffebd22f43296dd1fe7e5359",
       "rows": 33
     },
     "data_dictionary.md": {
-      "bytes": 4667,
-      "sha256": "724fb11c9e040d4dfca1fb5d2c0926b88656dcaa8f94a7a998cd8f8b99cce3be",
+      "bytes": 4670,
+      "sha256": "f6c348814663c4e09e1209ba34dabc4cff29d780b77c6d12d7fd59d083e1664b",
       "rows": null
     },
     "iciv_dataset_largo.csv": {
-      "bytes": 122612,
-      "sha256": "444c79ec7cd504d055978776bd2e4a854670a83cd6b9a1718b406989777647ba",
+      "bytes": 122299,
+      "sha256": "d0ad5af3d511f4c834897f775c95c4eadacd5668bd55b1c2e27cf001c9bcb419",
       "rows": 837
     },
     "iciv_dataset_wide.csv": {
-      "bytes": 8902,
-      "sha256": "ef6abc54304423a6641f4b6dc683a9aa8275be2bd801cc96492e65ca227a62f9",
+      "bytes": 8931,
+      "sha256": "abc5e5ce80197d2de4e0c08437c0ac457613bfd2fcbf763b38393ddf7ccf5002",
       "rows": 27
     },
     "pulse_forecast_backtest.csv": {
@@ -46,12 +46,12 @@
     },
     "README.md": {
       "bytes": 1619,
-      "sha256": "eed5bacf73b6130a23145ae2f74aeef5e32cab299638f752ae699205e44b6225",
+      "sha256": "d33f1316f14b8e36938591049f93227f639cf4c720c927ddedf053bab72564e7",
       "rows": null
     },
     "source_provenance.csv": {
-      "bytes": 3673,
-      "sha256": "5344c84a464f5259a61da7adf0737479a39dc904db05be5e841504d1f8740907",
+      "bytes": 3700,
+      "sha256": "c2f834ebc4281eb6480027fa0cb2dffa58a12d35bdf8405ea695ffe85f325c89",
       "rows": 17
     }
   }

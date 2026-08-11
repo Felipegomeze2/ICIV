@@ -67,6 +67,17 @@ _SERIES = {
     # ICE BofA Emerging Markets Corporate Plus OAS (%) — condición financiera
     # externa para mercados emergentes; diaria → mensual. Dirección negativa.
     "BAMLEMCBPIOAS": "em_bond_spread_pct",
+    # ── Comercio espejo EEUU-Venezuela (añadidas 2026-08-11) ─────────────────
+    # Importaciones estadounidenses de crudo y de productos petroleros
+    # venezolanos, en miles de barriles diarios. Dato de aduana de EEUU
+    # redistribuido por FRED: origen NO venezolano, volumen físico (no valor
+    # declarado) y 395 meses de historia.
+    #
+    # Sustituyen al bloque IMF IMTS en el Pulse: mismo concepto económico —
+    # comercio real observado por el socio— pero con 2 meses de rezago en vez
+    # de 4, que es lo que hundía la cobertura del mes en curso.
+    "IR14270": "importaciones_eeuu_crudo_ven_tbpd",
+    "IR14260": "importaciones_eeuu_productos_ven_tbpd",
 }
 
 _FUENTE_BASE = (

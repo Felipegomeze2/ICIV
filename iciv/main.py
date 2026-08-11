@@ -242,6 +242,52 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
         except Exception as _exc:
             logger.warning("  No se pudo anualizar %s: %s", _VAR_ANUAL, _exc)
 
+    # ── Luminosidad nocturna: Li et al. → NASA Black Marble ───────────────────
+    # La serie de Li et al. (viirs.csv) cubre 2000-2024 pero es un dataset
+    # académico de actualización irregular: llega con ~2 años de rezago, así que
+    # no puede describir el año en curso ni el anterior.
+    #
+    # Black Marble (VNP46A3) ya se descarga mensualmente con ~2 meses de rezago y
+    # cubre 2014-2026 con máscara poligonal exacta y unidades físicas reales.
+    # Se sustituye la variable COMPLETA por el promedio anual de Black Marble.
+    # NO se empalman las dos series: son productos distintos con escalas distintas
+    # (Li et al. ~11,6 en índice adimensional; Black Marble ~0,9 nW/cm²/sr).
+    # Mezclarlas sería repetir el error del LSCI.
+    #
+    # Coste asumido y declarado: 2000-2013 pierden esta variable. Se acepta porque
+    # el índice debe poder describir el presente, y D2 conserva la producción
+    # petrolera de EIA con historia completa para esos años.
+    # viirs.csv y fetch_viirs.py se conservan: siguen siendo el validador externo
+    # no circular de la validación leave-one-out.
+    _VAR_LUM = "luminosidad_nocturna_idx"
+    _ruta_bm = settings.paths.data_raw / "blackmarble_monthly.csv"
+    if _ruta_bm.exists():
+        try:
+            _bm = pd.read_csv(_ruta_bm)
+            _bm = _bm[_bm["variable"] == "luminosidad_nocturna_mensual_nwcm2sr"]
+            if not _bm.empty:
+                _bm_anual = _bm.groupby("año")["valor"].agg(["mean", "count"])
+                _bm_anual = _bm_anual[_bm_anual["count"] >= _MIN_MESES_ANUALIZAR]
+                master[_VAR_LUM] = master["año"].map(_bm_anual["mean"])
+                _n_ok = int(master[_VAR_LUM].notna().sum())
+                logger.info(
+                    "  %s <- NASA Black Marble: %d años (%d-%d), sustituye a Li et al.",
+                    _VAR_LUM, _n_ok,
+                    int(_bm_anual.index.min()), int(_bm_anual.index.max()),
+                )
+                for _a, _f in _bm_anual.iterrows():
+                    if _f["count"] < 12:
+                        _anualizados.append({
+                            "año": int(_a),
+                            "variable": _VAR_LUM,
+                            "valor": round(float(_f["mean"]), 4),
+                            "meses_usados": int(_f["count"]),
+                            "origen": "NASA Black Marble VNP46A3, media nacional mensual",
+                            "nota": "promedio de los meses publicados; año incompleto",
+                        })
+        except Exception as _exc:
+            logger.warning("  No se pudo construir %s desde Black Marble: %s", _VAR_LUM, _exc)
+
     if _anualizados:
         _ruta_anual_parcial = settings.paths.data_processed / "anualizacion_parcial.csv"
         pd.DataFrame(_anualizados).to_csv(_ruta_anual_parcial, index=False, encoding="utf-8-sig")
