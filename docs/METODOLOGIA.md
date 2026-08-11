@@ -546,36 +546,52 @@ verdad del Pulse. El manifest declara 15.
 El comentario y el docstring decían "2 modelos" cuando `candidates` tiene tres
 órdenes SARIMA. Corregidos.
 
-### 9.4 Variables sin fuente viva — DECISIÓN PENDIENTE
+### 9.4 Variables sin fuente viva — RESUELTA con la purga
 
-Dos variables del core no tienen ya fuente publicada y arrastran peso muerto:
+`reservas_internacionales_usd` (4,5 %) y `tipo_cambio_oficial_lcu_usd` (3,0 %)
+quedaron sin fuente publicada. Junto con `desempleo_pct`, `gas_natural_produccion_bcf`
+y `electricidad_generacion_bkwh` se retiraron del core el 2026-08-11: el modelo
+pasó de 26 a 21 variables. Detalle y criterio en §2.8.
 
-| Variable | Peso | Último dato | Estado de la fuente |
-|---|---:|---:|---|
-| `reservas_internacionales_usd` | 4,5 % | 2017 | El WB no publica más allá de 2017. Se probaron `FI.RES.XGLD.CD` (2017), `FI.RES.TOTL.MO` (2016) y `FI.RES.TOTL.DT.ZS` (sin serie). Sin sustituto. |
-| `tipo_cambio_oficial_lcu_usd` | 3,0 % | 2017 | El WB **retiró** los valores 2020–2024 entre julio y agosto de 2026. El refetch del 2026-08-11 los perdió. |
+**Advertencia que sigue vigente para la defensa.** El tipo de cambio puntuaba
+0,00 en 2024 (la peor lectura posible). Al salir del modelo, el agregador
+renormaliza sobre las restantes y el score de esos años **sube sin que nada haya
+mejorado en Venezuela**. Es un artefacto de composición, no una recuperación, y
+hay que explicarlo así si alguien compara los scores publicados antes y después
+del 11 de agosto de 2026.
 
-Juntas son **7,5 % del modelo** que nunca se llena. Son la razón de que ni
-siquiera un año completo pase de ~90 % de cobertura.
+### 9.5 Control de vigencia automatizado (2026-08-11) — CERRADA
 
-**Consecuencia visible de la retirada del tipo de cambio:** esa variable
-puntuaba 0,00 en 2024 (la peor lectura posible). Al desaparecer, el agregador
-renormaliza sobre las restantes y el score **sube sin que nada haya mejorado**:
-2024 pasó de 28,31 a 36,59 y 2023 de 30,67 a 35,31. Es un artefacto de
-disponibilidad, no una recuperación. Debe explicarse así.
+Los fetchers del workflow van envueltos en `|| echo WARN` para que la caída de
+una API no tumbe la corrida entera. El efecto secundario era grave: el paso
+reportaba `success` aunque una fuente hubiera fallado, y nadie lee los logs. Así
+se publicó el índice ocho días sin D6 sin que nada avisara (§9.1).
 
-Las tres salidas posibles, ninguna aplicada todavía porque cambian el modelo:
+`scripts/check_data_freshness.py` cierra ese hueco. No comprueba el código de
+salida del fetcher sino **el resultado**: mira el último dato de cada CSV y lo
+compara con el rezago máximo tolerable de esa fuente. Detecta por igual "el fetch
+falló" y "el fetch corrió pero trajo datos viejos", que el código de salida no
+distingue.
 
-1. **Retirar ambas** y redistribuir su peso entre las 24 variables restantes.
-   Sube la cobertura de todos los años (2024 llegaría a ~93 %) pero reduce el
-   core de 26 a 24 variables. Hay que declararlo, no presentarlo como "subí la
-   cobertura".
-2. **Restaurar el tipo de cambio** desde el histórico de git (los valores son
-   reales y están en `wdi.csv` antes del commit `918cf09`), documentando el
-   vintage. Conserva la serie, pero el dato ya no es verificable en la fuente.
-3. **Dejarlo como está**: NaN honesto y cobertura baja.
+Las tolerancias reflejan el calendario real de cada publicador, verificado en
+agosto de 2026 — no son deseos. Ejemplos: FRED 3 meses, EIA 6 meses (publica el
+mes *t* alrededor de *t+4*), WGI 2 años (edición de septiembre), HDI 3 años (el
+HDR se refiere a *t−2* por construcción).
 
-### 9.5 GDELT: tramos que no completan (abierta, sin impacto)
+En GitHub Actions el script escribe una tabla en el resumen del run —visible sin
+abrir logs— y emite anotaciones `::error::` / `::warning::`. Un job final
+`alerta-fuentes` marca la corrida en rojo si alguna fuente **crítica** está fuera
+de tolerancia. Ese job corre **después** del deploy a propósito: el dashboard se
+publica igual, con la cobertura que corresponda; lo único que cambia es que el
+fallo deja de ser invisible.
+
+```bash
+cd iciv
+python scripts/check_data_freshness.py           # 23 fuentes
+python scripts/check_data_freshness.py --strict  # falla también con avisos
+```
+
+### 9.6 GDELT: tramos que no completan (abierta, sin impacto)
 
 `gdelt_monthly.status.json` reporta `ok: false` de forma recurrente. En la
 corrida del 11-ago-2026 fallaron los seis intentos (2026, 2016 y 2015) y no
@@ -584,7 +600,7 @@ este fetcher sí protege los datos previos, así que la serie mantiene sus 232
 filas hasta 2026-08. Los años 2015 y 2016 llevan varias corridas sin cerrar.
 El diseño acumulativo los reintenta cada semana; no requiere acción.
 
-### 9.6 Desempleo: sustitución descartada tras verificarla
+### 9.7 Desempleo: sustitución descartada tras verificarla
 
 El WB publica `SL.UEM.TOTL.ZS` (estimación modelada de la OIT) con datos hasta
 **2025**, mientras la serie actual (IMF WEO `LUR`) muere en **2018**. Parecía la
@@ -606,7 +622,7 @@ Es exactamente el error que ya se cometió una vez al mezclar bases del LSCI.
 
 `desempleo_pct` se queda con la fuente del IMF y su hueco desde 2019.
 
-### 9.7 ACLED con 12 meses de rezago (abierta, limitación del proveedor)
+### 9.8 ACLED con 12 meses de rezago (abierta, limitación del proveedor)
 
 El tier gratuito entrega los datos con un año de retraso: la serie termina en
 2025-08. Es limitación de la cuenta, no del código. Para uso en tiempo real

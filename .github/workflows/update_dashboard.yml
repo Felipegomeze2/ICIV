@@ -34,6 +34,10 @@ jobs:
   update:
     name: Regenerar dashboard
     runs-on: ubuntu-latest
+    outputs:
+      # Se expone para que el job de alerta pueda marcar la corrida en rojo
+      # DESPUÉS de haber publicado el dashboard.
+      vigencia: ${{ steps.vigencia.outcome }}
 
     steps:
       - name: Checkout repositorio
@@ -118,6 +122,23 @@ jobs:
           python scripts/fetch_freedom_house.py  || echo "WARN: fetch_freedom_house falló (continuando)"
           echo "Fetch anual completado."
 
+      # ── Control de vigencia de TODAS las fuentes ────────────────────────────
+      # Los fetchers van envueltos en `|| echo WARN`, así que el paso anterior
+      # reporta success aunque alguno falle. Este control mira el RESULTADO —el
+      # último dato de cada CSV— y no el código de salida del fetcher, así que
+      # detecta tanto "el fetch falló" como "el fetch corrió pero trajo datos
+      # viejos". Escribe un resumen en la portada del run y emite anotaciones.
+      #
+      # continue-on-error: el dashboard debe generarse igual. Si una fuente
+      # crítica está caída, la corrida se marca en rojo al final (último paso),
+      # pero el producto se publica con la cobertura que corresponda.
+      - name: Control de vigencia de fuentes
+        id: vigencia
+        continue-on-error: true
+        working-directory: iciv
+        run: |
+          python scripts/check_data_freshness.py
+
       - name: Verificar vigencia de fuentes Pulse
         working-directory: iciv
         run: |
@@ -193,3 +214,27 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # ── Alerta de fuentes caídas ─────────────────────────────────────────────
+  # Job separado y al final a propósito. El dashboard ya se generó, se commiteó
+  # y se publicó; este job no bloquea nada. Lo único que hace es que la corrida
+  # NO aparezca en verde cuando el índice se publicó con una fuente crítica
+  # desactualizada. Sin esto, un fallo de fetch queda enterrado en los logs y
+  # nadie lo ve: fue exactamente lo que pasó del 3 al 11 de agosto de 2026,
+  # cuando el índice se publicó ocho días sin la dimensión D6.
+  alerta-fuentes:
+    name: Alerta de fuentes desactualizadas
+    needs: [update, deploy-pages]
+    if: always() && needs.update.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Señalar fuentes críticas desactualizadas
+        if: needs.update.outputs.vigencia == 'failure'
+        run: |
+          echo "::error title=Fuentes criticas desactualizadas::El dashboard se publico, pero al menos una fuente critica esta fuera de su tolerancia. Revisa la tabla 'Vigencia de fuentes ICIV' en el resumen de esta corrida."
+          exit 1
+
+      - name: Todo en orden
+        if: needs.update.outputs.vigencia != 'failure'
+        run: echo "Todas las fuentes criticas dentro de su tolerancia."
