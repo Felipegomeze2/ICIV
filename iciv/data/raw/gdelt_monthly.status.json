@@ -1,8 +1,8 @@
 {
   "ok": false,
-  "message": "ningun tramo nuevo; se conserva CSV previo (232 filas). Fallos: ['2026/timelinetone', '2026/timelinevolraw', '2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
+  "message": "tramos nuevos [2026]; total 116 meses; fallaron ['2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
   "rows": 232,
-  "updated_at_utc": "2026-08-11T16:32:45.618739+00:00",
+  "updated_at_utc": "2026-08-11T20:51:11.609034+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; yearly chunks accumulate across runs.",
   "years_complete": [
@@ -14,14 +14,14 @@
     2022,
     2023,
     2024,
-    2025
+    2025,
+    2026
   ],
   "failed": [
-    "2026/timelinetone",
-    "2026/timelinevolraw",
     "2016/timelinetone",
     "2016/timelinevolraw",
     "2015/timelinetone",
     "2015/timelinevolraw"
-  ]
+  ],
+  "months": 116
 }
