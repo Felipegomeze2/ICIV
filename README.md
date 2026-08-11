@@ -20,6 +20,13 @@ El entregable visual es [iciv_dashboard.html](./iciv_dashboard.html). La pagina
 publica se actualiza con GitHub Actions los lunes cuando las fuentes mensuales
 core pasan el control de vigencia.
 
+El dashboard es el **producto para el usuario final**: seis pestanas planas
+(Hoy, Historia, Mapa, Noticias, Sectores, Laboratorio), frases cortas y sin
+aparato metodologico. Los pesos AHP, el backtesting, la validacion externa y la
+bibliografia no se muestran ahi: viven en `docs/` y en
+`iciv/data/processed/iciv_validacion.html`, que genera
+`scripts/validate_model.py` de forma independiente al dashboard.
+
 ## Criterio de datos
 
 - Entran observaciones trazables a fuentes internacionales aprobadas.
