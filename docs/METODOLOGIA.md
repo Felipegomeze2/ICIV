@@ -74,13 +74,11 @@ Seis dimensiones, 26 variables core, ponderación por AHP (Saaty, 1980).
 | D6 | Percepción Internacional | 0,10 |
 | | **Total** | **1,00** |
 
-> **Estado de D6 al 11-ago-2026 — incidencia abierta.** La corrida automática del
-> 3 de agosto de 2026 sobrescribió `data/raw/guardian.csv` con NaN en los 27 años
-> (el fetch anual falló contra la API y aun así reescribió el archivo). Desde esa
-> fecha **D6 no aporta nada al índice**: el agregador renormaliza sobre las cinco
-> dimensiones restantes. Los pesos de esta tabla describen el diseño; mientras la
-> incidencia siga abierta, el ICIV publicado se calcula de facto con D1–D5.
-> Detalle y solución en la sección 10.
+> **Incidencia D6 (3–11 ago 2026) — RESUELTA.** Entre esas fechas el índice se
+> publicó sin D6: una corrida automática sobrescribió `data/raw/guardian.csv` con
+> NaN en los 27 años. Se restauró el 11-ago-2026 al renovar la clave de la API.
+> Los pesos de esta tabla vuelven a describir el cálculo real. Detalle en la
+> sección 9.1.
 
 ### 2.2 Pesos dentro de cada dimensión
 
@@ -379,9 +377,9 @@ luminosidad anual del score.
 
 ---
 
-## 9. Incidencias abiertas
+## 9. Incidencias
 
-### 9.1 D6 vacía desde el 3 de agosto de 2026 (crítica)
+### 9.1 D6 vacía del 3 al 11 de agosto de 2026 — RESUELTA
 
 **Qué pasó.** `iciv/scripts/fetch_guardian.py` recorre año por año; si una
 petición falla, registra `None` y **continúa**. Al terminar escribe el CSV
@@ -401,30 +399,47 @@ al simulador del Laboratorio, que queda con cinco palancas.
 Pulse conserva sus dos variables Guardian. La incidencia es solo de la serie
 anual.
 
-**Solución.** Con la clave renovada (11-ago-2026), volver a poblar la serie:
+**Resolución (11-ago-2026).** Se renovó la clave de la API y la corrida
+automática repobló la serie: 27/27 valores en ambas columnas. D6 volvió al
+índice y, como efecto colateral, desapareció una discrepancia que se creía
+independiente — el simulador del Laboratorio marcaba 21,4 frente a un índice
+2025 de 22,6; con D6 restaurada ambos coinciden en 22,7.
 
-```bash
-cd iciv
-python scripts/fetch_guardian.py
-python main.py --no-fetch --no-open
-```
+**Corrección de fondo aplicada.** Se añadió `iciv/src/iciv/utils/safe_save.py`
+con `save_dataframe()`: si la descarga no trae ningún valor, lanza `NoDataError`
+y **no toca el archivo existente**. La auditoría encontró que seis fetchers
+anuales compartían el patrón destructivo — `fetch_eia`, `fetch_fred`,
+`fetch_guardian`, `fetch_imf`, `fetch_wdi` y `fetch_wgi`, es decir las fuentes
+que alimentan D1, D2 y D3. Los seis usan ahora la guarda. En el workflow cada
+fetcher está envuelto en `|| echo WARN`, así que un fallo queda visible en el
+log en vez de vaciar el índice en silencio.
 
-**Corrección de fondo pendiente:** el fetcher no debe sobrescribir el CSV cuando
-no obtuvo ningún dato. La política del proyecto es no fabricar datos, pero
-destruir los existentes es peor que no escribir nada. Falta añadir esa guarda —
-y revisar si otros fetchers anuales comparten el patrón.
+### 9.2 `manifest.json` declaraba 11 variables Pulse — RESUELTA
 
-### 9.2 `manifest.json` declara 11 variables Pulse en vez de 15
+`n_pulse_variables` se contaba sobre `entra_pulse_mensual` del catálogo anual,
+que no incluye las cuatro variables solo-mensuales de julio de 2026 (IMF IMTS ×2,
+WB Pink Sheet, spread EM). Ahora se cuenta sobre `PULSE_WEIGHTS`, la fuente de
+verdad del Pulse. El manifest declara 15.
 
-`n_pulse_variables` sale de contar `entra_pulse_mensual` en el catálogo anual
-(`iciv/src/iciv/data/dataset_package.py`), que no incluye las cuatro variables
-incorporadas en julio de 2026 (IMF IMTS ×2, WB Pink Sheet, spread EM). Es un
-error de metadato en el paquete público; no afecta a ningún cálculo.
+### 9.3 Comentario desactualizado en `pulse_forecast.py` — RESUELTA
 
-### 9.3 Comentario desactualizado en `pulse_forecast.py`
+El comentario y el docstring decían "2 modelos" cuando `candidates` tiene tres
+órdenes SARIMA. Corregidos.
 
-El comentario dice "Probar 2 modelos" pero la lista `candidates` tiene tres
-órdenes SARIMA. Los tres reales están documentados en la sección 4.1. Cosmético.
+### 9.4 GDELT: tramos que no completan (abierta, sin impacto)
+
+`gdelt_monthly.status.json` reporta `ok: false` de forma recurrente. En la
+corrida del 11-ago-2026 fallaron los seis intentos (2026, 2016 y 2015) y no
+entró ningún tramo nuevo. **El CSV se conserva** — a diferencia de Guardian,
+este fetcher sí protege los datos previos, así que la serie mantiene sus 232
+filas hasta 2026-08. Los años 2015 y 2016 llevan varias corridas sin cerrar.
+El diseño acumulativo los reintenta cada semana; no requiere acción.
+
+### 9.5 ACLED con 12 meses de rezago (abierta, limitación del proveedor)
+
+El tier gratuito entrega los datos con un año de retraso: la serie termina en
+2025-08. Es limitación de la cuenta, no del código. Para uso en tiempo real
+haría falta acceso académico de ACLED.
 
 ---
 

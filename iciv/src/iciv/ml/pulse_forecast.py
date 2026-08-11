@@ -11,7 +11,8 @@ Implementa dos modelos académicamente fundamentados:
 
 Diseño:
   - SARIMA(p,d,q)(P,D,Q,s) con s=12 (estacionalidad anual)
-  - Auto-arima light: probar (1,1,1)(1,1,1,12) y (1,1,2)(1,1,1,12), elegir AIC menor
+  - Auto-arima light: probar (1,1,1)(1,1,1,12), (1,1,2)(1,1,1,12) y
+    (2,1,1)(1,1,1,12); elegir el de AIC menor
   - OLS para nowcast: features = Pulse last 12-month average, volatility, trend
   - Validación: walk-forward cross-validation con 12 meses out-of-sample
 
@@ -75,7 +76,7 @@ class PulseForecaster:
             logger.warning("  SARIMA: serie demasiado corta (%d obs)", len(ts.dropna()))
             return self
 
-        # Probar 2 modelos y elegir mejor AIC
+        # Probar 3 modelos y elegir el de menor AIC
         candidates = [
             ((1, 1, 1), (1, 1, 1, 12)),
             ((1, 1, 2), (1, 1, 1, 12)),

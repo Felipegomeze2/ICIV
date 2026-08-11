@@ -356,7 +356,11 @@ def build_dataset_package(
         "annual_year_max": int(df_raw[df_raw.columns[0]].max()),
         "n_catalog_variables": int(len(CATALOG)),
         "n_core_variables": int((dictionary["rol"] == "core_anual").sum()),
-        "n_pulse_variables": int(dictionary["entra_pulse_mensual"].sum()),
+        # Se cuenta sobre PULSE_WEIGHTS, la fuente de verdad del Pulse. Antes se
+        # contaba `entra_pulse_mensual` del catalogo ANUAL, que no incluye las
+        # cuatro variables solo-mensuales anadidas en 2026-07 (IMF IMTS x2,
+        # WB Pink Sheet y spread EM): el manifest declaraba 11 en vez de 15.
+        "n_pulse_variables": int(len(PULSE_WEIGHTS)),
         "n_outcome_variables": int((dictionary["rol"] == "outcome_externo").sum()),
         "files": {},
     }

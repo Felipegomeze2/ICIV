@@ -30,6 +30,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from iciv.config import settings
+from iciv.utils import save_dataframe
 from iciv.utils import load_env_key
 
 _CFG_PATH = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
@@ -141,7 +142,9 @@ if __name__ == "__main__":
     settings.paths.ensure_exists()
 
     df = fetch_guardian()
-    df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+    # Guarda: si la descarga no trajo ningun valor, NO se sobrescribe el CSV
+    # existente (incidencia 2026-08-03, ver docs/METODOLOGIA.md seccion 9.1).
+    save_dataframe(df, OUTPUT)
 
     n_art  = df[COL_ARTICLES].notna().sum()
     n_tone = df[COL_TONE].notna().sum()
