@@ -62,7 +62,8 @@ diagnóstico usan el último año con dato real de cada dimensión.
 
 ### 2.1 Dimensiones y pesos
 
-Seis dimensiones, 26 variables core, ponderación por AHP (Saaty, 1980).
+Seis dimensiones, **21 variables core**, ponderación por AHP (Saaty, 1980).
+El core paso de 26 a 21 en la purga del 2026-08-11 (§2.8).
 
 | Dimensión | Nombre | Peso ICIV |
 |---|---|---:|
@@ -86,53 +87,54 @@ Definidos en `iciv/src/iciv/index/dimensions.py`.
 
 **D1 — Estabilidad Macroeconómica (0,25)**
 
-| Variable | Peso intra-dimensión |
-|---|---:|
-| `inflacion_deflactor_pib_pct` | 0,28 |
-| `pib_crecimiento_real_pct` | 0,22 |
-| `reservas_internacionales_usd` | 0,18 |
-| `tipo_cambio_oficial_lcu_usd` | 0,12 |
-| `wti_precio_usd` | 0,12 |
-| `tasa_fed_funds_pct` | 0,08 |
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `inflacion_deflactor_pib_pct` | 0,4000 | 10,00 % |
+| `pib_crecimiento_real_pct` | 0,3143 | 7,86 % |
+| `wti_precio_usd` | 0,1714 | 4,29 % |
+| `tasa_fed_funds_pct` | 0,1143 | 2,86 % |
 
 **D2 — Sector Energético y Petróleo (0,20)**
 
-| Variable | Peso intra-dimensión |
-|---|---:|
-| `petroleo_crudo_produccion_tbpd` | 0,45 |
-| `gas_natural_produccion_bcf` | 0,25 |
-| `electricidad_generacion_bkwh` | 0,15 |
-| `luminosidad_nocturna_idx` | 0,15 |
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `petroleo_crudo_produccion_tbpd` | 0,7500 | 15,00 % |
+| `luminosidad_nocturna_idx` | 0,2500 | 5,00 % |
 
 **D3 — Entorno Institucional y Legal (0,20)**
 
-| Variable | Peso intra-dimensión |
-|---|---:|
-| `cpi_score` | 0,24 |
-| `wgi_promedio_sc` | 0,24 |
-| `freedom_house_score` | 0,18 |
-| `wjp_rule_of_law` | 0,18 |
-| `pts_terror_politico` | 0,16 |
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `cpi_score` | 0,2400 | 4,80 % |
+| `wgi_promedio_sc` | 0,2400 | 4,80 % |
+| `freedom_house_score` | 0,1800 | 3,60 % |
+| `wjp_rule_of_law` | 0,1800 | 3,60 % |
+| `pts_terror_politico` | 0,1600 | 3,20 % |
 
 **D4 — Apertura Comercial y Financiera (0,15)**
 
-| Variable | Peso intra-dimensión |
-|---|---:|
-| `exportaciones_pct_pib` | 0,34 |
-| `desempleo_pct` | 0,24 |
-| `migrantes_vzla_millones` | 0,24 |
-| `lsci_conectividad_maritima` | 0,18 |
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `exportaciones_pct_pib` | 0,4474 | 6,71 % |
+| `migrantes_vzla_millones` | 0,3158 | 4,74 % |
+| `lsci_conectividad_maritima` | 0,2368 | 3,55 % |
 
 **D5 — Capital Humano e Infraestructura Social (0,10)**
 
-| Variable | Peso intra-dimensión |
-|---|---:|
-| `hdi` | 0,28 |
-| `esperanza_vida_anos` | 0,18 |
-| `mortalidad_infantil_x1000` | 0,18 |
-| `acceso_electricidad_pct` | 0,18 |
-| `ilo_empleo_informal_pct` | 0,18 |
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `hdi` | 0,2800 | 2,80 % |
+| `esperanza_vida_anos` | 0,1800 | 1,80 % |
+| `mortalidad_infantil_x1000` | 0,1800 | 1,80 % |
+| `acceso_electricidad_pct` | 0,1800 | 1,80 % |
+| `ilo_empleo_informal_pct` | 0,1800 | 1,80 % |
 
+**D6 — Percepción Internacional (0,10)**
+
+| Variable | Peso intra-dimensión | Peso final en el índice |
+|---|---:|---:|
+| `guardian_tono_titulares` | 0,6500 | 6,50 % |
+| `guardian_articulos_venezuela` | 0,3500 | 3,50 % |
 > **Cambio de fuente en D5 (2026-08-11).** `esperanza_vida_anos` y
 > `mortalidad_infantil_x1000` pasaron de WHO GHO al World Bank
 > (`SP.DYN.LE00.IN`, `SP.DYN.IMRT.IN`), que publica hasta 2024 mientras la OMS

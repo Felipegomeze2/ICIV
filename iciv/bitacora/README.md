@@ -13,7 +13,7 @@ optimista/pesimista/neutro o fuentes descartadas fueron eliminadas.
   El mapa por estado es unico (NASA Black Marble, SVG nativo); el mapa Leaflet
   de Li et al. por bbox se retiro el 2026-07-29 (ver docs/MODEL_CARD.md) junto
   con sus dependencias CDN.
-- `src/iciv/index/dimensions.py`: fuente de verdad del core anual, 26 variables.
+- `src/iciv/index/dimensions.py`: fuente de verdad del core anual, 21 variables.
 - `src/iciv/index/pulse_aggregator.py`: fuente de verdad del Pulse mensual,
   15 variables (ampliado 2026-07 con IMF IMTS, WB Pink Sheet e ICE BofA/FRED).
 - `src/iciv/ml/pulse_forecast.py`: forecast publico SARIMA del Pulse.

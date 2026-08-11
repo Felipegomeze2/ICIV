@@ -18,21 +18,16 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 |---|---|---|---|---|
 | D1 | `inflacion_deflactor_pib_pct` | IMF/WDI | negativa | inestabilidad de precios |
 | D1 | `pib_crecimiento_real_pct` | IMF/WDI | positiva | dinamica agregada de actividad |
-| D1 | `reservas_internacionales_usd` | World Bank WDI | positiva | buffer externo con faltantes visibles |
-| D1 | `tipo_cambio_oficial_lcu_usd` | World Bank WDI | negativa | estres cambiario publicado |
 | D1 | `wti_precio_usd` | FRED | positiva | condicion externa petrolera |
 | D1 | `tasa_fed_funds_pct` | FRED | negativa | costo financiero global |
 | D2 | `petroleo_crudo_produccion_tbpd` | EIA | positiva | capacidad petrolera central |
-| D2 | `gas_natural_produccion_bcf` | EIA | positiva | energia complementaria |
-| D2 | `electricidad_generacion_bkwh` | EIA | positiva | infraestructura energetica |
-| D2 | `luminosidad_nocturna_idx` | Li et al./Figshare | positiva | proxy satelital de actividad |
+| D2 | `luminosidad_nocturna_idx` | NASA Black Marble VNP46A3 | positiva | proxy satelital de actividad; migrado desde Li et al. el 2026-08-11, cubre 2014-2026 con 2 meses de rezago |
 | D3 | `cpi_score` | Transparency International | positiva | corrupcion percibida |
 | D3 | `wgi_promedio_sc` | World Bank WGI | positiva | gobernanza compuesta |
 | D3 | `freedom_house_score` | Freedom House | positiva | libertades relevantes al entorno; solo Aggregate Score publicado (2012+) |
 | D3 | `wjp_rule_of_law` | WJP | positiva | regla de derecho; el indice existe desde 2012, antes NaN |
 | D3 | `pts_terror_politico` | Political Terror Scale | negativa | coercion y riesgo institucional |
 | D4 | `exportaciones_pct_pib` | WDI/OWID | positiva | apertura comercial |
-| D4 | `desempleo_pct` | IMF/OWID | negativa | absorcion economica |
 | D4 | `migrantes_vzla_millones` | UNHCR/R4V | negativa | salida poblacional acumulada |
 | D4 | `lsci_conectividad_maritima` | UNCTADstat (trimestral → promedio anual) | positiva | conectividad logistica; serie 2006-2026 base Q1-2023=100 |
 | D5 | `hdi` | UNDP/OWID | positiva | capital humano agregado |
@@ -56,8 +51,8 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | `ust_10y_yield_pct` | FRED | 3% | incluir |
 | `em_bond_spread_pct` | FRED (ICE BofA EM Corporate Plus OAS) | 4% | incluir (2026-07); cobertura desde 2023-07 por ventana movil de FRED |
 | `petroleo_crudo_produccion_tbpd` | EIA International | 25% | incluir; cobertura refleja lag |
-| `importaciones_espejo_usa_musd` | IMF IMTS (reporta EEUU) | 5% | incluir (2026-07); mirror statistics, sin fuente venezolana |
-| `exportaciones_espejo_usa_musd` | IMF IMTS (reporta EEUU) | 5% | incluir (2026-07); captura dinamica de licencias petroleras |
+| `importaciones_eeuu_crudo_ven_tbpd` | FRED `IR14270` (aduana EEUU) | 5% | sustituye a IMF IMTS el 2026-08-11: 2 meses de rezago en vez de 4, volumen fisico, 198 meses de historia |
+| `importaciones_eeuu_productos_ven_tbpd` | FRED `IR14260` (aduana EEUU) | 5% | idem; captura actividad refinadora y licencias |
 | `guardian_articulos_venezuela` | Guardian | 6.5% | incluir |
 | `guardian_tono_titulares` | Guardian + VADER | 10% | incluir |
 | `gdelt_cobertura_vol` | GDELT DOC | 5.5% | incluir si API entrega datos |

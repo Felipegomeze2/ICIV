@@ -79,8 +79,10 @@ CATALOG: dict[str, VariableMetadata] = {
     ),
     "luminosidad_nocturna_idx": _v(
         "luminosidad_nocturna_idx", "Luminosidad nocturna satelital",
-        SourceID.VIIRS, "indice 0-100", Direction.POSITIVE, DimensionID.ENERGY, 0.15, 2000,
-        "Proxy independiente de actividad real basado en Li et al./Figshare.",
+        SourceID.VIIRS, "nW/cm2/sr", Direction.POSITIVE, DimensionID.ENERGY, 0.25, 2014,
+        "NASA Black Marble VNP46A3, media nacional con mascara poligonal exacta. "
+        "Sustituyo a la serie de Li et al. el 2026-08-11: mismo fenomeno con 2 meses "
+        "de rezago en vez de 2 anios. Cubre 2014-2026; no se empalma con la anterior.",
     ),
 
     # D3 - institucional
@@ -128,13 +130,15 @@ CATALOG: dict[str, VariableMetadata] = {
         "hdi", "Indice de Desarrollo Humano",
         SourceID.HDI, "0-1", Direction.POSITIVE, DimensionID.HUMAN, 0.28, 2000,
     ),
+    # Migradas de WHO GHO al World Bank el 2026-08-11 (SP.DYN.LE00.IN /
+    # SP.DYN.IMRT.IN): la OMS se quedaba en 2021 y 2023, el WB llega a 2024.
     "esperanza_vida_anos": _v(
         "esperanza_vida_anos", "Esperanza de vida al nacer",
-        SourceID.WHO, "anos", Direction.POSITIVE, DimensionID.HUMAN, 0.18, 2000,
+        SourceID.WDI, "anos", Direction.POSITIVE, DimensionID.HUMAN, 0.18, 2000,
     ),
     "mortalidad_infantil_x1000": _v(
         "mortalidad_infantil_x1000", "Mortalidad infantil",
-        SourceID.WHO, "muertes por 1.000 nacidos vivos", Direction.NEGATIVE, DimensionID.HUMAN, 0.18, 2000,
+        SourceID.WDI, "muertes por 1.000 nacidos vivos", Direction.NEGATIVE, DimensionID.HUMAN, 0.18, 2000,
     ),
     "acceso_electricidad_pct": _v(
         "acceso_electricidad_pct", "Acceso a electricidad",

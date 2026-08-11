@@ -11,7 +11,7 @@
 | petroleo_crudo_produccion_tbpd | core_anual | True | True | D2_energia | EIA | mil barriles/dia | positive | 0.15 | Produccion de petroleo crudo |
 | gas_natural_produccion_bcf | auxiliar | False | False | D2_energia | EIA | BCF | positive | 0.0 | Produccion de gas natural |
 | electricidad_generacion_bkwh | auxiliar | False | False | D2_energia | EIA | bkWh | positive | 0.0 | Generacion electrica |
-| luminosidad_nocturna_idx | core_anual | True | False | D2_energia | VIIRS | indice 0-100 | positive | 0.05 | Luminosidad nocturna satelital |
+| luminosidad_nocturna_idx | core_anual | True | False | D2_energia | VIIRS | nW/cm2/sr | positive | 0.05 | Luminosidad nocturna satelital |
 | cpi_score | core_anual | True | False | D3_institucional | CPI | 0-100 | positive | 0.048 | Indice de percepcion de corrupcion |
 | wgi_promedio_sc | core_anual | True | False | D3_institucional | WGI | percentil 0-100 | positive | 0.048 | Promedio WGI de gobernanza |
 | freedom_house_score | core_anual | True | False | D3_institucional | FREEDOM_HOUSE | 0-100 | positive | 0.036 | Freedom House aggregate score |
@@ -22,8 +22,8 @@
 | migrantes_vzla_millones | core_anual | True | False | D4_comercial | UNHCR | millones | negative | 0.04737 | Migrantes y refugiados venezolanos |
 | lsci_conectividad_maritima | core_anual | True | False | D4_comercial | UNCTAD | 0-100 | positive | 0.03552 | Liner Shipping Connectivity Index |
 | hdi | core_anual | True | False | D5_capital_humano | HDI | 0-1 | positive | 0.028 | Indice de Desarrollo Humano |
-| esperanza_vida_anos | core_anual | True | False | D5_capital_humano | WHO | anos | positive | 0.018 | Esperanza de vida al nacer |
-| mortalidad_infantil_x1000 | core_anual | True | False | D5_capital_humano | WHO | muertes por 1.000 nacidos vivos | negative | 0.018 | Mortalidad infantil |
+| esperanza_vida_anos | core_anual | True | False | D5_capital_humano | WDI | anos | positive | 0.018 | Esperanza de vida al nacer |
+| mortalidad_infantil_x1000 | core_anual | True | False | D5_capital_humano | WDI | muertes por 1.000 nacidos vivos | negative | 0.018 | Mortalidad infantil |
 | acceso_electricidad_pct | core_anual | True | False | D5_capital_humano | WDI | % poblacion | positive | 0.018 | Acceso a electricidad |
 | ilo_empleo_informal_pct | core_anual | True | False | D5_capital_humano | ILOSTAT | % empleo | negative | 0.018 | Empleo informal |
 | guardian_tono_titulares | core_anual | True | True | D6_percepcion | GUARDIAN | VADER compound | positive | 0.065 | Tono de titulares internacionales |

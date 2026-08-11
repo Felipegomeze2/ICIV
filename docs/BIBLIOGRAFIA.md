@@ -99,7 +99,8 @@ en [../iciv/data/sources/PROVENANCE.md](../iciv/data/sources/PROVENANCE.md).
 | UNCTAD — UNCTADstat | `lsci_conectividad_maritima` (bulk oficial US.LSCI) | https://unctadstat.unctad.org |
 | UNDP — Human Development Report | `hdi` | https://hdr.undp.org |
 | UNHCR — Refugee Data Finder | `migrantes_vzla_millones` | https://www.unhcr.org/refugee-statistics |
-| WHO — Global Health Observatory | Esperanza de vida, mortalidad infantil | https://www.who.int/data/gho |
+| World Bank WDI | Esperanza de vida (`SP.DYN.LE00.IN`), mortalidad infantil (`SP.DYN.IMRT.IN`) | https://databank.worldbank.org |
+| WHO — Global Health Observatory | Fuente anterior de salud, retirada del core el 2026-08-11; se conserva para auditoria | https://www.who.int/data/gho |
 | ILO — ILOSTAT | `ilo_empleo_informal_pct` | https://ilostat.ilo.org |
 
 ### Gobierno de EEUU y banca central

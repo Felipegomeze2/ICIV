@@ -79,9 +79,12 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
         "raw_files": "unhcr.csv",
     },
     "VIIRS": {
-        "source_name": "Li et al./Figshare harmonized nighttime lights",
+        # Desde 2026-08-11 la variable del score se alimenta de NASA Black Marble
+        # (VNP46A3, 2 meses de rezago). La serie de Li et al. se conserva en
+        # viirs.csv como validador externo no circular del leave-one-out.
+        "source_name": "NASA Black Marble VNP46A3 (score); Li et al./Figshare (validacion externa)",
         "origin": "international",
-        "raw_files": "viirs.csv; viirs_states.csv",
+        "raw_files": "blackmarble_monthly.csv; viirs.csv",
     },
     "UNCTAD": {
         "source_name": "UNCTAD",

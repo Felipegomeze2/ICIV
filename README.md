@@ -41,17 +41,23 @@ bibliografia no se muestran ahi: viven en `docs/` y en
 
 ## Diseno actual
 
-El score anual usa 26 variables core. La reduccion evita variables con cobertura
+El score anual usa 21 variables core. La reduccion evita variables con cobertura
 debil, variables declaradas sin historia verificable y redundancia institucional.
 La IED se excluye del score y se conserva como outcome economico externo para el
 bloque exploratorio de validacion.
 
-El Pulse usa 15 variables mensuales observadas de FRED, EIA International,
-IMF IMTS (comercio espejo EEUU-Venezuela reportado por EEUU), World Bank
-Pink Sheet (crudo Dubai), Guardian y GDELT. GDELT es opcional por estabilidad
-de API: si falla, se registra la advertencia y no se fabrica una serie
-sustituta. El componente SATV se alimenta solo de Pulse para que sus alertas
-tengan una frecuencia coherente.
+El Pulse usa 15 variables mensuales observadas de FRED (macro global, mas
+importaciones estadounidenses de crudo y productos venezolanos como comercio
+espejo), EIA International (produccion petrolera), World Bank Pink Sheet
+(crudo Dubai), Guardian y GDELT. GDELT es opcional por estabilidad de API: si
+falla, se registra la advertencia y no se fabrica una serie sustituta. El
+componente SATV se alimenta solo de Pulse para que sus alertas tengan una
+frecuencia coherente.
+
+Cobertura al 2026-08-11: el indice anual promedia 92,6 % entre 2000 y 2024, con
+diez anios al 100 %; el Pulse promedia 90,4 % y 198 de sus 200 meses superan el
+umbral del 70 %. El detalle de como se llego ahi esta en
+[docs/METODOLOGIA.md](./docs/METODOLOGIA.md) secciones 2.6 a 2.8 y 3.3.
 
 La prediccion visible es una sola trayectoria SARIMA de seis meses sobre Pulse,
 con bandas de incertidumbre y backtesting rolling-origin contra naive, seasonal
