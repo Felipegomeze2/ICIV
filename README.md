@@ -64,6 +64,11 @@ el score.
 
 ## Documentacion canonica
 
+- [docs/METODOLOGIA.md](./docs/METODOLOGIA.md): **documento canonico de metodologia**.
+  Pesos AHP y consistencia (CR), bandas de riesgo, niveles de cobertura, algoritmo
+  del Pulse, especificacion SARIMA y del nowcast, radar sectorial, SATV y validacion.
+- [docs/BIBLIOGRAFIA.md](./docs/BIBLIOGRAFIA.md): referencias academicas, catalogo
+  completo de fuentes de datos, software y cita sugerida.
 - [docs/MODEL_CARD.md](./docs/MODEL_CARD.md): ficha metodologica, alcance y limites.
 - [docs/FUENTES_Y_VARIABLES.md](./docs/FUENTES_Y_VARIABLES.md): variables incluidas,
   variables apartadas, fuentes y politica de cobertura.

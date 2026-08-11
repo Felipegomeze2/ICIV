@@ -35,6 +35,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from iciv.config import settings  # noqa: E402
+from iciv.utils import load_env_key  # noqa: E402
 
 _CFG_PATH = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
 _CFG = yaml.safe_load(_CFG_PATH.read_text(encoding="utf-8"))
@@ -45,7 +46,7 @@ G_CFG = _CFG["sources"]["guardian"]
 
 BASE_URL = G_CFG["base_url"]
 QUERY    = G_CFG["query"]
-API_KEY  = os.environ.get(G_CFG.get("api_key_env", ""), "") or G_CFG.get("api_key", "")
+API_KEY  = load_env_key(G_CFG.get("api_key_env", "GUARDIAN_API_KEY")) or G_CFG.get("api_key", "")
 
 OUTPUT = Path(__file__).resolve().parents[1] / "data" / "raw" / "guardian_monthly.csv"
 

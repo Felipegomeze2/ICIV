@@ -59,6 +59,7 @@ from iciv.processing.transformers.normalizer import MinMaxNormalizer
 from iciv.index.aggregator import ICIVAggregator
 from iciv.index.weighting import AHPWeights, FixedWeights
 from iciv.index.dimensions import DIMENSIONS
+from iciv.utils import load_env_key
 
 # -- Logging -------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -1321,6 +1322,18 @@ def fase_dashboard(
     # ── Escenarios — serializar a JSON ────────────────────────────────────────
     _esc = escenarios_data or {}
     escenarios_json = json.dumps(_esc, ensure_ascii=False)
+
+    # ── Clave Guardian para el fetch en vivo del navegador ───────────────────
+    # OJO: la pestaña de Noticias consulta la API desde el navegador del usuario,
+    # así que esta clave viaja dentro del HTML publicado y es PÚBLICA por diseño.
+    # No se versiona en el código: se inyecta al generar, desde GUARDIAN_API_KEY
+    # (secret en Actions, iciv/.env en local). Rotarla solo exige regenerar.
+    guardian_key = load_env_key("GUARDIAN_API_KEY")
+    if not guardian_key:
+        logger.warning(
+            "  GUARDIAN_API_KEY ausente: la pestana de Noticias mostrara el "
+            "enlace a The Guardian en vez de los titulares en vivo."
+        )
 
     # ── Datos del Simulador ───────────────────────────────────────────────────
     # Solo entran dimensiones con datos reales: una dimensión vacía tratada como 0
@@ -2716,7 +2729,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // ── Guardian News ─────────────────────────────────────────────────────────────
 (function() {{
   const INTL_NEWS = {intl_news_json};
-  const GUARDIAN_KEY = '9d4cf6fc-8864-4693-adda-987c76fc7476';
+  const GUARDIAN_KEY = '{guardian_key}';
   const PAGE_SIZE    = 12;
   let   allArticles  = [];
   let   filtered     = [];
