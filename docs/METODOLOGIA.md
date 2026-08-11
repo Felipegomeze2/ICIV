@@ -74,6 +74,14 @@ Seis dimensiones, 26 variables core, ponderación por AHP (Saaty, 1980).
 | D6 | Percepción Internacional | 0,10 |
 | | **Total** | **1,00** |
 
+> **Estado de D6 al 11-ago-2026 — incidencia abierta.** La corrida automática del
+> 3 de agosto de 2026 sobrescribió `data/raw/guardian.csv` con NaN en los 27 años
+> (el fetch anual falló contra la API y aun así reescribió el archivo). Desde esa
+> fecha **D6 no aporta nada al índice**: el agregador renormaliza sobre las cinco
+> dimensiones restantes. Los pesos de esta tabla describen el diseño; mientras la
+> incidencia siga abierta, el ICIV publicado se calcula de facto con D1–D5.
+> Detalle y solución en la sección 10.
+
 ### 2.2 Pesos dentro de cada dimensión
 
 Definidos en `iciv/src/iciv/index/dimensions.py`.
@@ -371,7 +379,56 @@ luminosidad anual del score.
 
 ---
 
-## 9. Reproducir
+## 9. Incidencias abiertas
+
+### 9.1 D6 vacía desde el 3 de agosto de 2026 (crítica)
+
+**Qué pasó.** `iciv/scripts/fetch_guardian.py` recorre año por año; si una
+petición falla, registra `None` y **continúa**. Al terminar escribe el CSV
+siempre, sin comprobar si obtuvo algún dato. Cuando la clave de la API dejó de
+funcionar, todos los años fallaron y el script sobrescribió 27 años de datos
+buenos con NaN, terminando con código de salida 0.
+
+**Trazabilidad.** `guardian.csv` tenía 27/27 valores hasta el commit `53fb2be`
+(2026-07-30) y quedó en 0/27 en `e9089f5` (2026-08-03).
+
+**Impacto.** D6 Percepción Internacional pesa 0,10 del índice y no aporta nada
+desde esa fecha. El agregador renormaliza sobre D1–D5, así que los scores
+publicados el 3 y el 10 de agosto ya salieron sin esa dimensión. También afecta
+al simulador del Laboratorio, que queda con cinco palancas.
+
+**Lo que NO afecta.** `guardian_monthly.csv` está intacto (398/398 filas): el
+Pulse conserva sus dos variables Guardian. La incidencia es solo de la serie
+anual.
+
+**Solución.** Con la clave renovada (11-ago-2026), volver a poblar la serie:
+
+```bash
+cd iciv
+python scripts/fetch_guardian.py
+python main.py --no-fetch --no-open
+```
+
+**Corrección de fondo pendiente:** el fetcher no debe sobrescribir el CSV cuando
+no obtuvo ningún dato. La política del proyecto es no fabricar datos, pero
+destruir los existentes es peor que no escribir nada. Falta añadir esa guarda —
+y revisar si otros fetchers anuales comparten el patrón.
+
+### 9.2 `manifest.json` declara 11 variables Pulse en vez de 15
+
+`n_pulse_variables` sale de contar `entra_pulse_mensual` en el catálogo anual
+(`iciv/src/iciv/data/dataset_package.py`), que no incluye las cuatro variables
+incorporadas en julio de 2026 (IMF IMTS ×2, WB Pink Sheet, spread EM). Es un
+error de metadato en el paquete público; no afecta a ningún cálculo.
+
+### 9.3 Comentario desactualizado en `pulse_forecast.py`
+
+El comentario dice "Probar 2 modelos" pero la lista `candidates` tiene tres
+órdenes SARIMA. Los tres reales están documentados en la sección 4.1. Cosmético.
+
+---
+
+## 10. Reproducir
 
 ```bash
 cd iciv
