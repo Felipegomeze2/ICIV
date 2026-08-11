@@ -2417,7 +2417,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 
   <div class="hint">
-    La escala va de 0 a 100. Por debajo de 30 el riesgo es alto; sobre 65, bajo.
+    La escala va de 0 a 100 y se mide contra la propia historia de Venezuela:
+    100 sería su mejor año desde 2000 y 0 el peor. No compara con otros países.
     La cobertura indica cuántos datos ya publicaron las fuentes para ese periodo.
   </div>
 </section>

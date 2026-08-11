@@ -59,6 +59,26 @@ def _load_raw_series(csv_path: Path, indicador: str) -> pd.Series:
     return df.set_index("año")["valor"].astype(float)
 
 
+def _iciv_without_dimension(df_norm: pd.DataFrame, dim_id: str) -> pd.Series:
+    """Recalcula el ICIV anulando TODAS las variables de una dimensión.
+
+    Se usa para la validez convergente contra V-Dem: como V-Dem comparte terreno
+    con D3 (CPI, WGI, Freedom House, WJP, PTS), correlacionar el ICIV completo
+    seria en parte circular. Anulando D3 entera, lo que queda —macro, energia,
+    comercio, capital humano y percepcion— no contiene informacion institucional,
+    y la correlacion pasa a ser un contraste limpio.
+    """
+    from iciv.index.dimensions import DIMENSIONS, DimensionID
+
+    df_loo = df_norm.copy()
+    objetivo = next(d for d_id, d in DIMENSIONS.items() if d_id.value == dim_id)
+    for vw in objetivo.variables:
+        if vw.column in df_loo.columns:
+            df_loo[vw.column] = np.nan
+    scores = ICIVAggregator(method="linear").compute(df_loo)
+    return scores.set_index("año")["iciv_score"]
+
+
 def _iciv_without(df_norm: pd.DataFrame, exclude_col: str) -> pd.Series:
     """Recalcula el ICIV excluyendo una variable (leave-one-out).
 
@@ -143,6 +163,50 @@ def main() -> None:
             **_correlate(iciv_full, ied),
         })
 
+    # ── Validez convergente contra V-Dem ─────────────────────────────────────
+    # Responde la pregunta que un jurado hace siempre: ¿esto mide clima de
+    # inversion o solo "Venezuela empeoro"? V-Dem mide un constructo vecino
+    # (calidad institucional) desde otra institucion y con otro metodo.
+    #
+    # Se reportan DOS numeros por indice:
+    #   · ICIV completo   -> parcialmente circular, D3 comparte terreno con V-Dem
+    #   · ICIV SIN D3     -> contraste limpio: lo que queda no tiene informacion
+    #                        institucional, asi que una correlacion alta significa
+    #                        que macro, energia, comercio y percepcion se mueven
+    #                        con la calidad institucional medida por un tercero.
+    vdem_path = RAW / "vdem.csv"
+    iciv_sin_d3 = None
+    vdem_series: dict[str, pd.Series] = {}
+    if vdem_path.exists():
+        iciv_sin_d3 = _iciv_without_dimension(df_norm, "D3_institucional")
+        _VDEM = [
+            ("vdem_libdem_index",   "indice de democracia liberal", "positiva"),
+            ("vdem_rule_of_law",    "indice de estado de derecho",  "positiva"),
+            ("vdem_corrupcion_pol", "indice de corrupcion politica", "negativa"),
+        ]
+        for indicador, etiqueta, hipotesis in _VDEM:
+            try:
+                serie = _load_raw_series(vdem_path, indicador)
+            except Exception:
+                continue
+            if serie.empty:
+                continue
+            vdem_series[indicador] = serie
+            tests.append({
+                "test": f"ICIV_completo_vs_{indicador}",
+                "descripcion": f"ICIV completo vs V-Dem {etiqueta} (parcialmente circular: D3 solapa)",
+                "hipotesis": hipotesis,
+                "metodo": "validez convergente (con solape declarado)",
+                **_correlate(iciv_full, serie),
+            })
+            tests.append({
+                "test": f"ICIV_sinD3_vs_{indicador}",
+                "descripcion": f"ICIV recalculado SIN la dimension institucional vs V-Dem {etiqueta}",
+                "hipotesis": hipotesis,
+                "metodo": "validez convergente (contraste limpio)",
+                **_correlate(iciv_sin_d3, serie),
+            })
+
     summary = pd.DataFrame(tests)
 
     # Veredicto por test: hipótesis confirmada si el signo coincide y p<0.05
@@ -172,6 +236,10 @@ def main() -> None:
     })
     if ied is not None:
         aligned["ied_neta_usd"] = ied
+    if iciv_sin_d3 is not None:
+        aligned["iciv_sin_D3_institucional"] = iciv_sin_d3
+        for nombre, serie in vdem_series.items():
+            aligned[nombre] = serie
     aligned.index.name = "año"
 
     PROCESSED.mkdir(parents=True, exist_ok=True)

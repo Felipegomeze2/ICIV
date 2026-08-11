@@ -29,13 +29,32 @@ logger = logging.getLogger(__name__)
 
 AggregationMethod = Literal["linear", "geometric"]
 
-# Tabla de categorías de riesgo según el documento maestro
+# Tabla de categorías de riesgo.
+#
+# ESCALA RELATIVA, NO COMPARABLE ENTRE PAÍSES (corregido 2026-08-11)
+# ------------------------------------------------------------------
+# Cada variable se normaliza Min-Max sobre el rango histórico DE VENEZUELA
+# 2000-2026. Por tanto 100 = el mejor registro de Venezuela en el periodo y
+# 0 = el peor, no un óptimo internacional.
+#
+# Las etiquetas anteriores decían cosas como "clima comparable a mercados
+# emergentes estables", que es una afirmación entre países que esta escala no
+# puede sostener: nunca se normalizó contra otros países. Se reescribieron para
+# que digan lo que el número realmente significa. Para poder comparar con otros
+# países haría falta normalizar sobre un panel multi-país (pendiente).
+#
+# Ver docs/METODOLOGIA.md §1.
 RISK_CATEGORIES = [
-    (0,  30,  "🔴 Alto Riesgo",          "No se recomienda inversión directa."),
-    (31, 50,  "🟠 Riesgo Moderado-Alto", "Solo sectores con alta tolerancia al riesgo."),
-    (51, 65,  "🟡 Riesgo Moderado",      "Viable con due diligence reforzado."),
-    (66, 80,  "🟢 Bajo Riesgo",          "Condiciones favorables con análisis sectorial."),
-    (81, 100, "🟢🟢 Muy Bajo Riesgo",    "Clima comparable a mercados emergentes estables."),
+    (0,  30,  "🔴 Alto Riesgo",
+     "Entre los peores registros de la propia serie venezolana. No se recomienda inversión directa."),
+    (31, 50,  "🟠 Riesgo Moderado-Alto",
+     "Por debajo de la media histórica de Venezuela. Solo sectores con alta tolerancia al riesgo."),
+    (51, 65,  "🟡 Riesgo Moderado",
+     "En torno a la media histórica de Venezuela. Viable con due diligence reforzado."),
+    (66, 80,  "🟢 Bajo Riesgo",
+     "Por encima de la media histórica de Venezuela. Favorable en términos de su propia serie."),
+    (81, 100, "🟢🟢 Muy Bajo Riesgo",
+     "Cerca del mejor registro histórico de Venezuela. No implica equivalencia con otros países."),
 ]
 
 

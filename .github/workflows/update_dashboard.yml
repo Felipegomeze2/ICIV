@@ -120,6 +120,8 @@ jobs:
           python scripts/fetch_pts.py            || echo "WARN: fetch_pts falló (continuando)"
           python scripts/fetch_wjp.py            || echo "WARN: fetch_wjp falló (continuando)"
           python scripts/fetch_freedom_house.py  || echo "WARN: fetch_freedom_house falló (continuando)"
+          # V-Dem NO entra al indice: alimenta la validacion convergente
+          python scripts/fetch_vdem.py           || echo "WARN: fetch_vdem falló (continuando)"
           echo "Fetch anual completado."
 
       # ── Control de vigencia de TODAS las fuentes ────────────────────────────

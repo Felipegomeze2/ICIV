@@ -87,7 +87,29 @@ _DEFAULT_DIMENSION_MATRIX = np.array([
 # ── Matrices AHP para variables dentro de cada dimensión ─────────────────────
 
 def _consistent_ratio_matrix(weights: list[float]) -> np.ndarray:
-    """Build a consistent pairwise matrix from the core weights."""
+    """Construye la matriz de razones a[i][j] = w_i / w_j a partir de pesos dados.
+
+    IMPORTANTE — leer antes de citar cualquier CR de estas matrices.
+
+    Esto NO es una matriz de comparación por pares en el sentido de Saaty. Una
+    matriz AHP legítima recoge juicios independientes (¿cuánto más importante es
+    i que j?) y el CR mide si esos juicios son mutuamente coherentes. Aquí la
+    matriz se DERIVA de los pesos ya elegidos, así que es perfectamente
+    consistente por construcción: su CR vale 0 exacto siempre, para cualquier
+    vector de pesos, incluido uno absurdo.
+
+    Dicho de otro modo: el CR de estas matrices no valida nada. Solo confirma
+    que la división funciona.
+
+    Por qué se conserva: el agregador necesita un vector de pesos por variable y
+    esta función lo devuelve de forma equivalente a declararlo directamente. Lo
+    que NO se debe hacer es presentar el CR resultante como evidencia de rigor.
+
+    La matriz de DIMENSIONES (`_DEFAULT_DIMENSION_MATRIX`) sí está construida a
+    mano con valores Saaty y su CR = 0,0081 sí es un resultado informativo.
+
+    Ver docs/METODOLOGIA.md §2.3.
+    """
     arr = np.array(weights, dtype=float)
     return arr[:, None] / arr[None, :]
 
@@ -239,17 +261,28 @@ def compute_ahp(
         "peso_pct": [f"{w*100:.1f}%" for w in weights],
     })
 
+    # El CR solo es informativo cuando la matriz recoge juicios independientes.
+    # Si se derivó de un vector de pesos (a[i][j] = w_i/w_j) su CR es 0 por
+    # construcción y anunciarlo como "consistencia aceptable" seria engañoso.
+    derivada = bool(np.isclose(consistency["CR"], 0.0, atol=1e-9))
+
     if not consistency["consistent"]:
         logger.warning(
             "AHP: CR = %.3f ≥ 0.10 — la matriz no es suficientemente consistente. "
             "Revisa los juicios de comparación (Saaty 1980).",
             consistency["CR"],
         )
+    elif derivada:
+        logger.info(
+            "Pesos declarados: CR = 0 por construcción (matriz derivada de los "
+            "pesos, no de juicios independientes). El CR no valida nada aquí."
+        )
     else:
         logger.info(
-            "AHP: CR = %.3f < 0.10 — consistencia aceptable (λmax = %.3f).",
+            "AHP: CR = %.4f < 0.10 — juicios consistentes (λmax = %.3f, n = %d).",
             consistency["CR"],
             consistency["lambda_max"],
+            n,
         )
 
     return {

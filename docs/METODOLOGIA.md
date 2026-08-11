@@ -22,15 +22,34 @@ Documentos complementarios:
 El ICIV es un índice compuesto en escala **0–100**, donde un valor mayor
 significa mejor clima de inversión.
 
+### La escala es relativa a Venezuela, no comparable entre países
+
+Este punto condiciona todo lo demás y conviene tenerlo claro antes de leer
+cualquier cifra.
+
+Cada variable se normaliza **Min-Max sobre el rango histórico de Venezuela
+2000–2026**. En consecuencia:
+
+- **100** = el mejor registro observado de Venezuela en el periodo.
+- **0** = el peor registro observado de Venezuela en el periodo.
+- El índice **no dice** cómo se compara Venezuela con Colombia, Perú o Vietnam,
+  porque nunca se normalizó contra un panel de países.
+
+**Corrección 2026-08-11.** Las bandas decían cosas como *"clima comparable a
+mercados emergentes estables"*, una afirmación entre países que la escala no
+puede sostener. Se reescribieron para que digan lo que el número realmente
+significa. Para permitir comparación internacional habría que renormalizar sobre
+un panel multi-país; está pendiente y es la vía natural de extensión.
+
 ### Bandas de riesgo
 
-| Rango | Categoría | Lectura para el inversionista |
+| Rango | Categoría | Lectura, siempre respecto a la propia serie venezolana |
 |---|---|---|
-| 0–30 | Alto Riesgo | No se recomienda inversión directa |
-| 31–50 | Riesgo Moderado-Alto | Solo sectores con alta tolerancia al riesgo |
-| 51–65 | Riesgo Moderado | Viable con due diligence reforzado |
-| 66–80 | Bajo Riesgo | Condiciones favorables con análisis sectorial |
-| 81–100 | Muy Bajo Riesgo | Comparable a mercados emergentes estables |
+| 0–30 | Alto Riesgo | Entre los peores registros de la serie. No se recomienda inversión directa |
+| 31–50 | Riesgo Moderado-Alto | Por debajo de la media histórica. Solo sectores con alta tolerancia al riesgo |
+| 51–65 | Riesgo Moderado | En torno a la media histórica. Viable con due diligence reforzado |
+| 66–80 | Bajo Riesgo | Por encima de la media histórica. Favorable en términos de su propia serie |
+| 81–100 | Muy Bajo Riesgo | Cerca del mejor registro histórico. No implica equivalencia con otros países |
 
 Las bandas son de interpretación, no de decisión financiera: el ICIV no sustituye
 due diligence sectorial ni análisis legal de sanciones.
@@ -152,27 +171,63 @@ Definidos en `iciv/src/iciv/index/dimensions.py`.
 | `guardian_articulos_venezuela` | 0,35 |
 
 El peso final de una variable es `peso_dimensión × peso_intra_dimensión`.
-Ejemplo: `inflacion_deflactor_pib_pct` pesa 0,25 × 0,28 = 0,07 del índice.
 
-### 2.3 AHP y consistencia
+### 2.3 Ponderación: qué es AHP aquí y qué no
 
-Los pesos salen del vector propio principal de una matriz de comparación por
-pares construida a partir de los ratios entre pesos core
-(`iciv/src/iciv/index/weighting/ahp_weights.py`).
+Hay **dos niveles de ponderación y solo uno es AHP en sentido estricto**.
+Conviene decirlo de frente porque la distinción es visible en el código y un
+lector cuidadoso la encontraría de todos modos.
 
-La consistencia se mide con la Razón de Consistencia de Saaty, `CR = CI / RI`,
-donde `CI = (λmax − n) / (n − 1)` y `RI` es el índice aleatorio para matrices de
-tamaño `n`. Un juicio es aceptable académicamente si **CR < 0,10**.
+#### Nivel 1 — Dimensiones: AHP legítimo
 
-Valores de la matriz de dimensiones (n = 6):
+`_DEFAULT_DIMENSION_MATRIX` es una matriz de comparación por pares construida a
+mano con valores de la escala de Saaty (1, 2, 3, ½, ⅓), a partir de juicios
+declarados y documentados en el propio código: *D1 > D4*, *D2 > D5 y D6*,
+*D5 = D6*, etc. Los pesos salen de su vector propio principal.
+
+Aquí el CR **sí es informativo**, porque los juicios pudieron haber sido
+incoherentes y no lo fueron:
 
 | Métrica | Valor |
 |---|---:|
 | λmax | 6,0501 |
-| CI | 0,0100 |
+| CI = (λmax − n)/(n − 1) | 0,0100 |
 | RI (n = 6) | 1,24 |
-| **CR** | **0,0081** |
-| ¿Consistente? | Sí (CR < 0,10) |
+| **CR = CI / RI** | **0,0081** |
+| ¿Consistente? | Sí (umbral 0,10) |
+
+#### Nivel 2 — Variables dentro de cada dimensión: pesos declarados, no AHP
+
+Las matrices por variable se generan con `_consistent_ratio_matrix(pesos)`, que
+construye `a[i][j] = wᵢ / wⱼ` a partir de los pesos ya elegidos. Una matriz así
+es **perfectamente consistente por construcción**: su CR vale 0 exacto siempre,
+para cualquier vector de pesos, incluido uno arbitrario.
+
+**Ese CR = 0 no valida nada.** No es evidencia de rigor: solo confirma que la
+división funciona. Presentarlo como "consistencia AHP aceptable" sería
+engañoso, y hasta el 2026-08-11 el log del pipeline lo hacía. Ahora esas
+matrices se registran explícitamente como *pesos declarados, CR = 0 por
+construcción*.
+
+**Cómo se llaman entonces estos pesos:** son **pesos de juicio experto
+documentados**, asignados por el autor según la relevancia de cada variable
+dentro de su dimensión y declarados abiertamente en `dimensions.py`. No hay
+elicitación de un panel de expertos; afirmarlo sería falso.
+
+#### Lo que sí sostiene la elección de pesos
+
+Como los pesos son un juicio, la pregunta relevante no es si son "correctos"
+sino **cuánto dependen de ellos los resultados**. Eso sí está medido:
+
+| Evidencia | Resultado | Qué demuestra |
+|---|---|---|
+| Análisis de sensibilidad | SI = 0,0443 | El score se mueve poco al perturbar los pesos |
+| AHP vs PCA | r = 0,988 · MAD = 2,80 pts | Los pesos de juicio y los empíricos (PC1) dan prácticamente el mismo índice |
+| Lineal vs geométrico | r = 0,992 · MAD = 2,87 pts | El resultado no depende de la forma de agregación |
+
+Que la ponderación empírica por componentes principales reproduzca el índice con
+r = 0,988 es el argumento fuerte: **el ICIV no descansa sobre los pesos
+elegidos**. Se regeneran con `python main.py --validate-only`.
 
 ### 2.4 Tratamiento de los datos
 
