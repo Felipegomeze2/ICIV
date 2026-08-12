@@ -19,7 +19,7 @@
 | pts_terror_politico | core_anual | True | False | D3_institucional | PTS | 1-5 | negative | 0.032 | Political Terror Scale |
 | exportaciones_pct_pib | core_anual | True | False | D4_comercial | WDI | % PIB | positive | 0.06711 | Exportaciones de bienes y servicios |
 | desempleo_pct | auxiliar | False | False | D4_comercial | IMF | % | negative | 0.0 | Tasa de desempleo |
-| migrantes_vzla_millones | core_anual | True | False | D4_comercial | UNHCR | millones | negative | 0.04737 | Migrantes y refugiados venezolanos |
+| migrantes_vzla_millones | core_anual | True | False | D4_comercial | UNHCR | millones | negative | 0.04737 | Refugiados y solicitantes de asilo venezolanos |
 | lsci_conectividad_maritima | core_anual | True | False | D4_comercial | UNCTAD | 0-100 | positive | 0.03552 | Liner Shipping Connectivity Index |
 | hdi | core_anual | True | False | D5_capital_humano | HDI | 0-1 | positive | 0.028 | Indice de Desarrollo Humano |
 | esperanza_vida_anos | core_anual | True | False | D5_capital_humano | WDI | anos | positive | 0.018 | Esperanza de vida al nacer |

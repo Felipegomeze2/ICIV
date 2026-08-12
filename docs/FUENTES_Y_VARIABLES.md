@@ -28,7 +28,7 @@ como dato auxiliar, validacion, backlog de investigacion o exclusion explicita.
 | D3 | `wjp_rule_of_law` | WJP | positiva | regla de derecho; el indice existe desde 2012, antes NaN |
 | D3 | `pts_terror_politico` | Political Terror Scale | negativa | coercion y riesgo institucional |
 | D4 | `exportaciones_pct_pib` | WDI/OWID | positiva | apertura comercial |
-| D4 | `migrantes_vzla_millones` | UNHCR/R4V | negativa | salida poblacional acumulada |
+| D4 | `migrantes_vzla_millones` | UNHCR (`coo=VEN`) | negativa | refugiados y solicitantes de asilo **registrados** (~1,6 M en 2025). NO es la diaspora total (~7,9 M segun R4V/OIM): la API de UNHCR no cuenta migrantes economicos sin registro |
 | D4 | `lsci_conectividad_maritima` | UNCTADstat (trimestral → promedio anual) | positiva | conectividad logistica; serie 2006-2026 base Q1-2023=100 |
 | D5 | `hdi` | UNDP/OWID | positiva | capital humano agregado |
 | D5 | `esperanza_vida_anos` | World Bank `SP.DYN.LE00.IN` | positiva | condicion sanitaria; migrada desde WHO GHO el 2026-08-11 |

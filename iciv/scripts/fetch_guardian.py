@@ -103,6 +103,52 @@ def _fetch_year(year: int) -> tuple[int | None, float | None]:
     return total, tone
 
 
+_SNAPSHOT_DAYS  = 90
+_SNAPSHOT_LIMIT = 24
+
+
+def fetch_headlines_snapshot() -> pd.DataFrame:
+    """Descarga los titulares recientes sobre Venezuela para incrustar en el dashboard.
+
+    Por qué existe: el bloque "The Guardian" del dashboard hacía un fetch en
+    vivo desde el navegador y no tenía nada que mostrar si esa petición fallaba
+    —bloqueador de anuncios, red corporativa, API caída— dejando un
+    "Failed to fetch" crudo en pantalla. Con este snapshot el bloque siempre
+    tiene contenido y la llamada en vivo pasa a ser una mejora opcional.
+
+    Devuelve columnas: published_at | title | url | section_id | section_name | trail
+    """
+    params = {
+        "tag":         "world/venezuela",
+        "order-by":    "newest",
+        "page-size":   _SNAPSHOT_LIMIT,
+        "show-fields": "trailText,thumbnail",
+        "from-date":   (pd.Timestamp.utcnow() - pd.Timedelta(days=_SNAPSHOT_DAYS)).strftime("%Y-%m-%d"),
+        "api-key":     API_KEY,
+    }
+    resp = requests.get(BASE_URL, params=params, timeout=30)
+    resp.raise_for_status()
+    results = resp.json().get("response", {}).get("results", [])
+
+    rows = []
+    for r in results:
+        fields = r.get("fields") or {}
+        trail  = (fields.get("trailText") or "").strip()
+        # El trailText viene con HTML embebido; el dashboard lo inyecta como
+        # texto, así que se limpia aquí y no en el navegador.
+        trail  = pd.Series([trail]).str.replace(r"<[^>]+>", "", regex=True).iloc[0]
+        rows.append({
+            "published_at": r.get("webPublicationDate"),
+            "title":        r.get("webTitle"),
+            "url":          r.get("webUrl"),
+            "section_id":   r.get("sectionId"),
+            "section_name": r.get("sectionName"),
+            "trail":        trail,
+            "thumbnail":    fields.get("thumbnail") or "",
+        })
+    return pd.DataFrame(rows)
+
+
 def fetch_guardian() -> pd.DataFrame:
     """
     Descarga conteo y tono anual de The Guardian sobre Venezuela.
@@ -150,3 +196,16 @@ if __name__ == "__main__":
     n_tone = df[COL_TONE].notna().sum()
     print(f"\nGuardado: {OUTPUT}  ({n_art} años, {n_tone} años con tono)")
     print(f"Tono promedio global: {df[COL_TONE].mean():.3f}")
+
+    # ── Snapshot de titulares para el dashboard ───────────────────────────────
+    # No aborta el script: el índice no depende de esto, solo el bloque de
+    # noticias. Si falla, el dashboard usa el snapshot anterior si existe.
+    try:
+        snap = fetch_headlines_snapshot()
+        if snap.empty:
+            print("AVISO: snapshot de titulares vacío — se conserva el anterior.")
+        else:
+            save_dataframe(snap, settings.paths.raw_guardian_headlines)
+            print(f"Guardado: {settings.paths.raw_guardian_headlines}  ({len(snap)} titulares)")
+    except Exception as exc:
+        print(f"AVISO: no se pudo actualizar el snapshot de titulares: {exc}")

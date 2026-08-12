@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import logging
 import math
+import os
 import re
 import sys
 import time
@@ -459,7 +460,11 @@ def fase_modelo(df_norm: pd.DataFrame, settings: Settings) -> tuple[pd.DataFrame
         for _vw in _d.variables:
             if _vw.column in df_norm.columns:
                 _equal_overrides[_vw.column] = (1.0 / _n_dims) * _vw.weight
-    agg_fixed = ICIVAggregator(method="linear", strategy=FixedWeights(override=_equal_overrides))
+    agg_fixed = ICIVAggregator(
+        method="linear",
+        strategy=FixedWeights(override=_equal_overrides),
+        min_dimension_coverage=settings.aggregation.min_dimension_coverage,
+    )
     df_fixed = agg_fixed.compute(df_norm)
     df_fixed.to_csv(settings.paths.data_processed / "iciv_scores.csv",
                     index=False, encoding="utf-8-sig")
@@ -470,7 +475,11 @@ def fase_modelo(df_norm: pd.DataFrame, settings: Settings) -> tuple[pd.DataFrame
     # para que dimension_result_ esté disponible al momento de agregar.
     ahp = AHPWeights()
     ahp.compute_weights(df_norm)  # inicializa dimension_result_ y variable_results_
-    agg_ahp = ICIVAggregator(method="linear", strategy=ahp)
+    agg_ahp = ICIVAggregator(
+        method="linear",
+        strategy=ahp,
+        min_dimension_coverage=settings.aggregation.min_dimension_coverage,
+    )
     df_ahp = agg_ahp.compute(df_norm)
     df_ahp.to_csv(settings.paths.data_processed / "iciv_scores_ahp.csv",
                   index=False, encoding="utf-8-sig")
@@ -767,9 +776,14 @@ def _generate_loo_validation_html(df_norm) -> str:
         return ""
 
     def _loo_score(col: str) -> pd.Series:
+        # min_dimension_coverage=0: en un leave-one-out el objetivo es aislar el
+        # aporte de UNA variable. Aplicar el piso de cobertura aquí anularía la
+        # dimensión entera cuando la variable retirada la deja por debajo del
+        # umbral, y el test mediría eso en vez del efecto de la variable.
         df_loo = df_norm.copy()
         df_loo[col] = np.nan
-        return ICIVAggregator(method="linear").compute(df_loo).set_index("año")["iciv_score"]
+        return (ICIVAggregator(method="linear", min_dimension_coverage=0.0)
+                .compute(df_loo).set_index("año")["iciv_score"])
 
     def _raw_series(fname: str, indicador: str) -> pd.Series:
         df = pd.read_csv(settings.paths.data_raw / fname)
@@ -823,8 +837,8 @@ def _generate_loo_validation_html(df_norm) -> str:
 
         b64_m, st_m = _scatter_b64_loo(
             loo_migr, migr,
-            "ICIV recalculado sin migración", "Migrantes UNHCR (millones)",
-            "ICIV (leave-one-out) vs Emigración UNHCR")
+            "ICIV recalculado sin migración", "Refugiados y solicitantes de asilo (millones)",
+            "ICIV (leave-one-out) vs Desplazamiento registrado UNHCR")
         b64_l, st_l = _scatter_b64_loo(
             loo_lumi, lumi.loc[2014:],
             "ICIV recalculado sin luminosidad", "Luminosidad nocturna (índice)",
@@ -1016,6 +1030,18 @@ def fase_sector_radar(df_ahp: pd.DataFrame) -> dict:
         return {"error": str(exc), "ranking": []}
 
 
+# Etiquetas cortas por dimensión para ejes de gráficos. Los nombres completos
+# de DIMENSIONS no caben en el eje y del gráfico "Dónde está el problema".
+_DIM_SHORT = {
+    "D1_macro":          "Macroeconomía",
+    "D2_energia":        "Energía y petróleo",
+    "D3_institucional":  "Instituciones y ley",
+    "D4_comercial":      "Apertura comercial",
+    "D5_capital_humano": "Capital humano",
+    "D6_percepcion":     "Percepción externa",
+}
+
+
 def _score_to_label(score: float) -> str:
     if score < 35:
         return "Alto Riesgo"
@@ -1172,17 +1198,29 @@ def fase_dashboard(
     # en el año corriente varias fuentes anuales aún no publicaron y un 0 se leería
     # como "colapso total" cuando en realidad significa "todavía sin publicar".
     last_row  = _current_row
-    dim_vals, dim_lbls, dim_clrs, dim_years = [], [], [], []
+    dim_vals, dim_lbls, dim_clrs, dim_years, dim_covs = [], [], [], [], []
     for _i, _d in enumerate(available_dims):
-        _serie = df_plot[["año", _d]].dropna(subset=[_d]) if _d in df_plot.columns else None
+        _cols = ["año", _d] + ([f"cobertura_{_d}"] if f"cobertura_{_d}" in df_plot.columns else [])
+        _serie = df_plot[_cols].dropna(subset=[_d]) if _d in df_plot.columns else None
         if _serie is None or _serie.empty:
             continue   # dimensión sin ningún dato: se omite en vez de dibujar un cero
         _fila = _serie.iloc[-1]
         dim_vals.append(round(float(_fila[_d]), 2))
-        dim_lbls.append(dim_names.get(_d, _d))
+        # Etiqueta corta: el nombre completo de la dimensión no cabe en el eje y
+        # Chart.js lo recortaba por la izquierda ("apital Humano e Infra...").
+        dim_lbls.append(_DIM_SHORT.get(_d, dim_names.get(_d, _d)))
         dim_clrs.append(DIM_COLORS[_i % len(DIM_COLORS)])
         dim_years.append(int(_fila["año"]))
+        # Cobertura de la dimensión ESE año. Un 0.0 con 60% de cobertura es un
+        # dato ("el peor registro de la serie"); el mismo 0.0 con 18% sería
+        # ruido — por eso el agregador ya no lo publica y por eso el gráfico
+        # declara la cobertura en vez de dibujar todas las barras igual.
+        _cov_col = f"cobertura_{_d}"
+        dim_covs.append(round(float(_fila[_cov_col]), 1)
+                        if _cov_col in _serie.columns and pd.notna(_fila.get(_cov_col))
+                        else None)
     dim_years_js = json.dumps(dim_years)
+    dim_covs_js  = json.dumps(dim_covs)
     # Año más antiguo entre las dimensiones mostradas — se declara en el subtítulo
     dim_year_min = min(dim_years) if dim_years else current_year_val
     dim_year_max = max(dim_years) if dim_years else current_year_val
@@ -1436,15 +1474,36 @@ def fase_dashboard(
     escenarios_json = json.dumps(_esc, ensure_ascii=False)
 
     # ── Clave Guardian para el fetch en vivo del navegador ───────────────────
-    # OJO: la pestaña de Noticias consulta la API desde el navegador del usuario,
-    # así que esta clave viaja dentro del HTML publicado y es PÚBLICA por diseño.
-    # No se versiona en el código: se inyecta al generar, desde GUARDIAN_API_KEY
-    # (secret en Actions, iciv/.env en local). Rotarla solo exige regenerar.
-    guardian_key = load_env_key("GUARDIAN_API_KEY")
-    if not guardian_key:
-        logger.warning(
-            "  GUARDIAN_API_KEY ausente: la pestana de Noticias mostrara el "
-            "enlace a The Guardian en vez de los titulares en vivo."
+    #
+    # Incrustar la clave la vuelve PÚBLICA: iciv_dashboard.html se versiona en
+    # git y se publica en GitHub Pages, así que la clave queda en el historial
+    # del repo y a la vista de cualquiera. Rotarla no basta —la siguiente queda
+    # expuesta igual en la siguiente corrida.
+    #
+    # Desde que el bloque de noticias se alimenta del snapshot generado en el
+    # fetch (guardian_headlines.csv), el fetch en vivo no aporta nada que el
+    # snapshot no cubra, así que NO se incrusta por defecto.
+    #
+    # Para reactivar el fetch en vivo, asumiendo que la clave será pública:
+    #     ICIV_EMBED_GUARDIAN_KEY=1 python main.py
+    _embed_key = str(os.environ.get("ICIV_EMBED_GUARDIAN_KEY", "")).strip().lower()
+    if _embed_key in {"1", "true", "yes", "si", "sí"}:
+        guardian_key = load_env_key("GUARDIAN_API_KEY") or ""
+        if guardian_key:
+            logger.warning(
+                "  ICIV_EMBED_GUARDIAN_KEY activo: la clave de The Guardian se "
+                "incrusta en el HTML y sera PUBLICA al publicar el dashboard."
+            )
+        else:
+            logger.warning(
+                "  ICIV_EMBED_GUARDIAN_KEY activo pero GUARDIAN_API_KEY ausente: "
+                "el bloque de noticias usara solo el snapshot."
+            )
+    else:
+        guardian_key = ""
+        logger.info(
+            "  Clave Guardian NO incrustada (por defecto). El bloque de noticias "
+            "usa guardian_headlines.csv. Para el fetch en vivo: ICIV_EMBED_GUARDIAN_KEY=1."
         )
 
     # ── Datos del Simulador ───────────────────────────────────────────────────
@@ -1460,7 +1519,20 @@ def fase_dashboard(
     _sim_base_row = _sim_complete.iloc[-1] if not _sim_complete.empty else df_plot.iloc[-1]
     sim_base_year = int(_sim_base_row["año"])
 
-    _sim_weight_total = sum(_d.iciv_weight for _, _d in _sim_usable) or 1.0
+    # Pesos del simulador: los MISMOS que publica el índice.
+    # Antes se usaba _d.iciv_weight (los pesos fijos 25/20/20/15/10/10) mientras
+    # cada slider se rotulaba "Peso AHP", que son otros (25,4/19,5/19,5/17,4/
+    # 9,1/9,1). El rótulo mentía y el botón "Volver a {año}" no reproducía el
+    # score publicado de ese año. Se toman de la estrategia AHP ya calculada.
+    _ahp_dim_w = {}
+    _ahp_res = getattr(ahp, "dimension_result_", None)
+    if _ahp_res and _ahp_res.get("weights"):
+        _ahp_dim_w = dict(_ahp_res["weights"])
+
+    def _dim_weight(key: str, dim) -> float:
+        return float(_ahp_dim_w.get(key, dim.iciv_weight))
+
+    _sim_weight_total = sum(_dim_weight(_k, _d) for _k, _d in _sim_usable) or 1.0
     _sim_dims: list[dict] = []
     for _key, _d in _sim_usable:
         _hist_vals = [round(float(v), 2) if v is not None and str(v) != "nan" else None
@@ -1470,7 +1542,7 @@ def fase_dashboard(
         _sim_dims.append({
             "id":      _key,
             "label":   _d.name,
-            "weight":  round(_d.iciv_weight / _sim_weight_total, 6),
+            "weight":  round(_dim_weight(_key, _d) / _sim_weight_total, 6),
             "current": _cur,
             "hist":    _hist_vals,
             "max_hist": max((v for v in _hist_vals if v is not None), default=100.0),
@@ -1818,6 +1890,29 @@ def fase_dashboard(
         logger.warning(f"  International news load failed: {_ne}")
     intl_news_json = json.dumps(_intl_news, cls=_NumpyEncoder, ensure_ascii=False)
 
+    # Snapshot de titulares de The Guardian generado en el fetch.
+    # Es la fuente PRIMARIA del bloque: el fetch en vivo del navegador es una
+    # mejora opcional que lo reemplaza si funciona. Antes el bloque dependia
+    # unicamente del fetch en vivo y mostraba "Failed to fetch" en crudo cuando
+    # un bloqueador o una red corporativa cortaba content.guardianapis.com.
+    _guardian_snapshot: list[dict] = []
+    _guardian_snapshot_date = ""
+    try:
+        _gh_path = settings.paths.raw_guardian_headlines
+        if _gh_path.exists() and _gh_path.stat().st_size > 40:
+            _gh_df = pd.read_csv(_gh_path, encoding="utf-8-sig").fillna("")
+            _guardian_snapshot = _gh_df.head(24).to_dict("records")
+            if _guardian_snapshot:
+                _guardian_snapshot_date = str(_guardian_snapshot[0].get("published_at", ""))[:10]
+        else:
+            logger.warning(
+                "  guardian_headlines.csv ausente: el bloque de noticias dependera "
+                "solo del fetch en vivo. Corre scripts/fetch_guardian.py."
+            )
+    except Exception as _ge:
+        logger.warning(f"  Guardian snapshot load failed: {_ge}")
+    guardian_snapshot_json = json.dumps(_guardian_snapshot, cls=_NumpyEncoder, ensure_ascii=False)
+
     _sector = sector_data or {}
     sector_json = json.dumps(_sector, cls=_NumpyEncoder, ensure_ascii=False)
     _sector_year = _sector.get("año_actual", int(last_row["año"]))
@@ -1996,7 +2091,11 @@ def fase_dashboard(
     _sector_labels  = _sector.get("sector_labels", {})
     _sector_met     = _sector.get("metodologia", "")
 
-    # KPI strip — 5 tarjetas de categoría
+    # KPI strip — una tarjeta por categoría.
+    # 'SIN DATOS' se calcula en resumen_categorias pero no se pintaba: si algún
+    # sector caía ahí, las tarjetas sumaban menos que el total de sectores sin
+    # ninguna explicación. Ahora se muestra, pero solo cuando hay alguno, para
+    # no dejar una tarjeta en cero permanente en el caso normal.
     _KPI_CATS = [
         ("PRIORITARIA", "Prioritaria", "#00d4aa"),
         ("ENTRADA",     "Entrada",     "#2ecc71"),
@@ -2004,6 +2103,8 @@ def fase_dashboard(
         ("ESPERAR",     "Esperar",     "#e67e22"),
         ("NO ENTRAR",   "No entrar",   "#e05c5c"),
     ]
+    if _sector_resumen.get("SIN DATOS", 0) > 0:
+        _KPI_CATS.append(("SIN DATOS", "Sin datos", "#8b949e"))
     _kpi_html = "".join(
         f'<div style="background:var(--card);border:1px solid {hex_}44;border-radius:10px;'
         f'padding:14px;text-align:center">'
@@ -2058,6 +2159,26 @@ def fase_dashboard(
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+// Chart.js y d3 vienen de CDN. Si no cargan —sin red, CDN bloqueado por una
+// extension o por la red corporativa— los canvas quedaban en blanco y el
+// dashboard parecia roto sin decir por que. Esto lo declara explicitamente.
+window.addEventListener('DOMContentLoaded', function() {{
+  var faltan = [];
+  if (typeof Chart === 'undefined') faltan.push('Chart.js');
+  if (typeof d3    === 'undefined') faltan.push('d3');
+  if (!faltan.length) return;
+  var aviso = document.createElement('div');
+  aviso.style.cssText = 'position:sticky;top:0;z-index:999;background:#3a1d1d;'
+    + 'border-bottom:1px solid #e05c5c;color:#f5c6c6;padding:12px 20px;'
+    + 'font-size:.8rem;line-height:1.5;font-family:Inter,sans-serif';
+  aviso.innerHTML = '<strong>Los graficos no se pudieron cargar.</strong> '
+    + 'No se alcanzo el CDN de ' + faltan.join(' y ') + ' (cdn.jsdelivr.net). '
+    + 'Revisa la conexion, un bloqueador de anuncios o el filtrado de tu red. '
+    + 'Las cifras y tablas de esta pagina siguen siendo validas.';
+  document.body.insertBefore(aviso, document.body.firstChild);
+}});
+</script>
 <style>
 :root{{
   --bg:#0d1117;--card:#1c2128;--border:#30363d;
@@ -2345,6 +2466,13 @@ details.more summary::-webkit-details-marker{{display:none}}
 details.more summary::before{{content:'ⓘ ';opacity:.8}}
 details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;margin-top:10px}}
 
+/* Sectores. Estas dos rejillas estaban en atributos style= inline, que ningun
+   @media alcanza: a 375px la seccion medía 458px y desbordaba la pagina en
+   horizontal. Pasan a clases para poder colapsarlas en pantallas estrechas. */
+.sector-kpis{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}}
+.sector-split{{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}}
+.sector-split > *{{min-width:0}}   /* deja que la columna fluida se encoja */
+
 @media(max-width:900px){{
   .charts-grid{{grid-template-columns:1fr}}
   .chart-card.wide{{grid-column:span 1}}
@@ -2353,6 +2481,11 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   .nav{{padding:0 16px}}
   .hero-grid{{grid-template-columns:1fr}}
   .hero-num{{font-size:3.4rem}}
+  .sector-split{{grid-template-columns:minmax(0,1fr)}}
+  .sector-kpis{{grid-template-columns:repeat(3,1fr)}}
+}}
+@media(max-width:560px){{
+  .sector-kpis{{grid-template-columns:repeat(2,1fr);gap:8px}}
 }}
 </style>
 </head>
@@ -2389,14 +2522,14 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <div class="hero-num" id="inicioPS">—</div>
       <div class="hero-lbl" id="inicioPL">—</div>
       <div class="hero-meta"><span id="inicioPF">—</span> · cobertura <span id="inicioPC">—</span></div>
-      <div class="hero-note">Cambio vs. mes anterior: <span id="inicioPD">—</span><br><span id="inicioPR">—</span></div>
+      <div class="hero-note"><span id="inicioPDW">Cambio vs. mes anterior: <span id="inicioPD">—</span><br></span><span id="inicioPR">—</span></div>
     </div>
     <div class="hero-card is-annual">
       <div class="hero-tag">Índice anual</div>
       <div class="hero-num" id="inicioAS">—</div>
       <div class="hero-lbl" id="inicioAL">—</div>
       <div class="hero-meta" id="inicioAY">—</div>
-      <div class="hero-note">Cambio vs. año anterior: <span id="inicioAD">—</span><br><span id="inicioAR">—</span></div>
+      <div class="hero-note"><span id="inicioADW">Cambio vs. año anterior: <span id="inicioAD">—</span><br></span><span id="inicioAR">—</span></div>
     </div>
   </div>
 
@@ -2412,7 +2545,9 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <div class="panel">
     <div class="block-title">Dónde está el problema</div>
-    <div class="block-sub">Cada área puntuada de 0 a 100. Más bajo, peor. Se muestra el último dato publicado de cada una ({dim_year_min}–{dim_year_max}).</div>
+    <div class="block-sub">Cada área puntuada de 0 a 100. Más bajo, peor. Se muestra el último dato publicado de cada una ({dim_year_min}–{dim_year_max}).
+      <strong>Un 0 significa el peor registro de Venezuela desde 2000, no ausencia de dato.</strong>
+      Donde la cobertura es parcial se indica junto a la barra.</div>
     <div class="chart-wrap" style="height:300px"><canvas id="cDimBar"></canvas></div>
   </div>
 
@@ -2511,16 +2646,13 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
     <div>
-      <div class="block-title">The Guardian — en vivo</div>
-      <div class="block-sub" style="margin-bottom:0">Cobertura de los últimos 90 días.</div>
+      <div class="block-title">The Guardian</div>
+      <div class="block-sub" style="margin-bottom:0">Cobertura de los últimos 90 días ·
+        <span id="newsSource">cargando…</span></div>
     </div>
-    <div class="news-filter" id="newsFilter" style="margin-bottom:0">
-      <span class="news-chip active" data-tag="all">Todas</span>
-      <span class="news-chip" data-tag="economy">Economía</span>
-      <span class="news-chip" data-tag="politics">Política</span>
-      <span class="news-chip" data-tag="world">Internacional</span>
-      <span class="news-chip" data-tag="business">Negocios</span>
-    </div>
+    <!-- Los chips los construye buildChips() con las secciones que realmente
+         devuelve la consulta. Fijarlos aquí garantizaba filtros vacíos. -->
+    <div class="news-filter" id="newsFilter" style="margin-bottom:0"></div>
   </div>
 
   <div class="news-grid" id="newsGrid">
@@ -2549,9 +2681,9 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     Cada sector reacciona distinto al clima del país. Este es el orden de atractivo hoy, y el riesgo que domina en cada uno.
   </p>
 
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px">{_kpi_html}</div>
+  <div class="sector-kpis">{_kpi_html}</div>
 
-  <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start">
+  <div class="sector-split">
     <div class="chart-card" style="padding:0;overflow:hidden">
       <div style="padding:18px 20px;border-bottom:1px solid var(--border)">
         <div class="block-title">Ranking</div>
@@ -2743,14 +2875,51 @@ new Chart(document.getElementById('cHistoria'), {{
 }});
 
 // ── Diagnóstico por área — último dato publicado de cada una ────────────────
+//
+// Una dimensión puede valer exactamente 0.00: con normalización Min-Max sobre
+// la serie propia de Venezuela, 0 = "el peor registro desde 2000", no "sin
+// dato". Ocurrió en 2025 con D3 institucional (CPI, Freedom House y WJP en su
+// mínimo histórico a la vez). Dibujada como barra de 0px era indistinguible de
+// un hueco de datos, que es exactamente lo contrario de lo que significa.
+//
+// Solución: barra con ancho mínimo visible, valor numérico impreso al lado y
+// cobertura declarada en el tooltip.
 const dimYears = {dim_years_js};
+const dimCovs  = {dim_covs_js};
+const DIM_MIN_BAR = 0.9;   // puntos de escala: ancho mínimo para que un 0 se vea
+
+// Plugin local: escribe el valor real al final de cada barra.
+const dimValueLabels = {{
+  id: 'dimValueLabels',
+  afterDatasetsDraw(chart) {{
+    const {{ ctx }} = chart;
+    const meta = chart.getDatasetMeta(0);
+    ctx.save();
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.textBaseline = 'middle';
+    meta.data.forEach((bar, i) => {{
+      const v   = radarVals[i];
+      const cov = dimCovs[i];
+      ctx.fillStyle = radarClrs[i];
+      ctx.textAlign = 'left';
+      let txt = v.toFixed(1);
+      // Cobertura parcial: se avisa en la propia barra, no solo en el tooltip.
+      if (cov != null && cov < 100) txt += '  (' + cov.toFixed(0) + '% cob.)';
+      ctx.fillText(txt, bar.x + 6, bar.y);
+    }});
+    ctx.restore();
+  }}
+}};
+
 new Chart(document.getElementById('cDimBar'), {{
   type: 'bar',
   data: {{
     labels: dimLbls,
     datasets: [{{
       label: 'Puntaje',
-      data: radarVals,
+      // El valor dibujado nunca baja de DIM_MIN_BAR para que un 0 real siga
+      // siendo visible. El número impreso y el tooltip usan el valor exacto.
+      data: radarVals.map(v => Math.max(v, DIM_MIN_BAR)),
       backgroundColor: radarClrs.map(c => c + '99'),
       borderColor: radarClrs,
       borderWidth: 1,
@@ -2760,17 +2929,28 @@ new Chart(document.getElementById('cDimBar'), {{
   options: {{
     indexAxis: 'y',
     responsive: true, maintainAspectRatio: false,
+    layout: {{ padding: {{ right: 96 }} }},   // espacio para las etiquetas de valor
     plugins: {{
       legend:{{ display:false }},
       tooltip:{{ callbacks:{{
-        label: c => c.parsed.x.toFixed(1) + ' / 100  ·  dato de ' + (dimYears[c.dataIndex] ?? '—')
+        label: c => radarVals[c.dataIndex].toFixed(1) + ' / 100  ·  dato de '
+                    + (dimYears[c.dataIndex] ?? '—'),
+        afterLabel: c => {{
+          const cov = dimCovs[c.dataIndex];
+          if (cov == null) return '';
+          return cov >= 100
+            ? 'Cobertura: todas las variables del área publicaron.'
+            : 'Cobertura: ' + cov.toFixed(0) + '% del peso del área. '
+              + 'El resto de sus variables aún no publica para ese año.';
+        }}
       }}}}
     }},
     scales: {{
       x: {{ min:0, max:100, grid:{{color:'#21262d'}} }},
       y: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }}
     }}
-  }}
+  }},
+  plugins: [dimValueLabels]
 }});
 
 // ── Navegación plana (SPA) ───────────────────────────────────────────────────
@@ -2842,6 +3022,11 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // ── Guardian News ─────────────────────────────────────────────────────────────
 (function() {{
   const INTL_NEWS = {intl_news_json};
+  // Snapshot generado por scripts/fetch_guardian.py en la última corrida del
+  // pipeline. Se pinta de inmediato: el bloque nunca queda vacío ni muestra un
+  // error de red en crudo. El fetch en vivo, si prospera, lo reemplaza.
+  const GUARDIAN_SNAPSHOT = {guardian_snapshot_json};
+  const SNAPSHOT_DATE     = '{_guardian_snapshot_date}';
   const GUARDIAN_KEY = '{guardian_key}';
   const PAGE_SIZE    = 12;
   let   allArticles  = [];
@@ -2855,9 +3040,17 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     return d.toISOString().split('T')[0];
   }}
 
-  function sectionTag(sectionId) {{
-    const map = {{ economy:'business', politics:'politics', world:'world', business:'business' }};
-    return Object.values(map).includes(sectionId) ? sectionId : 'other';
+  // Normaliza un artículo del snapshot (formato CSV) al formato de la API,
+  // para que renderCard() no tenga que distinguir de dónde vino.
+  function fromSnapshot(a) {{
+    return {{
+      webTitle:           a.title,
+      webUrl:             a.url,
+      webPublicationDate: a.published_at,
+      sectionId:          a.section_id,
+      sectionName:        a.section_name,
+      fields: {{ trailText: a.trail || '', thumbnail: a.thumbnail || '' }},
+    }};
   }}
 
   function fmtDate(iso) {{
@@ -2903,10 +3096,36 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       </div>`;
   }}
 
+  // Los chips se construyen a partir de las secciones que REALMENTE trae la
+  // consulta. Antes estaban fijos en HTML (Economía/Política/Internacional/
+  // Negocios) mientras la consulta iba clavada a `section=world`: todos los
+  // artículos volvían con sectionId 'world', así que tres de los cuatro filtros
+  // no podían devolver nada y siempre mostraban "no se encontraron artículos".
+  function buildChips() {{
+    const cont = document.getElementById('newsFilter');
+    if (!cont) return;
+    const counts = new Map();
+    allArticles.forEach(a => {{
+      const id = a.sectionId || 'other';
+      if (!counts.has(id)) counts.set(id, {{ name: a.sectionName || id, n: 0 }});
+      counts.get(id).n++;
+    }});
+    const secciones = [...counts.entries()]
+      .sort((x, y) => y[1].n - x[1].n)
+      .filter(([, v]) => v.n > 0);
+
+    cont.innerHTML =
+      `<span class="news-chip${{activeTag === 'all' ? ' active' : ''}}" data-tag="all">`
+      + `Todas (${{allArticles.length}})</span>`
+      + secciones.map(([id, v]) =>
+          `<span class="news-chip${{activeTag === id ? ' active' : ''}}" data-tag="${{id}}">`
+          + `${{v.name}} (${{v.n}})</span>`).join('');
+  }}
+
   function applyFilter() {{
     filtered = activeTag === 'all'
       ? allArticles
-      : allArticles.filter(a => sectionTag(a.sectionId || '') === activeTag || (a.sectionId || '').includes(activeTag));
+      : allArticles.filter(a => (a.sectionId || 'other') === activeTag);
     shown = 0;
     showMore(true);
   }}
@@ -2926,12 +3145,38 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     btnMore.style.display = shown < filtered.length ? 'inline-block' : 'none';
   }}
 
+  function setNewsSource(txt) {{
+    const el = document.getElementById('newsSource');
+    if (el) el.textContent = txt;
+  }}
+
   async function loadNews() {{
     renderIntlNews();
     const grid = document.getElementById('newsGrid');
+
+    // 1) Snapshot primero — el bloque queda utilizable de inmediato y sin red.
+    if (GUARDIAN_SNAPSHOT.length) {{
+      allArticles = GUARDIAN_SNAPSHOT.map(fromSnapshot);
+      buildChips();
+      applyFilter();
+      setNewsSource('Snapshot del pipeline' + (SNAPSHOT_DATE ? ' · último titular ' + SNAPSHOT_DATE : ''));
+    }}
+
+    // 2) Fetch en vivo como mejora. Sin key incrustada no se intenta siquiera.
+    if (!GUARDIAN_KEY) {{
+      if (!GUARDIAN_SNAPSHOT.length) {{
+        grid.innerHTML = `<div class="news-status">No hay titulares disponibles.
+          Corre <code>scripts/fetch_guardian.py</code> para generar el snapshot.<br>
+          <a href="https://www.theguardian.com/world/venezuela" target="_blank" rel="noopener"
+             style="color:var(--accent)">Ver en The Guardian →</a></div>`;
+      }}
+      return;
+    }}
+
+    // Sin `section=world`: esa restricción dejaba fuera us-news, opinión,
+    // medio ambiente y global-development, que son parte real de la cobertura.
     const url  = `https://content.guardianapis.com/search`
-               + `?section=world&tag=world/venezuela`
-               + `&q=Venezuela`
+               + `?tag=world/venezuela`
                + `&api-key=${{GUARDIAN_KEY}}`
                + `&order-by=newest&page-size=50`
                + `&show-fields=trailText,thumbnail`
@@ -2940,16 +3185,25 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       const resp = await fetch(url);
       if (!resp.ok) throw new Error(`HTTP ${{resp.status}}`);
       const data = await resp.json();
-      allArticles = data.response?.results || [];
-      if (allArticles.length === 0) {{
-        grid.innerHTML = '<div class="news-status">No se encontraron noticias recientes sobre Venezuela.</div>';
-        return;
-      }}
+      const live = data.response?.results || [];
+      if (live.length === 0) throw new Error('sin resultados');
+      allArticles = live;
+      activeTag = 'all';
+      buildChips();
       applyFilter();
+      setNewsSource('En vivo desde The Guardian · últimos 90 días');
     }} catch(err) {{
-      grid.innerHTML = `<div class="news-status">No se pudo cargar noticias: ${{err.message}}<br>
-        <a href="https://www.theguardian.com/world/venezuela" target="_blank" rel="noopener"
-           style="color:var(--accent)">Ver en The Guardian →</a></div>`;
+      // Caída del fetch en vivo: NO se borra lo ya pintado. El snapshot se
+      // queda y solo se avisa que no pudo refrescarse.
+      if (GUARDIAN_SNAPSHOT.length) {{
+        setNewsSource('Snapshot del pipeline'
+          + (SNAPSHOT_DATE ? ' · último titular ' + SNAPSHOT_DATE : '')
+          + ' — no se pudo refrescar en vivo (' + err.message + ')');
+      }} else {{
+        grid.innerHTML = `<div class="news-status">No se pudo cargar noticias: ${{err.message}}<br>
+          <a href="https://www.theguardian.com/world/venezuela" target="_blank" rel="noopener"
+             style="color:var(--accent)">Ver en The Guardian →</a></div>`;
+      }}
     }}
   }}
 
@@ -3055,7 +3309,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           .replace('Sector Energético y Petróleo','Energía')
           .replace('Entorno Institucional y Legal','Institucional')
           .replace('Apertura Comercial y Financiera','Comercial')
-          .replace('Capital Humano e Infraestructura','Cap. Humano')
+          .replace('Capital Humano e Infraestructura Social','Cap. Humano')
           .replace('Percepción Internacional','Percepción');
         return `<div style="margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:3px">
@@ -3086,7 +3340,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             .replace('Sector Energético y Petróleo','Energía')
             .replace('Entorno Institucional y Legal','Institucional')
             .replace('Apertura Comercial y Financiera','Comercial')
-            .replace('Capital Humano e Infraestructura','Capital Humano')
+            .replace('Capital Humano e Infraestructura Social','Capital Humano')
             .replace('Percepción Internacional','Percepción')}}</span>
           <span style="font-size:.76rem;color:var(--accent);font-weight:600;min-width:36px;text-align:right"
             id="simVal-${{d.id}}">${{d.current.toFixed(1)}}</span>
@@ -3560,37 +3814,83 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     _set('inicioPL', p.is_reliable ? _lbl(p.score) : 'Lectura provisional', pColor);
     _set('inicioPF', (p.label_mes || '') + ' ' + (p.year || ''));
     _set('inicioPC', p.coverage != null ? p.coverage + '%' : '—');
-    var elPD = document.getElementById('inicioPD');
-    if (elPD) elPD.innerHTML = _deltaStr(p.delta, 1, ' pts');
-    _set('inicioPR', p.is_reliable
-      ? 'Todas las fuentes del mes ya publicaron.'
-      : 'Faltan fuentes por publicar. Último mes completo: ' + p.reliable_label_mes + ' ' +
-        p.reliable_year + ' con ' + p.reliable_score.toFixed(1) + '.');
+    // Mismo criterio que el índice anual: el delta de un mes provisional
+    // compara coberturas distintas (el mes en curso contra el último mes
+    // completo), así que no mide variación real. Se suprime.
+    var elPDW = document.getElementById('inicioPDW');
+    if (p.is_reliable) {{
+      var elPD = document.getElementById('inicioPD');
+      if (elPD) elPD.innerHTML = _deltaStr(p.delta, 1, ' pts');
+      _set('inicioPR', 'Todas las fuentes del mes ya publicaron.');
+    }} else {{
+      if (elPDW) elPDW.style.display = 'none';
+      _set('inicioPR',
+        'Lectura provisional: faltan fuentes por publicar, no comparable con el mes previo. ' +
+        'Último mes completo: ' + p.reliable_label_mes + ' ' + p.reliable_year +
+        ' con ' + p.reliable_score.toFixed(1) + '.');
+    }}
   }}
 
   // ── Índice anual ──
+  //
+  // La tarjeta encabeza SIEMPRE con el año en curso, aunque su cobertura sea
+  // parcial — igual que la señal mensual encabeza con el mes en curso.
+  //
+  // Lo que sí se suprime es el DELTA interanual mientras el año sea provisional.
+  // Motivo: cuando faltan dimensiones, el agregador redistribuye sus pesos entre
+  // las presentes, y en Venezuela las que publican tarde (D3 institucional,
+  // D5 capital humano) son justamente las de peor puntaje. Eso hace que el score
+  // provisional SUBA por calendario y no por país, así que un "+17,1 pts" contra
+  // un año con 83,8% de cobertura no mide ningún cambio real. En su lugar se
+  // declara la cobertura y el score del último año completo, como referencia.
   if (VH.iciv) {{
     var ic = VH.iciv;
     var icColor = ic.color || _col(ic.score);
     _set('inicioAS', ic.score.toFixed(1), icColor);
-    _set('inicioAL', _lbl(ic.score), icColor);
+    _set('inicioAL', ic.is_reliable ? _lbl(ic.score) : 'Lectura provisional', icColor);
     _set('inicioAY', ic.year + ' · cobertura ' + (ic.coverage != null ? ic.coverage + '%' : '—'));
-    var elAD = document.getElementById('inicioAD');
-    if (elAD) elAD.innerHTML = _deltaStr(ic.delta, 1, ' pts');
-    _set('inicioAR', ic.is_reliable
-      ? 'Todas las fuentes del año ya publicaron.'
-      : 'Faltan fuentes por publicar. Último año completo: ' + ic.reliable_year +
+
+    var elADW = document.getElementById('inicioADW');
+    if (ic.is_reliable) {{
+      var elAD = document.getElementById('inicioAD');
+      if (elAD) elAD.innerHTML = _deltaStr(ic.delta, 1, ' pts');
+      _set('inicioAR', 'Todas las fuentes del año ya publicaron.');
+    }} else {{
+      if (elADW) elADW.style.display = 'none';
+      _set('inicioAR',
+        'Lectura provisional: faltan fuentes por publicar, no comparable con el año ' +
+        'previo. Las que aún no salen son las de peor puntaje, así que este número ' +
+        'tiende a bajar al cerrar el año. Último año completo: ' + ic.reliable_year +
         ' con ' + ic.reliable_score.toFixed(1) + '.');
+    }}
   }}
 
   // ── Señales del momento ──
+  // Cada tarjeta declara que mide EXACTAMENTE, no un apodo. Las etiquetas
+  // anteriores ("Diáspora", "Nervios global", "Inflación") no permitían saber
+  // que había detrás del número; "Diáspora · personas fuera" era ademas
+  // incorrecta: UNHCR coo=VEN cuenta refugiados y solicitantes de asilo
+  // REGISTRADOS (~1,6 M), no los ~7,9 M de la diaspora total segun R4V/OIM.
+  // `nota` se muestra como tooltip; `proy` marca las series que son proyeccion.
   var ICARDS = [
-    {{ key:'wti',          label:'Petróleo WTI',   fmt:function(v){{return '$' + v.toFixed(1)}},        unit:'por barril' }},
-    {{ key:'petroleo_ven', label:'Producción VEN', fmt:function(v){{return (v/1000).toFixed(2) + 'M'}}, unit:'barriles/día' }},
-    {{ key:'inflacion',    label:'Inflación',      fmt:function(v){{return v.toFixed(0) + '%'}},        unit:'anual' }},
-    {{ key:'migrantes',    label:'Diáspora',       fmt:function(v){{return v.toFixed(1) + 'M'}},        unit:'personas fuera' }},
-    {{ key:'fh',           label:'Libertades',     fmt:function(v){{return v.toFixed(0) + '/100'}},     unit:'Freedom House' }},
-    {{ key:'vix',          label:'Nervios global', fmt:function(v){{return v.toFixed(1)}},              unit:'índice VIX' }},
+    {{ key:'wti',          label:'Petróleo WTI',
+       fmt:function(v){{return '$' + v.toFixed(1)}},        unit:'USD por barril',
+       nota:'West Texas Intermediate, precio spot mensual (FRED).' }},
+    {{ key:'petroleo_ven', label:'Producción petrolera',
+       fmt:function(v){{return (v/1000).toFixed(2) + 'M'}}, unit:'barriles/día (EIA)',
+       nota:'Crudo incl. condensado de arrendamiento. EIA International, producto 57.' }},
+    {{ key:'inflacion',    label:'Inflación (deflactor PIB)',
+       fmt:function(v){{return v.toFixed(0) + '%'}},        unit:'anual · FMI', proy:true,
+       nota:'Deflactor del PIB, no IPC. El dato del año en curso es proyección del World Economic Outlook, no inflación observada.' }},
+    {{ key:'migrantes',    label:'Refugiados y asilo',
+       fmt:function(v){{return v.toFixed(1) + 'M'}},        unit:'registrados ante ACNUR',
+       nota:'UNHCR coo=VEN: refugiados + solicitantes de asilo registrados. NO es la diáspora total, estimada en ~7,9 M por R4V/OIM, que incluye migrantes sin registro.' }},
+    {{ key:'fh',           label:'Libertades civiles y políticas',
+       fmt:function(v){{return v.toFixed(0) + '/100'}},     unit:'Freedom House',
+       nota:'Freedom in the World, puntaje agregado 0-100. Más alto, más libertades.' }},
+    {{ key:'vix',          label:'Volatilidad de mercados',
+       fmt:function(v){{return v.toFixed(1)}},              unit:'índice VIX · global',
+       nota:'CBOE VIX: aversión al riesgo en mercados globales. No es un indicador de Venezuela.' }},
   ];
   var igrid = document.getElementById('inicioGrid');
   if (igrid) {{
@@ -3598,10 +3898,16 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       var d = VH[c.key];
       if (!d) return '';
       var fecha = d.mes ? (MESES[d.mes] + ' ' + d.año) : String(d.año);
-      return '<div class="kpi">'
+      // Una serie anual cuyo último dato es el año en curso todavía no ocurrió:
+      // se marca como proyección en vez de presentarse como observación.
+      var esProy = !!c.proy && !d.mes && d.año >= {current_year_val};
+      var sub    = c.unit + ' · ' + (esProy ? 'proyección ' : '') + fecha;
+      return '<div class="kpi" title="' + c.nota.replace(/"/g,'&quot;') + '">'
            + '<div class="kpi-lbl">' + c.label + '</div>'
-           + '<div class="kpi-val">' + c.fmt(d.valor) + '</div>'
-           + '<div class="kpi-sub">' + c.unit + ' · ' + fecha + '</div>'
+           + '<div class="kpi-val">' + c.fmt(d.valor)
+           + (esProy ? '<span style="font-size:.75rem;color:var(--muted);font-weight:400"> proy.</span>' : '')
+           + '</div>'
+           + '<div class="kpi-sub">' + sub + '</div>'
            + '</div>';
     }}).join('');
   }}

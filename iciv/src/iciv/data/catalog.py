@@ -116,8 +116,13 @@ CATALOG: dict[str, VariableMetadata] = {
         "desempleo_pct", "Tasa de desempleo",
         SourceID.IMF, "%", Direction.NEGATIVE, DimensionID.COMMERCIAL, 0.24, 2000,
     ),
+    # OJO: la API de UNHCR con coo=VEN devuelve refugiados + solicitantes de
+    # asilo REGISTRADOS (~1.6M en 2025), no el total de la diáspora venezolana
+    # (~7.9M según R4V/OIM, que incluye migrantes no registrados). La etiqueta
+    # anterior, "Migrantes y refugiados venezolanos", sobredimensionaba lo que
+    # la serie realmente mide. Ver scripts/fetch_unhcr.py, nota de cobertura.
     "migrantes_vzla_millones": _v(
-        "migrantes_vzla_millones", "Migrantes y refugiados venezolanos",
+        "migrantes_vzla_millones", "Refugiados y solicitantes de asilo venezolanos",
         SourceID.UNHCR, "millones", Direction.NEGATIVE, DimensionID.COMMERCIAL, 0.24, 2000,
     ),
     "lsci_conectividad_maritima": _v(

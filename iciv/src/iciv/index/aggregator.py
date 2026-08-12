@@ -29,6 +29,26 @@ logger = logging.getLogger(__name__)
 
 AggregationMethod = Literal["linear", "geometric"]
 
+# Cobertura mínima de una DIMENSIÓN para publicar su score (fracción 0–1).
+#
+# Motivo (2026-08-11): el agregador publicaba el score de una dimensión con
+# cualquier variable disponible, sin piso. En 2025 eso daba
+# D5_capital_humano = 0.0 apoyado en UNA sola variable —
+# ilo_empleo_informal_pct, el 18% del peso de la dimensión— y la barra del
+# dashboard lo dibujaba con la misma autoridad que una dimensión con 100% de
+# cobertura. Lo mismo con D4_comercial en 2026 (23.7%, solo LSCI).
+#
+# 0.50 = la mitad del peso AHP de la dimensión, el mismo criterio que ya usaba
+# SectorRadar._base_score. Por debajo del umbral la dimensión queda NaN y sus
+# pesos se redistribuyen, igual que cualquier otra dimensión sin dato.
+#
+# EFECTO SECUNDARIO CONOCIDO: descartar una dimensión baja SUBE el índice del
+# año, porque la redistribución de pesos elimina justamente el peor dato. Por
+# eso el score de un año con poca cobertura se marca 'Provisional' y el
+# dashboard suprime el delta interanual (ver main.py, tarjeta 'Índice anual').
+# La cobertura por dimensión se expone en las columnas cobertura_D*.
+MIN_DIMENSION_COVERAGE = 0.50
+
 # Tabla de categorías de riesgo.
 #
 # ESCALA RELATIVA, NO COMPARABLE ENTRE PAÍSES (corregido 2026-08-11)
@@ -77,6 +97,9 @@ class ICIVAggregator:
     Args:
         method:   método de agregación ('linear' o 'geometric')
         strategy: estrategia de ponderación. Si None, usa FixedWeights.
+        min_dimension_coverage: fracción MÍNIMA del peso de una dimensión que
+                  debe estar cubierta por variables con dato real para publicar
+                  su score. Por debajo del umbral la dimensión queda NaN.
 
     Ejemplo:
         aggregator = ICIVAggregator(method="linear")
@@ -88,9 +111,11 @@ class ICIVAggregator:
         self,
         method: AggregationMethod = "linear",
         strategy: WeightingStrategy | None = None,
+        min_dimension_coverage: float = MIN_DIMENSION_COVERAGE,
     ) -> None:
         self.method = method
         self.strategy = strategy or FixedWeights()
+        self.min_dimension_coverage = float(min_dimension_coverage)
 
     def compute(self, df_normalized: pd.DataFrame) -> pd.DataFrame:
         """
@@ -109,9 +134,14 @@ class ICIVAggregator:
         """
         result = pd.DataFrame({"año": df_normalized["año"]})
 
-        # 1. Calcular puntaje por dimensión
+        # 1. Calcular puntaje y cobertura por dimensión.
+        #    La cobertura es la fracción del peso de la dimensión cubierta por
+        #    variables con dato real ese año; se publica para que el dashboard
+        #    pueda distinguir "0 = el peor registro" de "0 con 18% de cobertura".
         for dim_id, dim in DIMENSIONS.items():
-            result[dim_id.value] = self._score_dimension(df_normalized, dim)
+            scores, cov = self._score_dimension(df_normalized, dim)
+            result[dim_id.value] = scores
+            result[f"cobertura_{dim_id.value}"] = (cov * 100).round(1)
 
         # 2. Determinar pesos de dimensiones
         # Si la estrategia tiene resultados AHP (dimension_result_), usarlos.
@@ -170,9 +200,16 @@ class ICIVAggregator:
 
     # ── Métodos privados ──────────────────────────────────────────────────────
 
-    @staticmethod
-    def _score_dimension(df: pd.DataFrame, dim: Dimension) -> pd.Series:
+    def _score_dimension(
+        self, df: pd.DataFrame, dim: Dimension
+    ) -> tuple[pd.Series, pd.Series]:
         """Calcula el puntaje de una dimensión como suma ponderada de sus variables.
+
+        Devuelve (scores, cobertura) donde cobertura es la fracción 0–1 del peso
+        de la dimensión cubierta por variables con dato real ese año. Si la
+        cobertura cae por debajo de self.min_dimension_coverage el score se
+        publica como NaN: un promedio sobre una fracción mínima del peso no es
+        representativo de la dimensión (ver MIN_DIMENSION_COVERAGE).
 
         Metodología de cobertura temporal:
           Para cada año individualmente, solo se usan las variables que tienen dato
@@ -193,23 +230,36 @@ class ICIVAggregator:
 
         if not candidate_vars:
             logger.warning("Dimensión '%s': ninguna variable con datos disponibles", dim.name)
-            return pd.Series(np.nan, index=df.index)
+            nan_series = pd.Series(np.nan, index=df.index)
+            return nan_series, pd.Series(0.0, index=df.index)
 
-        def _score_row(row: pd.Series) -> float:
-            """Score de la dimensión para una fila (año) específica."""
+        # Denominador de cobertura: peso total de las variables que la dimensión
+        # PODRÍA cubrir (las que tienen al menos un dato en toda la serie).
+        candidate_weight = sum(v.weight for v in candidate_vars) or 1.0
+
+        def _row(row: pd.Series) -> tuple[float, float]:
+            """(score, cobertura) de la dimensión para una fila (año) específica."""
             present = [
                 (v, float(row[v.column]))
                 for v in candidate_vars
                 if pd.notna(row.get(v.column))
             ]
             if not present:
-                return np.nan
+                return np.nan, 0.0
             total_w = sum(v.weight for v, _ in present)
+            coverage = total_w / candidate_weight
             if total_w == 0.0:
-                return np.nan
-            return round(sum(val * v.weight / total_w for v, val in present), 2)
+                return np.nan, coverage
+            if coverage < self.min_dimension_coverage:
+                # Cobertura insuficiente: no se publica score, pero SÍ la
+                # cobertura, para que el consumidor sepa por qué falta.
+                return np.nan, coverage
+            return round(sum(val * v.weight / total_w for v, val in present), 2), coverage
 
-        return df.apply(_score_row, axis=1)
+        pairs = df.apply(_row, axis=1)
+        scores = pairs.map(lambda t: t[0])
+        coverage = pairs.map(lambda t: t[1])
+        return scores, coverage
 
     def _aggregate_dimensions(
         self,

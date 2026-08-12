@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import zlib
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,9 @@ DIM_COLS = [
     "D5_capital_humano",
     "D6_percepcion",
 ]
+
+# Dimensiones mínimas con dato para que un año sirva de base al radar (de 6).
+MIN_PROFILE_DIMS = 5
 
 DIM_LABELS = {
     "D1_macro":          "Estabilidad Macroeconómica",
@@ -111,6 +115,26 @@ _DEMANDA_ADJ_TEXTO = {"alta": "defensiva y estructuralmente resiliente", "media"
 _SANCION_ADJ_TEXTO = {"alta": "alta", "media": "moderada", "baja": "baja"}
 
 
+def _fmt_risk(texto: str) -> str:
+    """Normaliza una etiqueta de riesgo a la forma 'Riesgo <descripcion>'.
+
+    `mapa_riesgo_dimension` guarda las etiquetas ya prefijadas ("Riesgo
+    institucional / contractual") mientras que `riesgos_candidatos` las guarda
+    desnudas y en minúscula ("institucional / contractual"). Como
+    _get_main_risk puede devolver cualquiera de las dos, la columna "Riesgo
+    principal" del dashboard mezclaba ambos formatos en la misma tabla.
+    """
+    t = (texto or "").strip()
+    if not t:
+        return "Riesgo no determinado"
+    return t if t.lower().startswith("riesgo") else f"Riesgo {t[0].lower()}{t[1:]}"
+
+
+def _is_num(v) -> bool:
+    """True si v es un número utilizable (no None, no NaN)."""
+    return v is not None and not (isinstance(v, float) and v != v)
+
+
 class SectorRadar:
     """
     Motor del Investment Entry Radar Sectorial.
@@ -159,10 +183,18 @@ class SectorRadar:
         self.df = df.sort_values("año").reset_index(drop=True)
 
         self.años = self.df["año"].tolist()
-        complete_years = self.df.dropna(subset=DIM_COLS)["año"].tolist()
-        # Radar sectorial requiere perfil dimensional completo; no fuerza el
-        # ultimo año provisional si las fuentes anuales aun no publicaron.
-        self.año_actual = complete_years[-1] if complete_years else self.años[-1]
+        # Radar sectorial: el perfil dimensional debe estar razonablemente
+        # completo. Antes se exigían las 6 dimensiones; con el piso de cobertura
+        # del agregador (aggregator.MIN_DIMENSION_COVERAGE) una dimensión puede
+        # quedar NaN por baja cobertura y eso empujaba el radar dos años atrás.
+        # Se pide MIN_PROFILE_DIMS de 6 —suficiente para que la redistribución
+        # de pesos de _base_score sea representativa— en vez de las 6 exactas.
+        usable_years = [
+            int(row["año"])
+            for _, row in self.df.iterrows()
+            if sum(1 for d in DIM_COLS if pd.notna(row.get(d))) >= MIN_PROFILE_DIMS
+        ]
+        self.año_actual = usable_years[-1] if usable_years else self.años[-1]
         self.iciv_actual = float(self.df.loc[self.df["año"] == self.año_actual, "iciv_score"].iloc[0])
 
     # ── API pública ───────────────────────────────────────────────────────────
@@ -268,13 +300,14 @@ class SectorRadar:
             "sector_labels": {sid: scfg["label"] for sid, scfg in self.sectores.items()},
             "categorias": self.categorias,
             "metodologia": (
-                "Investment Entry Radar Sectorial v1.0. "
-                "Score base = Σ DimScore(d) × PesoSectorial(s,d). "
+                "Investment Entry Radar Sectorial v1.1. "
+                "Score base = Σ DimScore(d) × PesoSectorial(s,d), con los pesos "
+                "renormalizados sobre las dimensiones con dato (mínimo 50% del peso). "
                 "Ajustadores: penalizacion regulatoria, penalizacion CAPEX "
                 "(escala con ICIV < 50), bonus de demanda defensiva. "
                 f"ICIV actual: {self.iciv_actual:.1f}/100. "
-                "Umbrales: ≤35 No entrar · 36-50 Esperar · 51-65 Piloto · "
-                "66-80 Entrada · >80 Prioritaria."
+                "Umbrales: <35 No entrar · 35-50 Esperar · 50-65 Piloto · "
+                "65-80 Entrada · ≥80 Prioritaria."
             ),
         }
 
@@ -372,15 +405,21 @@ class SectorRadar:
         2. Exposicion regulatoria del sector
         3. Candidatos de riesgo propios del sector
         """
-        # Forzar riesgo sancionatorio si exposición alta y score bajo
-        if sector_cfg["ajustadores"]["sancion"] == "alta" and final_score < 55:
-            return "Riesgo sancionatorio"
+        # Forzar riesgo sancionatorio cuando la penalizacion por sanciones es,
+        # de hecho, el lastre dominante. Antes bastaba con `final_score < 55`,
+        # un umbral arbitrario que con el ICIV actual se cumplia siempre y hacia
+        # que los tres sectores de exposicion alta mostraran la misma etiqueta
+        # sin que el dato la respaldara.
+        d3 = dim_scores.get("D3_institucional")
+        sp = self._sanction_penalty(sector_cfg, d3) if _is_num(d3) else 0.0
+        if sector_cfg["ajustadores"]["sancion"] == "alta" and sp >= 5.0:
+            return _fmt_risk("sancionatorio")
 
         # Dimensión con menor contribución ponderada (excluir dimensiones con peso 0 o sin dato)
         dim_activas = {d: weighted[d] for d in DIM_COLS
                        if sector_cfg["pesos"][d] > 0 and weighted.get(d) is not None}
         if not dim_activas:
-            return sector_cfg["riesgos_candidatos"][0]
+            return _fmt_risk(sector_cfg["riesgos_candidatos"][0])
 
         dim_debil = min(dim_activas, key=dim_activas.get)
 
@@ -391,9 +430,9 @@ class SectorRadar:
         # Heurística: si D3 está entre las 2 peores y hay candidato institucional
         dim_sorted = sorted(dim_activas, key=dim_activas.get)
         if "D3_institucional" in dim_sorted[:2] and any("institucional" in c or "contractual" in c for c in candidatos):
-            return next(c for c in candidatos if "institucional" in c or "contractual" in c)
+            return _fmt_risk(next(c for c in candidatos if "institucional" in c or "contractual" in c))
 
-        return riesgo_dim
+        return _fmt_risk(riesgo_dim)
 
     # ── Racional ejecutivo ────────────────────────────────────────────────────
 
@@ -408,11 +447,22 @@ class SectorRadar:
     ) -> str:
         short = rec["short"]
         templates = _RATIONALE_TEMPLATES.get(short, _RATIONALE_TEMPLATES["ESPERAR"])
-        template = templates[hash(sector_id) % len(templates)]
+        # crc32 en vez de hash(): el hash de strings de Python esta aleatorizado
+        # por proceso (PYTHONHASHSEED), asi que la plantilla elegida cambiaba
+        # entre corridas y producia diffs espurios en el dashboard versionado.
+        template = templates[zlib.crc32(sector_id.encode("utf-8")) % len(templates)]
 
-        # Dimensión más fuerte y más débil (con peso > 0)
+        # Dimensión más fuerte y más débil (con peso > 0 y dato real).
+        # Sin el filtro _is_num, una dimensión NaN propagaba el NaN al producto
+        # y sorted() la ordenaba de forma arbitraria, dejando "nan/100" en el texto.
         pesos = sector_cfg["pesos"]
-        activas = [(d, dim_scores[d] * pesos[d]) for d in DIM_COLS if pesos[d] > 0]
+        activas = [(d, dim_scores[d] * pesos[d]) for d in DIM_COLS
+                   if pesos[d] > 0 and _is_num(dim_scores.get(d))]
+        if not activas:
+            return (
+                f"{sector_cfg['label']}: sin dimensiones con dato suficiente para "
+                f"emitir un racional. Riesgo principal: {riesgo}."
+            )
         activas_sorted = sorted(activas, key=lambda x: x[1], reverse=True)
         dim_fuerte_id = activas_sorted[0][0]
         dim_debil_id = activas_sorted[-1][0]

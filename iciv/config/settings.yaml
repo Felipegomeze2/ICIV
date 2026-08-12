@@ -312,6 +312,13 @@ normalization:
 aggregation:
   method: "linear"         # "linear" | "geometric"
   use_fixed_weights: true  # false = usar PCA
+  # Cobertura MÍNIMA del peso de una dimensión para publicar su score (0-1).
+  # Por debajo del umbral la dimensión queda NaN en vez de publicar un promedio
+  # apoyado en una fracción mínima de sus variables.
+  # 0.50 descarta D5 en 2025 (18% del peso, solo ilo_empleo_informal_pct) y
+  # D4 en 2026 (23.7%, solo LSCI). Poner 0.0 restaura el comportamiento previo.
+  # Ver src/iciv/index/aggregator.py -> MIN_DIMENSION_COVERAGE.
+  min_dimension_coverage: 0.50
 
 # ── Imputación ────────────────────────────────────────────────────────────────
 imputation:

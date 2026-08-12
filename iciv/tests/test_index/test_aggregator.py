@@ -79,3 +79,90 @@ def test_aggregator_invalid_method():
         agg = ICIVAggregator(method="invalid")  # type: ignore
         row = pd.Series({"D1_macro": 50.0})
         agg._aggregate_dimensions(row, ["D1_macro"], {"D1_macro": 1.0})
+
+
+# ── Piso de cobertura por dimensión ──────────────────────────────────────────
+# Regresión de 2026-08-11: el agregador publicaba el score de una dimensión con
+# cualquier variable disponible. En 2025 eso daba D5_capital_humano = 0.0 sobre
+# UNA sola variable (18% del peso de la dimensión) y el dashboard lo dibujaba
+# igual que una dimensión con cobertura completa.
+
+def _one_variable_per_dimension_df() -> pd.DataFrame:
+    """Serie de dos años que reproduce el patrón real de publicación tardía.
+
+    2024: todas las variables publicaron (cobertura 100% en cada dimensión).
+    2025: solo la primera variable de cada dimensión; las demás aún no salen.
+
+    El año 2024 es imprescindible: el denominador de cobertura son las variables
+    con AL MENOS un dato en toda la serie. Una variable ausente del dataset
+    entero (fuente retirada) no debe deprimir la cobertura para siempre, así que
+    queda fuera del denominador. Sin 2024, las variables que faltan en 2025 no
+    serían candidatas y la cobertura daría 100% — que es lo correcto, pero no lo
+    que este test quiere ejercitar.
+    """
+    rows = {"año": [2024, 2025]}
+    for dim in DIMENSIONS.values():
+        for i, v in enumerate(dim.variables):
+            rows[v.column] = [40.0, 40.0] if i == 0 else [40.0, np.nan]
+    return pd.DataFrame(rows)
+
+
+def test_dimension_coverage_column_is_emitted(sample_normalized_df):
+    """compute() publica la cobertura de cada dimensión junto a su score."""
+    result = ICIVAggregator(method="linear").compute(sample_normalized_df)
+    for dim_id in DIMENSIONS:
+        col = f"cobertura_{dim_id.value}"
+        assert col in result.columns, f"falta {col}"
+        cov = result[col].dropna()
+        assert (cov >= 0).all() and (cov <= 100).all()
+
+
+def test_low_coverage_dimension_is_not_published():
+    """Una dimensión bajo el umbral queda NaN, pero su cobertura sí se informa."""
+    df = _one_variable_per_dimension_df()
+    result = ICIVAggregator(method="linear", min_dimension_coverage=0.50).compute(df)
+    y2025 = result[result["año"] == 2025].iloc[0]
+    y2024 = result[result["año"] == 2024].iloc[0]
+
+    bajo_umbral = 0
+    for dim_id, dim in DIMENSIONS.items():
+        peso_primera = dim.variables[0].weight
+        col, cov_col = dim_id.value, f"cobertura_{dim_id.value}"
+
+        # 2024 tiene cobertura completa: siempre se publica.
+        assert pd.notna(y2024[col]), f"{col}: 2024 tiene 100% de cobertura"
+
+        if peso_primera < 0.50:
+            bajo_umbral += 1
+            assert pd.isna(y2025[col]), (
+                f"{col}: cobertura {peso_primera:.0%} < 50% pero se publicó score"
+            )
+            # la cobertura se informa aunque el score no se publique
+            assert y2025[cov_col] > 0, f"{cov_col}: debería informarse igual"
+            assert y2025[cov_col] < 50.0
+        else:
+            assert pd.notna(y2025[col]), f"{col}: cobertura suficiente, debe publicarse"
+
+    assert bajo_umbral > 0, "el fixture no ejercita ninguna dimensión bajo el umbral"
+
+
+def test_coverage_floor_zero_restores_previous_behaviour():
+    """Con umbral 0 se publica todo, como antes del cambio."""
+    df = _one_variable_per_dimension_df()
+    result = ICIVAggregator(method="linear", min_dimension_coverage=0.0).compute(df)
+    for dim_id in DIMENSIONS:
+        assert result[dim_id.value].notna().all(), f"{dim_id.value} debería publicarse"
+
+
+def test_full_coverage_is_unaffected_by_floor(sample_normalized_df):
+    """El piso no altera los años cuyas dimensiones sí tienen cobertura suficiente."""
+    sin_piso = ICIVAggregator(method="linear", min_dimension_coverage=0.0)
+    con_piso = ICIVAggregator(method="linear", min_dimension_coverage=0.50)
+    a = sin_piso.compute(sample_normalized_df)
+    b = con_piso.compute(sample_normalized_df)
+    for dim_id in DIMENSIONS:
+        col, cov_col = dim_id.value, f"cobertura_{dim_id.value}"
+        completos = b[cov_col] >= 50.0
+        pd.testing.assert_series_equal(
+            a.loc[completos, col], b.loc[completos, col], check_names=False
+        )

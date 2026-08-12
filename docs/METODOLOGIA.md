@@ -241,6 +241,34 @@ elegidos**. Se regeneran con `python main.py --validate-only`.
 5. **Renormalización por disponibilidad:** si una observación falta, su peso se
    redistribuye entre las variables presentes y la cobertura baja. Nunca se
    sustituye por un valor inventado, ni se hace forward-fill sobre el rezago.
+6. **Piso de cobertura por dimensión (desde 2026-08-11):** la renormalización del
+   punto 5 no tiene límite por sí sola, así que una dimensión podía publicarse
+   apoyada en una sola de sus variables. Ocurrió en 2025 con `D5_capital_humano`,
+   que marcó **0,0 sobre el 18 % de su peso** —solo `ilo_empleo_informal_pct`—
+   y en 2026 con `D4_comercial` (23,7 %, solo `lsci_conectividad_maritima`).
+   Un promedio sobre esa fracción no representa a la dimensión, pero el gráfico
+   lo dibujaba igual que uno con cobertura completa.
+
+   Ahora una dimensión con menos del **50 %** de su peso cubierto queda `NaN` en
+   vez de publicar score. El umbral vive en `aggregation.min_dimension_coverage`
+   (`config/settings.yaml`); `0.0` restaura el comportamiento anterior. La
+   cobertura de cada dimensión se publica en las columnas `cobertura_D*` de
+   `iciv_scores*.csv` y el dashboard la declara junto a cada barra.
+
+   **Efecto secundario declarado:** descartar una dimensión de baja cobertura
+   *sube* el índice de ese año, porque las que publican tarde en Venezuela
+   (D3 institucional, D5 capital humano) son justamente las de peor puntaje.
+   2026 pasó de 38,6 a 46,9 al aplicar el piso, con 50,7 % de cobertura total.
+   El dashboard encabeza siempre con el año en curso —igual que la señal mensual
+   encabeza con el mes en curso— pero lo rotula **"Lectura provisional"**, declara
+   su cobertura y advierte que el número tiende a bajar al cerrar el año. El
+   delta interanual se suprime mientras el año sea provisional, porque compara
+   coberturas distintas y no mide variación real del país; en su lugar se cita
+   el score del último año completo como referencia.
+
+   Los *leave-one-out* de validación externa corren con el piso desactivado a
+   propósito: ahí el objetivo es aislar el aporte de una variable, y anular su
+   dimensión entera mediría ese salto en vez del efecto buscado.
 
 ### 2.5 Reconversión monetaria del tipo de cambio
 
@@ -463,10 +491,23 @@ usuario por decisión de diseño (agosto 2026).
 
 ## 6. Investment Entry Radar Sectorial
 
-Implementado en `iciv/src/iciv/analytics/sector_radar.py` (v1.0).
+Implementado en `iciv/src/iciv/analytics/sector_radar.py` (v1.1).
 
 **Score base:** `Σ DimScore(d) × PesoSectorial(s,d)` — cada sector tiene su propio
 vector de sensibilidad a las seis dimensiones del ICIV.
+
+**Año base del radar:** el más reciente con al menos **5 de 6** dimensiones
+publicadas. Hasta v1.0 se exigían las 6 exactas; con el piso de cobertura del
+§2.4 una dimensión puede quedar `NaN` legítimamente y esa regla empujaba el
+radar dos años hacia atrás sin necesidad.
+
+**Diferenciación de sectores (v1.1):** hasta v1.0, `consumo_masivo` y `retail`
+tenían pesos y ajustadores **idénticos**. Puntuaban siempre igual y ocupaban los
+puestos #1 y #2 del ranking en un orden que dependía del orden del diccionario
+de configuración, sin aportar información independiente. Se separaron por su
+cadena de valor real: consumo masivo **fabrica** (más peso a energía, capex
+medio por plantas, más exposición a importación de insumos) y retail **vende**
+(más expuesto a poder adquisitivo y a plantilla, capex bajo).
 
 **Ajustadores aplicados sobre el score base:**
 
@@ -483,11 +524,15 @@ son NaN, el sector devuelve NaN en vez de un cero engañoso.
 
 | Score | Recomendación |
 |---|---|
-| ≤ 35 | No entrar |
-| 36 – 50 | Esperar |
-| 51 – 65 | Piloto |
-| 66 – 80 | Entrada |
-| > 80 | Prioritaria |
+| < 35 | No entrar |
+| 35 – 50 | Esperar |
+| 50 – 65 | Piloto |
+| 65 – 80 | Entrada |
+| ≥ 80 | Prioritaria |
+
+Los rangos son contiguos y exhaustivos sobre 0–100. Hasta v1.0 dejaban huecos
+(35–36, 50–51, …) que el código resolvía hacia la categoría inferior por su
+iteración inversa: el campo `max` del JSON no describía el comportamiento real.
 
 ---
 
@@ -709,3 +754,31 @@ python scripts/check_pulse_inputs.py
 
 Las credenciales nunca se versionan: se leen de variables de entorno o de
 `iciv/.env` (ignorado por git). Ver `iciv/.env.example` para la lista completa.
+
+### 10.1 Bloque de noticias y clave de The Guardian
+
+Hasta el 11-ago-2026 la pestaña de Noticias hacía un fetch en vivo desde el
+navegador y **no tenía nada que mostrar si esa petición fallaba**: un bloqueador
+de anuncios o el filtrado de una red corporativa dejaba un `Failed to fetch` en
+pantalla. Para que eso funcionara había que incrustar la clave de la API en el
+HTML — y `iciv_dashboard.html` se versiona en git y se publica en GitHub Pages,
+así que **la clave quedaba pública en el historial del repo**. Rotarla no
+resolvía nada: la siguiente quedaba igual de expuesta en la corrida siguiente.
+
+Ahora `scripts/fetch_guardian.py` guarda también un snapshot de titulares en
+`data/raw/guardian_headlines.csv`, que se incrusta en el dashboard y es la
+fuente **primaria** del bloque. Funciona sin red y sin clave.
+
+Por eso la clave **ya no se incrusta por defecto**. Para reactivar el fetch en
+vivo —asumiendo que la clave será pública— hay que pedirlo explícitamente:
+
+```bash
+cd iciv
+ICIV_EMBED_GUARDIAN_KEY=1 python main.py --no-fetch --no-open
+```
+
+Los filtros por sección se construyen a partir de las secciones que la consulta
+realmente devuelve. Antes estaban fijos en el HTML (Economía / Política /
+Internacional / Negocios) mientras la consulta iba clavada a `section=world`:
+todos los artículos volvían con `sectionId: world`, así que tres de los cuatro
+filtros no podían devolver nada nunca.

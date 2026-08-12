@@ -75,7 +75,10 @@ def _iciv_without_dimension(df_norm: pd.DataFrame, dim_id: str) -> pd.Series:
     for vw in objetivo.variables:
         if vw.column in df_loo.columns:
             df_loo[vw.column] = np.nan
-    scores = ICIVAggregator(method="linear").compute(df_loo)
+    # min_dimension_coverage=0: los leave-one-out miden el aporte de lo retirado.
+    # Con el piso activo, retirar una variable puede anular la dimensión entera
+    # y el test mediría ese salto en vez del efecto buscado.
+    scores = ICIVAggregator(method="linear", min_dimension_coverage=0.0).compute(df_loo)
     return scores.set_index("año")["iciv_score"]
 
 
@@ -88,7 +91,8 @@ def _iciv_without(df_norm: pd.DataFrame, exclude_col: str) -> pd.Series:
     """
     df_loo = df_norm.copy()
     df_loo[exclude_col] = np.nan
-    scores = ICIVAggregator(method="linear").compute(df_loo)
+    # min_dimension_coverage=0 por la misma razón que en _iciv_without_dimension.
+    scores = ICIVAggregator(method="linear", min_dimension_coverage=0.0).compute(df_loo)
     return scores.set_index("año")["iciv_score"]
 
 

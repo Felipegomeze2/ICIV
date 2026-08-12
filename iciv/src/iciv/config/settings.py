@@ -42,6 +42,10 @@ class Paths:
     raw_guardian_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "guardian_monthly.csv"
     raw_gdelt_monthly: Path = _PROJECT_ROOT / "data" / "raw" / "gdelt_monthly.csv"
     raw_international_news: Path = _PROJECT_ROOT / "data" / "raw" / "international_news.csv"
+    # Snapshot de titulares recientes de The Guardian. Se incrusta en el
+    # dashboard para que el bloque de noticias funcione aunque el fetch en vivo
+    # del navegador falle (bloqueador, red corporativa, API caida).
+    raw_guardian_headlines: Path = _PROJECT_ROOT / "data" / "raw" / "guardian_headlines.csv"
 
     config: Path = _PROJECT_ROOT / "config"
     scripts: Path = _PROJECT_ROOT / "scripts"
@@ -73,6 +77,8 @@ class NormalizationConfig:
 class AggregationConfig:
     method: str = "linear"
     use_fixed_weights: bool = True
+    # Cobertura mínima del peso de una dimensión para publicar su score (0-1).
+    min_dimension_coverage: float = 0.50
 
 
 @dataclass(frozen=True)

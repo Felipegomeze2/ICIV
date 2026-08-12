@@ -1,6 +1,8 @@
 {
   "_comentario": "Configuración del Investment Entry Radar Sectorial (IERS). Pesos por dimensión deben sumar 1.0. Para agregar un sector nuevo: copiar un bloque existente con nuevo key.",
-  "version": "1.0",
+  "_nota_consumo_vs_retail": "Hasta v1.0 'consumo_masivo' y 'retail' tenían pesos y ajustadores IDÉNTICOS: puntuaban siempre igual y ocupaban los puestos #1 y #2 del ranking en un orden que dependía del orden de este diccionario, sin aportar información independiente. v1.1 los separa por su cadena de valor real: consumo_masivo FABRICA (más energía, capex medio por plantas, más importación de insumos) y retail VENDE (más expuesto a poder adquisitivo y a plantilla, capex bajo).",
+  "_nota_categorias": "min/max son contiguos y exhaustivos sobre 0-100. Hasta v1.0 los rangos dejaban huecos (35-36, 50-51, ...) que _get_recommendation resolvía hacia abajo por su iteración inversa: el campo max no describía el comportamiento real del código.",
+  "version": "1.1",
   "dimensiones": ["D1_macro", "D2_energia", "D3_institucional", "D4_comercial", "D5_capital_humano", "D6_percepcion"],
   "sectores": {
     "energia_oil_gas": {
@@ -25,17 +27,18 @@
     "consumo_masivo": {
       "label": "Consumo masivo",
       "label_corto": "Consumo",
+      "_perfil": "Fabrica y distribuye: pesa energía (plantas y cadena de frío) e importación de insumos. Diferenciado de 'retail', que solo vende. Ver _nota_consumo_vs_retail.",
       "pesos": {
         "D1_macro": 0.30,
-        "D2_energia": 0.05,
+        "D2_energia": 0.10,
         "D3_institucional": 0.15,
         "D4_comercial": 0.25,
-        "D5_capital_humano": 0.15,
+        "D5_capital_humano": 0.10,
         "D6_percepcion": 0.10
       },
       "ajustadores": {
         "sancion": "baja",
-        "capex": "baja",
+        "capex": "media",
         "demanda_defensiva": "alta"
       },
       "riesgos_candidatos": ["cambiario / inflación", "logístico de importación", "poder adquisitivo"],
@@ -158,11 +161,12 @@
     "retail": {
       "label": "Retail",
       "label_corto": "Retail",
+      "_perfil": "Solo vende: pesa poder adquisitivo (D1) y plantilla en tienda (D5); casi no importa insumos ni consume energía industrial. Ver _nota_consumo_vs_retail.",
       "pesos": {
-        "D1_macro": 0.30,
+        "D1_macro": 0.35,
         "D2_energia": 0.05,
         "D3_institucional": 0.15,
-        "D4_comercial": 0.25,
+        "D4_comercial": 0.20,
         "D5_capital_humano": 0.15,
         "D6_percepcion": 0.10
       },
@@ -214,10 +218,10 @@
   },
   "categorias": [
     {"min": 0,  "max": 35,  "label": "No entrar",                          "color": "RED",          "hex": "#e05c5c", "short": "NO ENTRAR"},
-    {"min": 36, "max": 50,  "label": "No entrar todavía",                   "color": "ORANGE",       "hex": "#e67e22", "short": "ESPERAR"},
-    {"min": 51, "max": 65,  "label": "Entrada piloto / monitoreo",          "color": "YELLOW",       "hex": "#f1c40f", "short": "PILOTO"},
-    {"min": 66, "max": 80,  "label": "Entrada recomendada con mitigantes",  "color": "GREEN",        "hex": "#2ecc71", "short": "ENTRADA"},
-    {"min": 81, "max": 100, "label": "Entrada prioritaria",                 "color": "STRONG_GREEN", "hex": "#00d4aa", "short": "PRIORITARIA"}
+    {"min": 35, "max": 50,  "label": "No entrar todavía",                   "color": "ORANGE",       "hex": "#e67e22", "short": "ESPERAR"},
+    {"min": 50, "max": 65,  "label": "Entrada piloto / monitoreo",          "color": "YELLOW",       "hex": "#f1c40f", "short": "PILOTO"},
+    {"min": 65, "max": 80,  "label": "Entrada recomendada con mitigantes",  "color": "GREEN",        "hex": "#2ecc71", "short": "ENTRADA"},
+    {"min": 80, "max": 100, "label": "Entrada prioritaria",                 "color": "STRONG_GREEN", "hex": "#00d4aa", "short": "PRIORITARIA"}
   ],
   "mapa_riesgo_dimension": {
     "D1_macro":           "Riesgo cambiario / inflación",

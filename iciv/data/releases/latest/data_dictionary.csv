@@ -16,7 +16,7 @@ wjp_rule_of_law,World Justice Project Rule of Law,core_anual,True,False,False,D3
 pts_terror_politico,Political Terror Scale,core_anual,True,False,False,D3_institucional,PTS,Political Terror Scale,international,1-5,negative,0.16,0.032,2000,True,
 exportaciones_pct_pib,Exportaciones de bienes y servicios,core_anual,True,False,False,D4_comercial,WDI,World Bank World Development Indicators,international,% PIB,positive,0.34,0.06711,2000,True,
 desempleo_pct,Tasa de desempleo,auxiliar,False,False,False,D4_comercial,IMF,International Monetary Fund,international,%,negative,0.24,0.0,2000,True,
-migrantes_vzla_millones,Migrantes y refugiados venezolanos,core_anual,True,False,False,D4_comercial,UNHCR,UNHCR/R4V,international,millones,negative,0.24,0.04737,2000,True,
+migrantes_vzla_millones,Refugiados y solicitantes de asilo venezolanos,core_anual,True,False,False,D4_comercial,UNHCR,UNHCR/R4V,international,millones,negative,0.24,0.04737,2000,True,
 lsci_conectividad_maritima,Liner Shipping Connectivity Index,core_anual,True,False,False,D4_comercial,UNCTAD,UNCTAD,international,0-100,positive,0.18,0.03552,2006,True,
 hdi,Indice de Desarrollo Humano,core_anual,True,False,False,D5_capital_humano,HDI,UNDP Human Development Report,international,0-1,positive,0.28,0.028,2000,True,
 esperanza_vida_anos,Esperanza de vida al nacer,core_anual,True,False,False,D5_capital_humano,WDI,World Bank World Development Indicators,international,anos,positive,0.18,0.018,2000,True,
