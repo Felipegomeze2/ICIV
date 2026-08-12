@@ -344,7 +344,10 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <!-- NAV plana — una sola fila, sin sub-pestañas -->
 <div class="nav-wrap">
   <div class="nav-top">
-    <a class="nav-brand" href="#" onclick="event.preventDefault();showSection('hoy')" title="Ir al inicio">ICIV</a>
+    <!-- href="#acerca" y sin onclick: así lo recoge el manejador estándar de
+         navLinks y hereda pushState, resaltado activo y enlace profundo. Con
+         href="#" + onclick inline se disparaban ambos y nunca se resaltaba. -->
+    <a class="nav-brand" href="#acerca" title="Sobre el proyecto y su metodología">ICIV</a>
     <a href="#hoy">Hoy</a>
     <a href="#historia">Historia</a>
     <a href="#mapa">Mapa</a>
@@ -358,7 +361,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <section class="section tab-section tab-active" id="hoy">
   <div class="section-header">
     <span class="section-title">Clima de inversión</span>
-    <span class="section-sub">Venezuela · actualizado 12 de agosto de 2026 · 02:09</span>
+    <span class="section-sub">Venezuela · actualizado 11 de agosto de 2026 · 21:25</span>
   </div>
 
   <p class="lead">
@@ -619,13 +622,144 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   </div>
 </section>
 
+<!-- ===== EL PROYECTO ===== -->
+<!-- Se abre desde el logo ICIV de la barra superior. Antes ese logo ejecutaba
+     showSection('hoy'), es decir, duplicaba la pestaña contigua: era un control
+     redundante en el lugar más visible de la interfaz. -->
+<section class="section tab-section" id="acerca">
+  <div class="section-header">
+    <span class="section-title">El proyecto</span>
+    <span class="section-sub">Ficha técnica y autoría</span>
+  </div>
+
+  <p class="lead">
+    ICIV mide el clima de inversión de Venezuela con fuentes exclusivamente
+    internacionales. Esta ficha resume quién lo hace, cómo está construido y
+    —sobre todo— qué <em>no</em> se puede concluir de sus cifras.
+  </p>
+
+  <div class="panel">
+    <div class="block-title">Autoría</div>
+    <div class="block-sub">Trabajo de grado de posgrado.</div>
+    <div style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:6px">
+      Felipe Gómez Espinal</div>
+    <div style="font-size:.85rem;color:var(--text);line-height:1.7">
+      Especialización en Big Data e Inteligencia de Negocios<br>
+      Universidad EIA · 2026
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:14px;padding-top:12px;
+                border-top:1px solid var(--border);line-height:1.8">
+      <a href="mailto:felipe.gomez36@eia.edu.co" style="color:var(--accent);text-decoration:none">
+        felipe.gomez36@eia.edu.co</a><br>
+      <a href="https://github.com/Felipegomeze2/ICIV" target="_blank" rel="noopener"
+         style="color:var(--accent);text-decoration:none">
+        github.com/Felipegomeze2/ICIV</a>
+      <span style="color:var(--muted)"> · código, datos y metodología</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Qué es</div>
+    <div class="block-sub">Dos lecturas del mismo país, a distinta velocidad.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
+      El <strong style="color:var(--text)">índice anual</strong> mide el fondo estructural:
+      21 variables agrupadas en seis dimensiones, serie 2000–2026.<br>
+      El <strong style="color:var(--text)">Pulse mensual</strong> capta el movimiento de corto plazo
+      con las fuentes de alta frecuencia: 200 meses, 2010-01 a 2026-08.<br>
+      El <strong style="color:var(--text)">SATV</strong> traduce el Pulse en alertas de cobertura,
+      nivel y tendencia.
+    </div>
+  </div>
+
+  <div class="panel" style="border-color:#e6a81755">
+    <div class="block-title">Cómo leer la escala</div>
+    <div class="block-sub">La advertencia más importante de todo el proyecto.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
+      La escala 0–100 se construye normalizando cada variable contra
+      <strong style="color:var(--text)">la propia historia de Venezuela</strong>:
+      <strong style="color:var(--text)">100 es su mejor registro desde 2000
+      y 0 el peor</strong>. No es un óptimo internacional.<br><br>
+      De ahí se siguen dos cosas que conviene tener presentes:
+      un 0 significa «el peor año de su propia serie», no «sin datos»;
+      y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
+      país</strong>. Un 60 aquí no equivale a un 60 de Colombia o Perú: haría falta normalizar
+      sobre un panel multi-país, que queda pendiente.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Cómo se pondera</div>
+    <div class="block-sub">AHP (Saaty, 1980) sobre las seis dimensiones.</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+        <thead>
+          <tr style="background:#21262d;color:var(--muted);text-align:left">
+            <th style="padding:8px 12px;font-weight:600">Dimensión</th>
+            <th style="padding:8px 12px;font-weight:600;text-align:right">Peso AHP</th>
+            <th style="padding:8px 12px;font-weight:600;text-align:right">Variables</th>
+          </tr>
+        </thead>
+        <tbody><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Estabilidad Macroeconómica</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">25.4%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">4</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Sector Energético y Petróleo</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">19.5%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">2</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Entorno Institucional y Legal</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">19.5%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">5</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Apertura Comercial y Financiera</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">17.4%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">3</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Capital Humano e Infraestructura Social</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">9.1%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">5</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 12px;color:var(--text)">Percepción Internacional</td><td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">9.1%</td><td style="padding:8px 12px;text-align:right;color:var(--muted)">2</td></tr></tbody>
+      </table>
+    </div>
+    <div class="hint" style="margin-top:14px">
+      Razón de consistencia <strong style="color:var(--text)">CR = 0.0081</strong>,
+      muy por debajo del umbral de 0,10 que Saaty fija como aceptable. Si una variable
+      no tiene dato un año, su peso se redistribuye entre las presentes y la cobertura
+      baja: nunca se sustituye por un valor inventado.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">De dónde salen los datos</div>
+    <div class="block-sub">16 fuentes, ninguna venezolana.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
+      Es una decisión metodológica, no un descuido. Venezuela dejó de publicar
+      estadísticas oficiales con regularidad, y las que publica no son auditables de
+      forma independiente. El índice se arma solo con organismos multilaterales,
+      agencias de otros países y sensores satelitales — nada que pueda manipularse
+      desde Caracas.
+    </div>
+    <ul style="font-size:.78rem;color:var(--muted);line-height:1.6;
+               columns:2;column-gap:28px;padding-left:18px;margin:0">
+      <li style="margin-bottom:5px">Transparency International — Corruption Perceptions Index</li><li style="margin-bottom:5px">U.S. Energy Information Administration</li><li style="margin-bottom:5px">Federal Reserve Bank of St. Louis — FRED</li><li style="margin-bottom:5px">Freedom House — Freedom in the World</li><li style="margin-bottom:5px">GDELT Project</li><li style="margin-bottom:5px">The Guardian — Open Platform</li><li style="margin-bottom:5px">PNUD — Human Development Report</li><li style="margin-bottom:5px">OIT — ILOSTAT</li><li style="margin-bottom:5px">Fondo Monetario Internacional — WEO</li><li style="margin-bottom:5px">Political Terror Scale</li><li style="margin-bottom:5px">UNCTAD — UNCTADstat</li><li style="margin-bottom:5px">ACNUR — Refugee Data Finder</li><li style="margin-bottom:5px">NASA — VIIRS / Black Marble</li><li style="margin-bottom:5px">World Bank — World Development Indicators</li><li style="margin-bottom:5px">World Bank — Worldwide Governance Indicators</li><li style="margin-bottom:5px">World Justice Project — Rule of Law Index</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Qué no hace</div>
+    <div class="block-sub">Limitaciones declaradas.</div>
+    <ul style="font-size:.82rem;color:var(--muted);line-height:1.8;padding-left:18px;margin:0">
+      <li><strong style="color:var(--text)">No compara países.</strong> Ver «Cómo leer la escala».</li>
+      <li><strong style="color:var(--text)">No predice el índice anual.</strong> La única
+          proyección visible es la del Pulse a seis meses, con su margen de error.</li>
+      <li><strong style="color:var(--text)">No mide inversión realizada.</strong> Mide condiciones
+          del entorno. La IED se usa como contraste externo, no entra al score.</li>
+      <li><strong style="color:var(--text)">Un año sin cerrar no es comparable.</strong> Las fuentes
+          anuales publican con rezago, y en Venezuela las que llegan tarde son las de peor
+          puntaje, así que un año provisional tiende a bajar al completarse.</li>
+      <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
+          no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
+    </ul>
+  </div>
+
+  <div class="hint">
+    Metodología completa, bitácora de incidencias y decisiones en
+    <a href="https://github.com/Felipegomeze2/ICIV/blob/main/docs/METODOLOGIA.md"
+       target="_blank" rel="noopener" style="color:var(--accent)">docs/METODOLOGIA.md</a>.
+    El dashboard se regenera solo cada semana mediante GitHub Actions.
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
-  <a href="#" onclick="event.preventDefault();showSection('hoy')"
+  <!-- Apunta a la ficha, no a inicio: es la línea de crédito y la ficha es
+       justamente su versión extendida. Volver al inicio ya lo cubre "Hoy". -->
+  <a href="#" onclick="event.preventDefault();showSection('acerca')"
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
-  &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA
-  &nbsp;·&nbsp; 12 de agosto de 2026 · 02:09
+  &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA · 2026
+  &nbsp;·&nbsp; 11 de agosto de 2026 · 21:25
 </footer>
 
 <script>
@@ -808,7 +942,9 @@ new Chart(document.getElementById('cDimBar'), {
 
 const navLinks    = document.querySelectorAll('.nav-top a[href^="#"]');
 const tabSections = document.querySelectorAll('.tab-section');
-const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio'];
+// 'acerca' DEBE figurar aquí: showSection() valida contra este array y, si no
+// encuentra el id, redirige a 'hoy' en silencio en vez de fallar.
+const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','acerca'];
 
 const _tabInits = {};   // id → fn — se llena de forma perezosa desde cada IIFE
 
@@ -1471,7 +1607,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 // ── PROYECCIÓN A 6 MESES (se dibuja dentro de Historia) ──────────────────────────────────────────
 (function() {
-  var ML = {"sarima": {"fecha": ["2026-09", "2026-10", "2026-11", "2026-12", "2027-01", "2027-02"], "mean": [63.66, 64.13, 64.1, 62.84, 60.13, 61.3], "lo_80": [58.84, 58.04, 57.1, 55.12, 51.8, 52.44], "hi_80": [68.48, 70.21, 71.1, 70.56, 68.46, 70.16], "lo_95": [56.29, 54.82, 53.4, 51.03, 47.39, 47.75], "hi_95": [71.03, 73.44, 74.8, 74.65, 72.87, 74.86], "order": "SARIMA(1, 1, 2)x(1, 1, 1, 12)", "aic": 972.57, "horizonte_meses": 6}, "metodologia": {"sarima_ref": "Hyndman & Athanasopoulos (2018) Forecasting: Principles and Practice", "validacion": "Forecast baseline sobre Pulse mensual observado"}, "backtest": {"available": true, "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 3, "sarima_origin_step_months": 12, "min_coverage_pct": 70.0, "include_low_coverage": false}, "n_predictions": 441, "n_origins": 45, "best_by_horizon": [{"horizon": 1, "model": "sarima", "mae": 2.7565, "rmse": 3.5099}, {"horizon": 3, "model": "naive", "mae": 4.3124, "rmse": 5.3945}, {"horizon": 6, "model": "naive", "mae": 5.3653, "rmse": 6.8727}], "sarima": [{"model": "sarima", "horizon": 1, "n": 12, "mae": 2.7565, "rmse": 3.5099, "bias": 0.2175, "inside_80": 0.9167, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 12, "mae": 6.0164, "rmse": 7.1212, "bias": -0.6266, "inside_80": 0.5833, "inside_95": 0.75}, {"model": "sarima", "horizon": 6, "n": 12, "mae": 5.636, "rmse": 7.8543, "bias": -2.2414, "inside_80": 0.8333, "inside_95": 0.8333}]}};
+  var ML = {"sarima": {"fecha": ["2026-09", "2026-10", "2026-11", "2026-12", "2027-01", "2027-02"], "mean": [63.66, 64.13, 64.1, 62.84, 60.13, 61.3], "lo_80": [58.84, 58.04, 57.1, 55.12, 51.8, 52.44], "hi_80": [68.48, 70.21, 71.1, 70.56, 68.46, 70.16], "lo_95": [56.29, 54.82, 53.39, 51.03, 47.39, 47.75], "hi_95": [71.03, 73.44, 74.8, 74.65, 72.87, 74.85], "order": "SARIMA(1, 1, 2)x(1, 1, 1, 12)", "aic": 972.57, "horizonte_meses": 6}, "metodologia": {"sarima_ref": "Hyndman & Athanasopoulos (2018) Forecasting: Principles and Practice", "validacion": "Forecast baseline sobre Pulse mensual observado"}, "backtest": {"available": true, "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 3, "sarima_origin_step_months": 12, "min_coverage_pct": 70.0, "include_low_coverage": false}, "n_predictions": 441, "n_origins": 45, "best_by_horizon": [{"horizon": 1, "model": "sarima", "mae": 2.7926, "rmse": 3.599}, {"horizon": 3, "model": "naive", "mae": 4.3124, "rmse": 5.3945}, {"horizon": 6, "model": "naive", "mae": 5.3653, "rmse": 6.8727}], "sarima": [{"model": "sarima", "horizon": 1, "n": 12, "mae": 2.7926, "rmse": 3.599, "bias": 0.2536, "inside_80": 0.9167, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 12, "mae": 6.0044, "rmse": 7.1125, "bias": -0.6385, "inside_80": 0.5833, "inside_95": 0.75}, {"model": "sarima", "horizon": 6, "n": 12, "mae": 5.6115, "rmse": 7.8511, "bias": -2.266, "inside_80": 0.8333, "inside_95": 0.8333}]}};
   var PULSE = {"data": {"meses": ["2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12", "2011-01", "2011-02", "2011-03", "2011-04", "2011-05", "2011-06", "2011-07", "2011-08", "2011-09", "2011-10", "2011-11", "2011-12", "2012-01", "2012-02", "2012-03", "2012-04", "2012-05", "2012-06", "2012-07", "2012-08", "2012-09", "2012-10", "2012-11", "2012-12", "2013-01", "2013-02", "2013-03", "2013-04", "2013-05", "2013-06", "2013-07", "2013-08", "2013-09", "2013-10", "2013-11", "2013-12", "2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12", "2015-01", "2015-02", "2015-03", "2015-04", "2015-05", "2015-06", "2015-07", "2015-08", "2015-09", "2015-10", "2015-11", "2015-12", "2016-01", "2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10", "2016-11", "2016-12", "2017-01", "2017-02", "2017-03", "2017-04", "2017-05", "2017-06", "2017-07", "2017-08", "2017-09", "2017-10", "2017-11", "2017-12", "2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08"], "scores": [69.55, 72.48, 74.21, 71.65, 71.18, 67.22, 72.58, 71.42, 70.69, 77.05, 74.18, 74.58, 77.05, 77.53, 78.11, 81.4, 77.61, 77.46, 76.38, 78.86, 76.34, 76.48, 77.59, 79.14, 81.63, 81.84, 82.75, 80.8, 77.9, 78.74, 80.81, 79.27, 80.46, 80.37, 82.59, 77.92, 79.75, 82.06, 76.72, 79.63, 78.23, 79.2, 79.06, 81.99, 80.38, 78.57, 78.51, 81.67, 77.09, 75.48, 77.93, 77.07, 81.01, 81.33, 79.95, 78.47, 75.04, 73.41, 75.11, 71.17, 64.32, 67.04, 65.21, 70.29, 73.24, 71.92, 68.91, 66.35, 61.94, 65.28, 64.93, 59.29, 55.42, 57.85, 66.15, 62.73, 59.52, 58.1, 63.75, 62.29, 64.35, 65.69, 58.67, 65.06, 61.06, 63.56, 60.23, 55.94, 53.64, 56.95, 52.28, 46.24, 57.14, 62.22, 63.74, 61.79, 58.28, 55.7, 59.88, 57.24, 55.5, 58.06, 56.3, 48.01, 55.38, 52.55, 56.64, 49.64, 44.44, 42.07, 41.5, 43.7, 39.84, 46.29, 45.38, 44.59, 46.54, 46.92, 48.6, 47.55, 46.43, 45.51, 30.81, 33.42, 31.55, 36.87, 38.48, 39.87, 38.82, 42.9, 41.0, 45.2, 43.14, 47.66, 44.36, 47.27, 48.29, 50.63, 47.94, 50.48, 48.0, 52.04, 52.28, 56.52, 51.96, 51.81, 56.92, 60.79, 56.7, 59.61, 51.17, 55.55, 49.46, 48.93, 53.01, 46.42, 47.38, 45.55, 44.17, 49.18, 48.3, 47.41, 54.5, 49.98, 49.29, 46.68, 49.11, 47.35, 47.84, 48.33, 49.89, 48.65, 53.61, 51.11, 49.51, 45.22, 46.29, 51.79, 52.13, 51.28, 48.58, 50.96, 46.56, 45.3, 49.41, 49.13, 53.52, 50.59, 47.97, 46.98, 45.61, 45.1, 38.6, 50.61, 52.83, 61.51, 69.4, 64.43, 62.69, 65.28], "cobertura": [82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 75.0, 75.0, 65.0, 57.0], "n_vars": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 14, 12, 10]}, "summary": {"n_meses": 200, "score_actual": 65.28, "categoria": "Provisional", "color": "#e6a817", "fecha_actual": "2026-08", "cobertura": 57.0, "es_confiable": false, "score_confiable": 64.43, "categoria_confiable": "Riesgo Moderado", "color_confiable": "#f1c40f", "fecha_confiable": "2026-06", "cobertura_confiable": 75.0}};
   if (!ML || (!ML.sarima && !ML.nowcast)) return;
 

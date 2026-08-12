@@ -2146,6 +2146,61 @@ def fase_dashboard(
             f'</tr>'
         )
 
+    # ── Ficha del proyecto (pestaña "El proyecto") ────────────────────────────
+    # Todas las cifras se derivan del pipeline en cada corrida. Nada se escribe
+    # a mano: una ficha metodológica que se desincroniza del modelo que describe
+    # es peor que no tenerla.
+    from iciv.data.catalog import CATALOG as _AB_CATALOG
+
+    _AB_SOURCE_LABELS = {
+        "WDI": "World Bank — World Development Indicators",
+        "WGI": "World Bank — Worldwide Governance Indicators",
+        "IMF": "Fondo Monetario Internacional — WEO",
+        "EIA": "U.S. Energy Information Administration",
+        "FRED": "Federal Reserve Bank of St. Louis — FRED",
+        "CPI": "Transparency International — Corruption Perceptions Index",
+        "FREEDOM_HOUSE": "Freedom House — Freedom in the World",
+        "WJP": "World Justice Project — Rule of Law Index",
+        "PTS": "Political Terror Scale",
+        "HDI": "PNUD — Human Development Report",
+        "ILOSTAT": "OIT — ILOSTAT",
+        "UNCTAD": "UNCTAD — UNCTADstat",
+        "UNHCR": "ACNUR — Refugee Data Finder",
+        "VIIRS": "NASA — VIIRS / Black Marble",
+        "GUARDIAN": "The Guardian — Open Platform",
+        "GDELT": "GDELT Project",
+    }
+    _ab_sources = sorted({v.source.value for v in _AB_CATALOG.values()})
+    _ab_n_sources = len(_ab_sources)
+    _ab_sources_html = "".join(
+        f'<li style="margin-bottom:5px">{_AB_SOURCE_LABELS.get(s, s)}</li>'
+        for s in _ab_sources
+    )
+
+    _ab_n_vars = sum(len(_d.variables) for _d in DIMENSIONS.values())
+    _ab_cr = float(ahp.dimension_result_["consistency"]["CR"]) if ahp.dimension_result_ else float("nan")
+
+    _ab_dim_rows = ""
+    for _d_id, _d in DIMENSIONS.items():
+        _w = _ahp_dim_w.get(_d_id.value, _d.iciv_weight) * 100
+        _ab_dim_rows += (
+            f'<tr style="border-bottom:1px solid var(--border)">'
+            f'<td style="padding:8px 12px;color:var(--text)">{_d.name}</td>'
+            f'<td style="padding:8px 12px;text-align:right;color:var(--accent);font-weight:600">{_w:.1f}%</td>'
+            f'<td style="padding:8px 12px;text-align:right;color:var(--muted)">{len(_d.variables)}</td>'
+            f'</tr>'
+        )
+
+    _ab_pulse_n, _ab_pulse_ini, _ab_pulse_fin = 0, "—", "—"
+    try:
+        if pulse_data is not None and not pulse_data.empty:
+            _pp_ab = pulse_data.dropna(subset=["pulse_score"]).sort_values(["año", "mes"])
+            _ab_pulse_n = len(_pp_ab)
+            _ab_pulse_ini = f'{int(_pp_ab.iloc[0]["año"])}-{int(_pp_ab.iloc[0]["mes"]):02d}'
+            _ab_pulse_fin = f'{int(_pp_ab.iloc[-1]["año"])}-{int(_pp_ab.iloc[-1]["mes"]):02d}'
+    except Exception as _abe:
+        logger.warning(f"  Ficha del proyecto: rango Pulse no disponible: {_abe}")
+
     # El mapa por estado se alimenta del payload blackmarble_map_json (arriba);
     # ya no se carga el geojson aparte para Leaflet.
     html = f"""<!DOCTYPE html>
@@ -2494,7 +2549,10 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 <!-- NAV plana — una sola fila, sin sub-pestañas -->
 <div class="nav-wrap">
   <div class="nav-top">
-    <a class="nav-brand" href="#" onclick="event.preventDefault();showSection('hoy')" title="Ir al inicio">ICIV</a>
+    <!-- href="#acerca" y sin onclick: así lo recoge el manejador estándar de
+         navLinks y hereda pushState, resaltado activo y enlace profundo. Con
+         href="#" + onclick inline se disparaban ambos y nunca se resaltaba. -->
+    <a class="nav-brand" href="#acerca" title="Sobre el proyecto y su metodología">ICIV</a>
     <a href="#hoy">Hoy</a>
     <a href="#historia">Historia</a>
     <a href="#mapa">Mapa</a>
@@ -2769,12 +2827,143 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 </section>
 
+<!-- ===== EL PROYECTO ===== -->
+<!-- Se abre desde el logo ICIV de la barra superior. Antes ese logo ejecutaba
+     showSection('hoy'), es decir, duplicaba la pestaña contigua: era un control
+     redundante en el lugar más visible de la interfaz. -->
+<section class="section tab-section" id="acerca">
+  <div class="section-header">
+    <span class="section-title">El proyecto</span>
+    <span class="section-sub">Ficha técnica y autoría</span>
+  </div>
+
+  <p class="lead">
+    ICIV mide el clima de inversión de Venezuela con fuentes exclusivamente
+    internacionales. Esta ficha resume quién lo hace, cómo está construido y
+    —sobre todo— qué <em>no</em> se puede concluir de sus cifras.
+  </p>
+
+  <div class="panel">
+    <div class="block-title">Autoría</div>
+    <div class="block-sub">Trabajo de grado de posgrado.</div>
+    <div style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:6px">
+      Felipe Gómez Espinal</div>
+    <div style="font-size:.85rem;color:var(--text);line-height:1.7">
+      Especialización en Big Data e Inteligencia de Negocios<br>
+      Universidad EIA · 2026
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:14px;padding-top:12px;
+                border-top:1px solid var(--border);line-height:1.8">
+      <a href="mailto:felipe.gomez36@eia.edu.co" style="color:var(--accent);text-decoration:none">
+        felipe.gomez36@eia.edu.co</a><br>
+      <a href="https://github.com/Felipegomeze2/ICIV" target="_blank" rel="noopener"
+         style="color:var(--accent);text-decoration:none">
+        github.com/Felipegomeze2/ICIV</a>
+      <span style="color:var(--muted)"> · código, datos y metodología</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Qué es</div>
+    <div class="block-sub">Dos lecturas del mismo país, a distinta velocidad.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
+      El <strong style="color:var(--text)">índice anual</strong> mide el fondo estructural:
+      {_ab_n_vars} variables agrupadas en seis dimensiones, serie {settings.series.start_year}–{settings.series.end_year}.<br>
+      El <strong style="color:var(--text)">Pulse mensual</strong> capta el movimiento de corto plazo
+      con las fuentes de alta frecuencia: {_ab_pulse_n} meses, {_ab_pulse_ini} a {_ab_pulse_fin}.<br>
+      El <strong style="color:var(--text)">SATV</strong> traduce el Pulse en alertas de cobertura,
+      nivel y tendencia.
+    </div>
+  </div>
+
+  <div class="panel" style="border-color:#e6a81755">
+    <div class="block-title">Cómo leer la escala</div>
+    <div class="block-sub">La advertencia más importante de todo el proyecto.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
+      La escala 0–100 se construye normalizando cada variable contra
+      <strong style="color:var(--text)">la propia historia de Venezuela</strong>:
+      <strong style="color:var(--text)">100 es su mejor registro desde {settings.series.start_year}
+      y 0 el peor</strong>. No es un óptimo internacional.<br><br>
+      De ahí se siguen dos cosas que conviene tener presentes:
+      un 0 significa «el peor año de su propia serie», no «sin datos»;
+      y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
+      país</strong>. Un 60 aquí no equivale a un 60 de Colombia o Perú: haría falta normalizar
+      sobre un panel multi-país, que queda pendiente.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Cómo se pondera</div>
+    <div class="block-sub">AHP (Saaty, 1980) sobre las seis dimensiones.</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.78rem">
+        <thead>
+          <tr style="background:#21262d;color:var(--muted);text-align:left">
+            <th style="padding:8px 12px;font-weight:600">Dimensión</th>
+            <th style="padding:8px 12px;font-weight:600;text-align:right">Peso AHP</th>
+            <th style="padding:8px 12px;font-weight:600;text-align:right">Variables</th>
+          </tr>
+        </thead>
+        <tbody>{_ab_dim_rows}</tbody>
+      </table>
+    </div>
+    <div class="hint" style="margin-top:14px">
+      Razón de consistencia <strong style="color:var(--text)">CR = {_ab_cr:.4f}</strong>,
+      muy por debajo del umbral de 0,10 que Saaty fija como aceptable. Si una variable
+      no tiene dato un año, su peso se redistribuye entre las presentes y la cobertura
+      baja: nunca se sustituye por un valor inventado.
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">De dónde salen los datos</div>
+    <div class="block-sub">{_ab_n_sources} fuentes, ninguna venezolana.</div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
+      Es una decisión metodológica, no un descuido. Venezuela dejó de publicar
+      estadísticas oficiales con regularidad, y las que publica no son auditables de
+      forma independiente. El índice se arma solo con organismos multilaterales,
+      agencias de otros países y sensores satelitales — nada que pueda manipularse
+      desde Caracas.
+    </div>
+    <ul style="font-size:.78rem;color:var(--muted);line-height:1.6;
+               columns:2;column-gap:28px;padding-left:18px;margin:0">
+      {_ab_sources_html}
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="block-title">Qué no hace</div>
+    <div class="block-sub">Limitaciones declaradas.</div>
+    <ul style="font-size:.82rem;color:var(--muted);line-height:1.8;padding-left:18px;margin:0">
+      <li><strong style="color:var(--text)">No compara países.</strong> Ver «Cómo leer la escala».</li>
+      <li><strong style="color:var(--text)">No predice el índice anual.</strong> La única
+          proyección visible es la del Pulse a seis meses, con su margen de error.</li>
+      <li><strong style="color:var(--text)">No mide inversión realizada.</strong> Mide condiciones
+          del entorno. La IED se usa como contraste externo, no entra al score.</li>
+      <li><strong style="color:var(--text)">Un año sin cerrar no es comparable.</strong> Las fuentes
+          anuales publican con rezago, y en Venezuela las que llegan tarde son las de peor
+          puntaje, así que un año provisional tiende a bajar al completarse.</li>
+      <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
+          no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
+    </ul>
+  </div>
+
+  <div class="hint">
+    Metodología completa, bitácora de incidencias y decisiones en
+    <a href="https://github.com/Felipegomeze2/ICIV/blob/main/docs/METODOLOGIA.md"
+       target="_blank" rel="noopener" style="color:var(--accent)">docs/METODOLOGIA.md</a>.
+    El dashboard se regenera solo cada semana mediante GitHub Actions.
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer class="footer">
-  <a href="#" onclick="event.preventDefault();showSection('hoy')"
+  <!-- Apunta a la ficha, no a inicio: es la línea de crédito y la ficha es
+       justamente su versión extendida. Volver al inicio ya lo cubre "Hoy". -->
+  <a href="#" onclick="event.preventDefault();showSection('acerca')"
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
-  &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA
+  &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA · 2026
   &nbsp;·&nbsp; {generated_at}
 </footer>
 
@@ -2958,7 +3147,9 @@ new Chart(document.getElementById('cDimBar'), {{
 
 const navLinks    = document.querySelectorAll('.nav-top a[href^="#"]');
 const tabSections = document.querySelectorAll('.tab-section');
-const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio'];
+// 'acerca' DEBE figurar aquí: showSection() valida contra este array y, si no
+// encuentra el id, redirige a 'hoy' en silencio en vez de fallar.
+const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','acerca'];
 
 const _tabInits = {{}};   // id → fn — se llena de forma perezosa desde cada IIFE
 
