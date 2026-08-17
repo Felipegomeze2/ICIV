@@ -2,7 +2,7 @@
   "ok": false,
   "message": "ningun tramo nuevo; se conserva CSV previo (232 filas). Fallos: ['2026/timelinetone', '2026/timelinevolraw', '2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
   "rows": 232,
-  "updated_at_utc": "2026-08-12T02:44:24.615474+00:00",
+  "updated_at_utc": "2026-08-17T08:00:41.278085+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; yearly chunks accumulate across runs.",
   "years_complete": [
