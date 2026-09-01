@@ -1,8 +1,8 @@
 {
   "ok": false,
-  "message": "tramos nuevos [2026]; total 116 meses; fallaron ['2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
-  "rows": 232,
-  "updated_at_utc": "2026-08-31T15:06:23.349146+00:00",
+  "message": "tramos nuevos [2026]; total 117 meses; fallaron ['2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
+  "rows": 234,
+  "updated_at_utc": "2026-09-01T13:45:17.597739+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; yearly chunks accumulate across runs.",
   "years_complete": [
@@ -23,5 +23,5 @@
     "2015/timelinetone",
     "2015/timelinevolraw"
   ],
-  "months": 116
+  "months": 117
 }
