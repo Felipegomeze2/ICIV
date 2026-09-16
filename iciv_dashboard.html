@@ -354,6 +354,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
     <a href="#noticias">Noticias</a>
     <a href="#sectores">Sectores</a>
     <a href="#laboratorio">Laboratorio</a>
+    <a href="#evidencia">Evidencia</a>
   </div>
 </div>
 
@@ -361,12 +362,12 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <section class="section tab-section tab-active" id="hoy">
   <div class="section-header">
     <span class="section-title">Clima de inversión</span>
-    <span class="section-sub">Venezuela · actualizado 14 de septiembre de 2026 · 13:50</span>
+    <span class="section-sub">Venezuela · actualizado 16 de septiembre de 2026 · 08:16</span>
   </div>
 
   <p class="lead">
     Dos lecturas del mismo país: la señal mensual se mueve rápido, el índice anual mide el fondo estructural.
-    Ninguna cifra viene de fuentes venezolanas.
+    Se consultan distribuidores internacionales; algunas estadísticas pueden incorporar fuentes nacionales.
   </p>
 
   <div class="hero-grid">
@@ -406,8 +407,8 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 
   <div class="hint">
     La escala va de 0 a 100 y se mide contra la propia historia de Venezuela:
-    100 sería su mejor año desde 2000 y 0 el peor. No compara con otros países.
-    La cobertura indica cuántos datos ya publicaron las fuentes para ese periodo.
+    Los extremos corresponden a componentes normalizados; el agregado no tiene por qué alcanzar 0 o 100. No compara países.
+    La cobertura efectiva mide el peso del universo que realmente participa en el puntaje.
   </div>
 </section>
 
@@ -419,18 +420,18 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   </div>
 
   <p class="lead">
-    Veinticinco años en dos gráficos: el arco largo del país y hacia dónde apunta la señal mensual.
+    La historia disponible en dos gráficos: el arco largo del país y hacia dónde apunta la señal mensual.
   </p>
 
   <div class="panel">
-    <div class="block-title">El arco de 25 años</div>
-    <div class="block-sub">Índice anual con las bandas de riesgo de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
+    <div class="block-title">La trayectoria anual</div>
+    <div class="block-sub">Índice anual con las bandas descriptivas de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
     <div class="chart-wrap" style="height:400px"><canvas id="cHistoria"></canvas></div>
   </div>
 
   <div class="panel">
     <div class="block-title">Hacia dónde va</div>
-    <div class="block-sub">Señal mensual reciente y proyección a seis meses. La franja verde es el margen de error: cuanto más ancha, menos certeza.</div>
+    <div class="block-sub">Persistencia desde el último mes elegible. Bandas empíricas de errores históricos; sin garantía de cobertura futura. Los meses provisionales se muestran aparte.</div>
     <div class="chart-wrap" style="height:360px"><canvas id="cPulseTrend"></canvas></div>
   </div>
 </section>
@@ -444,7 +445,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 
   <p class="lead">
     La luz que emite cada estado de noche, medida por satélite de la NASA.
-    Más brillo, más actividad económica. Es la única cifra de este proyecto que nadie puede manipular desde Venezuela.
+    La radiancia nocturna es un proxy de actividad, afectado por electrificación, nubosidad y procesamiento. El histórico requiere verificación adicional de sus flags de calidad.
   </p>
 
   <div class="panel">
@@ -527,20 +528,20 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <section class="section tab-section" id="sectores">
   <div class="section-header">
     <span class="section-title">Sectores</span>
-    <span class="section-sub">Dónde entrar primero · 2025</span>
+    <span class="section-sub">Sensibilidad a los pesos · 2024</span>
   </div>
 
   <p class="lead">
-    Cada sector reacciona distinto al clima del país. Este es el orden de atractivo hoy, y el riesgo que domina en cada uno.
+    Cada sector reacciona distinto al clima del país. Estos son perfiles hipotéticos de ponderación; no son estimaciones de atractivo o rentabilidad sectorial.
   </p>
 
-  <div class="sector-kpis"><div style="background:var(--card);border:1px solid #00d4aa44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Prioritaria</div><div style="font-size:1.8rem;font-weight:700;color:#00d4aa;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #2ecc7144;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Entrada</div><div style="font-size:1.8rem;font-weight:700;color:#2ecc71;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #f1c40f44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Piloto</div><div style="font-size:1.8rem;font-weight:700;color:#f1c40f;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e67e2244;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Esperar</div><div style="font-size:1.8rem;font-weight:700;color:#e67e22;line-height:1">2</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e05c5c44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">No entrar</div><div style="font-size:1.8rem;font-weight:700;color:#e05c5c;line-height:1">8</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div></div>
+  <div class="sector-kpis"><div style="background:var(--card);border:1px solid #27ae6044;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy favorable</div><div style="font-size:1.8rem;font-weight:700;color:#27ae60;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #2ecc7144;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Favorable</div><div style="font-size:1.8rem;font-weight:700;color:#2ecc71;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #f1c40f44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Intermedio</div><div style="font-size:1.8rem;font-weight:700;color:#f1c40f;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e67e2244;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#e67e22;line-height:1">8</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e74c3c44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#e74c3c;line-height:1">2</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div></div>
 
   <div class="sector-split">
     <div class="chart-card" style="padding:0;overflow:hidden">
       <div style="padding:18px 20px;border-bottom:1px solid var(--border)">
         <div class="block-title">Ranking</div>
-        <div class="block-sub" style="margin-bottom:0">Ordenado de mayor a menor atractivo.</div>
+        <div class="block-sub" style="margin-bottom:0">Ordenado por puntaje bajo pesos supuestos. Sin bonos ni penalizaciones manuales.</div>
       </div>
       <div style="overflow-x:auto">
         <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
@@ -549,11 +550,11 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
               <th style="padding:9px 14px;font-weight:600">#</th>
               <th style="padding:9px 14px;font-weight:600">Sector</th>
               <th style="padding:9px 14px;font-weight:600;text-align:center">Score</th>
-              <th style="padding:9px 14px;font-weight:600">Recomendación</th>
-              <th style="padding:9px 14px;font-weight:600">Riesgo principal</th>
+              <th style="padding:9px 14px;font-weight:600">Lectura relativa</th>
+              <th style="padding:9px 14px;font-weight:600">Déficit ponderado</th>
             </tr>
           </thead>
-          <tbody><tr style="border-bottom:1px solid var(--border)" data-sid="retail"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">1</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Retail</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">40.8</div><div style="width:40.8%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">ESPERAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="consumo_masivo"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">2</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Consumo masivo</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">37.0</div><div style="width:37.0%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">ESPERAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="agroindustria"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">3</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Agroindustria</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">34.0</div><div style="width:34.0%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="salud_farmaceutico"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">4</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Salud / Farmacéutico</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">32.3</div><div style="width:32.3%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="tecnologia_digital"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">5</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Tecnología / Servicios digitales</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">27.2</div><div style="width:27.2%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="logistica_comercio"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">6</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Logística / Comercio exterior</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">24.5</div><div style="width:24.5%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="telecomunicaciones"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">7</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Telecomunicaciones</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">24.5</div><div style="width:24.5%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo institucional / contractual</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="banca_fintech"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">8</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Banca / Fintech</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">17.0</div><div style="width:17.0%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo sancionatorio</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="infraestructura"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">9</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Infraestructura / Construcción</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">12.7</div><div style="width:12.7%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo sancionatorio</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="energia_oil_gas"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">10</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Energía / Oil & Gas</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e05c5c">10.9</div><div style="width:10.9%;max-width:100%;height:6px;background:#e05c5c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">NO ENTRAR</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Riesgo sancionatorio</td></tr></tbody>
+          <tbody><tr style="border-bottom:1px solid var(--border)" data-sid="retail"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">1</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Retail</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">42.3</div><div style="width:42.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="consumo_masivo"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">2</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Consumo masivo</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">38.3</div><div style="width:38.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="salud_farmaceutico"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">3</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Salud / Farmacéutico</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="banca_fintech"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">4</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Banca / Fintech</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="agroindustria"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">5</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Agroindustria</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.4</div><div style="width:35.4%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="tecnologia_digital"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">6</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Tecnología / Servicios digitales</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.0</div><div style="width:35.0%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="telecomunicaciones"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">7</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Telecomunicaciones</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">34.7</div><div style="width:34.7%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="logistica_comercio"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">8</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Logística / Comercio exterior</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">32.4</div><div style="width:32.4%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="infraestructura"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">9</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Infraestructura / Construcción</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">30.0</div><div style="width:30.0%;max-width:100%;height:6px;background:#e74c3c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="energia_oil_gas"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">10</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Energía / Oil & Gas</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">23.6</div><div style="width:23.6%;max-width:100%;height:6px;background:#e74c3c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D2_energia</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -622,6 +623,166 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   </div>
 </section>
 
+<section class="section tab-section" id="evidencia">
+  <div class="section-header"><span class="section-title">Evidencia</span><span class="section-sub">Datos · método · validación</span></div>
+  <style>.audit-table{width:100%;border-collapse:collapse;font-size:.78rem}.audit-table td,.audit-table th{padding:10px;text-align:left;border-bottom:1px solid var(--border)}.audit-table th{color:var(--accent)}</style><div class="panel"><div class="block-title">Una versión, una cadena de evidencia</div><p class="block-sub">Versión metodológica 2.0. Los datos originales, transformaciones, cobertura y resultados se exportan juntos. Generar el dashboard no equivale a refrescar las fuentes.</p></div><div class="panel"><div class="block-title">Descargar y reproducir</div><p class="block-sub">Los archivos pertenecen a la release latest. Congela una release antes de citar resultados.</p><ul><li><a style="color:var(--accent)" href="iciv/data/releases/latest/iciv_dataset_largo.csv">Datos originales y trazabilidad</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/data_dictionary.csv">Diccionario y pesos efectivos</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/coverage_annual.csv">Cobertura por variable</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/manifest.json">Manifiesto y hashes</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/run_status.json">Estado de ejecución</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/external_validation_summary.csv">Validación externa</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/pulse_forecast_backtest.csv">Backtest por origen</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/forecast.json">Pronóstico y diagnósticos</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/iciv_validacion.html">Informe de sensibilidad</a></li></ul></div><div class="panel"><div class="block-title">Cobertura efectiva del índice anual</div><p class="block-sub">Es el peso del universo fijo que realmente participa después del piso dimensional. No mide certeza ni independencia de la fuente.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>año</th>
+      <th>iciv_score</th>
+      <th>cobertura_observada_pct</th>
+      <th>cobertura_efectiva_pct</th>
+      <th>dimensiones_publicadas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2021</td>
+      <td>31.75</td>
+      <td>95.1</td>
+      <td>95.1</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>2022</td>
+      <td>37.92</td>
+      <td>95.1</td>
+      <td>95.1</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>2023</td>
+      <td>33.93</td>
+      <td>95.1</td>
+      <td>95.1</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>2024</td>
+      <td>34.25</td>
+      <td>92.6</td>
+      <td>92.6</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>2025</td>
+      <td>27.78</td>
+      <td>79.9</td>
+      <td>78.2</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>2026</td>
+      <td>42.73</td>
+      <td>45.2</td>
+      <td>41.1</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table></div></div><div class="panel"><div class="block-title">Contraste con inversión extranjera directa</div><p class="block-sub">Mismo modelo AHP. Niveles y diferencias, HAC y ajuste Holm. Asociación exploratoria: no demuestra causalidad ni rentabilidad.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>representacion</th>
+      <th>n</th>
+      <th>pearson_r</th>
+      <th>hac_p_holm</th>
+      <th>veredicto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>niveles</td>
+      <td>25</td>
+      <td>0.3704</td>
+      <td>0.2266</td>
+      <td>signo esperado; evidencia no concluyente con HAC + Holm</td>
+    </tr>
+    <tr>
+      <td>primeras_diferencias</td>
+      <td>24</td>
+      <td>0.08391</td>
+      <td>1</td>
+      <td>signo esperado; evidencia no concluyente con HAC + Holm</td>
+    </tr>
+  </tbody>
+</table></div></div><div class="panel"><div class="block-title">Evaluación mensual comparable</div><p class="block-sub">Último vintage retrospectivo. 3 predicciones candidatas no disponibles se registran por separado. Todos los modelos usan los mismos pares origen/horizonte en esta tabla.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model</th>
+      <th>horizon</th>
+      <th>n</th>
+      <th>mae</th>
+      <th>rmse</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>naive</td>
+      <td>1</td>
+      <td>20</td>
+      <td>4.329</td>
+      <td>5.627</td>
+    </tr>
+    <tr>
+      <td>naive</td>
+      <td>3</td>
+      <td>20</td>
+      <td>5.348</td>
+      <td>7.045</td>
+    </tr>
+    <tr>
+      <td>naive</td>
+      <td>6</td>
+      <td>19</td>
+      <td>5.971</td>
+      <td>7.389</td>
+    </tr>
+    <tr>
+      <td>sarima</td>
+      <td>1</td>
+      <td>20</td>
+      <td>4.951</td>
+      <td>6.065</td>
+    </tr>
+    <tr>
+      <td>sarima</td>
+      <td>3</td>
+      <td>20</td>
+      <td>6.463</td>
+      <td>8.09</td>
+    </tr>
+    <tr>
+      <td>sarima</td>
+      <td>6</td>
+      <td>19</td>
+      <td>8.065</td>
+      <td>9.907</td>
+    </tr>
+    <tr>
+      <td>seasonal_naive</td>
+      <td>1</td>
+      <td>20</td>
+      <td>8.466</td>
+      <td>10.32</td>
+    </tr>
+    <tr>
+      <td>seasonal_naive</td>
+      <td>3</td>
+      <td>20</td>
+      <td>7.338</td>
+      <td>9.348</td>
+    </tr>
+    <tr>
+      <td>seasonal_naive</td>
+      <td>6</td>
+      <td>19</td>
+      <td>9.225</td>
+      <td>10.53</td>
+    </tr>
+  </tbody>
+</table></div></div><div class="panel"><div class="block-title">Estado del pronóstico</div><p class="block-sub">Persistencia prespecificada desde 2026-05. Sus bandas son empíricas; no son garantía de cobertura futura. No se introduce ninguna predicción en el dataset observado.</p></div><div class="panel"><div class="block-title">Límites abiertos y exclusiones</div><p class="block-sub">Los pesos y umbrales son supuestos del autor. Faltan vintages históricos de publicación. WEO incluye estimaciones y proyecciones cuyo estado individual no siempre está desagregado. El histórico satelital sin QA acreditado está excluido del score; su mapa se conserva como contexto. CPI anterior a 2012 y asignaciones duplicadas de ediciones WJP quedan fuera.</p></div>
+</section>
+
 <!-- ===== EL PROYECTO ===== -->
 <!-- Se abre desde el logo ICIV de la barra superior. Antes ese logo ejecutaba
      showSection('hoy'), es decir, duplicaba la pestaña contigua: era un control
@@ -665,7 +826,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       El <strong style="color:var(--text)">índice anual</strong> mide el fondo estructural:
       21 variables agrupadas en seis dimensiones, serie 2000–2026.<br>
       El <strong style="color:var(--text)">Pulse mensual</strong> capta el movimiento de corto plazo
-      con las fuentes de alta frecuencia: 201 meses, 2010-01 a 2026-09.<br>
+      con las fuentes de alta frecuencia: 200 meses, 2010-02 a 2026-09.<br>
       El <strong style="color:var(--text)">SATV</strong> traduce el Pulse en alertas de cobertura,
       nivel y tendencia.
     </div>
@@ -677,8 +838,8 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
       La escala 0–100 se construye normalizando cada variable contra
       <strong style="color:var(--text)">la propia historia de Venezuela</strong>:
-      <strong style="color:var(--text)">100 es su mejor registro desde 2000
-      y 0 el peor</strong>. No es un óptimo internacional.<br><br>
+      <strong style="color:var(--text)">cada componente se normaliza entre sus extremos históricos; el agregado combina
+      esos componentes y no necesariamente alcanza 0 o 100</strong>. No es un óptimo internacional.<br><br>
       De ahí se siguen dos cosas que conviene tener presentes:
       un 0 significa «el peor año de su propia serie», no «sin datos»;
       y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
@@ -712,17 +873,15 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 
   <div class="panel">
     <div class="block-title">De dónde salen los datos</div>
-    <div class="block-sub">16 fuentes, ninguna venezolana.</div>
+    <div class="block-sub">15 distribuidores internacionales; origen primario no siempre independiente.</div>
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-      Es una decisión metodológica, no un descuido. Venezuela dejó de publicar
-      estadísticas oficiales con regularidad, y las que publica no son auditables de
-      forma independiente. El índice se arma solo con organismos multilaterales,
-      agencias de otros países y sensores satelitales — nada que pueda manipularse
-      desde Caracas.
+      Se consultan organismos internacionales y sensores satelitales. Sus series pueden
+      incorporar estadísticas nacionales, estimaciones modeladas y revisiones. Cada cifra
+      conserva su fuente y el estado conocido; no se infiere independencia del distribuidor.
     </div>
     <ul style="font-size:.78rem;color:var(--muted);line-height:1.6;
                columns:2;column-gap:28px;padding-left:18px;margin:0">
-      <li style="margin-bottom:5px">Transparency International — Corruption Perceptions Index</li><li style="margin-bottom:5px">U.S. Energy Information Administration</li><li style="margin-bottom:5px">Federal Reserve Bank of St. Louis — FRED</li><li style="margin-bottom:5px">Freedom House — Freedom in the World</li><li style="margin-bottom:5px">GDELT Project</li><li style="margin-bottom:5px">The Guardian — Open Platform</li><li style="margin-bottom:5px">PNUD — Human Development Report</li><li style="margin-bottom:5px">OIT — ILOSTAT</li><li style="margin-bottom:5px">Fondo Monetario Internacional — WEO</li><li style="margin-bottom:5px">Political Terror Scale</li><li style="margin-bottom:5px">UNCTAD — UNCTADstat</li><li style="margin-bottom:5px">ACNUR — Refugee Data Finder</li><li style="margin-bottom:5px">NASA — VIIRS / Black Marble</li><li style="margin-bottom:5px">World Bank — World Development Indicators</li><li style="margin-bottom:5px">World Bank — Worldwide Governance Indicators</li><li style="margin-bottom:5px">World Justice Project — Rule of Law Index</li>
+      <li style="margin-bottom:5px">Transparency International — Corruption Perceptions Index</li><li style="margin-bottom:5px">U.S. Energy Information Administration</li><li style="margin-bottom:5px">Federal Reserve Bank of St. Louis — FRED</li><li style="margin-bottom:5px">Freedom House — Freedom in the World</li><li style="margin-bottom:5px">GDELT Project</li><li style="margin-bottom:5px">The Guardian — Open Platform</li><li style="margin-bottom:5px">PNUD — Human Development Report</li><li style="margin-bottom:5px">Fondo Monetario Internacional — WEO</li><li style="margin-bottom:5px">Political Terror Scale</li><li style="margin-bottom:5px">UNCTAD — UNCTADstat</li><li style="margin-bottom:5px">ACNUR — Refugee Data Finder</li><li style="margin-bottom:5px">NASA — VIIRS / Black Marble</li><li style="margin-bottom:5px">World Bank — World Development Indicators</li><li style="margin-bottom:5px">World Bank — Worldwide Governance Indicators</li><li style="margin-bottom:5px">World Justice Project — Rule of Law Index</li>
     </ul>
   </div>
 
@@ -736,8 +895,8 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <li><strong style="color:var(--text)">No mide inversión realizada.</strong> Mide condiciones
           del entorno. La IED se usa como contraste externo, no entra al score.</li>
       <li><strong style="color:var(--text)">Un año sin cerrar no es comparable.</strong> Las fuentes
-          anuales publican con rezago, y en Venezuela las que llegan tarde son las de peor
-          puntaje, así que un año provisional tiende a bajar al completarse.</li>
+          anuales publican con rezago; los cambios de composición y las revisiones pueden alterar
+          el puntaje en cualquiera de las dos direcciones.</li>
       <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
           no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
     </ul>
@@ -759,7 +918,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
   &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA · 2026
-  &nbsp;·&nbsp; 14 de septiembre de 2026 · 13:50
+  &nbsp;·&nbsp; 16 de septiembre de 2026 · 08:16
 </footer>
 
 <script>
@@ -773,14 +932,14 @@ const CARD   = '#1c2128';
 
 // ── Data ────────────────────────────────────────────────────────────────────
 const years     = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-const scoresAHP = [72.96, 68.01, 63.89, 62.33, 72.49, 73.68, 76.03, 73.55, 71.71, 70.02, 69.99, 70.41, 81.71, 79.23, 75.14, 70.73, 56.88, 46.66, 42.03, 33.51, 22.79, 32.63, 38.87, 34.45, 35.79, 29.99, 47.77];
-const ptColors  = ["#2ecc71", "#2ecc71", "#f1c40f", "#f1c40f", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#27ae60", "#2ecc71", "#2ecc71", "#2ecc71", "#f1c40f", "#e67e22", "#e67e22", "#e74c3c", "#e74c3c", "#e74c3c", "#e67e22", "#e74c3c", "#e67e22", "#e74c3c", "#e67e22"];
+const scoresAHP = [66.4, 68.01, 62.9, 59.68, 72.16, 73.43, 78.15, 77.4, 76.1, 73.74, 72.58, 73.3, 82.53, 81.16, 76.06, 72.01, 58.88, 51.9, 43.29, 32.16, 22.76, 31.75, 37.92, 33.93, 34.25, 27.78, 42.73];
+const ptColors  = ["#2ecc71", "#2ecc71", "#f1c40f", "#f1c40f", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#27ae60", "#27ae60", "#2ecc71", "#2ecc71", "#f1c40f", "#f1c40f", "#e67e22", "#e67e22", "#e74c3c", "#e67e22", "#e67e22", "#e67e22", "#e67e22", "#e74c3c", "#e67e22"];
 const yearsFix  = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-const scoresFix = [73.8, 68.94, 64.65, 62.9, 73.3, 74.54, 76.74, 74.13, 72.15, 70.66, 70.6, 70.93, 81.86, 79.22, 74.64, 70.63, 56.64, 45.97, 41.66, 32.88, 22.78, 32.8, 39.15, 34.79, 36.15, 30.04, 47.36];
-const coverage  = [84.2, 79.4, 84.2, 84.2, 84.2, 84.2, 87.8, 87.8, 87.8, 87.8, 87.8, 87.8, 95.0, 95.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 97.2, 83.8, 50.7];   // cobertura % por año (null si no disponible)
-const COV_THRESHOLD = 60.0;  // % mínimo para score confiable
-const dimSeries = {"D1_macro": [61.64, 66.11, 59.61, 60.85, 81.54, 77.77, 77.24, 76.44, 83.77, 73.73, 78.37, 86.19, 87.94, 82.99, 76.54, 61.44, 49.1, 48.12, 23.97, 21.78, 29.47, 58.53, 76.66, 61.0, 70.52, 59.43, 61.69], "D2_energia": [100.0, 96.34, 80.63, 75.06, 86.07, 97.72, 95.41, 96.88, 83.79, 84.21, 79.56, 83.37, 83.37, 83.37, 87.53, 83.3, 69.68, 46.6, 41.96, 27.65, 5.08, 11.32, 17.14, 15.93, 22.1, 29.14, 35.01], "D3_institucional": [100.0, null, 67.97, 73.25, 73.82, 74.72, 67.3, 57.69, 53.62, 54.65, 59.32, 58.48, 69.82, 71.76, 56.04, 52.53, 40.01, 34.34, 27.11, 15.68, 9.91, 10.54, 14.14, 14.03, 5.08, 0.0, null], "D4_comercial": [41.38, 41.37, 41.36, 41.33, 41.3, 41.26, 54.5, 55.15, 54.96, 52.63, 50.06, 46.35, 77.49, 78.11, 88.26, 81.77, 69.67, 66.28, 69.07, 65.4, 29.37, 25.94, 22.12, 21.63, 18.54, 19.03, null], "D5_capital_humano": [40.25, 43.1, 60.47, 32.9, 63.26, 69.87, 77.21, 87.86, 82.01, 82.87, 82.51, 83.18, 87.83, 88.42, 87.13, 85.81, 60.35, 51.83, 53.84, 44.22, 31.16, 26.53, 35.69, 35.01, 43.22, null, null], "D6_percepcion": [81.58, 88.39, 77.78, 85.33, 84.16, 74.33, 89.89, 70.44, 72.8, 82.71, 74.68, 57.46, 88.28, 68.88, 48.42, 72.61, 59.43, 26.3, 61.1, 45.36, 48.95, 72.51, 68.43, 68.02, 59.81, 34.98, 36.26]};
-const radarVals = [61.69, 35.01, 0.0, 19.03, 43.22, 36.26];
+const scoresFix = [64.97, 67.06, 63.97, 59.09, 71.27, 72.19, 78.85, 77.35, 75.47, 75.23, 73.04, 71.31, 83.16, 80.57, 74.78, 74.0, 59.74, 50.05, 47.25, 35.53, 25.63, 33.48, 38.22, 35.49, 35.23, 26.45, 39.68];
+const coverage  = [71.5, 71.5, 71.5, 71.5, 71.5, 71.5, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 91.6, 95.1, 95.1, 95.1, 95.1, 91.6, 95.1, 95.1, 95.1, 95.1, 95.1, 95.1, 92.6, 78.2, 41.1];   // cobertura % por año (null si no disponible)
+const COV_THRESHOLD = 70.0;  // % mínimo para score confiable
+const dimSeries = {"D1_macro": [61.64, 66.11, 59.61, 60.85, 81.54, 77.77, 77.24, 76.44, 83.77, 73.73, 78.37, 86.19, 87.94, 82.99, 76.54, 61.44, 49.1, 48.12, 23.97, 21.78, 29.47, 58.53, 76.66, 61.0, 70.52, 59.43, 61.69], "D2_energia": [100.0, 96.34, 80.63, 75.06, 86.07, 97.72, 95.41, 96.88, 83.79, 84.21, 79.56, 83.37, 83.37, 83.37, 83.37, 82.92, 72.99, 62.13, 40.5, 14.82, 0.0, 2.86, 8.31, 10.29, 14.22, 18.83, 21.08], "D3_institucional": [null, null, null, null, null, null, null, null, null, null, null, null, 74.04, 81.64, 64.94, 59.45, 46.92, 45.66, 35.02, 21.61, 14.85, 14.5, 18.09, 16.99, 5.08, 0.0, null], "D4_comercial": [41.38, 41.37, 41.36, 41.33, 41.3, 41.26, 54.5, 55.15, 54.96, 52.63, 50.06, 46.35, 77.49, 78.11, 88.26, 81.77, 69.67, 66.28, 69.07, 65.4, 29.37, 25.94, 22.12, 21.63, 18.54, 19.03, null], "D5_capital_humano": [40.25, 43.1, 60.47, 32.9, 63.26, 69.87, 77.21, 87.86, 82.01, 82.87, 82.51, 83.18, 87.83, 88.42, 87.13, 85.81, 60.35, 51.83, 53.84, 44.22, 31.16, 26.53, 35.69, 35.01, 43.22, null, null], "D6_percepcion": [81.58, 88.39, 77.78, 85.33, 84.16, 74.33, 89.89, 70.44, 72.8, 82.71, 74.68, 57.46, 88.28, 68.88, 48.42, 72.61, 59.43, 26.3, 61.1, 45.36, 48.95, 72.51, 68.43, 68.02, 59.81, 34.98, 36.26]};
+const radarVals = [61.69, 21.08, 0.0, 19.03, 43.22, 36.26];
 const radarLbls = ["Macroeconom\u00eda", "Energ\u00eda y petr\u00f3leo", "Instituciones y ley", "Apertura comercial", "Capital humano", "Percepci\u00f3n externa"];
 const radarClrs = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"];
 const dimLbls   = ["Macroeconom\u00eda", "Energ\u00eda y petr\u00f3leo", "Instituciones y ley", "Apertura comercial", "Capital humano", "Percepci\u00f3n externa"];
@@ -823,7 +982,7 @@ new Chart(document.getElementById('cHistoria'), {
       },
       // Dataset auxiliar para la leyenda de baja cobertura
       {
-        label: 'Cobertura < 60% (provisional)',
+        label: 'Cobertura < 70% (provisional)',
         data: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? scoresAHP[i] : null),
         borderColor: 'transparent',
         backgroundColor: '#e69817',
@@ -843,11 +1002,11 @@ new Chart(document.getElementById('cHistoria'), {
       legend: { position: 'top' },
       annotation: {
         annotations: {
-          band1: { type:'box', yMin:0,  yMax:30,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{display:true,content:'Alto Riesgo',position:'start',color:'#e05c5c',font:{size:9}}},
-          band2: { type:'box', yMin:30, yMax:50,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{display:true,content:'Moderado-Alto',position:'start',color:'#e67e22',font:{size:9}}},
-          band3: { type:'box', yMin:50, yMax:65,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{display:true,content:'Moderado',position:'start',color:'#f1c40f',font:{size:9}}},
-          band4: { type:'box', yMin:65, yMax:80,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{display:true,content:'Bajo Riesgo',position:'start',color:'#2ecc71',font:{size:9}}},
-          band5: { type:'box', yMin:80, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{display:true,content:'Muy Bajo',position:'start',color:'#00d4aa',font:{size:9}}},
+          band1: { type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{display:true,content:'Muy desfavorable',position:'start',color:'#e05c5c',font:{size:9}}},
+          band2: { type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{display:true,content:'Desfavorable',position:'start',color:'#e67e22',font:{size:9}}},
+          band3: { type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{display:true,content:'Intermedio',position:'start',color:'#f1c40f',font:{size:9}}},
+          band4: { type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{display:true,content:'Favorable',position:'start',color:'#2ecc71',font:{size:9}}},
+          band5: { type:'box', yMin:81, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{display:true,content:'Muy favorable',position:'start',color:'#00d4aa',font:{size:9}}},
         }
       }
     },
@@ -869,7 +1028,7 @@ new Chart(document.getElementById('cHistoria'), {
 // Solución: barra con ancho mínimo visible, valor numérico impreso al lado y
 // cobertura declarada en el tooltip.
 const dimYears = [2026, 2026, 2025, 2025, 2024, 2026];
-const dimCovs  = [68.6, 100.0, 60.0, 100.0, 72.0, 100.0];
+const dimCovs  = [68.6, 75.0, 60.0, 100.0, 72.0, 100.0];
 const DIM_MIN_BAR = 0.9;   // puntos de escala: ancho mínimo para que un 0 se vea
 
 // Plugin local: escribe el valor real al final de cada barra.
@@ -944,7 +1103,7 @@ const navLinks    = document.querySelectorAll('.nav-top a[href^="#"]');
 const tabSections = document.querySelectorAll('.tab-section');
 // 'acerca' DEBE figurar aquí: showSection() valida contra este array y, si no
 // encuentra el id, redirige a 'hoy' en silencio en vez de fallar.
-const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','acerca'];
+const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','evidencia','acerca'];
 
 const _tabInits = {};   // id → fn — se llena de forma perezosa desde cada IIFE
 
@@ -983,7 +1142,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 // ── SATV ──────────────────────────────────────────────────────────────────────
 (function() {
-  const SATV = {"resumen": {"dims_criticas": 0, "dims_precaucion": 1, "dims_normales": 2, "alertas_criticas": 0, "alertas_precaucion": 1, "alertas_positivas": 0, "iciv_delta_1y": 8.0, "iciv_tendencia": "recuperacion", "fecha": "2026-09"}, "dimensiones": {"macro_global": {"nombre": "Macro global", "score_actual": 62.5, "nivel": "normal", "delta_1y": 8.0, "delta_3y": 9.6, "delta_5y": 8.5, "tendencia": "recuperacion_acelerada", "tendencia_label": "Recuperacion acelerada", "arrow": "^^", "variable_critica": "ust_10y_yield_pct", "variable_critica_score": 0.0, "sparkline": [43.7, 42.9, 44.9, 46.0, 46.9, 54.0, 61.0, 60.9, 52.9, 51.5, 54.6, 62.5], "n_vars_disponibles": 5, "n_vars_total": 6}, "energia": {"nombre": "Energia", "score_actual": 35.4, "nivel": "precaucion", "delta_1y": 2.6, "delta_3y": 7.8, "delta_5y": 6.7, "tendencia": "recuperacion", "tendencia_label": "Recuperacion", "arrow": "^", "variable_critica": "", "variable_critica_score": 0.0, "sparkline": [27.6, 27.6, 28.3, 28.5, 28.7, 28.7, 26.6, 21.1, 27.6, 31.1, 32.8, 35.4], "n_vars_disponibles": 0, "n_vars_total": 1}, "noticias": {"nombre": "Cobertura internacional", "score_actual": 80.7, "nivel": "normal", "delta_1y": 5.8, "delta_3y": 12.8, "delta_5y": 25.2, "tendencia": "recuperacion_acelerada", "tendencia_label": "Recuperacion acelerada", "arrow": "^^", "variable_critica": "guardian_tono_titulares", "variable_critica_score": 46.8, "sparkline": [54.9, 50.3, 46.8, 27.7, 59.0, 55.4, 76.9, 71.2, 67.9, 67.2, 74.8, 80.7], "n_vars_disponibles": 4, "n_vars_total": 4}}, "alertas_activas": [{"tipo": "Cobertura mensual parcial", "nivel": "precaucion", "dimension": "pulse", "icono": "i", "mensaje": "El Pulse de 2026-09 usa 57% del peso mensual disponible."}], "variables_criticas": [{"label": "ust 10y yield pct", "score": 0.0, "delta_1y": -3.1, "dimension": "Macro global"}, {"label": "usd index broad", "score": 24.7, "delta_1y": 1.2, "dimension": "Macro global"}, {"label": "guardian tono titulares", "score": 46.8, "delta_1y": -0.7, "dimension": "Cobertura internacional"}, {"label": "wti precio usd", "score": 78.2, "delta_1y": 9.7, "dimension": "Macro global"}, {"label": "brent precio usd", "score": 78.4, "delta_1y": 10.5, "dimension": "Macro global"}, {"label": "vix volatility", "score": 88.3, "delta_1y": -1.0, "dimension": "Macro global"}, {"label": "guardian articulos venezuela", "score": 96.5, "delta_1y": 4.2, "dimension": "Cobertura internacional"}, {"label": "gdelt tono noticias", "score": 96.8, "delta_1y": 12.5, "dimension": "Cobertura internacional"}], "timeline_historico": [{"año": 2020, "mes": 3, "dimension": "pulse", "tipo": "Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 4, "dimension": "pulse", "tipo": "Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 5, "dimension": "pulse", "tipo": "Pulse < 35", "nivel": "critico"}]};
+  const SATV = {"resumen": {"dims_criticas": 0, "dims_precaucion": 0, "dims_normales": 2, "dims_sin_dato": 2, "alertas_criticas": 0, "alertas_precaucion": 2, "alertas_positivas": 0, "iciv_delta_1m": null, "iciv_delta_1y": null, "iciv_tendencia": "sin_comparacion", "fecha": "2026-09"}, "dimensiones": {"macro_global": {"nombre": "Condiciones globales", "score_actual": 68.1, "nivel": "normal", "delta_1m": 3.5, "delta_3m": 5.1, "delta_6m": 6.2, "delta_1y": 3.5, "delta_3y": 5.1, "delta_5y": 6.2, "tendencia": "recuperacion", "tendencia_label": "Aumento", "arrow": "^", "variable_critica": "ust_10y_yield_pct", "variable_critica_score": 0.0, "sparkline": [49.2, 48.4, 49.9, 51.4, 52.5, 59.3, 65.4, 66.6, 58.5, 57.1, 60.0, 68.1], "n_vars_disponibles": 6, "n_vars_total": 8}, "energia": {"nombre": "Petróleo y otros líquidos", "score_actual": null, "nivel": "sin_dato", "delta_1m": null, "delta_3m": null, "delta_6m": null, "delta_1y": null, "delta_3y": null, "delta_5y": null, "tendencia": "sin_comparacion", "tendencia_label": "Sin comparación suficiente", "arrow": "?", "variable_critica": "", "variable_critica_score": null, "sparkline": [28.7, 28.7, 26.6, 21.1, 27.6, 31.1, 32.8, 35.4, null, null, null, null], "n_vars_disponibles": 0, "n_vars_total": 1}, "comercio": {"nombre": "Comercio petrolero con EEUU", "score_actual": null, "nivel": "sin_dato", "delta_1m": null, "delta_3m": null, "delta_6m": null, "delta_1y": null, "delta_3y": null, "delta_5y": null, "tendencia": "sin_comparacion", "tendencia_label": "Sin comparación suficiente", "arrow": "?", "variable_critica": "", "variable_critica_score": null, "sparkline": [73.9, 75.7, 77.9, 78.3, 79.0, 79.0, 76.0, 75.6, 74.7, 73.9, null, null], "n_vars_disponibles": 0, "n_vars_total": 2}, "noticias": {"nombre": "Cobertura internacional", "score_actual": 80.7, "nivel": "normal", "delta_1m": 5.6, "delta_3m": 12.5, "delta_6m": 25.0, "delta_1y": 5.6, "delta_3y": 12.5, "delta_5y": 25.0, "tendencia": "recuperacion_acelerada", "tendencia_label": "Aumento acelerado", "arrow": "^^", "variable_critica": "guardian_tono_titulares", "variable_critica_score": 46.8, "sparkline": [42.9, 35.5, 33.5, 27.7, 59.3, 55.6, 77.1, 71.4, 68.1, 67.4, 75.1, 80.7], "n_vars_disponibles": 4, "n_vars_total": 4}}, "alertas_activas": [{"tipo": "Mes provisional", "nivel": "precaucion", "dimension": "pulse", "icono": "i", "mensaje": "Cobertura utilizable 57%. Se exige producción doméstica disponible y mes cerrado para elegibilidad."}, {"tipo": "Cambio de composición", "nivel": "precaucion", "dimension": "pulse", "icono": "i", "mensaje": "El cambio de componentes aporta +3.1 puntos a la variación mensual. Consulte el cambio comparable."}], "variables_criticas": [{"label": "ust 10y yield pct", "score": 0.0, "delta_1m": -2.7, "delta_1y": -2.7, "dimension": "Condiciones globales"}, {"label": "usd index broad", "score": 24.7, "delta_1m": 1.2, "delta_1y": 1.2, "dimension": "Condiciones globales"}, {"label": "guardian tono titulares", "score": 46.8, "delta_1m": -0.7, "delta_1y": -0.7, "dimension": "Cobertura internacional"}, {"label": "wti precio usd", "score": 78.2, "delta_1m": 9.7, "delta_1y": 9.7, "dimension": "Condiciones globales"}, {"label": "brent precio usd", "score": 78.4, "delta_1m": 10.5, "delta_1y": 10.5, "dimension": "Condiciones globales"}, {"label": "vix volatility", "score": 88.3, "delta_1m": -1.0, "delta_1y": -1.0, "dimension": "Condiciones globales"}, {"label": "guardian articulos venezuela", "score": 96.5, "delta_1m": 4.2, "delta_1y": 4.2, "dimension": "Cobertura internacional"}, {"label": "gdelt tono noticias", "score": 96.8, "delta_1m": 12.5, "delta_1y": 12.5, "dimension": "Cobertura internacional"}], "timeline_historico": [{"año": 2015, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 9, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 10, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 11, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 12, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 6, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 11, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 6, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2018, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2018, "mes": 12, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}], "metodologia": "Señales descriptivas relativas; umbrales heurísticos, sin probabilidades de riesgo. Cambios sobre componentes comunes y fechas calendario."};
   if (!SATV || !SATV.resumen) return;
 
   const NIV_COLOR = { critico:'#e05c5c', precaucion:'#e67e22', normal:'#2ecc71' };
@@ -1245,19 +1404,19 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // ── LABORATORIO — simulador interactivo ────────────────────────────────────────
 (function() {
   // ── SIMULADOR ────────────────────────────────────────────────────────────────
-  const SIM_DIMS  = [{"id": "D1_macro", "label": "Estabilidad Macroeconómica", "weight": 0.254006, "current": 70.5, "hist": [61.64, 66.11, 59.61, 60.85, 81.54, 77.77, 77.24, 76.44, 83.77, 73.73, 78.37, 86.19, 87.94, 82.99, 76.54, 61.44, 49.1, 48.12, 23.97, 21.78, 29.47, 58.53, 76.66, 61.0, 70.52, 59.43, 61.69], "max_hist": 87.94}, {"id": "D2_energia", "label": "Sector Energético y Petróleo", "weight": 0.195245, "current": 22.1, "hist": [100.0, 96.34, 80.63, 75.06, 86.07, 97.72, 95.41, 96.88, 83.79, 84.21, 79.56, 83.37, 83.37, 83.37, 87.53, 83.3, 69.68, 46.6, 41.96, 27.65, 5.08, 11.32, 17.14, 15.93, 22.1, 29.14, 35.01], "max_hist": 100.0}, {"id": "D3_institucional", "label": "Entorno Institucional y Legal", "weight": 0.195245, "current": 5.1, "hist": [100.0, null, 67.97, 73.25, 73.82, 74.72, 67.3, 57.69, 53.62, 54.65, 59.32, 58.48, 69.82, 71.76, 56.04, 52.53, 40.01, 34.34, 27.11, 15.68, 9.91, 10.54, 14.14, 14.03, 5.08, 0.0, null], "max_hist": 100.0}, {"id": "D4_comercial", "label": "Apertura Comercial y Financiera", "weight": 0.174253, "current": 18.5, "hist": [41.38, 41.37, 41.36, 41.33, 41.3, 41.26, 54.5, 55.15, 54.96, 52.63, 50.06, 46.35, 77.49, 78.11, 88.26, 81.77, 69.67, 66.28, 69.07, 65.4, 29.37, 25.94, 22.12, 21.63, 18.54, 19.03, null], "max_hist": 88.26}, {"id": "D5_capital_humano", "label": "Capital Humano e Infraestructura Social", "weight": 0.090625, "current": 43.2, "hist": [40.25, 43.1, 60.47, 32.9, 63.26, 69.87, 77.21, 87.86, 82.01, 82.87, 82.51, 83.18, 87.83, 88.42, 87.13, 85.81, 60.35, 51.83, 53.84, 44.22, 31.16, 26.53, 35.69, 35.01, 43.22, null, null], "max_hist": 88.42}, {"id": "D6_percepcion", "label": "Percepción Internacional", "weight": 0.090625, "current": 59.8, "hist": [81.58, 88.39, 77.78, 85.33, 84.16, 74.33, 89.89, 70.44, 72.8, 82.71, 74.68, 57.46, 88.28, 68.88, 48.42, 72.61, 59.43, 26.3, 61.1, 45.36, 48.95, 72.51, 68.43, 68.02, 59.81, 34.98, 36.26], "max_hist": 89.89}];
+  const SIM_DIMS  = [{"id": "D1_macro", "label": "Estabilidad Macroeconómica", "weight": 0.254006, "current": 70.5, "hist": [61.64, 66.11, 59.61, 60.85, 81.54, 77.77, 77.24, 76.44, 83.77, 73.73, 78.37, 86.19, 87.94, 82.99, 76.54, 61.44, 49.1, 48.12, 23.97, 21.78, 29.47, 58.53, 76.66, 61.0, 70.52, 59.43, 61.69], "max_hist": 87.94}, {"id": "D2_energia", "label": "Sector Energético y Petróleo", "weight": 0.195245, "current": 14.2, "hist": [100.0, 96.34, 80.63, 75.06, 86.07, 97.72, 95.41, 96.88, 83.79, 84.21, 79.56, 83.37, 83.37, 83.37, 83.37, 82.92, 72.99, 62.13, 40.5, 14.82, 0.0, 2.86, 8.31, 10.29, 14.22, 18.83, 21.08], "max_hist": 100.0}, {"id": "D3_institucional", "label": "Entorno Institucional y Legal", "weight": 0.195245, "current": 5.1, "hist": [null, null, null, null, null, null, null, null, null, null, null, null, 74.04, 81.64, 64.94, 59.45, 46.92, 45.66, 35.02, 21.61, 14.85, 14.5, 18.09, 16.99, 5.08, 0.0, null], "max_hist": 81.64}, {"id": "D4_comercial", "label": "Apertura Comercial y Financiera", "weight": 0.174253, "current": 18.5, "hist": [41.38, 41.37, 41.36, 41.33, 41.3, 41.26, 54.5, 55.15, 54.96, 52.63, 50.06, 46.35, 77.49, 78.11, 88.26, 81.77, 69.67, 66.28, 69.07, 65.4, 29.37, 25.94, 22.12, 21.63, 18.54, 19.03, null], "max_hist": 88.26}, {"id": "D5_capital_humano", "label": "Capital Humano e Infraestructura Social", "weight": 0.090625, "current": 43.2, "hist": [40.25, 43.1, 60.47, 32.9, 63.26, 69.87, 77.21, 87.86, 82.01, 82.87, 82.51, 83.18, 87.83, 88.42, 87.13, 85.81, 60.35, 51.83, 53.84, 44.22, 31.16, 26.53, 35.69, 35.01, 43.22, null, null], "max_hist": 88.42}, {"id": "D6_percepcion", "label": "Percepción Internacional", "weight": 0.090625, "current": 59.8, "hist": [81.58, 88.39, 77.78, 85.33, 84.16, 74.33, 89.89, 70.44, 72.8, 82.71, 74.68, 57.46, 88.28, 68.88, 48.42, 72.61, 59.43, 26.3, 61.1, 45.36, 48.95, 72.51, 68.43, 68.02, 59.81, 34.98, 36.26], "max_hist": 89.89}];
   const SIM_YEARS = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-  const SIM_HIST  = [72.96, 68.01, 63.89, 62.33, 72.49, 73.68, 76.03, 73.55, 71.71, 70.02, 69.99, 70.41, 81.71, 79.23, 75.14, 70.73, 56.88, 46.66, 42.03, 33.51, 22.79, 32.63, 38.87, 34.45, 35.79, 29.99, 47.77];
+  const SIM_HIST  = [66.4, 68.01, 62.9, 59.68, 72.16, 73.43, 78.15, 77.4, 76.1, 73.74, 72.58, 73.3, 82.53, 81.16, 76.06, 72.01, 58.88, 51.9, 43.29, 32.16, 22.76, 31.75, 37.92, 33.93, 34.25, 27.78, 42.73];
 
   let simChart = null;
   let simValues = {};  // dim_id → current slider value
 
   function scoreToCategory(s) {
-    if (s <= 30)  return { label:'Alto Riesgo',          color:'#e05c5c' };
-    if (s <= 50)  return { label:'Riesgo Moderado-Alto', color:'#e67e22' };
-    if (s <= 65)  return { label:'Riesgo Moderado',      color:'#f1c40f' };
-    if (s <= 80)  return { label:'Bajo Riesgo',           color:'#2ecc71' };
-    return              { label:'Muy Bajo Riesgo',        color:'#00d4aa' };
+    if (s <= 30)  return { label:'Muy desfavorable',          color:'#e05c5c' };
+    if (s <= 50)  return { label:'Desfavorable', color:'#e67e22' };
+    if (s <= 65)  return { label:'Intermedio',      color:'#f1c40f' };
+    if (s <= 80)  return { label:'Favorable',           color:'#2ecc71' };
+    return              { label:'Muy favorable',        color:'#00d4aa' };
   }
 
   function computeICIV() {
@@ -1440,7 +1599,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 // ── RADAR SECTORIAL — gráficos creados al cargar, resize al activar tab ─────
 (function() {
-  var SR = {"año_actual": 2025, "iciv_actual": 29.99, "dim_scores_actuales": {"D1_macro": 59.43, "D2_energia": 29.14, "D3_institucional": 0.0, "D4_comercial": 19.03, "D5_capital_humano": NaN, "D6_percepcion": 34.98}, "ranking": [{"sector_id": "retail", "label": "Retail", "label_corto": "Retail", "score": 40.78, "score_base": 34.78, "penalizacion_sancion": 1.0, "penalizacion_capex": 0.0, "bonus_defensivo": 7.0, "recomendacion": "No entrar todavía", "recomendacion_short": "ESPERAR", "color": "ORANGE", "hex": "#e67e22", "riesgo_principal": "Riesgo institucional / contractual", "racional": "Con un ICIV general de 30.0/100, las condiciones en comercio minorista organizado y distribución al consumidor son restrictivas pero no permanentes. El sector podría escalar a 'Piloto' si Entorno Institucional mejora ≥ 5 puntos.", "pesos": {"D1_macro": 0.35, "D2_energia": 0.05, "D3_institucional": 0.15, "D4_comercial": 0.2, "D5_capital_humano": 0.15, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 20.8, "D2_energia": 1.46, "D3_institucional": 0.0, "D4_comercial": 3.81, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "baja", "capex": "baja", "demanda_defensiva": "alta"}, "rank": 1}, {"sector_id": "consumo_masivo", "label": "Consumo masivo", "label_corto": "Consumo", "score": 37.02, "score_base": 32.22, "penalizacion_sancion": 1.0, "penalizacion_capex": 1.2, "bonus_defensivo": 7.0, "recomendacion": "No entrar todavía", "recomendacion_short": "ESPERAR", "color": "ORANGE", "hex": "#e67e22", "riesgo_principal": "Riesgo institucional / contractual", "racional": "Con un ICIV general de 30.0/100, las condiciones en bienes de consumo diario, alimentos procesados y distribución son restrictivas pero no permanentes. El sector podría escalar a 'Piloto' si Entorno Institucional mejora ≥ 5 puntos.", "pesos": {"D1_macro": 0.3, "D2_energia": 0.1, "D3_institucional": 0.15, "D4_comercial": 0.25, "D5_capital_humano": 0.1, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 17.83, "D2_energia": 2.91, "D3_institucional": 0.0, "D4_comercial": 4.76, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "baja", "capex": "media", "demanda_defensiva": "alta"}, "rank": 2}, {"sector_id": "agroindustria", "label": "Agroindustria", "label_corto": "Agroindustria", "score": 33.96, "score_base": 29.16, "penalizacion_sancion": 1.0, "penalizacion_capex": 1.2, "bonus_defensivo": 7.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo institucional / contractual", "racional": "La alta intensidad de capital requerida en agricultura comercial, ganadería e industria agroalimentaria —sin protección contractual robusta— hace inviable la inversión hasta que Entorno Institucional supere al menos los 40 puntos.", "pesos": {"D1_macro": 0.25, "D2_energia": 0.1, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.2, "D6_percepcion": 0.05}, "scores_dim_ponderados": {"D1_macro": 14.86, "D2_energia": 2.91, "D3_institucional": 0.0, "D4_comercial": 3.81, "D5_capital_humano": null, "D6_percepcion": 1.75}, "ajustadores": {"sancion": "baja", "capex": "media", "demanda_defensiva": "alta"}, "rank": 3}, {"sector_id": "salud_farmaceutico", "label": "Salud / Farmacéutico", "label_corto": "Salud", "score": 32.33, "score_base": 27.53, "penalizacion_sancion": 1.0, "penalizacion_capex": 1.2, "bonus_defensivo": 7.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo institucional / contractual", "racional": "Salud / Farmacéutico no presenta condiciones mínimas de entrada en el entorno actual. La combinación de Riesgo institucional / contractual (0/100) y exposición baja a sanciones genera un perfil de riesgo que supera el retorno esperado.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.05, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.25, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 11.89, "D2_energia": 1.46, "D3_institucional": 0.0, "D4_comercial": 3.81, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "baja", "capex": "media", "demanda_defensiva": "alta"}, "rank": 4}, {"sector_id": "tecnologia_digital", "label": "Tecnología / Servicios digitales", "label_corto": "Tech / Digital", "score": 27.25, "score_base": 25.25, "penalizacion_sancion": 1.0, "penalizacion_capex": 0.0, "bonus_defensivo": 3.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo institucional / contractual", "racional": "Tecnología / Servicios digitales no presenta condiciones mínimas de entrada en el entorno actual. La combinación de Riesgo institucional / contractual (0/100) y exposición baja a sanciones genera un perfil de riesgo que supera el retorno esperado.", "pesos": {"D1_macro": 0.15, "D2_energia": 0.05, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.3, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 8.91, "D2_energia": 1.46, "D3_institucional": 0.0, "D4_comercial": 3.81, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "baja", "capex": "baja", "demanda_defensiva": "media"}, "rank": 5}, {"sector_id": "logistica_comercio", "label": "Logística / Comercio exterior", "label_corto": "Logística", "score": 24.47, "score_base": 26.67, "penalizacion_sancion": 4.0, "penalizacion_capex": 1.2, "bonus_defensivo": 3.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo institucional / contractual", "racional": "La alta intensidad de capital requerida en transporte, almacenamiento y comercio exterior —sin protección contractual robusta— hace inviable la inversión hasta que Entorno Institucional supere al menos los 40 puntos.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.1, "D3_institucional": 0.2, "D4_comercial": 0.3, "D5_capital_humano": 0.1, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 11.89, "D2_energia": 2.91, "D3_institucional": 0.0, "D4_comercial": 5.71, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "media", "capex": "media", "demanda_defensiva": "media"}, "rank": 6}, {"sector_id": "telecomunicaciones", "label": "Telecomunicaciones", "label_corto": "Telecomunicaciones", "score": 24.46, "score_base": 28.26, "penalizacion_sancion": 4.0, "penalizacion_capex": 2.8, "bonus_defensivo": 3.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo institucional / contractual", "racional": "Telecomunicaciones no presenta condiciones mínimas de entrada en el entorno actual. La combinación de Riesgo institucional / contractual (0/100) y exposición moderada a sanciones genera un perfil de riesgo que supera el retorno esperado.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.15, "D3_institucional": 0.2, "D4_comercial": 0.15, "D5_capital_humano": 0.2, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 11.89, "D2_energia": 4.37, "D3_institucional": 0.0, "D4_comercial": 2.85, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "media", "capex": "alta", "demanda_defensiva": "media"}, "rank": 7}, {"sector_id": "banca_fintech", "label": "Banca / Fintech", "label_corto": "Banca / Fintech", "score": 17.01, "score_base": 26.01, "penalizacion_sancion": 9.0, "penalizacion_capex": 0.0, "bonus_defensivo": 0.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo sancionatorio", "racional": "La alta intensidad de capital requerida en servicios financieros, bancarios y tecnología financiera —sin protección contractual robusta— hace inviable la inversión hasta que Entorno Institucional supere al menos los 40 puntos.", "pesos": {"D1_macro": 0.25, "D2_energia": 0.0, "D3_institucional": 0.35, "D4_comercial": 0.15, "D5_capital_humano": 0.05, "D6_percepcion": 0.2}, "scores_dim_ponderados": {"D1_macro": 14.86, "D2_energia": 0.0, "D3_institucional": 0.0, "D4_comercial": 2.85, "D5_capital_humano": null, "D6_percepcion": 7.0}, "ajustadores": {"sancion": "alta", "capex": "baja", "demanda_defensiva": "baja"}, "rank": 8}, {"sector_id": "infraestructura", "label": "Infraestructura / Construcción", "label_corto": "Infraestructura", "score": 12.74, "score_base": 24.54, "penalizacion_sancion": 9.0, "penalizacion_capex": 2.8, "bonus_defensivo": 0.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo sancionatorio", "racional": "La alta intensidad de capital requerida en obras civiles, construcción pesada e ingeniería de proyecto —sin protección contractual robusta— hace inviable la inversión hasta que Entorno Institucional supere al menos los 40 puntos.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.15, "D3_institucional": 0.3, "D4_comercial": 0.15, "D5_capital_humano": 0.15, "D6_percepcion": 0.05}, "scores_dim_ponderados": {"D1_macro": 11.89, "D2_energia": 4.37, "D3_institucional": 0.0, "D4_comercial": 2.85, "D5_capital_humano": null, "D6_percepcion": 1.75}, "ajustadores": {"sancion": "alta", "capex": "alta", "demanda_defensiva": "baja"}, "rank": 9}, {"sector_id": "energia_oil_gas", "label": "Energía / Oil & Gas", "label_corto": "Oil & Gas", "score": 10.88, "score_base": 22.68, "penalizacion_sancion": 9.0, "penalizacion_capex": 2.8, "bonus_defensivo": 0.0, "recomendacion": "No entrar", "recomendacion_short": "NO ENTRAR", "color": "RED", "hex": "#e05c5c", "riesgo_principal": "Riesgo sancionatorio", "racional": "La alta intensidad de capital requerida en extracción, producción y exportación petrolera —sin protección contractual robusta— hace inviable la inversión hasta que Entorno Institucional supere al menos los 40 puntos.", "pesos": {"D1_macro": 0.1, "D2_energia": 0.35, "D3_institucional": 0.3, "D4_comercial": 0.1, "D5_capital_humano": 0.05, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 5.94, "D2_energia": 10.2, "D3_institucional": 0.0, "D4_comercial": 1.9, "D5_capital_humano": null, "D6_percepcion": 3.5}, "ajustadores": {"sancion": "alta", "capex": "alta", "demanda_defensiva": "baja"}, "rank": 10}], "resumen_categorias": {"NO ENTRAR": 8, "ESPERAR": 2, "PILOTO": 0, "ENTRADA": 0, "PRIORITARIA": 0, "SIN DATOS": 0}, "series_historicas": {"años": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "sectores": {"energia_oil_gas": [85.47, 79.23, 68.16, 67.88, 75.44, 78.85, 78.18, 73.3, 67.7, 68.07, 67.75, 67.46, 78.74, 77.2, 70.43, 67.7, 52.73, 37.67, 33.86, 20.3, 5.39, 13.9, 19.78, 17.0, 15.89, 10.88, 39.78], "consumo_masivo": [73.02, 69.3, 67.16, 65.82, 76.13, 75.98, 79.98, 77.61, 77.44, 75.14, 75.34, 75.35, 89.05, 86.15, 82.44, 77.58, 63.6, 54.86, 50.08, 42.17, 30.68, 41.75, 48.28, 42.95, 44.28, 37.02, 58.13], "salud_farmaceutico": [70.82, 64.41, 67.56, 62.51, 74.79, 75.47, 79.71, 78.43, 77.11, 76.08, 76.37, 75.64, 88.88, 86.63, 81.87, 78.68, 62.77, 53.89, 51.56, 42.75, 31.18, 38.54, 44.72, 40.93, 41.93, 32.33, null], "telecomunicaciones": [72.74, 67.17, 66.08, 62.05, 73.94, 75.49, 78.19, 76.13, 73.65, 72.78, 72.92, 72.7, 84.57, 82.33, 76.95, 73.6, 57.74, 46.67, 42.99, 32.3, 19.86, 29.06, 36.18, 31.97, 33.11, 24.46, null], "banca_fintech": [74.95, 65.49, 62.12, 65.0, 71.72, 69.55, 71.45, 63.55, 63.65, 63.29, 64.6, 62.2, 78.95, 74.85, 63.33, 61.73, 47.13, 36.71, 34.8, 24.79, 18.7, 30.23, 35.49, 31.34, 27.88, 17.01, null], "infraestructura": [73.65, 63.95, 62.22, 60.05, 70.56, 72.42, 72.77, 69.59, 66.63, 65.38, 66.7, 67.17, 79.11, 78.13, 71.28, 66.22, 50.25, 40.34, 33.65, 22.37, 9.46, 17.82, 25.27, 21.1, 20.78, 12.74, null], "logistica_comercio": [69.92, 63.52, 62.21, 61.21, 69.5, 69.8, 73.87, 70.77, 69.51, 68.18, 68.2, 67.16, 83.24, 81.04, 77.1, 73.12, 58.67, 49.37, 46.5, 37.63, 23.07, 31.12, 35.96, 32.16, 31.6, 24.47, null], "tecnologia_digital": [65.75, 58.97, 63.61, 57.12, 69.88, 71.08, 75.71, 75.0, 73.02, 72.54, 72.57, 71.49, 84.87, 82.9, 78.4, 75.9, 59.33, 50.28, 49.53, 40.86, 28.9, 33.98, 39.33, 36.56, 37.42, 27.25, null], "retail": [71.05, 67.63, 67.06, 64.69, 77.0, 76.41, 80.21, 78.23, 78.8, 76.12, 76.9, 77.33, 89.79, 86.65, 81.84, 76.69, 62.1, 54.41, 48.89, 41.8, 33.62, 45.18, 52.61, 46.81, 48.78, 40.78, 60.94], "agroindustria": [72.81, 66.34, 67.66, 63.4, 75.8, 77.03, 79.99, 79.18, 77.75, 75.7, 76.4, 77.09, 88.64, 87.08, 83.3, 78.0, 62.72, 54.72, 49.11, 40.74, 28.9, 37.08, 44.2, 39.62, 41.41, 33.96, null]}}, "sector_labels": {"energia_oil_gas": "Energía / Oil & Gas", "consumo_masivo": "Consumo masivo", "salud_farmaceutico": "Salud / Farmacéutico", "telecomunicaciones": "Telecomunicaciones", "banca_fintech": "Banca / Fintech", "infraestructura": "Infraestructura / Construcción", "logistica_comercio": "Logística / Comercio exterior", "tecnologia_digital": "Tecnología / Servicios digitales", "retail": "Retail", "agroindustria": "Agroindustria"}, "categorias": [{"min": 0, "max": 35, "label": "No entrar", "color": "RED", "hex": "#e05c5c", "short": "NO ENTRAR"}, {"min": 35, "max": 50, "label": "No entrar todavía", "color": "ORANGE", "hex": "#e67e22", "short": "ESPERAR"}, {"min": 50, "max": 65, "label": "Entrada piloto / monitoreo", "color": "YELLOW", "hex": "#f1c40f", "short": "PILOTO"}, {"min": 65, "max": 80, "label": "Entrada recomendada con mitigantes", "color": "GREEN", "hex": "#2ecc71", "short": "ENTRADA"}, {"min": 80, "max": 100, "label": "Entrada prioritaria", "color": "STRONG_GREEN", "hex": "#00d4aa", "short": "PRIORITARIA"}], "metodologia": "Investment Entry Radar Sectorial v1.1. Score base = Σ DimScore(d) × PesoSectorial(s,d), con los pesos renormalizados sobre las dimensiones con dato (mínimo 50% del peso). Ajustadores: penalizacion regulatoria, penalizacion CAPEX (escala con ICIV < 50), bonus de demanda defensiva. ICIV actual: 30.0/100. Umbrales: <35 No entrar · 35-50 Esperar · 50-65 Piloto · 65-80 Entrada · ≥80 Prioritaria."};
+  var SR = {"available": true, "año_actual": 2024, "iciv_actual": 34.25, "dim_scores_actuales": {"D1_macro": 70.52, "D2_energia": 14.22, "D3_institucional": 5.08, "D4_comercial": 18.54, "D5_capital_humano": 43.22, "D6_percepcion": 59.81}, "ranking": [{"sector_id": "retail", "label": "Retail", "label_corto": "Retail", "score": 42.33, "score_base": 42.33, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D4_comercial", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.35, "D2_energia": 0.05, "D3_institucional": 0.15, "D4_comercial": 0.2, "D5_capital_humano": 0.15, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 24.682, "D2_energia": 0.7110000000000001, "D3_institucional": 0.762, "D4_comercial": 3.708, "D5_capital_humano": 6.483, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 1}, {"sector_id": "consumo_masivo", "label": "Consumo masivo", "label_corto": "Consumo", "score": 38.28, "score_base": 38.28, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D4_comercial", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.3, "D2_energia": 0.1, "D3_institucional": 0.15, "D4_comercial": 0.25, "D5_capital_humano": 0.1, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 21.156, "D2_energia": 1.4220000000000002, "D3_institucional": 0.762, "D4_comercial": 4.635, "D5_capital_humano": 4.322, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 2}, {"sector_id": "salud_farmaceutico", "label": "Salud / Farmacéutico", "label_corto": "Salud", "score": 36.33, "score_base": 36.33, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.05, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.25, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 14.104, "D2_energia": 0.7110000000000001, "D3_institucional": 1.016, "D4_comercial": 3.708, "D5_capital_humano": 10.805, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 3}, {"sector_id": "banca_fintech", "label": "Banca / Fintech", "label_corto": "Banca / Fintech", "score": 36.31, "score_base": 36.31, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.25, "D2_energia": 0.0, "D3_institucional": 0.35, "D4_comercial": 0.15, "D5_capital_humano": 0.05, "D6_percepcion": 0.2}, "scores_dim_ponderados": {"D1_macro": 17.63, "D2_energia": 0.0, "D3_institucional": 1.7779999999999998, "D4_comercial": 2.7809999999999997, "D5_capital_humano": 2.161, "D6_percepcion": 11.962000000000002}, "ajustadores": {}, "rank": 4}, {"sector_id": "agroindustria", "label": "Agroindustria", "label_corto": "Agroindustria", "score": 35.41, "score_base": 35.41, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.25, "D2_energia": 0.1, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.2, "D6_percepcion": 0.05}, "scores_dim_ponderados": {"D1_macro": 17.63, "D2_energia": 1.4220000000000002, "D3_institucional": 1.016, "D4_comercial": 3.708, "D5_capital_humano": 8.644, "D6_percepcion": 2.9905000000000004}, "ajustadores": {}, "rank": 5}, {"sector_id": "tecnologia_digital", "label": "Tecnología / Servicios digitales", "label_corto": "Tech / Digital", "score": 34.96, "score_base": 34.96, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.15, "D2_energia": 0.05, "D3_institucional": 0.2, "D4_comercial": 0.2, "D5_capital_humano": 0.3, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 10.578, "D2_energia": 0.7110000000000001, "D3_institucional": 1.016, "D4_comercial": 3.708, "D5_capital_humano": 12.966, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 6}, {"sector_id": "telecomunicaciones", "label": "Telecomunicaciones", "label_corto": "Telecomunicaciones", "score": 34.66, "score_base": 34.66, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.15, "D3_institucional": 0.2, "D4_comercial": 0.15, "D5_capital_humano": 0.2, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 14.104, "D2_energia": 2.133, "D3_institucional": 1.016, "D4_comercial": 2.7809999999999997, "D5_capital_humano": 8.644, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 7}, {"sector_id": "logistica_comercio", "label": "Logística / Comercio exterior", "label_corto": "Logística", "score": 32.41, "score_base": 32.41, "hex": "#e67e22", "color": "#e67e22", "recomendacion": "Desfavorable", "recomendacion_short": "Desfavorable", "riesgo_principal": "Mayor déficit ponderado: D4_comercial", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.1, "D3_institucional": 0.2, "D4_comercial": 0.3, "D5_capital_humano": 0.1, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 14.104, "D2_energia": 1.4220000000000002, "D3_institucional": 1.016, "D4_comercial": 5.561999999999999, "D5_capital_humano": 4.322, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 8}, {"sector_id": "infraestructura", "label": "Infraestructura / Construcción", "label_corto": "Infraestructura", "score": 30.02, "score_base": 30.02, "hex": "#e74c3c", "color": "#e74c3c", "recomendacion": "Muy desfavorable", "recomendacion_short": "Muy desfavorable", "riesgo_principal": "Mayor déficit ponderado: D3_institucional", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.2, "D2_energia": 0.15, "D3_institucional": 0.3, "D4_comercial": 0.15, "D5_capital_humano": 0.15, "D6_percepcion": 0.05}, "scores_dim_ponderados": {"D1_macro": 14.104, "D2_energia": 2.133, "D3_institucional": 1.524, "D4_comercial": 2.7809999999999997, "D5_capital_humano": 6.483, "D6_percepcion": 2.9905000000000004}, "ajustadores": {}, "rank": 9}, {"sector_id": "energia_oil_gas", "label": "Energía / Oil & Gas", "label_corto": "Oil & Gas", "score": 23.55, "score_base": 23.55, "hex": "#e74c3c", "color": "#e74c3c", "recomendacion": "Muy desfavorable", "recomendacion_short": "Muy desfavorable", "riesgo_principal": "Mayor déficit ponderado: D2_energia", "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.", "pesos": {"D1_macro": 0.1, "D2_energia": 0.35, "D3_institucional": 0.3, "D4_comercial": 0.1, "D5_capital_humano": 0.05, "D6_percepcion": 0.1}, "scores_dim_ponderados": {"D1_macro": 7.052, "D2_energia": 4.977, "D3_institucional": 1.524, "D4_comercial": 1.854, "D5_capital_humano": 2.161, "D6_percepcion": 5.981000000000001}, "ajustadores": {}, "rank": 10}], "resumen_categorias": {"Muy desfavorable": 2, "Desfavorable": 8, "Intermedio": 0, "Favorable": 0, "Muy favorable": 0}, "series_historicas": {"años": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], "sectores": {"energia_oil_gas": [null, null, null, null, null, null, null, null, null, null, null, null, 81.15, 81.09, 74.34, 72.73, 60.46, 52.1, 42.79, 27.14, 16.79, 22.38, 26.84, 25.51, 23.55, null, null], "consumo_masivo": [null, null, null, null, null, null, null, null, null, null, null, null, 82.81, 80.74, 76.66, 71.93, 58.46, 51.88, 45.26, 36.57, 26.42, 36.41, 42.48, 37.59, 38.28, null, null], "salud_farmaceutico": [null, null, null, null, null, null, null, null, null, null, null, null, 82.85, 81.71, 76.74, 73.39, 57.82, 50.71, 47.21, 38.09, 27.42, 33.82, 39.55, 35.99, 36.33, null, null], "telecomunicaciones": [null, null, null, null, null, null, null, null, null, null, null, null, 82.92, 81.72, 76.31, 73.3, 58.62, 51.01, 45.11, 34.09, 24.4, 31.48, 37.5, 34.19, 34.66, null, null], "banca_fintech": [null, null, null, null, null, null, null, null, null, null, null, null, 81.57, 79.23, 69.14, 67.25, 54.05, 45.8, 43.52, 34.1, 28.32, 39.43, 44.28, 39.8, 36.31, null, null], "infraestructura": [null, null, null, null, null, null, null, null, null, null, null, null, 81.52, 82.02, 76.03, 71.33, 57.32, 51.67, 42.87, 31.77, 21.88, 27.98, 34.1, 30.74, 30.02, null, null], "logistica_comercio": [null, null, null, null, null, null, null, null, null, null, null, null, 81.59, 80.43, 76.67, 72.84, 59.38, 52.67, 48.06, 38.74, 25.69, 32.58, 36.83, 33.42, 32.41, null, null], "tecnologia_digital": [null, null, null, null, null, null, null, null, null, null, null, null, 82.84, 81.98, 77.27, 74.61, 58.38, 50.89, 48.7, 39.21, 27.51, 32.22, 37.51, 34.69, 34.96, null, null], "retail": [null, null, null, null, null, null, null, null, null, null, null, null, 83.55, 81.23, 76.26, 71.05, 56.8, 50.46, 43.67, 35.85, 27.98, 39.22, 46.58, 40.79, 42.33, null, null], "agroindustria": [null, null, null, null, null, null, null, null, null, null, null, null, 82.61, 82.16, 77.96, 72.69, 57.93, 52.31, 44.68, 35.44, 24.89, 31.94, 38.6, 34.41, 35.41, null, null]}}, "sector_labels": {"energia_oil_gas": "Energía / Oil & Gas", "consumo_masivo": "Consumo masivo", "salud_farmaceutico": "Salud / Farmacéutico", "telecomunicaciones": "Telecomunicaciones", "banca_fintech": "Banca / Fintech", "infraestructura": "Infraestructura / Construcción", "logistica_comercio": "Logística / Comercio exterior", "tecnologia_digital": "Tecnología / Servicios digitales", "retail": "Retail", "agroindustria": "Agroindustria"}, "categorias": [], "metodologia": "Sensibilidad por perfiles hipotéticos: suma de dimensiones por pesos declarados; exige todas las dimensiones. Sin ajustes manuales ni recomendación de inversión."};
   if (!SR || !SR.ranking || !SR.ranking.length) return;
 
   // ── Bar chart — creado en page load ───────────────────────────────────────
@@ -1607,71 +1766,30 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 // ── PROYECCIÓN A 6 MESES (se dibuja dentro de Historia) ──────────────────────────────────────────
 (function() {
-  var ML = {"sarima": {"fecha": ["2026-10", "2026-11", "2026-12", "2027-01", "2027-02", "2027-03"], "mean": [74.3, 75.03, 73.93, 71.71, 72.88, 72.28], "lo_80": [69.49, 68.89, 66.55, 63.35, 63.6, 62.19], "hi_80": [79.11, 81.17, 81.32, 80.06, 82.16, 82.36], "lo_95": [66.94, 65.64, 62.64, 58.93, 58.69, 56.85], "hi_95": [81.66, 84.42, 85.22, 84.49, 87.07, 87.7], "order": "SARIMA(1, 1, 2)x(1, 1, 1, 12)", "aic": 976.34, "horizonte_meses": 6}, "metodologia": {"sarima_ref": "Hyndman & Athanasopoulos (2018) Forecasting: Principles and Practice", "validacion": "Forecast baseline sobre Pulse mensual observado"}, "backtest": {"available": true, "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 3, "sarima_origin_step_months": 12, "min_coverage_pct": 70.0, "include_low_coverage": false}, "n_predictions": 441, "n_origins": 45, "best_by_horizon": [{"horizon": 1, "model": "sarima", "mae": 2.6044, "rmse": 3.4683}, {"horizon": 3, "model": "naive", "mae": 4.3109, "rmse": 5.394}, {"horizon": 6, "model": "naive", "mae": 5.3576, "rmse": 6.8618}], "sarima": [{"model": "sarima", "horizon": 1, "n": 12, "mae": 2.6044, "rmse": 3.4683, "bias": 0.3585, "inside_80": 0.9167, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 12, "mae": 5.9206, "rmse": 7.0722, "bias": -0.551, "inside_80": 0.5833, "inside_95": 0.75}, {"model": "sarima", "horizon": 6, "n": 12, "mae": 5.5528, "rmse": 7.7922, "bias": -2.1143, "inside_80": 0.8333, "inside_95": 0.8333}]}};
-  var PULSE = {"data": {"meses": ["2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12", "2011-01", "2011-02", "2011-03", "2011-04", "2011-05", "2011-06", "2011-07", "2011-08", "2011-09", "2011-10", "2011-11", "2011-12", "2012-01", "2012-02", "2012-03", "2012-04", "2012-05", "2012-06", "2012-07", "2012-08", "2012-09", "2012-10", "2012-11", "2012-12", "2013-01", "2013-02", "2013-03", "2013-04", "2013-05", "2013-06", "2013-07", "2013-08", "2013-09", "2013-10", "2013-11", "2013-12", "2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12", "2015-01", "2015-02", "2015-03", "2015-04", "2015-05", "2015-06", "2015-07", "2015-08", "2015-09", "2015-10", "2015-11", "2015-12", "2016-01", "2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10", "2016-11", "2016-12", "2017-01", "2017-02", "2017-03", "2017-04", "2017-05", "2017-06", "2017-07", "2017-08", "2017-09", "2017-10", "2017-11", "2017-12", "2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "scores": [69.56, 72.49, 74.22, 71.66, 71.19, 67.23, 72.59, 71.43, 70.69, 77.06, 74.19, 74.59, 77.06, 77.54, 78.12, 81.41, 77.62, 77.47, 76.38, 78.87, 76.35, 76.49, 77.6, 79.14, 81.64, 81.85, 82.75, 80.8, 77.91, 78.74, 80.81, 79.28, 80.46, 80.37, 82.6, 77.92, 79.75, 82.07, 76.72, 79.64, 78.23, 79.2, 79.07, 82.0, 80.39, 78.57, 78.52, 81.67, 77.09, 75.48, 77.94, 77.08, 81.02, 81.34, 79.95, 78.48, 75.05, 73.41, 75.12, 71.17, 64.33, 67.04, 65.22, 70.29, 73.25, 71.93, 68.91, 66.36, 61.95, 65.29, 64.94, 59.29, 55.42, 57.85, 66.16, 62.74, 59.52, 58.1, 63.76, 62.3, 64.36, 65.7, 58.67, 65.06, 61.06, 63.55, 60.23, 55.94, 53.64, 56.95, 52.28, 46.25, 57.13, 62.22, 63.74, 61.78, 58.27, 55.69, 59.87, 57.24, 55.5, 58.06, 56.29, 48.0, 55.38, 52.54, 56.63, 49.63, 44.44, 42.07, 41.5, 43.7, 39.84, 46.28, 45.37, 44.58, 46.53, 46.91, 48.58, 47.53, 46.41, 45.5, 30.79, 33.4, 31.53, 36.86, 38.46, 39.85, 38.8, 42.88, 40.97, 45.18, 43.12, 47.64, 44.34, 47.25, 48.27, 50.61, 47.92, 50.46, 47.98, 52.02, 52.26, 56.5, 51.94, 51.79, 56.9, 60.78, 56.68, 59.6, 51.16, 55.53, 49.45, 48.92, 53.0, 46.41, 47.37, 45.54, 44.16, 49.16, 48.29, 47.4, 54.49, 51.91, 49.29, 46.67, 49.1, 47.32, 47.8, 48.26, 49.8, 48.55, 53.5, 51.01, 49.41, 45.12, 46.19, 51.66, 52.0, 51.15, 48.45, 50.82, 46.44, 45.21, 49.3, 49.0, 53.38, 50.44, 47.81, 46.83, 45.47, 44.96, 38.47, 50.46, 52.7, 61.38, 60.77, 64.12, 63.08, 66.68, 74.69], "cobertura": [82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 75.0, 75.0, 65.0, 57.0], "n_vars": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 14, 12, 10]}, "summary": {"n_meses": 201, "score_actual": 74.69, "categoria": "Provisional", "color": "#e6a817", "fecha_actual": "2026-09", "cobertura": 57.0, "es_confiable": false, "score_confiable": 63.08, "categoria_confiable": "Riesgo Moderado", "color_confiable": "#f1c40f", "fecha_confiable": "2026-07", "cobertura_confiable": 75.0}};
-  if (!ML || (!ML.sarima && !ML.nowcast)) return;
+  var ML = {"forecast": {"model": "naive", "model_label": "Persistencia (naive)", "fecha": ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"], "origin_date": "2026-05", "mean": [61.15, 61.15, 61.15, 61.15, 61.15, 61.15], "n_observed": 185, "n_calendar_months": 197, "horizonte_meses": 6, "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "n_interval_errors": [184, 183, 182, 181, 180, 179], "lo_80": [54.81, 52.56, 50.92, 49.99, 48.08, 48.31], "hi_80": [67.49, 69.74, 71.38, 72.31, 74.22, 73.99], "lo_95": [50.58, 47.45, 44.64, 43.07, 42.95, 40.29], "hi_95": [71.72, 74.85, 77.66, 79.23, 79.35, 82.01]}, "metodologia": {"model_selected": "naive", "selection_rule": "Baseline de persistencia prespecificado; no afirma superioridad predictiva.", "evaluation_type": "retrospective_latest_vintage", "validacion": "Retrospectiva de último vintage; sin archivos históricos de publicación o revisiones.", "training_filter": "Cobertura utilizable >=70%, producción doméstica disponible y mes cerrado cuando existen estas banderas.", "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "normalization": "Min-max expansivo causal hasta cada fecha; no añade observaciones.", "caveat": "El puntaje puede cambiar de composición; las bandas incluyen esa inestabilidad histórica y no son probabilidades de riesgo económico.", "sarima_candidate": "SARIMA(1, 1, 1)x(1, 1, 1, 12)"}, "available": true, "backtest": {"available": true, "evaluation_type": "retrospective_latest_vintage", "reason": null, "limitations": "Sin vintages o fechas históricas de publicación. No es una simulación en tiempo real. Errores condicionados a meses elegibles; composición del índice variable.", "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 6, "min_coverage_pct": 70.0, "include_low_coverage": false, "models": ["naive", "seasonal_naive", "sarima"]}, "sample_policy": "same_origin_and_target_for_every_model", "n_predictions": 183, "n_common_predictions": 177, "n_origins_attempted": 21, "n_origins": 20, "n_failures": 3, "failures": [{"origin_date": "2015-12-01", "target_date": "2016-01-01", "horizon": 1, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-03-01", "horizon": 3, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-06-01", "horizon": 6, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}], "diagnostics": [{"origin_date": "2015-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 60, "n_calendar_months": 72, "converged": false, "warnings": ["Maximum Likelihood optimization failed to converge. Check mle_retvals"], "aic": 1858.3770900022807, "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2016-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 66, "n_calendar_months": 78, "converged": true, "warnings": [], "aic": 376.7625642592677}, {"origin_date": "2016-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 72, "n_calendar_months": 84, "converged": true, "warnings": [], "aic": 421.4530598117754}, {"origin_date": "2017-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 78, "n_calendar_months": 90, "converged": true, "warnings": [], "aic": 459.5993988489268}, {"origin_date": "2017-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 84, "n_calendar_months": 96, "converged": true, "warnings": [], "aic": 504.9188911420238}, {"origin_date": "2018-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 90, "n_calendar_months": 102, "converged": true, "warnings": [], "aic": 542.5125849194911}, {"origin_date": "2018-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 96, "n_calendar_months": 108, "converged": true, "warnings": [], "aic": 581.9004901773002}, {"origin_date": "2019-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 102, "n_calendar_months": 114, "converged": true, "warnings": [], "aic": 619.7292828948623}, {"origin_date": "2019-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 108, "n_calendar_months": 120, "converged": true, "warnings": [], "aic": 655.2352003304806}, {"origin_date": "2020-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 114, "n_calendar_months": 126, "converged": true, "warnings": [], "aic": 695.927797660453}, {"origin_date": "2020-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 120, "n_calendar_months": 132, "converged": true, "warnings": [], "aic": 732.1166791127887}, {"origin_date": "2021-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 126, "n_calendar_months": 138, "converged": true, "warnings": [], "aic": 767.590103628084}, {"origin_date": "2021-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 132, "n_calendar_months": 144, "converged": true, "warnings": [], "aic": 803.0699652633493}, {"origin_date": "2022-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 138, "n_calendar_months": 150, "converged": true, "warnings": [], "aic": 838.0286319014167}, {"origin_date": "2022-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 144, "n_calendar_months": 156, "converged": true, "warnings": [], "aic": 876.14563050432}, {"origin_date": "2023-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 150, "n_calendar_months": 162, "converged": true, "warnings": [], "aic": 910.9744603527888}, {"origin_date": "2023-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 156, "n_calendar_months": 168, "converged": true, "warnings": [], "aic": 946.5914976407437}, {"origin_date": "2024-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 162, "n_calendar_months": 174, "converged": true, "warnings": [], "aic": 981.7893870593211}, {"origin_date": "2024-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 168, "n_calendar_months": 180, "converged": true, "warnings": [], "aic": 1015.8827442153012}, {"origin_date": "2025-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 174, "n_calendar_months": 186, "converged": true, "warnings": [], "aic": 1049.8821989239082}, {"origin_date": "2025-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 180, "n_calendar_months": 192, "converged": true, "warnings": [], "aic": 1084.9447665993762}], "summary": [{"model": "naive", "horizon": 1, "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"model": "naive", "horizon": 3, "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"model": "naive", "horizon": 6, "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}, {"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}, {"model": "seasonal_naive", "horizon": 1, "n": 20, "mae": 8.4655, "rmse": 10.3221, "bias": -2.5555, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 3, "n": 20, "mae": 7.3385, "rmse": 9.3482, "bias": -2.5045, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 6, "n": 19, "mae": 9.2247, "rmse": 10.5335, "bias": -3.0542, "n_intervals": 0, "inside_80": null, "inside_95": null}], "best_by_horizon": [{"horizon": 1, "model": "naive", "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"horizon": 3, "model": "naive", "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"horizon": 6, "model": "naive", "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}], "sarima": [{"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}], "public_model": "naive", "public_model_selection": "prespecified_conservative_baseline"}};
+  var PULSE = {"data": {"meses": ["2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12", "2011-01", "2011-02", "2011-03", "2011-04", "2011-05", "2011-06", "2011-07", "2011-08", "2011-09", "2011-10", "2011-11", "2011-12", "2012-01", "2012-02", "2012-03", "2012-04", "2012-05", "2012-06", "2012-07", "2012-08", "2012-09", "2012-10", "2012-11", "2012-12", "2013-01", "2013-02", "2013-03", "2013-04", "2013-05", "2013-06", "2013-07", "2013-08", "2013-09", "2013-10", "2013-11", "2013-12", "2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12", "2015-01", "2015-02", "2015-03", "2015-04", "2015-05", "2015-06", "2015-07", "2015-08", "2015-09", "2015-10", "2015-11", "2015-12", "2016-01", "2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10", "2016-11", "2016-12", "2017-01", "2017-02", "2017-03", "2017-04", "2017-05", "2017-06", "2017-07", "2017-08", "2017-09", "2017-10", "2017-11", "2017-12", "2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "scores": [null, 42.61, 68.16, 58.25, 46.9, 24.49, 47.81, 39.82, 43.69, 71.07, 73.18, 66.99, 85.19, 84.18, 79.78, 86.64, 79.7, 77.75, 73.85, 78.94, 72.6, 72.96, 73.14, 76.79, 83.03, 83.49, 84.61, 80.17, 70.82, 68.78, 74.36, 71.54, 75.05, 73.68, 78.92, 69.89, 73.51, 78.82, 64.23, 71.03, 70.73, 71.17, 70.68, 78.15, 75.74, 71.16, 70.18, 76.75, 69.04, 65.31, 70.12, 68.34, 76.69, 76.16, 75.51, 72.87, 65.49, 60.53, 62.38, 58.37, 22.44, 28.72, 24.24, 33.24, 40.17, 35.86, 30.92, 26.46, 18.0, 25.55, 25.28, 13.7, 12.48, 17.71, 32.57, 27.01, 22.83, 20.14, 34.8, 31.44, 35.18, 37.44, 26.87, 35.95, 31.42, 37.1, 32.2, 28.94, 25.98, 32.61, 23.73, 21.04, 38.78, 43.49, 46.84, 45.94, 43.56, 40.35, 45.02, 43.14, 39.52, 43.96, 42.36, 31.58, 40.95, 37.8, 42.7, 34.79, 25.8, 25.89, 29.95, 35.03, 29.99, 39.14, 39.16, 38.29, 42.31, 43.83, 45.73, 44.16, 44.29, 42.33, 27.65, 32.69, 32.66, 40.35, 42.76, 44.25, 43.74, 47.56, 45.64, 49.53, 47.06, 51.64, 48.11, 51.03, 52.83, 55.24, 52.45, 55.13, 52.55, 56.29, 57.65, 61.51, 56.42, 56.0, 59.73, 64.59, 59.42, 60.95, 52.2, 55.87, 48.45, 49.31, 53.35, 47.12, 49.05, 47.38, 45.85, 51.54, 50.53, 49.96, 57.01, 54.18, 53.69, 48.93, 53.25, 53.22, 54.06, 54.13, 54.57, 53.21, 57.54, 55.07, 52.2, 47.76, 49.2, 54.45, 54.78, 54.07, 50.56, 52.78, 48.1, 46.65, 50.83, 49.93, 55.09, 51.89, 47.54, 44.67, 42.32, 41.94, 39.42, 50.95, 53.12, 61.83, 61.15, 64.52, 63.47, 66.96, 74.69], "cobertura": [0.0, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 75.0, 75.0, 65.0, 57.0], "elegible": [false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false], "n_vars": [0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 14, 12, 10]}, "summary": {"n_meses": 201, "score_actual": 74.69, "categoria": "Provisional", "color": "#e6a817", "fecha_actual": "2026-09", "cobertura": 57.0, "es_confiable": false, "score_confiable": 61.15, "categoria_confiable": "Intermedio", "color_confiable": "#f1c40f", "fecha_confiable": "2026-05", "cobertura_confiable": 100.0}};
+  if (!ML || (!ML.forecast && !ML.nowcast)) return;
 
   // Forecast chart
   function buildForecastChart() {
     var ctx = document.getElementById('cPulseTrend');
     if (!ctx) return;
     if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-    if (!ML.sarima || !ML.sarima.fecha || !ML.sarima.fecha.length) return;
+    if (!ML.forecast || !ML.forecast.fecha || !ML.forecast.fecha.length) return;
 
-    // Datos históricos del Pulse — SOLO últimos 30 meses para que el forecast sea visible
-    var N_HIST = 60;  // ventana visible: 5 años de historia + 6 meses de proyección
-    var all_hist_dates  = PULSE.data.meses;
-    var all_hist_scores = PULSE.data.scores;
-    var all_hist_cov    = PULSE.data.cobertura;
-    // Recortar al ventana
-    var start_i = Math.max(0, all_hist_dates.length - N_HIST);
-    var hist_dates  = all_hist_dates.slice(start_i);
-    var hist_scores = all_hist_scores.slice(start_i);
-    var hist_cov    = all_hist_cov.slice(start_i);
-    var hist_clean  = hist_scores.map(function(s, i) {
-      return hist_cov[i] >= 70 ? s : null;
-    });
-
-    // Forecast dates + bandas
-    var fc_dates = ML.sarima.fecha;
-    var fc_mean = ML.sarima.mean;
-
-    // Combinar: histórico (ventana) + forecast
-    var all_dates = hist_dates.concat(fc_dates);
-
-    // Construir series: histórico con nulls en zona forecast
-    var hist_series = hist_clean.concat(fc_dates.map(function() { return null; }));
-    // Forecast con nulls en zona histórica
-    var fc_series = hist_dates.map(function() { return null; }).concat(fc_mean);
-    // Bandas con nulls en zona histórica
-    var lo80 = hist_dates.map(function() { return null; }).concat(ML.sarima.lo_80);
-    var hi80 = hist_dates.map(function() { return null; }).concat(ML.sarima.hi_80);
-    var lo95 = hist_dates.map(function() { return null; }).concat(ML.sarima.lo_95);
-    var hi95 = hist_dates.map(function() { return null; }).concat(ML.sarima.hi_95);
-
-    // Mostrar meses de baja cobertura como serie discontinua (dashed, alpha bajo)
-    var hist_low_cov = hist_scores.map(function(s, i) {
-      return hist_cov[i] < 70 ? s : null;
-    });
-    // Asegurar que la transición baja-alta cobertura esté conectada visualmente
-    for (var j = 1; j < hist_scores.length; j++) {
-      if (hist_low_cov[j] != null && hist_clean[j-1] != null) {
-        hist_low_cov[j-1] = hist_clean[j-1];
-      }
-    }
-
-    // Pinning point: ÚLTIMO valor no-nulo del histórico
-    var last_pin_idx = -1, last_pin_val = null;
-    for (var k = hist_scores.length - 1; k >= 0; k--) {
-      if (hist_scores[k] != null) { last_pin_idx = k; last_pin_val = hist_scores[k]; break; }
-    }
-    if (last_pin_idx >= 0) {
-      fc_series[last_pin_idx] = last_pin_val;
-      lo80[last_pin_idx] = last_pin_val;
-      hi80[last_pin_idx] = last_pin_val;
-      lo95[last_pin_idx] = last_pin_val;
-      hi95[last_pin_idx] = last_pin_val;
-    }
+    // Una única línea de tiempo: el forecast nace en su origen elegible,
+    // aunque existan meses posteriores provisionales. Nunca duplica fechas.
+    var hist_dates = PULSE.data.meses.slice(-60);
+    var hist_scores = PULSE.data.scores.slice(-60);
+    var hist_eligible = PULSE.data.elegible.slice(-60);
+    var all_dates = Array.from(new Set(hist_dates.concat(ML.forecast.fecha))).sort();
+    var hist_series = all_dates.map(function(d) { var i=hist_dates.indexOf(d); return i>=0 && hist_eligible[i] ? hist_scores[i] : null; });
+    var hist_low_cov = all_dates.map(function(d) { var i=hist_dates.indexOf(d); return i>=0 && !hist_eligible[i] ? hist_scores[i] : null; });
+    function fc(values) { return all_dates.map(function(d) { var i=ML.forecast.fecha.indexOf(d); return i>=0 ? values[i] : null; }); }
+    var fc_series=fc(ML.forecast.mean), lo80=fc(ML.forecast.lo_80), hi80=fc(ML.forecast.hi_80);
+    var lo95=fc(ML.forecast.lo_95), hi95=fc(ML.forecast.hi_95);
+    var pin=all_dates.indexOf(ML.forecast.origin_date);
+    if(pin>=0) fc_series[pin]=ML.forecast.mean[0];
 
     new Chart(ctx, {
       type: 'line',
@@ -1679,7 +1797,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         labels: all_dates,
         datasets: [
           {
-            label: 'Banda 95% confianza',
+            label: 'Banda empírica 95%',
             data: hi95,
             borderColor: 'rgba(0,212,170,0)',
             backgroundColor: 'rgba(0,212,170,.08)',
@@ -1693,7 +1811,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           },
           {
-            label: 'Banda 80% confianza',
+            label: 'Banda empírica 80%',
             data: hi80,
             borderColor: 'rgba(0,212,170,0)',
             backgroundColor: 'rgba(0,212,170,.18)',
@@ -1713,14 +1831,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             borderWidth: 2.5, pointRadius: 1.5, tension: 0.25, fill: false,
           },
           {
-            label: 'Pulse (baja cobertura)',
-            data: hist_low_cov.concat(fc_dates.map(function() { return null; })),
+            label: 'Pulse provisional / no elegible',
+            data: hist_low_cov,
             borderColor: 'rgba(0,212,170,0.4)', backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, tension: 0.25, fill: false,
             borderDash: [4, 3],
           },
           {
-            label: 'Forecast SARIMA (mean)',
+            label: 'Persistencia (naive)',
             data: fc_series,
             borderColor: '#f1c40f', backgroundColor: 'transparent',
             borderWidth: 2.5, borderDash: [6, 3], pointRadius: 3, tension: 0.25, fill: false,
@@ -1758,26 +1876,26 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // HOY — dos cifras protagonistas + señales del momento
 // ─────────────────────────────────────────────────────────────────────────────
 (function() {
-  var VH = {"iciv": {"score": 47.77, "year": 2026, "label": "Provisional · Riesgo Moderado-Alto", "color": "#e67e22", "delta": 17.78, "coverage": 50.7, "is_reliable": false, "reliable_score": 29.99, "reliable_year": 2025, "reliable_label": "Alto Riesgo", "reliable_coverage": 83.8}, "pulse": {"score": 74.69, "year": 2026, "month": 9, "label_mes": "Sep", "coverage": 57.0, "delta": 10.57, "is_reliable": false, "reliable_score": 63.08, "reliable_year": 2026, "reliable_month": 7, "reliable_label_mes": "Jul", "reliable_coverage": 75.0}, "wti": {"valor": 93.39, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 29.43}, "brent": {"valor": 102.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 34.37}, "vix": {"valor": 15.71, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -0.08}, "ust10y": {"valor": 4.82, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 0.7}, "usd_index": {"valor": 118.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -1.68}, "fed_funds": {"valor": 3.63, "año": 2026, "mes": 8, "label_mes": "Ago", "delta_12m": -0.7}, "petroleo_ven": {"valor": 1199.0, "año": 2026, "mes": 5, "label_mes": "May", "delta_12m": 190.0}, "inflacion": {"valor": 387.4, "año": 2026, "delta": 135.4}, "pib_crec": {"valor": 4.0, "año": 2026, "delta": 2.5}, "fh": {"valor": 13.0, "año": 2025, "delta": 0.0}, "cpi": {"valor": 10.0, "año": 2025, "delta": 0.0}, "wgi": {"valor": 23.94, "año": 2024, "delta": -2.24}, "migrantes": {"valor": 1.6, "año": 2025, "delta": -0.13}, "hdi": {"valor": 0.71, "año": 2023, "delta": 0.0}};
+  var VH = {"iciv": {"score": 42.73, "year": 2026, "label": "Provisional · Desfavorable", "color": "#e67e22", "delta": 14.95, "coverage": 41.1, "is_reliable": false, "reliable_score": 27.78, "reliable_year": 2025, "reliable_label": "Muy desfavorable", "reliable_coverage": 78.2}, "pulse": {"score": 74.69, "year": 2026, "month": 9, "label_mes": "Sep", "coverage": 57.0, "delta": 4.5943, "is_reliable": false, "reliable_score": 61.15, "reliable_year": 2026, "reliable_month": 5, "reliable_label_mes": "May", "reliable_coverage": 100.0}, "wti": {"valor": 93.39, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 29.43}, "brent": {"valor": 102.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 34.37}, "vix": {"valor": 15.71, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -0.08}, "ust10y": {"valor": 4.82, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 0.7}, "usd_index": {"valor": 118.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -1.68}, "fed_funds": {"valor": 3.63, "año": 2026, "mes": 8, "label_mes": "Ago", "delta_12m": -0.7}, "petroleo_ven": {"valor": 1199.0, "año": 2026, "mes": 5, "label_mes": "May", "delta_12m": 190.0}, "inflacion": {"valor": 387.4, "año": 2026, "delta": 135.4}, "pib_crec": {"valor": 4.0, "año": 2026, "delta": 2.5}, "fh": {"valor": 13.0, "año": 2025, "delta": 0.0}, "cpi": {"valor": 10.0, "año": 2025, "delta": 0.0}, "wgi": {"valor": 23.94, "año": 2024, "delta": -2.24}, "migrantes": {"valor": 1.6, "año": 2025, "delta": -0.13}, "hdi": {"valor": 0.71, "año": 2023, "delta": 0.0}};
   if (!VH) return;
 
   var MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
   function _col(score) {
     if (score == null) return '#8b949e';
-    if (score > 65) return '#27ae60';
-    if (score > 50) return '#2ecc71';
-    if (score > 35) return '#f1c40f';
-    if (score > 20) return '#e67e22';
-    return '#e74c3c';
+    if (score < 31) return '#e74c3c';
+    if (score < 51) return '#e67e22';
+    if (score < 66) return '#f1c40f';
+    if (score < 81) return '#2ecc71';
+    return '#27ae60';
   }
   function _lbl(score) {
     if (score == null) return '—';
-    if (score > 65) return 'Riesgo muy bajo';
-    if (score > 50) return 'Riesgo bajo';
-    if (score > 35) return 'Riesgo moderado';
-    if (score > 20) return 'Riesgo alto';
-    return 'Riesgo muy alto';
+    if (score < 31) return 'Muy desfavorable';
+    if (score < 51) return 'Desfavorable';
+    if (score < 66) return 'Intermedio';
+    if (score < 81) return 'Favorable';
+    return 'Muy favorable';
   }
   function _deltaStr(d, dec, suf) {
     if (d == null) return '—';
@@ -1807,12 +1925,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     if (p.is_reliable) {
       var elPD = document.getElementById('inicioPD');
       if (elPD) elPD.innerHTML = _deltaStr(p.delta, 1, ' pts');
-      _set('inicioPR', 'Todas las fuentes del mes ya publicaron.');
+      _set('inicioPR', 'Mes cerrado elegible; cambio sobre componentes comunes. Cobertura mínima 70%.');
     } else {
       if (elPDW) elPDW.style.display = 'none';
       _set('inicioPR',
         'Lectura provisional: faltan fuentes por publicar, no comparable con el mes previo. ' +
-        'Último mes completo: ' + p.reliable_label_mes + ' ' + p.reliable_year +
+        'Último mes elegible: ' + p.reliable_label_mes + ' ' + p.reliable_year +
         ' con ' + p.reliable_score.toFixed(1) + '.');
     }
   }
@@ -1840,13 +1958,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     if (ic.is_reliable) {
       var elAD = document.getElementById('inicioAD');
       if (elAD) elAD.innerHTML = _deltaStr(ic.delta, 1, ' pts');
-      _set('inicioAR', 'Todas las fuentes del año ya publicaron.');
+      _set('inicioAR', 'Cobertura efectiva mínima 70%; lectura histórica relativa, sujeta a revisiones.');
     } else {
       if (elADW) elADW.style.display = 'none';
       _set('inicioAR',
         'Lectura provisional: faltan fuentes por publicar, no comparable con el año ' +
-        'previo. Las que aún no salen son las de peor puntaje, así que este número ' +
-        'tiende a bajar al cerrar el año. Último año completo: ' + ic.reliable_year +
+        'previo. La composición y las revisiones pueden alterar el resultado. Último año con cobertura suficiente: ' + ic.reliable_year +
         ' con ' + ic.reliable_score.toFixed(1) + '.');
     }
   }
@@ -1864,10 +1981,10 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
        nota:'West Texas Intermediate, precio spot mensual (FRED).' },
     { key:'petroleo_ven', label:'Producción petrolera',
        fmt:function(v){return (v/1000).toFixed(2) + 'M'}, unit:'barriles/día (EIA)',
-       nota:'Crudo incl. condensado de arrendamiento. EIA International, producto 57.' },
-    { key:'inflacion',    label:'Inflación (deflactor PIB)',
+       nota:'Petróleo y otros líquidos totales. EIA International, producto 53.' },
+    { key:'inflacion',    label:'Inflación IPC (FMI)',
        fmt:function(v){return v.toFixed(0) + '%'},        unit:'anual · FMI', proy:true,
-       nota:'Deflactor del PIB, no IPC. El dato del año en curso es proyección del World Economic Outlook, no inflación observada.' },
+       nota:'Variación anual del IPC (PCPIPCH). El dato del año en curso es proyección del World Economic Outlook, no inflación observada.' },
     { key:'migrantes',    label:'Refugiados y asilo',
        fmt:function(v){return v.toFixed(1) + 'M'},        unit:'registrados ante ACNUR',
        nota:'UNHCR coo=VEN: refugiados + solicitantes de asilo registrados. NO es la diáspora total, estimada en ~7,9 M por R4V/OIM, que incluye migrantes sin registro.' },

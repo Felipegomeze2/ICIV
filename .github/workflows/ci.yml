@@ -28,7 +28,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e "iciv/[dev]"
-          pip install statsmodels scikit-learn pydantic matplotlib
 
       - name: Run tests
         run: |
@@ -45,3 +44,8 @@ jobs:
           from iciv.satv.pulse_engine import PulseSATVEngine
           print(f'OK — {len(DIMENSIONS)} dimensiones cargadas')
           "
+
+      - name: Reproduce snapshot and verify release
+        run: |
+          python iciv/main.py --no-fetch --no-open
+          python iciv/scripts/verify_release.py

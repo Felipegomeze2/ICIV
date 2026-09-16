@@ -39,13 +39,22 @@ def _latest_month(path: Path) -> pd.Timestamp | None:
         return None
     if df.empty or not {"año", "mes"}.issubset(df.columns):
         return None
+    if "valor" in df:
+        df = df[pd.to_numeric(df["valor"], errors="coerce").notna()]
     years = pd.to_numeric(df["año"], errors="coerce")
     months = pd.to_numeric(df["mes"], errors="coerce")
     fechas = pd.to_datetime(
         years.astype("Int64").astype(str) + "-" + months.astype("Int64").astype(str) + "-01",
         errors="coerce",
     )
-    return fechas.max() if fechas.notna().any() else None
+    if not fechas.notna().any():
+        return None
+    if "variable" in df:
+        from iciv.index.pulse_aggregator import PULSE_WEIGHTS
+        active = df["variable"].isin(PULSE_WEIGHTS)
+        if active.any():
+            return fechas[active].groupby(df.loc[active, "variable"]).max().min()
+    return fechas.max()
 
 
 def check_inputs(now: pd.Timestamp | None = None) -> int:

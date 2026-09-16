@@ -1,111 +1,15 @@
-# Backtesting del forecast Pulse
+# Pronóstico y backtesting · v2
 
-Fecha de corte: 2026-07-22 (Pulse ampliado a 15 variables).
+El producto público usa **persistencia (naive)**: cada horizonte conserva el último puntaje elegible. Es una predicción explícita y separada; nunca se introduce como observación ni se activa como sustitución silenciosa de SARIMA.
 
-El forecast visible del dashboard usa el ICIV Pulse mensual como serie de alta
-frecuencia. Para que la prediccion sea defendible, el proyecto ya incluye
-backtesting rolling-origin: el modelo se entrena solo con informacion disponible
-hasta un mes `t` y se evalua contra meses posteriores ya observados.
+Las bandas 80% y 95% son cuantiles empíricos de errores absolutos históricos por horizonte, con mínimo 20 pares. No son garantía de cobertura futura ni probabilidades de riesgo económico. El origen puede preceder a los últimos meses provisionales; el gráfico debe conservar una única línea de tiempo y declarar ese origen.
 
-## Artefactos implementados
+La normalización mensual expansiva no utiliza extremos futuros. El calendario se conserva regular con NaN: eliminar un mes no convierte el mes siguiente en su vecino temporal. La elegibilidad requiere cobertura normalizable ≥70%, producción doméstica y mes cerrado.
 
-```text
-iciv/scripts/backtest_pulse_forecast.py
-iciv/src/iciv/ml/pulse_backtest.py
-iciv/data/processed/pulse_forecast_backtest.csv
-iciv/data/processed/pulse_forecast_backtest_summary.csv
-```
+Se comparan naive, naive estacional y SARIMA(1,1,1)×(1,1,1,12). SARIMA exige convergencia y parámetros finitos; se registran sus advertencias y fallos. Las métricas comparativas se calculan sobre los mismos pares origen/horizonte para todos los modelos. La tabla de disponibilidad separada permite observar cuánto se pierde por convergencia o falta de meses estacionales; no se deben mezclar los tamaños de muestra al elegir un ganador.
 
-El pipeline tambien ejecuta el backtesting durante `python main.py --no-fetch
---no-open` y muestra el resumen en la seccion `Prediccion Pulse`.
+La evaluación se denomina `retrospective_latest_vintage`: no existen vintages históricos ni fechas de publicación completas para simular la información disponible en tiempo real. El desempeño no prueba capacidad de anticipar la economía o el índice anual.
 
-## Metodo
+Artefactos: `pulse_forecast_backtest.csv`, `pulse_forecast_backtest_summary.csv` (muestra común), `pulse_forecast_backtest_available_summary.csv`, `pulse_forecast_backtest_failures.csv` y `forecast.json`. Las cifras actualizadas se consultan allí, no en las presentaciones de avances.
 
-1. Ordena la serie Pulse mensual por fecha.
-2. Usa por defecto solo meses con `cobertura_pct >= 70`.
-3. Define una ventana inicial de 60 meses confiables.
-4. Entrena con datos hasta el origen `t`.
-5. Predice horizontes `t+1`, `t+3` y `t+6`.
-6. Compara la prediccion contra el Pulse observado.
-7. Avanza el origen y repite.
-
-La evaluacion conserva la regla de oro del proyecto: no se inventan datos y no
-se rellenan huecos para mejorar metricas.
-
-## Modelos comparados
-
-| Modelo | Uso |
-|---|---|
-| Naive | predice que el siguiente valor sera igual al ultimo observado |
-| Seasonal naive | usa el mismo mes del ano anterior |
-| ETS | suavizamiento exponencial clasico para series mensuales |
-| SARIMA | modelo academico de series de tiempo usado para el forecast visible |
-
-Para que el pipeline semanal sea sostenible, SARIMA se evalua en origenes
-anuales dentro del rolling-origin. Los modelos base se evaluan en todos los
-origenes. Si se quiere una auditoria mas pesada, ejecutar:
-
-```bash
-cd iciv
-python scripts/backtest_pulse_forecast.py --sarima-origin-step-months 3
-```
-
-## Resultado actual
-
-Ultima ejecucion: 2026-07-22, sobre el Pulse recompuesto de 15 variables
-(tras la auditoria de fuentes institucionales y la ampliacion con IMTS,
-Pink Sheet y spread EM). Los numeros se regeneran cada lunes con el
-workflow; la tabla refleja `pulse_forecast_backtest_summary.csv`.
-
-| Horizonte | Mejor modelo | MAE | RMSE | Cobertura IC 80/95 (SARIMA) |
-|---:|---|---:|---:|---|
-| 1 mes | SARIMA | 2.23 | 3.06 | 100% / 100% |
-| 3 meses | Naive | 3.80 | 5.13 | — |
-| 6 meses | SARIMA | 3.61 | 4.86 | 82% / 91% |
-
-Interpretacion: SARIMA aporta valor en 1 y 6 meses, pero no domina todos los
-horizontes. Eso es positivo metodologicamente porque el dashboard no vende el
-modelo como infalible; muestra una comparacion fuera de muestra y permite
-defender el forecast con evidencia. Las bandas de incertidumbre SARIMA estan
-bien calibradas a 1 mes y levemente estrechas a 3 meses.
-
-## Columnas del archivo largo
-
-```text
-origin_date
-target_date
-horizon
-model
-model_spec
-aic
-y_true
-y_pred
-lower_80
-upper_80
-lower_95
-upper_95
-coverage_pct_target
-absolute_error
-squared_error
-bias_error
-inside_80
-inside_95
-```
-
-## Criterio de defensa
-
-El forecast queda defendible si:
-
-- se reporta MAE/RMSE por horizonte;
-- se compara contra naive, seasonal naive y ETS;
-- se reconoce cuando un baseline simple gana;
-- las bandas SARIMA se muestran como incertidumbre, no como certeza;
-- los meses de baja cobertura quedan excluidos o etiquetados.
-
-## Proximos pasos
-
-1. Agregar backtesting visual historico con errores por fecha.
-2. Evaluar una segunda corrida que incluya meses provisionales, etiquetada como
-   sensibilidad.
-3. Probar regresores exogenos solo si mejoran MAE/RMSE fuera de muestra.
-4. Versionar el resultado de backtesting por release metodologico.
+Referencia: [Forecasting: Principles and Practice — evaluación temporal](https://otexts.com/fpp3/tscv.html).

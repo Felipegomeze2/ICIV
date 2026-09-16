@@ -4,7 +4,7 @@ EIA International (monthly) — datos mensuales de producción petrolera Venezue
 Fuente: U.S. Energy Information Administration (EIA) International Energy Data
         https://www.eia.gov/international/data/
 
-Variable: petroleo_crudo_produccion_tbpd (Total petroleum and liquids, TBPD)
+Variable: petroleo_liquidos_totales_tbpd (Total petroleum and liquids, TBPD)
 
 Frecuencia: Mensual (a diferencia de fetch_eia.py que descarga anual agregada)
 
@@ -19,7 +19,7 @@ Cobertura confirmada (consulta 2026-05-12):
   - 2020-01 a 2026-01: 73 observaciones mensuales
   - Próximos meses se publican con lag de ~3-4 meses
 
-Método: API key gratuita EIA en .env (EIA_API_KEY)
+Método: variable de entorno EIA_API_KEY; sin credenciales versionadas
 
 Salida: data/raw/eia_monthly.csv
   Columnas: año | mes | productId | productName | valor | unidad | fuente
@@ -59,20 +59,15 @@ _EIA_BASE = "https://api.eia.gov/v2/international/data/"
 # por eso se descarga aparte y habilita completar el anio en curso del score
 # anual sin mezclar bases. Verificado el 2026-08-11.
 _PRODUCTS = {
-    53: "petroleo_crudo_produccion_tbpd",         # Total petroleum and other liquids
+    53: "petroleo_liquidos_totales_tbpd",         # Total petroleum and other liquids
     55: "gas_natural_plant_liquids_tbpd",         # Natural gas plant liquids
     57: "petroleo_crudo_mensual_anualizable_tbpd",  # Crude oil incl. lease condensate
 }
 
 
 def _api_key() -> str:
-    """Lee EIA_API_KEY del .env o entorno."""
-    env_path = Path(__file__).resolve().parents[1] / ".env"
-    if env_path.exists():
-        for line in env_path.read_text().splitlines():
-            if line.startswith("EIA_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
-    return os.environ.get("EIA_API_KEY", "")
+    """Lee exclusivamente la variable de entorno EIA_API_KEY."""
+    return os.environ.get("EIA_API_KEY", "").strip()
 
 
 def fetch_eia_monthly() -> pd.DataFrame:
@@ -84,13 +79,13 @@ def fetch_eia_monthly() -> pd.DataFrame:
     """
     api_key = _api_key()
     if not api_key:
-        raise RuntimeError("EIA_API_KEY no encontrado en .env")
+        raise RuntimeError("EIA_API_KEY no encontrada en el entorno; CSV no actualizado")
 
     rows: list[dict] = []
     for pid, var_name in _PRODUCTS.items():
         url = (
             f"{_EIA_BASE}?frequency=monthly&data[0]=value"
-            f"&facets[productId][]={pid}"
+            f"&facets[productId][]={pid}&facets[activityId][]=1&facets[unit][]=TBPD"
             f"&facets[countryRegionId][]=VEN"
             f"&start={START}-01&end={END}-12"
             f"&api_key={api_key}"
@@ -100,6 +95,8 @@ def fetch_eia_monthly() -> pd.DataFrame:
             resp = requests.get(url, timeout=45)
             resp.raise_for_status()
             data = resp.json().get("response", {}).get("data", [])
+            if not data:
+                raise ValueError("API sin observaciones del producto configurado")
             print(f"  Producto {pid} ({var_name}): {len(data)} meses")
             for d in data:
                 period = d["period"]  # YYYY-MM
@@ -113,7 +110,7 @@ def fetch_eia_monthly() -> pd.DataFrame:
                         "productId": pid,
                         "productName": d.get("productName", ""),
                         "variable": var_name,
-                        "valor": float(d["value"]) if d.get("value") else None,
+                        "valor": float(d["value"]) if d.get("value") is not None else None,
                         "unidad": d.get("unit", ""),
                         "fuente": (
                             "U.S. Energy Information Administration (EIA), "
@@ -124,7 +121,7 @@ def fetch_eia_monthly() -> pd.DataFrame:
                 except (ValueError, TypeError):
                     continue
         except Exception as exc:
-            print(f"  Error en producto {pid}: {exc}")
+            raise RuntimeError(f"EIA producto {pid}: descarga fallida; CSV no actualizado.") from exc
 
     df = pd.DataFrame(rows)
     if df.empty:
@@ -144,8 +141,8 @@ def aggregate_to_annual(df_monthly: pd.DataFrame) -> pd.DataFrame:
     if df_monthly.empty:
         return pd.DataFrame(columns=["año", "indicador", "valor", "pais", "fuente"])
 
-    # Solo producto 53 (Total petroleum and liquids) para el pipeline
-    df = df_monthly[df_monthly["productId"] == 53].copy()
+    # Solo producto 57: el mismo concepto que la serie anual de crudo+condensado.
+    df = df_monthly[df_monthly["productId"] == 57].copy()
     df = df.dropna(subset=["valor"])
 
     agg = (
@@ -191,7 +188,8 @@ if __name__ == "__main__":
 
     # Guardar mensual
     OUTPUT_MONTHLY.parent.mkdir(parents=True, exist_ok=True)
-    df_monthly.to_csv(OUTPUT_MONTHLY, index=False, encoding="utf-8-sig")
+    from iciv.utils import save_dataframe
+    save_dataframe(df_monthly, OUTPUT_MONTHLY)
     print(f"\n  Guardado mensual: {OUTPUT_MONTHLY}  ({len(df_monthly)} filas)")
 
     # Agregado anual (último de cada año)

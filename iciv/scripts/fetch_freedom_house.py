@@ -20,7 +20,8 @@ NOTA DE AUDITORÍA (2026-07-21):
   Además usaba una fórmula de conversión PR/CL→0-100 presentada como
   "fórmula oficial FH" que Freedom House nunca ha publicado. Todo eso se
   eliminó: ahora los valores se descargan del Excel oficial y solo se
-  complementan ediciones recientes verificadas contra la página del país.
+  descargan las ediciones recientes desde la página oficial del país.
+  Si falla cualquier tramo, no se reemplaza el CSV con una descarga parcial.
 
 Serie oficial Venezuela (verificada 2026-07-21):
   2012:39 2013:38 2014:35 2015:35 2016:30 2017:26 2018:19 2019:16
@@ -36,6 +37,7 @@ Uso:
 from __future__ import annotations
 
 import sys
+import re
 from io import BytesIO
 from pathlib import Path
 
@@ -56,20 +58,25 @@ OUTPUT   = settings.paths.raw_freedom_house
 
 _HEADERS = {"User-Agent": "Mozilla/5.0 (academic research project ICIV)"}
 
-# Excel oficial "All Data" — se intenta la edición más reciente primero.
-_FH_ALLDATA_URLS = [
-    "https://freedomhouse.org/sites/default/files/2026-02/All_data_FIW_2013-2026.xlsx",
-    "https://freedomhouse.org/sites/default/files/2025-02/All_data_FIW_2013-2025.xlsx",
-    "https://freedomhouse.org/sites/default/files/2024-02/All_data_FIW_2013-2024.xlsx",
-]
-
-# Ediciones recientes que aún no aparecen en el Excel "All Data" disponible.
-# Verificadas manualmente contra la página oficial del país (2026-07-21).
-# {edición: (total_score, url_verificación)}
-_RECENT_EDITIONS_VERIFIED: dict[int, tuple[int, str]] = {
-    2025: (13, "https://freedomhouse.org/country/venezuela/freedom-world/2025"),
-    2026: (13, "https://freedomhouse.org/country/venezuela/freedom-world/2026"),
+# Fuente de cada tramo declarada: archivo oficial histórico y páginas oficiales
+# de ediciones recientes. Ninguna puntuación se escribe como constante.
+_FH_ALLDATA_URL = "https://freedomhouse.org/sites/default/files/2024-02/All_data_FIW_2013-2024.xlsx"
+_RECENT_EDITION_URLS = {
+    2025: "https://freedomhouse.org/country/venezuela/freedom-world/2025",
+    2026: "https://freedomhouse.org/country/venezuela/freedom-world/2026",
 }
+
+
+def _fetch_country_score(url: str) -> float:
+    response = requests.get(url, timeout=45, headers=_HEADERS)
+    response.raise_for_status()
+    match = re.search(r'<div class="country-score">\s*(\d+)\s*</div>', response.text)
+    if match is None:
+        raise ValueError("Freedom House: aggregate country-score ausente; no se infiere.")
+    score = float(match.group(1))
+    if not 0 <= score <= 100:
+        raise ValueError("Freedom House: puntuacion fuera de 0-100")
+    return score
 
 
 def _try_fh_alldata(url: str) -> pd.DataFrame | None:
@@ -114,30 +121,19 @@ def fetch_freedom_house() -> pd.DataFrame:
     """Serie oficial del Aggregate Score de Venezuela. Solo puntajes publicados."""
     editions: dict[int, tuple[float, str]] = {}
 
-    df_excel = None
-    for url in _FH_ALLDATA_URLS:
-        df_excel = _try_fh_alldata(url)
-        if df_excel is not None:
-            for _, r in df_excel.iterrows():
-                editions[int(r["edicion"])] = (
-                    float(r["valor"]),
-                    f"Freedom House — All Data FIW (Excel oficial): {url}",
-                )
-            break
-
-    if df_excel is None:
-        print(
-            "  ADVERTENCIA: Excel All Data de Freedom House no disponible.\n"
-            "  Se usan solo las ediciones recientes verificadas manualmente."
+    df_excel = _try_fh_alldata(_FH_ALLDATA_URL)
+    if df_excel is None or df_excel.empty:
+        raise RuntimeError("Freedom House: archivo historico no disponible; CSV no actualizado.")
+    for _, row in df_excel.iterrows():
+        editions[int(row["edicion"])] = (
+            float(row["valor"]),
+            f"Freedom House — All Data FIW (Excel oficial): {_FH_ALLDATA_URL}",
         )
-
-    # Complementar con ediciones recientes verificadas (no sobrescriben el Excel)
-    for ed, (total, ver_url) in _RECENT_EDITIONS_VERIFIED.items():
-        if ed not in editions:
-            editions[ed] = (
-                float(total),
-                f"Freedom House — Freedom in the World {ed} ({ver_url})",
-            )
+    for edition, url in _RECENT_EDITION_URLS.items():
+        editions[edition] = (
+            _fetch_country_score(url),
+            f"Freedom House — Freedom in the World {edition} ({url})",
+        )
 
     rows = []
     for ed in sorted(editions):
@@ -173,6 +169,7 @@ if __name__ == "__main__":
     if df.empty:
         print("Sin datos. freedom_house.csv NO actualizado.")
     else:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"Guardado: {OUTPUT}  ({len(df)} años con score publicado)")
         print(df[["año", "valor"]].to_string(index=False))

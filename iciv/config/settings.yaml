@@ -1,12 +1,9 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # ICIV — Configuración del Modelo y Fuentes de Datos
 #
-# Este archivo controla TODOS los parámetros clave sin tocar código Python:
-#   - Serie temporal y país
-#   - Fuentes de datos (URLs, indicadores, API keys)
-#   - Pesos del índice y variables
-#   - Normalización e imputación
-#   - Categorías de riesgo
+# Este archivo configura las fuentes que lo consultan y el periodo de descarga.
+# Los pesos y transformaciones viven en los módulos señalados en model_contract.
+# Credenciales: variables de entorno; nunca valores secretos versionados.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ── Serie temporal ────────────────────────────────────────────────────────────
@@ -18,8 +15,8 @@ serie:
   country_name: "Venezuela"
 
 # ── Fuentes de datos ──────────────────────────────────────────────────────────
-# Todos los parámetros de cada API viven aquí.
-# Los scripts en scripts/ leen este bloque y no tienen variables hardcodeadas.
+# Los scripts documentan sus contratos y parámetros específicos.
+# Un proveedor internacional puede redistribuir datos de productores nacionales.
 
 sources:
 
@@ -68,8 +65,7 @@ sources:
   eia:
     description: "Energy Information Administration — EIA International"
     base_url: "https://api.eia.gov/v2/international/data/"
-    api_key: "ma2bIpCpa3HqVDPTnTsimbfIl1BxwQJavWrtklOz"
-    api_key_env: "EIA_API_KEY"    # variable de entorno tiene prioridad si está definida
+    api_key_env: "EIA_API_KEY"    # obligatoria; sin clave versionada
     frequency: "annual"
     # serie_eia: nombre_columna_iciv
     series:
@@ -82,7 +78,7 @@ sources:
     base_url: "https://www.imf.org/external/datamapper/api/v1"
     # concepto_imf: nombre_columna_iciv
     indicators:
-      PCPIPCH:    inflacion_deflactor_pib_pct   # CPI inflation rate % — 27 años reales (NGDP_D devuelve 0 años para Venezuela)
+      PCPIPCH:    inflacion_ipc_imf_pct   # precios al consumidor; incluye estimaciones/proyecciones WEO
       LUR:        desempleo_pct
       BCA_NGDPD:  cuenta_corriente_pct_pib
       NGDP_RPCH:  pib_crecimiento_imf_pct       # Real GDP growth % — IMF WEO projections/estimates 2025-2026
@@ -120,13 +116,13 @@ sources:
     indicator_name: "ofac_sanciones_count"
 
   unhcr:
-    description: "UNHCR / R4V — Refugiados y migrantes venezolanos"
+    description: "UNHCR — Refugiados y solicitantes de asilo venezolanos registrados"
     api_url: "https://api.unhcr.org/population/v1/population/"
     r4v_url: "https://www.r4v.info/en/situations/platform"
     notes: >
-      Datos combinados UNHCR + R4V para flujo migratorio venezolano.
-      Serie histórica 2000-2024 en millones de personas.
-      Pre-2015 estimado desde censos nacionales; 2015-2024 de R4V.
+      UNHCR API, país de origen VEN: refugiados y solicitantes de asilo.
+      Stock registrado en millones, no total de diáspora ni flujo migratorio.
+      No se completa con estimaciones manuales, censos o R4V.
     indicator_name: "migrantes_vzla_millones"
 
   viirs:
@@ -172,7 +168,6 @@ sources:
   guardian:
     description: "The Guardian — noticias internacionales de referencia"
     base_url: "https://content.guardianapis.com/search"
-    api_key: ""                       # NO poner claves aqui: el repo es publico
     api_key_env: "GUARDIAN_API_KEY"   # se lee del entorno o de iciv/.env
     query: "Venezuela"
     notes: >
@@ -205,7 +200,7 @@ sources:
   cpi:
     description: "Corruption Perceptions Index — Transparency International"
     download_url: "https://www.transparency.org/en/cpi"
-    notes: "Descarga manual desde el portal. Formato: año|indicador|valor|pais|fuente"
+    notes: "Archivo histórico preservado; CPILoader usa únicamente 2012+ por ruptura metodológica. Formato: año|indicador|valor|pais|fuente"
     indicator_name: "cpi_score"
 
   ief:
@@ -220,140 +215,17 @@ sources:
     notes: "Descarga manual del CSV histórico. Formato: año|indicador|valor|pais|fuente"
     indicator_name: "hdi"
 
-# ── Dimensiones e indicadores ─────────────────────────────────────────────────
-# iciv_weight: peso de la dimensión en el índice (deben sumar 1.0)
-# dim_weight:  peso de la variable dentro de su dimensión (deben sumar 1.0 por dim)
-
-dimensions:
-  # iciv_weight: 0.25+0.20+0.20+0.15+0.10+0.10 = 1.00
-
-  D1_macro:
-    name: "Estabilidad Macroeconómica"
-    iciv_weight: 0.25
-    variables:
-      inflacion_deflactor_pib_pct:   {dim_weight: 0.28, direction: negative}
-      pib_crecimiento_real_pct:      {dim_weight: 0.22, direction: positive}
-      reservas_internacionales_usd:  {dim_weight: 0.18, direction: positive}
-      tipo_cambio_oficial_lcu_usd:   {dim_weight: 0.12, direction: negative}
-      wti_precio_usd:                {dim_weight: 0.12, direction: positive}
-      tasa_fed_funds_pct:            {dim_weight: 0.08, direction: negative}
-
-  D2_energia:
-    name: "Sector Energético y Petróleo"
-    iciv_weight: 0.20
-    variables:
-      petroleo_crudo_produccion_tbpd: {dim_weight: 0.45, direction: positive}
-      gas_natural_produccion_bcf:     {dim_weight: 0.25, direction: positive}
-      electricidad_generacion_bkwh:   {dim_weight: 0.15, direction: positive}
-      luminosidad_nocturna_idx:       {dim_weight: 0.15, direction: positive}
-
-  D3_institucional:
-    name: "Entorno Institucional y Legal"
-    iciv_weight: 0.20
-    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
-    variables:
-      cpi_score:            {dim_weight: 0.14, direction: positive}
-      wgi_promedio_sc:      {dim_weight: 0.14, direction: positive}
-      ief_overall_score:    {dim_weight: 0.11, direction: positive}
-      freedom_house_score:  {dim_weight: 0.10, direction: positive}
-      vdem_libdem_index:    {dim_weight: 0.10, direction: positive}
-      wjp_rule_of_law:      {dim_weight: 0.09, direction: positive}
-      fragile_states_index: {dim_weight: 0.08, direction: negative}
-      pts_terror_politico:  {dim_weight: 0.07, direction: negative}
-      ofac_sanciones_count: {dim_weight: 0.05, direction: negative}
-      rsf_press_freedom:    {dim_weight: 0.04, direction: positive}
-      bti_governance_index: {dim_weight: 0.04, direction: positive}
-      basel_aml_index:      {dim_weight: 0.03, direction: negative}
-      ucdp_conflicto_idx:   {dim_weight: 0.01, direction: negative}
-
-  D4_comercial:
-    name: "Apertura Comercial y Financiera"
-    iciv_weight: 0.15
-    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
-    variables:
-      ied_neta_usd:                   {dim_weight: 0.28, direction: positive}
-      exportaciones_pct_pib:          {dim_weight: 0.22, direction: positive}
-      desempleo_pct:                  {dim_weight: 0.16, direction: negative}
-      migrantes_vzla_millones:        {dim_weight: 0.14, direction: negative}
-      lsci_conectividad_maritima:     {dim_weight: 0.10, direction: positive}
-      remesas_recibidas_usd:          {dim_weight: 0.06, direction: positive}
-      vuelos_aerolineas_int_count:    {dim_weight: 0.04, direction: positive}
-
-  D5_capital_humano:
-    name: "Capital Humano e Infraestructura Social"
-    iciv_weight: 0.10
-    # NOTA: fuente de verdad = src/iciv/index/dimensions.py (DIMENSIONS dict)
-    variables:
-      hdi:                            {dim_weight: 0.24, direction: positive}
-      esperanza_vida_anos:            {dim_weight: 0.16, direction: positive}
-      mortalidad_infantil_x1000:      {dim_weight: 0.14, direction: negative}
-      tasa_alfabetizacion_adulta_pct: {dim_weight: 0.14, direction: positive}
-      acceso_electricidad_pct:        {dim_weight: 0.14, direction: positive}
-      ghi_score:                      {dim_weight: 0.08, direction: negative}
-      fao_calorias_per_capita:        {dim_weight: 0.06, direction: positive}
-      ilo_empleo_informal_pct:        {dim_weight: 0.04, direction: negative}
-
-  D6_percepcion:
-    name: "Percepción Internacional"
-    iciv_weight: 0.10
-    variables:
-      guardian_tono_titulares:       {dim_weight: 0.45, direction: positive}
-      guardian_articulos_venezuela:  {dim_weight: 0.25, direction: negative}
-      google_trends_vzla:            {dim_weight: 0.30, direction: positive}
-
-# ── Normalización ─────────────────────────────────────────────────────────────
-normalization:
-  method: "minmax"         # "minmax" | "zscore"
-  output_min: 0
-  output_max: 100
-  clip_outliers: true
-
-# ── Agregación ────────────────────────────────────────────────────────────────
-aggregation:
-  method: "linear"         # "linear" | "geometric"
-  use_fixed_weights: true  # false = usar PCA
-  # Cobertura MÍNIMA del peso de una dimensión para publicar su score (0-1).
-  # Por debajo del umbral la dimensión queda NaN en vez de publicar un promedio
-  # apoyado en una fracción mínima de sus variables.
-  # 0.50 descarta D5 en 2025 (18% del peso, solo ilo_empleo_informal_pct) y
-  # D4 en 2026 (23.7%, solo LSCI). Poner 0.0 restaura el comportamiento previo.
-  # Ver src/iciv/index/aggregator.py -> MIN_DIMENSION_COVERAGE.
-  min_dimension_coverage: 0.50
-
-# ── Imputación ────────────────────────────────────────────────────────────────
-imputation:
-  default_strategy: "interpolate"
-  max_gap_to_impute: 4
-  # REGLA: limit_area="inside" en GapImputer — solo rellena gaps INTERNOS entre
-  # dos datos reales. Nunca extrapola extremos de serie (trailing/leading NaN).
-  # "none" = sin imputacion (NaN honesto cuando no hay dato real en el rango).
-  column_overrides:
-    # ── Variables con gaps extremos no imputables ──────────────────────────────
-    reservas_internacionales_usd:   "none"          # Venezuela no reporta al WB desde 2018
-    tipo_cambio_oficial_lcu_usd:    "none"          # lag WDI 2025-2026 → NaN honesto
-    cuenta_corriente_pct_pib:       "none"          # suspendió reporte al FMI
-    ofac_sanciones_count:           "none"          # solo 1 año real (snapshot SDN)
-    google_trends_vzla:             "none"          # rate limit frecuente → NaN si falla
-    vuelos_aerolineas_int_count:    "none"          # OpenSky sin cobertura histórica
-    # ── Variables con gaps internos imputables ────────────────────────────────
-    cpi_score:                      "interpolate"   # gaps internos cortos (~2 años)
-    ief_overall_score:              "interpolate"   # gaps internos 2001-2004
-    hdi:                            "interpolate"   # quinquenal → interpolación válida
-    wti_precio_usd:                 "interpolate"   # serie completa, sin gaps esperados
-    tasa_fed_funds_pct:             "interpolate"   # serie completa FRED
-    freedom_house_score:            "interpolate"   # cobertura 2000-2024 con 2 gaps
-    migrantes_vzla_millones:        "interpolate"   # 1 gap interno
-    luminosidad_nocturna_idx:       "interpolate"   # 2 gaps internos (transición DMSP→VIIRS)
-    esperanza_vida_anos:            "interpolate"   # años intermedios WHO
-    # ── Forward-fill solo para indicadores cuasi-estáticos ───────────────────
-    tasa_alfabetizacion_adulta_pct: "forward_fill"  # cambia muy lento
-    pts_terror_politico:            "forward_fill"  # PTS anual, gaps menores
-    mortalidad_infantil_x1000:      "forward_fill"  # IGME estima cada 2-3 años
-
-# ── Categorías de riesgo del ICIV ─────────────────────────────────────────────
-risk_categories:
-  - {min: 0,  max: 30,  label: "Alto Riesgo",          signal: "red"}
-  - {min: 31, max: 50,  label: "Riesgo Moderado-Alto", signal: "orange"}
-  - {min: 51, max: 65,  label: "Riesgo Moderado",      signal: "yellow"}
-  - {min: 66, max: 80,  label: "Bajo Riesgo",          signal: "green"}
-  - {min: 81, max: 100, label: "Muy Bajo Riesgo",      signal: "dark_green"}
+# ── Contrato del modelo ───────────────────────────────────────────────────────
+# YAML configura las descargas anteriores. El modelo se define en código:
+# no duplicar pesos, variables, bandas ni estrategias en este archivo.
+model_contract:
+  annual_dimensions: "src/iciv/index/dimensions.py:DIMENSIONS"
+  annual_ahp: "src/iciv/index/weighting/ahp_weights.py:AHPWeights"
+  pulse: "src/iciv/index/pulse_aggregator.py:PULSE_WEIGHTS"
+  normalization: "src/iciv/processing/transformers/normalizer.py"
+  runtime_settings: "src/iciv/config/settings.py:Settings"
+  missing_data: "preserve_nan"
+  source_substitution: "forbidden"
+  projections: "identify_separately_from_observations"
+  estimates: "provider_estimates_are_not_observed_data"
+  producer_independence: "not_inferred_from_international_distributor"

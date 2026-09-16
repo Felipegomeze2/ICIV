@@ -20,16 +20,26 @@ class WJPLoader(_LongFormatLoader):
     def get_source_id(self) -> SourceID:
         return SourceID.WJP
 
+    def _read_csv(self, path=None):
+        df = super()._read_csv(path)
+        if "fuente" in df.columns:
+            # El archivo histórico conserva asignaciones antiguas a ambos años;
+            # una edición doble solo aporta al año final, sin modificar el raw.
+            end_year = df["fuente"].str.extract(r"edicion\s+\d{4}-(\d{4})", expand=False)
+            keep = end_year.isna() | (df["año"].astype(str) == end_year)
+            df = df.loc[keep].copy()
+        return df
+
 
 class ILOStatLoader(_LongFormatLoader):
-    """ILO ILOSTAT, informal employment as share of total employment."""
+    """Empleo vulnerable, estimación modelada OIT distribuida por WDI."""
 
-    _indicator_name = "ilo_empleo_informal_pct"
-    _output_column = "ilo_empleo_informal_pct"
+    _indicator_name = "empleo_vulnerable_oit_pct"
+    _output_column = "empleo_vulnerable_oit_pct"
 
     def __init__(self, settings: Settings | None = None) -> None:
         cfg = settings or Settings()
         super().__init__(cfg.paths.raw_ilostat)
 
     def get_source_id(self) -> SourceID:
-        return SourceID.ILOSTAT
+        return SourceID.WDI

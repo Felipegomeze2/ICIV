@@ -68,11 +68,11 @@ logger = logging.getLogger(__name__)
 
 # -- Colores del ICIV ----------------------------------------------------------
 RISK_COLORS = {
-    "Alto Riesgo":          "#e74c3c",
-    "Riesgo Moderado-Alto": "#e67e22",
-    "Riesgo Moderado":      "#f1c40f",
-    "Bajo Riesgo":          "#2ecc71",
-    "Muy Bajo Riesgo":      "#27ae60",
+    "Muy desfavorable":          "#e74c3c",
+    "Desfavorable": "#e67e22",
+    "Intermedio":      "#f1c40f",
+    "Favorable":          "#2ecc71",
+    "Muy favorable":      "#27ae60",
 }
 DIM_COLORS = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"]
 
@@ -113,9 +113,11 @@ def fase_fetch(settings: Settings) -> None:
         ("WHO GHO -- Salud (esperanza/mortalidad)","scripts.fetch_who",           "fetch_who"),
         # ── Fuentes ampliadas (mayo 2026) ─────────────────────────────────────
         ("WJP -- Rule of Law Index",              "scripts.fetch_wjp",           "fetch_wjp"),
-        ("ILOSTAT -- Empleo informal (ILO)",      "scripts.fetch_ilostat",       "fetch_ilostat"),
+        ("WDI/OIT -- Empleo vulnerable modelado",      "scripts.fetch_ilostat",       "fetch_ilostat"),
     ]
 
+    fetch_status = []
+    from iciv.utils import save_dataframe
     for label, module_path, func_name in fetch_scripts:
         logger.info("\n  [->] %s", label)
         try:
@@ -150,14 +152,16 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_ilostat":       settings.paths.raw_ilostat,
             }
             out = output_map[func_name]
-            if not df.empty:
-                df.to_csv(out, index=False, encoding="utf-8-sig")
-                logger.info("      OK %d años · %d columnas -> %s",
-                            len(df), len(df.columns) - 1, out.name)
+            if func_name == "fetch_international_news":
+                save_dataframe(df, out, value_columns=["title"], allow_loss=True)
             else:
-                logger.warning("      SKIP 0 filas (sin datos disponibles) -> %s", out.name)
+                save_dataframe(df, out)
+            fetch_status.append({"source": func_name, "status": "updated"})
         except Exception as exc:
-            logger.warning("      FAIL Error: %s", exc)
+            logger.warning("      FAIL %s: %s; snapshot previo sin refrescar", func_name, type(exc).__name__)
+            fetch_status.append({"source": func_name, "status": "failed_snapshot_not_refreshed", "error_type": type(exc).__name__})
+    (settings.paths.data_processed / "fetch_status.json").write_text(
+        json.dumps({"attempted_at": datetime.now().isoformat(), "sources": fetch_status}, indent=2), encoding="utf-8")
 
     logger.info("\n  [i] CPI / HDI se usan desde archivos existentes en data/raw/")
     logger.info("      (requieren descarga manual -- ver docs/FUENTES_Y_VARIABLES.md)")
@@ -261,11 +265,12 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
     # viirs.csv y fetch_viirs.py se conservan: siguen siendo el validador externo
     # no circular de la validación leave-one-out.
     _VAR_LUM = "luminosidad_nocturna_idx"
-    _ruta_bm = settings.paths.data_raw / "blackmarble_monthly.csv"
+    _ruta_bm = settings.paths.data_raw / "blackmarble_qa_monthly.csv"
+    master[_VAR_LUM] = np.nan  # Nunca sustituir Black Marble por Li et al.
     if _ruta_bm.exists():
         try:
             _bm = pd.read_csv(_ruta_bm)
-            _bm = _bm[_bm["variable"] == "luminosidad_nocturna_mensual_nwcm2sr"]
+            _bm = _bm[(_bm["variable"] == "luminosidad_nocturna_mensual_nwcm2sr") & _bm["qa_policy"].eq("good_only_v2")]
             if not _bm.empty:
                 _bm_anual = _bm.groupby("año")["valor"].agg(["mean", "count"])
                 _bm_anual = _bm_anual[_bm_anual["count"] >= _MIN_MESES_ANUALIZAR]
@@ -289,10 +294,11 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
         except Exception as _exc:
             logger.warning("  No se pudo construir %s desde Black Marble: %s", _VAR_LUM, _exc)
 
-    if _anualizados:
-        _ruta_anual_parcial = settings.paths.data_processed / "anualizacion_parcial.csv"
-        pd.DataFrame(_anualizados).to_csv(_ruta_anual_parcial, index=False, encoding="utf-8-sig")
-        logger.info("  Registro de anualizaciones parciales -> %s", _ruta_anual_parcial.name)
+    pd.DataFrame(_anualizados, columns=["año", "variable", "valor", "meses_usados", "origen", "nota"]).to_csv(
+        settings.paths.data_processed / "anualizacion_parcial.csv", index=False, encoding="utf-8-sig")
+    if master[_VAR_LUM].isna().all():
+        logger.warning("Black Marble: histórico sin QA acreditado excluido del score; no se usa Li como sustituto.")
+    master_original = master.copy()
 
     # ── Reconversión monetaria + log10 para tipo_cambio_oficial_lcu_usd ─────────
     # El WDI publica la serie en la denominación vigente de cada año, sin unificar:
@@ -321,27 +327,27 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
         _mask_bs  = master["año"] >= 2022
         _tc[_mask_bss] = _tc[_mask_bss] * _BSS_A_BSF
         _tc[_mask_bs]  = _tc[_mask_bs]  * _BSD_A_BSF
-        master["tipo_cambio_oficial_lcu_usd"] = np.log10(_tc.clip(lower=1e-9))
+        master["tipo_cambio_oficial_lcu_usd"] = np.log10(_tc.where(_tc > 0))
         logger.info("  Tipo cambio -> log10(BsF/USD equiv.): rango [%.2f, %.2f]",
                     master["tipo_cambio_oficial_lcu_usd"].min(),
                     master["tipo_cambio_oficial_lcu_usd"].max())
         # 2025-2026 queda NaN por lag WDI — se muestra como "sin dato" en dashboard.
         # NO se hace ffill: inventar dato trailing viola la regla CERO datos artificiales.
 
-    # ── log10 para inflacion_deflactor_pib_pct ────────────────────────────────
+    # ── log10 para inflacion_ipc_imf_pct ────────────────────────────────
     # Venezuela tiene un rango de 4 ordenes de magnitud: 12% (2001) → 65,374% (2018).
     # Sin transformar, Min-Max hace que 49.4% (2024) score ~99.9 por estar "cerca"
     # del minimo absoluto relativo al maximo historico.
     # log10 comprime la escala: log10(12)=1.08, log10(65374)=4.82, log10(49.4)=1.69
     # → el score 2024 pasa de ~99.9 a ~84, mas consistente con la realidad economica.
     # clip lower=0.1 para cubrir posible deflacion (log10(0) = -inf).
-    if "inflacion_deflactor_pib_pct" in master.columns:
-        master["inflacion_deflactor_pib_pct"] = np.log10(
-            master["inflacion_deflactor_pib_pct"].clip(lower=0.1)
+    if "inflacion_ipc_imf_pct" in master.columns:
+        master["inflacion_ipc_imf_pct"] = np.log10(
+            master["inflacion_ipc_imf_pct"].where(master["inflacion_ipc_imf_pct"] > 0)
         )
         logger.info("  Inflacion -> log10(%%): rango [%.2f, %.2f]",
-                    master["inflacion_deflactor_pib_pct"].min(),
-                    master["inflacion_deflactor_pib_pct"].max())
+                    master["inflacion_ipc_imf_pct"].min(),
+                    master["inflacion_ipc_imf_pct"].max())
 
     if master.shape[1] == 1:
         logger.error("  Sin datos. Ejecuta primero la fase de descarga.")
@@ -364,7 +370,10 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
                        index=False, encoding="utf-8-sig")
 
 
-    return master, df_norm_out
+    master.to_csv(settings.paths.data_processed / "iciv_transformado.csv", index=False, encoding="utf-8-sig")
+    pipeline.get_step("normalize").get_params_table().to_csv(
+        settings.paths.data_processed / "normalization_parameters.csv", index=False, encoding="utf-8-sig")
+    return master_original, df_norm_out
 
 
 def fase_dataset_publico(
@@ -378,12 +387,11 @@ def fase_dataset_publico(
 
     out_dir = settings.paths.data_processed
     core_vars = {v.column for dim in DIMENSIONS.values() for v in dim.variables}
-    pulse_vars = {
-        "wti_precio_usd", "brent_precio_usd", "tasa_fed_funds_pct",
-        "usd_index_broad", "vix_volatility", "ust_10y_yield_pct",
-        "petroleo_crudo_produccion_tbpd", "guardian_articulos_venezuela",
-        "guardian_tono_titulares", "gdelt_cobertura_vol", "gdelt_tono_noticias",
-    }
+    from iciv.index.pulse_aggregator import PULSE_WEIGHTS
+    pulse_vars = set(PULSE_WEIGHTS)
+    from iciv.data.observation_lineage import observation_metadata
+    transformed = pd.read_csv(out_dir / "iciv_transformado.csv").set_index("año")
+
 
     year_col_raw = df_raw.columns[0]
     year_col_norm = df_norm.columns[0] if not df_norm.empty else year_col_raw
@@ -418,7 +426,9 @@ def fase_dataset_publico(
                 "year": year,
                 "variable": var,
                 "valor_crudo": None if pd.isna(raw_val) else raw_val,
+                "valor_transformado": transformed.loc[year, var] if var in transformed.columns else None,
                 "valor_normalizado": norm_val,
+                **observation_metadata(var, year, raw_val, settings),
                 "fuente": meta.source.value,
                 "dimension": meta.dimension.value,
                 "direccion": meta.direction.value,
@@ -432,13 +442,7 @@ def fase_dataset_publico(
 
     long_path = out_dir / "iciv_dataset_largo.csv"
     pd.DataFrame(rows).to_csv(long_path, index=False, encoding="utf-8-sig")
-    package = build_dataset_package(df_raw, wide_path, long_path, settings, release_id="latest")
-    logger.info(
-        "  OK Dataset publico -> %s, %s, release %s",
-        wide_path.name,
-        long_path.name,
-        package.release_dir.relative_to(settings.paths.root),
-    )
+    logger.info("  OK Dataset público: crudo, transformado, normalizado y procedencia")
     return wide_path, long_path
 
 
@@ -458,8 +462,7 @@ def fase_modelo(df_norm: pd.DataFrame, settings: Settings) -> tuple[pd.DataFrame
     _equal_overrides: dict[str, float] = {}
     for _d_id, _d in DIMENSIONS.items():
         for _vw in _d.variables:
-            if _vw.column in df_norm.columns:
-                _equal_overrides[_vw.column] = (1.0 / _n_dims) * _vw.weight
+            _equal_overrides[_vw.column] = (1.0 / _n_dims) * _vw.weight
     agg_fixed = ICIVAggregator(
         method="linear",
         strategy=FixedWeights(override=_equal_overrides),
@@ -550,13 +553,13 @@ def fase_pulse(settings: Settings) -> pd.DataFrame:
 def fase_ml_forecast(pulse_df: pd.DataFrame, annual_df: pd.DataFrame) -> dict:
     """
     Ajusta el forecast publico del Pulse:
-    SARIMA univariado a seis meses sobre la serie mensual observada.
+    Persistencia (naive) a seis meses sobre la serie mensual observada.
     """
     if pulse_df is None or pulse_df.empty:
         return {}
     from iciv.ml.pulse_forecast import PulseForecaster
     logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3a-ter -- Forecast Pulse (SARIMA)")
+    logger.info("  FASE 3a-ter -- Forecast Pulse (persistencia)")
     logger.info("-" * 60)
     annual_for_ml = annual_df[["año", "iciv_score"]].dropna()
     forecaster = PulseForecaster(pulse_df, annual_for_ml)
@@ -577,7 +580,10 @@ def fase_ml_forecast(pulse_df: pd.DataFrame, annual_df: pd.DataFrame) -> dict:
             logger.warning("  Backtest Pulse no disponible: %s", bt["payload"].get("reason"))
     except Exception as exc:
         logger.warning("  Backtest Pulse omitido: %s", exc)
-        result["backtest"] = {"available": False, "reason": str(exc)}
+        raise RuntimeError("Falló el backtest; se detiene la publicación para evitar resultados antiguos") from exc
+    from iciv.config import settings as current_settings
+    (current_settings.paths.data_processed / "forecast.json").write_text(
+        json.dumps(result, cls=_NumpyEncoder, ensure_ascii=False, indent=2), encoding="utf-8")
     return result
 
 
@@ -609,413 +615,6 @@ def fase_satv(settings: Settings, pulse_df: pd.DataFrame) -> dict:
 # FASE 3c -- CORRELACIÓN ICIV → IED
 # =============================================================================
 
-def fase_correlacion(df_raw: pd.DataFrame, df_ahp: pd.DataFrame) -> dict:
-    """Análisis de correlación y causalidad de Granger: ICIV → IED."""
-    from iciv.analytics.correlation import CorrelationAnalyzer
-    logger.info("\n" + "-" * 60)
-    logger.info("  FASE 3c -- Correlación ICIV → IED (Pearson / OLS / Granger)")
-    logger.info("-" * 60)
-    analyzer = CorrelationAnalyzer(df_raw, df_ahp)
-    result = analyzer.compute_all()
-    if "error" not in result:
-        cc = result.get("cross_correlation", [])
-        best = max(cc, key=lambda x: abs(x["r"])) if cc else {}
-        logger.info("  Correlación máxima: r=%.3f (rezago %s)", best.get("r", 0), best.get("lag", "?"))
-        ols = result.get("ols_1lag", {})
-        logger.info("  OLS (1 rezago): R²=%.3f · F-pval=%.4f", ols.get("r2", 0), ols.get("f_pval", 1))
-        gr  = result.get("granger", {}).get("por_lag", {}).get(1, {})
-        logger.info("  Granger (lag=1): p=%.4f · H₀ %s",
-                    gr.get("p_val", 1), "RECHAZADA" if gr.get("reject_h0") else "no rechazada")
-    return result
-
-
-def _generate_corr_charts_b64(corr: dict) -> tuple[str, str]:
-    """
-    Genera scatter ICIV(t-1)→IED(t) y barchart cross-correlación con matplotlib.
-    Retorna (scatter_b64, crosscorr_b64) — strings base64 para <img src="data:...">.
-    Devuelve ('','') si faltan datos.
-    """
-    import base64, io
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import matplotlib.patches as mpatches
-
-    scatter_b64 = ""
-    crosscorr_b64 = ""
-
-    DARK_BG  = "#0d1117"
-    CARD_BG  = "#161b22"
-    GRID_COL = "#21262d"
-    TEXT_COL = "#8b949e"
-    ACCENT   = "#00d4aa"
-    RED_COL  = "#e05c5c"
-    YELLOW   = "#f1c40f"
-
-    plt.rcParams.update({
-        "figure.facecolor": DARK_BG, "axes.facecolor": CARD_BG,
-        "axes.edgecolor": GRID_COL,  "axes.labelcolor": TEXT_COL,
-        "xtick.color": TEXT_COL,     "ytick.color": TEXT_COL,
-        "grid.color": GRID_COL,      "text.color": TEXT_COL,
-        "font.size": 9,
-    })
-
-    # ── Scatter ──────────────────────────────────────────────────────────────
-    scatter = corr.get("scatter", {})
-    pts = scatter.get("puntos", [])
-    reg = scatter.get("regresion", [])
-    if pts:
-        xs = [p["x"] for p in pts]
-        ys = [p["y"] for p in pts]
-        anos = [str(p.get("año", "")) for p in pts]
-        colors = [ACCENT if y >= 0 else RED_COL for y in ys]
-
-        fig, ax = plt.subplots(figsize=(5.5, 3.6))
-        fig.patch.set_facecolor(DARK_BG)
-        ax.scatter(xs, ys, c=colors, s=45, zorder=3, alpha=0.85)
-        for x, y, a in zip(xs, ys, anos):
-            ax.annotate(a, (x, y), fontsize=6.5, color=TEXT_COL,
-                        xytext=(3, 3), textcoords="offset points")
-        if len(reg) == 2:
-            ax.plot([reg[0]["x"], reg[1]["x"]], [reg[0]["y"], reg[1]["y"]],
-                    color=YELLOW, linewidth=1.4, linestyle="--", zorder=2)
-        ax.axhline(0, color=GRID_COL, linewidth=0.8)
-        ax.set_xlabel("ICIV (t−1)", color=TEXT_COL, fontsize=9)
-        ax.set_ylabel("IED (MMM USD)", color=TEXT_COL, fontsize=9)
-        ax.set_title("Scatter: ICIV₍ₜ₋₁₎ → IED₍ₜ₎", color="#e6edf3", fontsize=9.5, pad=8)
-        ax.grid(True, linewidth=0.5, alpha=0.6)
-        ax.tick_params(labelsize=8)
-        fig.tight_layout(pad=1.0)
-
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png", dpi=130, bbox_inches="tight",
-                    facecolor=DARK_BG, edgecolor="none")
-        plt.close(fig)
-        scatter_b64 = base64.b64encode(buf.getvalue()).decode()
-
-    # ── Cross-correlación ────────────────────────────────────────────────────
-    cc = corr.get("cross_correlation", [])
-    if cc:
-        labels = [d["label"] for d in cc]
-        rs     = [d["r"] for d in cc]
-        sigs   = [d["sig"] for d in cc]
-        bar_colors = []
-        for r, s in zip(rs, sigs):
-            if s:
-                bar_colors.append(ACCENT if r >= 0 else RED_COL)
-            else:
-                bar_colors.append("#8b949e55")
-
-        fig, ax = plt.subplots(figsize=(5.5, 3.6))
-        fig.patch.set_facecolor(DARK_BG)
-        bars = ax.bar(labels, rs, color=bar_colors, edgecolor=GRID_COL,
-                      linewidth=0.8, width=0.6)
-        ax.axhline(0, color=GRID_COL, linewidth=0.8)
-        ax.axhline(0.05,  color=TEXT_COL, linewidth=0.5, linestyle=":")
-        ax.axhline(-0.05, color=TEXT_COL, linewidth=0.5, linestyle=":")
-        for bar, r, s in zip(bars, rs, sigs):
-            ax.text(bar.get_x() + bar.get_width()/2, r + (0.02 if r >= 0 else -0.05),
-                    f"{r:.3f}", ha="center", va="bottom" if r >= 0 else "top",
-                    fontsize=7.5, color="#e6edf3" if s else TEXT_COL)
-        ax.set_ylim(-1, 1)
-        ax.set_ylabel("Pearson r", color=TEXT_COL, fontsize=9)
-        ax.set_title("Cross-Correlación ICIV → IED por Rezago", color="#e6edf3", fontsize=9.5, pad=8)
-        ax.grid(True, axis="y", linewidth=0.5, alpha=0.6)
-        ax.tick_params(labelsize=8)
-        legend_els = [
-            mpatches.Patch(color=ACCENT, label="Sig. positiva (p<0.05)"),
-            mpatches.Patch(color=RED_COL, label="Sig. negativa"),
-            mpatches.Patch(color="#8b949e55", label="No significativa"),
-        ]
-        ax.legend(handles=legend_els, fontsize=7, loc="lower right",
-                  facecolor=CARD_BG, edgecolor=GRID_COL, labelcolor=TEXT_COL)
-        fig.tight_layout(pad=1.0)
-
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png", dpi=130, bbox_inches="tight",
-                    facecolor=DARK_BG, edgecolor="none")
-        plt.close(fig)
-        crosscorr_b64 = base64.b64encode(buf.getvalue()).decode()
-
-    return scatter_b64, crosscorr_b64
-
-
-def _generate_loo_validation_html(df_norm) -> str:
-    """
-    Bloque A2 del dashboard: validación externa NO circular (leave-one-out).
-
-    Recalcula el ICIV excluyendo la variable de validación (el aggregator
-    redistribuye su peso) y lo correlaciona contra la serie cruda excluida:
-      - ICIV sin migración   vs stock migrantes UNHCR (esperada negativa)
-      - ICIV sin luminosidad vs luz nocturna VIIRS 2014-2024 (esperada positiva;
-        restringido a la era VIIRS por el escalón de sensor DMSP→VIIRS en 2013/14)
-
-    Retorna el bloque HTML completo, o "" si faltan datos.
-    Misma lógica que scripts/external_validation.py (fuente canónica de los CSV).
-    """
-    import base64, io
-
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pd
-    from scipy import stats
-
-    from iciv.config.settings import settings
-    from iciv.index.aggregator import ICIVAggregator
-
-    DARK_BG  = "#0d1117"
-    CARD_BG  = "#161b22"
-    GRID_COL = "#21262d"
-    TEXT_COL = "#8b949e"
-    ACCENT   = "#00d4aa"
-    YELLOW   = "#f1c40f"
-
-    if df_norm is None or "año" not in getattr(df_norm, "columns", []):
-        return ""
-
-    def _loo_score(col: str) -> pd.Series:
-        # min_dimension_coverage=0: en un leave-one-out el objetivo es aislar el
-        # aporte de UNA variable. Aplicar el piso de cobertura aquí anularía la
-        # dimensión entera cuando la variable retirada la deja por debajo del
-        # umbral, y el test mediría eso en vez del efecto de la variable.
-        df_loo = df_norm.copy()
-        df_loo[col] = np.nan
-        return (ICIVAggregator(method="linear", min_dimension_coverage=0.0)
-                .compute(df_loo).set_index("año")["iciv_score"])
-
-    def _raw_series(fname: str, indicador: str) -> pd.Series:
-        df = pd.read_csv(settings.paths.data_raw / fname)
-        df = df[df["indicador"] == indicador]
-        return df.set_index("año")["valor"].astype(float)
-
-    def _scatter_b64_loo(x: pd.Series, y: pd.Series, xlabel: str, ylabel: str,
-                         title: str) -> tuple[str, dict]:
-        joined = pd.concat([x, y], axis=1, keys=["x", "y"]).dropna()
-        if len(joined) < 5:
-            return "", {}
-        r, p = stats.pearsonr(joined["x"], joined["y"])
-        rho, p2 = stats.spearmanr(joined["x"], joined["y"])
-        st = {"r": r, "p": p, "rho": rho, "p2": p2, "n": len(joined),
-              "y0": int(joined.index.min()), "y1": int(joined.index.max())}
-
-        plt.rcParams.update({
-            "figure.facecolor": DARK_BG, "axes.facecolor": CARD_BG,
-            "axes.edgecolor": GRID_COL,  "axes.labelcolor": TEXT_COL,
-            "xtick.color": TEXT_COL,     "ytick.color": TEXT_COL,
-            "grid.color": GRID_COL,      "text.color": TEXT_COL,
-            "font.size": 9,
-        })
-        fig, ax = plt.subplots(figsize=(5.5, 3.6))
-        fig.patch.set_facecolor(DARK_BG)
-        ax.scatter(joined["x"], joined["y"], c=ACCENT, s=45, zorder=3, alpha=0.85)
-        for yr, row in joined.iterrows():
-            ax.annotate(str(int(yr)), (row["x"], row["y"]), fontsize=6.5,
-                        color=TEXT_COL, xytext=(3, 3), textcoords="offset points")
-        slope, intercept = np.polyfit(joined["x"], joined["y"], 1)
-        xs = np.array([joined["x"].min(), joined["x"].max()])
-        ax.plot(xs, slope * xs + intercept, color=YELLOW, linewidth=1.4,
-                linestyle="--", zorder=2)
-        ax.set_xlabel(xlabel, color=TEXT_COL, fontsize=9)
-        ax.set_ylabel(ylabel, color=TEXT_COL, fontsize=9)
-        ax.set_title(title, color="#e6edf3", fontsize=9.5, pad=8)
-        ax.grid(True, linewidth=0.5, alpha=0.6)
-        ax.tick_params(labelsize=8)
-        fig.tight_layout(pad=1.0)
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png", dpi=130, bbox_inches="tight",
-                    facecolor=DARK_BG, edgecolor="none")
-        plt.close(fig)
-        return base64.b64encode(buf.getvalue()).decode(), st
-
-    try:
-        migr = _raw_series("unhcr.csv", "migrantes_vzla_millones")
-        lumi = _raw_series("viirs.csv", "luminosidad_nocturna_idx")
-        loo_migr = _loo_score("migrantes_vzla_millones")
-        loo_lumi = _loo_score("luminosidad_nocturna_idx").loc[2014:]
-
-        b64_m, st_m = _scatter_b64_loo(
-            loo_migr, migr,
-            "ICIV recalculado sin migración", "Refugiados y solicitantes de asilo (millones)",
-            "ICIV (leave-one-out) vs Desplazamiento registrado UNHCR")
-        b64_l, st_l = _scatter_b64_loo(
-            loo_lumi, lumi.loc[2014:],
-            "ICIV recalculado sin luminosidad", "Luminosidad nocturna (índice)",
-            "ICIV (leave-one-out) vs Luz nocturna · era VIIRS")
-        if not b64_m or not b64_l:
-            return ""
-    except Exception as exc:  # noqa: BLE001 — el dashboard no debe caerse por este bloque
-        logger.warning("  Validación leave-one-out: %s", exc)
-        return ""
-
-    def _stat_card(st: dict, esperado: str, ok: bool) -> str:
-        color = "#2ecc71" if ok else "#e67e22"
-        veredicto = "Hipótesis confirmada ✓" if ok else "Revisar"
-        p_txt = "&lt; 0.001" if st["p"] < 0.001 else f"= {st['p']:.3f}"
-        return (
-            f'<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:8px">'
-            f'<span><strong style="color:#e6edf3">Pearson r = {st["r"]:+.3f}</strong> (p {p_txt})</span>'
-            f'<span>Spearman ρ = {st["rho"]:+.3f}</span>'
-            f'<span>n = {st["n"]} ({st["y0"]}–{st["y1"]})</span>'
-            f'<span>Esperada: {esperado}</span>'
-            f'<span style="color:{color};font-weight:600">{veredicto}</span>'
-            f'</div>'
-        )
-
-    card_m = _stat_card(st_m, "negativa", st_m["r"] < 0 and st_m["p"] < 0.05)
-    card_l = _stat_card(st_l, "positiva", st_l["r"] > 0 and st_l["p"] < 0.05)
-
-    return f'''
-  <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
-  <!-- A2 · VALIDACIÓN EXTERNA NO CIRCULAR (leave-one-out) -->
-  <div style="margin-top:32px;margin-bottom:14px;padding:10px 14px;background:var(--card);border-left:3px solid var(--accent);border-radius:6px">
-    <strong style="color:var(--accent);font-size:.85rem">A2 · Validación externa no circular — leave-one-out</strong>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:2px">
-      El ICIV se recalcula <em>excluyendo</em> la variable de validación (su peso se redistribuye) y se
-      correlaciona contra la serie cruda excluida. El score validado no contiene información directa
-      de la señal contra la que se contrasta.
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
-        ICIV (sin migración) vs Emigración venezolana
-      </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
-        Stock de migrantes y refugiados UNHCR · hipótesis: peor clima → más emigración
-      </div>
-      <img src="data:image/png;base64,{b64_m}" style="width:100%;border-radius:6px" alt="Scatter ICIV leave-one-out vs migración UNHCR">
-      {card_m}
-    </div>
-    <div class="card">
-      <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:4px">
-        ICIV (sin luminosidad) vs Luz nocturna satelital
-      </div>
-      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">
-        Era VIIRS 2014–2024 (sensor homogéneo) · hipótesis: mejor clima → más actividad luminosa
-      </div>
-      <img src="data:image/png;base64,{b64_l}" style="width:100%;border-radius:6px" alt="Scatter ICIV leave-one-out vs luminosidad VIIRS">
-      {card_l}
-    </div>
-  </div>
-
-  <div class="card" style="border-left:3px solid var(--accent)">
-    <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
-      <strong style="color:var(--text)">Por qué no es circular.</strong>
-      Migración (D4) y luminosidad (D2) forman parte del score, así que correlacionar el ICIV completo
-      contra ellas sería validar el índice con sus propios componentes. En el diseño leave-one-out el
-      ICIV se recalcula sin la variable y el peso se redistribuye dentro de su dimensión: la correlación
-      resultante mide si <em>el resto del índice</em> sigue la señal externa.
-      <br><strong>Luminosidad — periodo completo no interpretable:</strong> la serie armonizada
-      (Li et al., 2020) combina sensores DMSP (hasta 2013) y VIIRS (desde 2014) con un escalón de
-      calibración en la transición; además el tramo 2000–2013 refleja la expansión eléctrica del boom
-      petrolero. El test se restringe a la era VIIRS, que cubre el periodo de colapso económico.
-      <br><em>Fuentes: UNHCR Population Statistics; Li et al. (2020) Harmonized NTL; Henderson,
-      Storeygard &amp; Weil (2012, AER). Reproducible: <code>python scripts/external_validation.py</code>.</em>
-    </div>
-  </div>
-'''
-
-
-def _build_corr_stats_html(corr: dict) -> tuple[str, str, str, str]:
-    """
-    Genera HTML estático para OLS, Granger, ADF y la fórmula.
-    Retorna (formula_html, ols1_html, ols2_html, granger_adf_html).
-    """
-    def _sig_color(sig: bool) -> str:
-        return "#2ecc71" if sig else "#8b949e"
-
-    def _ols_rows(ols: dict) -> str:
-        if not ols or ols.get("error"):
-            return "<tr><td colspan='3' style='color:#8b949e;padding:6px'>No disponible</td></tr>"
-        rows = []
-        for name, p in (ols.get("params") or {}).items():
-            sig = p.get("sig", False)
-            star = " *" if sig else ""
-            rows.append(
-                f'<tr><td style="padding:3px 0;color:#e6edf3">{name}</td>'
-                f'<td style="text-align:right;color:#00d4aa">{p["coef"]:.4f}</td>'
-                f'<td style="text-align:right;color:{_sig_color(sig)}">{p["pval"]:.4f}{star}</td></tr>'
-            )
-        r2 = ols.get("r2", 0)
-        r2a = ols.get("r2_adj", 0)
-        fp = ols.get("f_pval", 1)
-        n = ols.get("n", "")
-        rows.append(
-            f'<tr><td colspan="3" style="padding-top:6px;font-size:.68rem;color:#8b949e">'
-            f'R²={r2:.3f} R²adj={r2a:.3f} F-p={fp:.4f} n={n}</td></tr>'
-        )
-        return "\n".join(rows)
-
-    ols1 = corr.get("ols_1lag", {})
-    ols2 = corr.get("ols_2lag", {})
-    formula = (ols1.get("formula") or "IED_t = β₀ + β₁·ICIV_{t−1} + ε")
-    formula_html = f'<code style="font-size:.75rem;color:#8b949e">{formula}</code>'
-
-    ols1_html = _ols_rows(ols1)
-    ols2_html = _ols_rows(ols2)
-
-    # Granger + ADF
-    gr = corr.get("granger", {})
-    adf = corr.get("adf", {})
-    parts = []
-
-    # Granger cards
-    for lag, res in (gr.get("por_lag") or {}).items():
-        if res.get("error"):
-            continue
-        reject = res.get("reject_h0", False)
-        col = "#00d4aa" if reject else "#8b949e"
-        label = "H₀ rechazada (p&lt;0.05)" if reject else "H₀ no rechazada"
-        parts.append(
-            f'<div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid {col}44">'
-            f'<div style="font-size:.68rem;color:#8b949e">Lag {lag}</div>'
-            f'<div style="font-size:1.1rem;font-weight:700;color:{col}">{res["p_val"]:.4f}</div>'
-            f'<div style="font-size:.68rem;color:{col}">{label}</div>'
-            f'<div style="font-size:.65rem;color:#8b949e">F={res["f_stat"]:.3f}</div></div>'
-        )
-    granger_cards_html = "\n".join(parts) if parts else "<div style='color:#8b949e;font-size:.72rem'>No disponible</div>"
-
-    conclusion = gr.get("conclusion", "")
-    nota_diff = gr.get("nota_diff", "")
-    conclusion_html = (
-        f'<div style="font-size:.73rem;color:#8b949e;line-height:1.5;padding:8px 12px;'
-        f'background:#0d1117;border-radius:6px;margin-bottom:8px">{conclusion}</div>'
-        + (f'<div style="font-size:.68rem;color:#8b949e;margin-bottom:14px">{nota_diff}</div>' if nota_diff else "")
-    )
-
-    # ADF cards
-    adf_parts = []
-    for key, lbl in [("iciv", "ICIV"), ("ied", "IED")]:
-        d = (adf or {}).get(key, {})
-        if not d.get("stat"):
-            continue
-        col = "#00d4aa" if d.get("stationary") else "#e67e22"
-        adf_parts.append(
-            f'<div style="background:#0d1117;border-radius:8px;padding:10px 12px;border:1px solid {col}44">'
-            f'<div style="font-size:.68rem;color:#8b949e">{lbl} ADF</div>'
-            f'<div style="font-size:1.1rem;font-weight:700;color:{col}">{d["stat"]:.4f}</div>'
-            f'<div style="font-size:.68rem;color:{col}">{d.get("label","")}</div>'
-            f'<div style="font-size:.65rem;color:#8b949e">p={d.get("pval",0):.4f} CV5%={d.get("cv_5pct",0):.3f}</div></div>'
-        )
-    adf_cards_html = "\n".join(adf_parts) if adf_parts else "<div style='color:#8b949e;font-size:.72rem'>No disponible</div>"
-
-    granger_adf_html = (
-        '<div style="font-size:.72rem;font-weight:600;color:#8b949e;margin-bottom:6px">'
-        'Test de Granger: \u00bfICIV precede estad\u00edsticamente a la IED?</div>'
-        f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
-        f'{granger_cards_html}</div>'
-        f'{conclusion_html}'
-        '<div style="font-size:.72rem;font-weight:600;color:#8b949e;margin-bottom:6px">'
-        'Test ADF \u2014 Estacionariedad de las series</div>'
-        f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">{adf_cards_html}</div>'
-    )
-
-    return formula_html, ols1_html, ols2_html, granger_adf_html
-
-
 def fase_sector_radar(df_ahp: pd.DataFrame) -> dict:
     """Calcula el radar sectorial con las dimensiones ICIV disponibles."""
     try:
@@ -1043,15 +642,15 @@ _DIM_SHORT = {
 
 
 def _score_to_label(score: float) -> str:
-    if score < 35:
-        return "Alto Riesgo"
-    if score < 50:
-        return "Riesgo Moderado-Alto"
-    if score < 65:
-        return "Riesgo Moderado"
-    if score < 80:
-        return "Bajo Riesgo"
-    return "Muy Bajo Riesgo"
+    if score < 31:
+        return "Muy desfavorable"
+    if score < 51:
+        return "Desfavorable"
+    if score < 66:
+        return "Intermedio"
+    if score < 81:
+        return "Favorable"
+    return "Muy favorable"
 
 
 def _score_to_color(score: float) -> str:
@@ -1082,6 +681,8 @@ def fase_dashboard(
     logger.info("  FASE 4 -- Generando dashboard HTML")
     logger.info("-" * 60)
 
+    from iciv.analytics.dashboard_evidence import evidence_panel
+    evidence_html = evidence_panel(settings, df_ahp, ml_forecast or {})
     df_plot = df_ahp.dropna(subset=["iciv_score"]).copy()
     df_fixed_plot = df_fixed.dropna(subset=["iciv_score"]).copy()
 
@@ -1113,7 +714,7 @@ def fase_dashboard(
     pt_colors_js  = json.dumps([_score_to_color(float(s)) for s in df_plot["iciv_score"].tolist()])
 
     # Cobertura temporal por año (para indicar confianza del dato en el gráfico)
-    _COVERAGE_THRESHOLD = 60.0  # % mínimo para considerar el score confiable
+    _COVERAGE_THRESHOLD = 70.0  # % mínimo para considerar el score confiable
     if "cobertura_pct" in df_plot.columns:
         coverage_js = json.dumps([
             round(float(v), 1) if pd.notna(v) else None
@@ -1676,15 +1277,16 @@ def fase_dashboard(
             "scores":     [round(float(s), 2) if pd.notna(s) else None
                           for s in _p["pulse_score"].tolist()],
             "cobertura":  [round(float(c), 1) for c in _p["cobertura_pct"].tolist()],
+            "elegible": _p["elegible_modelo"].astype(bool).tolist(),
             "n_vars":     [int(n) for n in _p["n_vars"].tolist()],
         }
         # Resumen dual: último mes disponible + último mes con cobertura alta.
-        _p_reliable = _p[_p["cobertura_pct"] >= 70]
+        _p_reliable = _p[_p["elegible_modelo"]]
         _p_latest = _p.iloc[-1]
         _p_ref = _p_reliable.iloc[-1] if not _p_reliable.empty else _p_latest
         _ps = float(_p_latest["pulse_score"]) if pd.notna(_p_latest["pulse_score"]) else None
         _prs = float(_p_ref["pulse_score"]) if pd.notna(_p_ref["pulse_score"]) else None
-        _latest_reliable = bool(float(_p_latest["cobertura_pct"]) >= 70)
+        _latest_reliable = bool(_p_latest["elegible_modelo"])
         _pulse_summary = {
             "n_meses":      len(_p),
             "score_actual": round(_ps, 2) if _ps is not None else None,
@@ -1933,7 +1535,7 @@ def fase_dashboard(
             _vp = _dfa_nn.iloc[-2] if len(_dfa_nn) >= 2 else _vi
             _vi_cov = round(float(_vi.get("cobertura_pct", 100)), 1) \
                 if "cobertura_pct" in _dfa_nn.columns else None
-            _vi_reliable = bool((_vi_cov or 100) >= 70)
+            _vi_reliable = bool(_vi_cov is not None and _vi_cov >= 70 and int(_vi["año"]) < datetime.now().year)
             _ven_hoy["iciv"] = {
                 "score": round(float(_vi["iciv_score"]), 2),
                 "year": int(_vi["año"]),
@@ -1956,7 +1558,7 @@ def fase_dashboard(
         if pulse_data is not None and not pulse_data.empty:
             _pp = pulse_data.dropna(subset=["pulse_score"])
             if not _pp.empty:
-                _pp_reliable = _pp[_pp["cobertura_pct"] >= 70] if "cobertura_pct" in _pp.columns else _pp
+                _pp_reliable = _pp[_pp["elegible_modelo"].fillna(False)]
                 _pl = _pp.iloc[-1]
                 _pr = _pp_reliable.iloc[-1] if not _pp_reliable.empty else _pl
                 _prev_base = _pp_reliable if len(_pp_reliable) >= 2 else _pp
@@ -1967,10 +1569,8 @@ def fase_dashboard(
                     "label_mes": _MONTHS_ES[int(_pl["mes"])],
                     "coverage": round(float(_pl.get("cobertura_pct", 0)), 1)
                                 if "cobertura_pct" in pulse_data.columns else None,
-                    "delta": round(float(_pl["pulse_score"]) - float(_prev_base.iloc[-2]["pulse_score"]), 2)
-                             if len(_prev_base) >= 2 else None,
-                    "is_reliable": bool(float(_pl.get("cobertura_pct", 100)) >= 70)
-                                   if "cobertura_pct" in pulse_data.columns else True,
+                    "delta": float(_pl["delta_comparable_1m"]) if pd.notna(_pl.get("delta_comparable_1m")) else None,
+                    "is_reliable": bool(_pl.get("elegible_modelo", False)),
                     "reliable_score": round(float(_pr["pulse_score"]), 2),
                     "reliable_year": int(_pr["año"]),
                     "reliable_month": int(_pr["mes"]),
@@ -2012,7 +1612,7 @@ def fase_dashboard(
             _edf = pd.read_csv(_eia_path, encoding="utf-8-sig")
             _edf.columns = ["año","mes","productId","productName","variable","valor","unidad","fuente"]
             _edf["valor"] = pd.to_numeric(_edf["valor"], errors="coerce")
-            _ev = _edf[_edf["variable"] == "petroleo_crudo_produccion_tbpd"].sort_values(["año","mes"])
+            _ev = _edf[_edf["variable"] == "petroleo_liquidos_totales_tbpd"].sort_values(["año","mes"])
             if not _ev.empty:
                 _el = _ev.iloc[-1]
                 _ep = _ev.iloc[-13] if len(_ev) >= 13 else None
@@ -2031,16 +1631,16 @@ def fase_dashboard(
             _imf.columns = [c.strip() for c in _imf.columns]
             _icol = [c for c in _imf.columns if "a" in c.lower() and "o" in c.lower()][0]
             _imf = _imf.rename(columns={_icol: "año"})
-            if "inflacion_deflactor_pib_pct" in _imf.columns:
-                _inf = _imf[_imf["inflacion_deflactor_pib_pct"].notna()].sort_values("año")
+            if "inflacion_ipc_imf_pct" in _imf.columns:
+                _inf = _imf[_imf["inflacion_ipc_imf_pct"].notna()].sort_values("año")
                 if not _inf.empty:
                     _il = _inf.iloc[-1]
                     _ip = _inf.iloc[-2] if len(_inf) >= 2 else None
                     _ven_hoy["inflacion"] = {
-                        "valor": round(float(_il["inflacion_deflactor_pib_pct"]), 1),
+                        "valor": round(float(_il["inflacion_ipc_imf_pct"]), 1),
                         "año": int(_il["año"]),
-                        "delta": round(float(_il["inflacion_deflactor_pib_pct"])
-                                       - float(_ip["inflacion_deflactor_pib_pct"]), 1)
+                        "delta": round(float(_il["inflacion_ipc_imf_pct"])
+                                       - float(_ip["inflacion_ipc_imf_pct"]), 1)
                                  if _ip is not None else None,
                     }
             if "pib_crecimiento_imf_pct" in _imf.columns:
@@ -2096,13 +1696,7 @@ def fase_dashboard(
     # sector caía ahí, las tarjetas sumaban menos que el total de sectores sin
     # ninguna explicación. Ahora se muestra, pero solo cuando hay alguno, para
     # no dejar una tarjeta en cero permanente en el caso normal.
-    _KPI_CATS = [
-        ("PRIORITARIA", "Prioritaria", "#00d4aa"),
-        ("ENTRADA",     "Entrada",     "#2ecc71"),
-        ("PILOTO",      "Piloto",      "#f1c40f"),
-        ("ESPERAR",     "Esperar",     "#e67e22"),
-        ("NO ENTRAR",   "No entrar",   "#e05c5c"),
-    ]
+    _KPI_CATS = [(label, label, color) for label, color in reversed(list(RISK_COLORS.items()))]
     if _sector_resumen.get("SIN DATOS", 0) > 0:
         _KPI_CATS.append(("SIN DATOS", "Sin datos", "#8b949e"))
     _kpi_html = "".join(
@@ -2559,6 +2153,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     <a href="#noticias">Noticias</a>
     <a href="#sectores">Sectores</a>
     <a href="#laboratorio">Laboratorio</a>
+    <a href="#evidencia">Evidencia</a>
   </div>
 </div>
 
@@ -2571,7 +2166,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <p class="lead">
     Dos lecturas del mismo país: la señal mensual se mueve rápido, el índice anual mide el fondo estructural.
-    Ninguna cifra viene de fuentes venezolanas.
+    Se consultan distribuidores internacionales; algunas estadísticas pueden incorporar fuentes nacionales.
   </p>
 
   <div class="hero-grid">
@@ -2611,8 +2206,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <div class="hint">
     La escala va de 0 a 100 y se mide contra la propia historia de Venezuela:
-    100 sería su mejor año desde 2000 y 0 el peor. No compara con otros países.
-    La cobertura indica cuántos datos ya publicaron las fuentes para ese periodo.
+    Los extremos corresponden a componentes normalizados; el agregado no tiene por qué alcanzar 0 o 100. No compara países.
+    La cobertura efectiva mide el peso del universo que realmente participa en el puntaje.
   </div>
 </section>
 
@@ -2624,18 +2219,18 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 
   <p class="lead">
-    Veinticinco años en dos gráficos: el arco largo del país y hacia dónde apunta la señal mensual.
+    La historia disponible en dos gráficos: el arco largo del país y hacia dónde apunta la señal mensual.
   </p>
 
   <div class="panel">
-    <div class="block-title">El arco de 25 años</div>
-    <div class="block-sub">Índice anual con las bandas de riesgo de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
+    <div class="block-title">La trayectoria anual</div>
+    <div class="block-sub">Índice anual con las bandas descriptivas de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
     <div class="chart-wrap" style="height:400px"><canvas id="cHistoria"></canvas></div>
   </div>
 
   <div class="panel">
     <div class="block-title">Hacia dónde va</div>
-    <div class="block-sub">Señal mensual reciente y proyección a seis meses. La franja verde es el margen de error: cuanto más ancha, menos certeza.</div>
+    <div class="block-sub">Persistencia desde el último mes elegible. Bandas empíricas de errores históricos; sin garantía de cobertura futura. Los meses provisionales se muestran aparte.</div>
     <div class="chart-wrap" style="height:360px"><canvas id="cPulseTrend"></canvas></div>
   </div>
 </section>
@@ -2649,7 +2244,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <p class="lead">
     La luz que emite cada estado de noche, medida por satélite de la NASA.
-    Más brillo, más actividad económica. Es la única cifra de este proyecto que nadie puede manipular desde Venezuela.
+    La radiancia nocturna es un proxy de actividad, afectado por electrificación, nubosidad y procesamiento. El histórico requiere verificación adicional de sus flags de calidad.
   </p>
 
   <div class="panel">
@@ -2732,11 +2327,11 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 <section class="section tab-section" id="sectores">
   <div class="section-header">
     <span class="section-title">Sectores</span>
-    <span class="section-sub">Dónde entrar primero · {_sector_year}</span>
+    <span class="section-sub">Sensibilidad a los pesos · {_sector_year}</span>
   </div>
 
   <p class="lead">
-    Cada sector reacciona distinto al clima del país. Este es el orden de atractivo hoy, y el riesgo que domina en cada uno.
+    Cada sector reacciona distinto al clima del país. Estos son perfiles hipotéticos de ponderación; no son estimaciones de atractivo o rentabilidad sectorial.
   </p>
 
   <div class="sector-kpis">{_kpi_html}</div>
@@ -2745,7 +2340,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     <div class="chart-card" style="padding:0;overflow:hidden">
       <div style="padding:18px 20px;border-bottom:1px solid var(--border)">
         <div class="block-title">Ranking</div>
-        <div class="block-sub" style="margin-bottom:0">Ordenado de mayor a menor atractivo.</div>
+        <div class="block-sub" style="margin-bottom:0">Ordenado por puntaje bajo pesos supuestos. Sin bonos ni penalizaciones manuales.</div>
       </div>
       <div style="overflow-x:auto">
         <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
@@ -2754,8 +2349,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
               <th style="padding:9px 14px;font-weight:600">#</th>
               <th style="padding:9px 14px;font-weight:600">Sector</th>
               <th style="padding:9px 14px;font-weight:600;text-align:center">Score</th>
-              <th style="padding:9px 14px;font-weight:600">Recomendación</th>
-              <th style="padding:9px 14px;font-weight:600">Riesgo principal</th>
+              <th style="padding:9px 14px;font-weight:600">Lectura relativa</th>
+              <th style="padding:9px 14px;font-weight:600">Déficit ponderado</th>
             </tr>
           </thead>
           <tbody>{_table_rows_html}</tbody>
@@ -2827,6 +2422,11 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 </section>
 
+<section class="section tab-section" id="evidencia">
+  <div class="section-header"><span class="section-title">Evidencia</span><span class="section-sub">Datos · método · validación</span></div>
+  {evidence_html}
+</section>
+
 <!-- ===== EL PROYECTO ===== -->
 <!-- Se abre desde el logo ICIV de la barra superior. Antes ese logo ejecutaba
      showSection('hoy'), es decir, duplicaba la pestaña contigua: era un control
@@ -2882,8 +2482,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
       La escala 0–100 se construye normalizando cada variable contra
       <strong style="color:var(--text)">la propia historia de Venezuela</strong>:
-      <strong style="color:var(--text)">100 es su mejor registro desde {settings.series.start_year}
-      y 0 el peor</strong>. No es un óptimo internacional.<br><br>
+      <strong style="color:var(--text)">cada componente se normaliza entre sus extremos históricos; el agregado combina
+      esos componentes y no necesariamente alcanza 0 o 100</strong>. No es un óptimo internacional.<br><br>
       De ahí se siguen dos cosas que conviene tener presentes:
       un 0 significa «el peor año de su propia serie», no «sin datos»;
       y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
@@ -2917,13 +2517,11 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <div class="panel">
     <div class="block-title">De dónde salen los datos</div>
-    <div class="block-sub">{_ab_n_sources} fuentes, ninguna venezolana.</div>
+    <div class="block-sub">{_ab_n_sources} distribuidores internacionales; origen primario no siempre independiente.</div>
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-      Es una decisión metodológica, no un descuido. Venezuela dejó de publicar
-      estadísticas oficiales con regularidad, y las que publica no son auditables de
-      forma independiente. El índice se arma solo con organismos multilaterales,
-      agencias de otros países y sensores satelitales — nada que pueda manipularse
-      desde Caracas.
+      Se consultan organismos internacionales y sensores satelitales. Sus series pueden
+      incorporar estadísticas nacionales, estimaciones modeladas y revisiones. Cada cifra
+      conserva su fuente y el estado conocido; no se infiere independencia del distribuidor.
     </div>
     <ul style="font-size:.78rem;color:var(--muted);line-height:1.6;
                columns:2;column-gap:28px;padding-left:18px;margin:0">
@@ -2941,8 +2539,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <li><strong style="color:var(--text)">No mide inversión realizada.</strong> Mide condiciones
           del entorno. La IED se usa como contraste externo, no entra al score.</li>
       <li><strong style="color:var(--text)">Un año sin cerrar no es comparable.</strong> Las fuentes
-          anuales publican con rezago, y en Venezuela las que llegan tarde son las de peor
-          puntaje, así que un año provisional tiende a bajar al completarse.</li>
+          anuales publican con rezago; los cambios de composición y las revisiones pueden alterar
+          el puntaje en cualquiera de las dos direcciones.</li>
       <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
           no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
     </ul>
@@ -3028,7 +2626,7 @@ new Chart(document.getElementById('cHistoria'), {{
       }},
       // Dataset auxiliar para la leyenda de baja cobertura
       {{
-        label: 'Cobertura < 60% (provisional)',
+        label: 'Cobertura < 70% (provisional)',
         data: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? scoresAHP[i] : null),
         borderColor: 'transparent',
         backgroundColor: '#e69817',
@@ -3048,11 +2646,11 @@ new Chart(document.getElementById('cHistoria'), {{
       legend: {{ position: 'top' }},
       annotation: {{
         annotations: {{
-          band1: {{ type:'box', yMin:0,  yMax:30,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{{display:true,content:'Alto Riesgo',position:'start',color:'#e05c5c',font:{{size:9}}}}}},
-          band2: {{ type:'box', yMin:30, yMax:50,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{{display:true,content:'Moderado-Alto',position:'start',color:'#e67e22',font:{{size:9}}}}}},
-          band3: {{ type:'box', yMin:50, yMax:65,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{{display:true,content:'Moderado',position:'start',color:'#f1c40f',font:{{size:9}}}}}},
-          band4: {{ type:'box', yMin:65, yMax:80,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{{display:true,content:'Bajo Riesgo',position:'start',color:'#2ecc71',font:{{size:9}}}}}},
-          band5: {{ type:'box', yMin:80, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{{display:true,content:'Muy Bajo',position:'start',color:'#00d4aa',font:{{size:9}}}}}},
+          band1: {{ type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{{display:true,content:'Muy desfavorable',position:'start',color:'#e05c5c',font:{{size:9}}}}}},
+          band2: {{ type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{{display:true,content:'Desfavorable',position:'start',color:'#e67e22',font:{{size:9}}}}}},
+          band3: {{ type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{{display:true,content:'Intermedio',position:'start',color:'#f1c40f',font:{{size:9}}}}}},
+          band4: {{ type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{{display:true,content:'Favorable',position:'start',color:'#2ecc71',font:{{size:9}}}}}},
+          band5: {{ type:'box', yMin:81, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{{display:true,content:'Muy favorable',position:'start',color:'#00d4aa',font:{{size:9}}}}}},
         }}
       }}
     }},
@@ -3149,7 +2747,7 @@ const navLinks    = document.querySelectorAll('.nav-top a[href^="#"]');
 const tabSections = document.querySelectorAll('.tab-section');
 // 'acerca' DEBE figurar aquí: showSection() valida contra este array y, si no
 // encuentra el id, redirige a 'hoy' en silencio en vez de fallar.
-const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','acerca'];
+const SECTIONS    = ['hoy','historia','mapa','noticias','sectores','laboratorio','evidencia','acerca'];
 
 const _tabInits = {{}};   // id → fn — se llena de forma perezosa desde cada IIFE
 
@@ -3458,11 +3056,11 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   let simValues = {{}};  // dim_id → current slider value
 
   function scoreToCategory(s) {{
-    if (s <= 30)  return {{ label:'Alto Riesgo',          color:'#e05c5c' }};
-    if (s <= 50)  return {{ label:'Riesgo Moderado-Alto', color:'#e67e22' }};
-    if (s <= 65)  return {{ label:'Riesgo Moderado',      color:'#f1c40f' }};
-    if (s <= 80)  return {{ label:'Bajo Riesgo',           color:'#2ecc71' }};
-    return              {{ label:'Muy Bajo Riesgo',        color:'#00d4aa' }};
+    if (s <= 30)  return {{ label:'Muy desfavorable',          color:'#e05c5c' }};
+    if (s <= 50)  return {{ label:'Desfavorable', color:'#e67e22' }};
+    if (s <= 65)  return {{ label:'Intermedio',      color:'#f1c40f' }};
+    if (s <= 80)  return {{ label:'Favorable',           color:'#2ecc71' }};
+    return              {{ label:'Muy favorable',        color:'#00d4aa' }};
   }}
 
   function computeICIV() {{
@@ -3814,69 +3412,28 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 (function() {{
   var ML = {ml_forecast_json};
   var PULSE = {pulse_json};
-  if (!ML || (!ML.sarima && !ML.nowcast)) return;
+  if (!ML || (!ML.forecast && !ML.nowcast)) return;
 
   // Forecast chart
   function buildForecastChart() {{
     var ctx = document.getElementById('cPulseTrend');
     if (!ctx) return;
     if (typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(ctx)) return;
-    if (!ML.sarima || !ML.sarima.fecha || !ML.sarima.fecha.length) return;
+    if (!ML.forecast || !ML.forecast.fecha || !ML.forecast.fecha.length) return;
 
-    // Datos históricos del Pulse — SOLO últimos 30 meses para que el forecast sea visible
-    var N_HIST = 60;  // ventana visible: 5 años de historia + 6 meses de proyección
-    var all_hist_dates  = PULSE.data.meses;
-    var all_hist_scores = PULSE.data.scores;
-    var all_hist_cov    = PULSE.data.cobertura;
-    // Recortar al ventana
-    var start_i = Math.max(0, all_hist_dates.length - N_HIST);
-    var hist_dates  = all_hist_dates.slice(start_i);
-    var hist_scores = all_hist_scores.slice(start_i);
-    var hist_cov    = all_hist_cov.slice(start_i);
-    var hist_clean  = hist_scores.map(function(s, i) {{
-      return hist_cov[i] >= 70 ? s : null;
-    }});
-
-    // Forecast dates + bandas
-    var fc_dates = ML.sarima.fecha;
-    var fc_mean = ML.sarima.mean;
-
-    // Combinar: histórico (ventana) + forecast
-    var all_dates = hist_dates.concat(fc_dates);
-
-    // Construir series: histórico con nulls en zona forecast
-    var hist_series = hist_clean.concat(fc_dates.map(function() {{ return null; }}));
-    // Forecast con nulls en zona histórica
-    var fc_series = hist_dates.map(function() {{ return null; }}).concat(fc_mean);
-    // Bandas con nulls en zona histórica
-    var lo80 = hist_dates.map(function() {{ return null; }}).concat(ML.sarima.lo_80);
-    var hi80 = hist_dates.map(function() {{ return null; }}).concat(ML.sarima.hi_80);
-    var lo95 = hist_dates.map(function() {{ return null; }}).concat(ML.sarima.lo_95);
-    var hi95 = hist_dates.map(function() {{ return null; }}).concat(ML.sarima.hi_95);
-
-    // Mostrar meses de baja cobertura como serie discontinua (dashed, alpha bajo)
-    var hist_low_cov = hist_scores.map(function(s, i) {{
-      return hist_cov[i] < 70 ? s : null;
-    }});
-    // Asegurar que la transición baja-alta cobertura esté conectada visualmente
-    for (var j = 1; j < hist_scores.length; j++) {{
-      if (hist_low_cov[j] != null && hist_clean[j-1] != null) {{
-        hist_low_cov[j-1] = hist_clean[j-1];
-      }}
-    }}
-
-    // Pinning point: ÚLTIMO valor no-nulo del histórico
-    var last_pin_idx = -1, last_pin_val = null;
-    for (var k = hist_scores.length - 1; k >= 0; k--) {{
-      if (hist_scores[k] != null) {{ last_pin_idx = k; last_pin_val = hist_scores[k]; break; }}
-    }}
-    if (last_pin_idx >= 0) {{
-      fc_series[last_pin_idx] = last_pin_val;
-      lo80[last_pin_idx] = last_pin_val;
-      hi80[last_pin_idx] = last_pin_val;
-      lo95[last_pin_idx] = last_pin_val;
-      hi95[last_pin_idx] = last_pin_val;
-    }}
+    // Una única línea de tiempo: el forecast nace en su origen elegible,
+    // aunque existan meses posteriores provisionales. Nunca duplica fechas.
+    var hist_dates = PULSE.data.meses.slice(-60);
+    var hist_scores = PULSE.data.scores.slice(-60);
+    var hist_eligible = PULSE.data.elegible.slice(-60);
+    var all_dates = Array.from(new Set(hist_dates.concat(ML.forecast.fecha))).sort();
+    var hist_series = all_dates.map(function(d) {{ var i=hist_dates.indexOf(d); return i>=0 && hist_eligible[i] ? hist_scores[i] : null; }});
+    var hist_low_cov = all_dates.map(function(d) {{ var i=hist_dates.indexOf(d); return i>=0 && !hist_eligible[i] ? hist_scores[i] : null; }});
+    function fc(values) {{ return all_dates.map(function(d) {{ var i=ML.forecast.fecha.indexOf(d); return i>=0 ? values[i] : null; }}); }}
+    var fc_series=fc(ML.forecast.mean), lo80=fc(ML.forecast.lo_80), hi80=fc(ML.forecast.hi_80);
+    var lo95=fc(ML.forecast.lo_95), hi95=fc(ML.forecast.hi_95);
+    var pin=all_dates.indexOf(ML.forecast.origin_date);
+    if(pin>=0) fc_series[pin]=ML.forecast.mean[0];
 
     new Chart(ctx, {{
       type: 'line',
@@ -3884,7 +3441,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         labels: all_dates,
         datasets: [
           {{
-            label: 'Banda 95% confianza',
+            label: 'Banda empírica 95%',
             data: hi95,
             borderColor: 'rgba(0,212,170,0)',
             backgroundColor: 'rgba(0,212,170,.08)',
@@ -3898,7 +3455,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           }},
           {{
-            label: 'Banda 80% confianza',
+            label: 'Banda empírica 80%',
             data: hi80,
             borderColor: 'rgba(0,212,170,0)',
             backgroundColor: 'rgba(0,212,170,.18)',
@@ -3918,14 +3475,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             borderWidth: 2.5, pointRadius: 1.5, tension: 0.25, fill: false,
           }},
           {{
-            label: 'Pulse (baja cobertura)',
-            data: hist_low_cov.concat(fc_dates.map(function() {{ return null; }})),
+            label: 'Pulse provisional / no elegible',
+            data: hist_low_cov,
             borderColor: 'rgba(0,212,170,0.4)', backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, tension: 0.25, fill: false,
             borderDash: [4, 3],
           }},
           {{
-            label: 'Forecast SARIMA (mean)',
+            label: 'Persistencia (naive)',
             data: fc_series,
             borderColor: '#f1c40f', backgroundColor: 'transparent',
             borderWidth: 2.5, borderDash: [6, 3], pointRadius: 3, tension: 0.25, fill: false,
@@ -3970,19 +3527,19 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
   function _col(score) {{
     if (score == null) return '#8b949e';
-    if (score > 65) return '#27ae60';
-    if (score > 50) return '#2ecc71';
-    if (score > 35) return '#f1c40f';
-    if (score > 20) return '#e67e22';
-    return '#e74c3c';
+    if (score < 31) return '#e74c3c';
+    if (score < 51) return '#e67e22';
+    if (score < 66) return '#f1c40f';
+    if (score < 81) return '#2ecc71';
+    return '#27ae60';
   }}
   function _lbl(score) {{
     if (score == null) return '—';
-    if (score > 65) return 'Riesgo muy bajo';
-    if (score > 50) return 'Riesgo bajo';
-    if (score > 35) return 'Riesgo moderado';
-    if (score > 20) return 'Riesgo alto';
-    return 'Riesgo muy alto';
+    if (score < 31) return 'Muy desfavorable';
+    if (score < 51) return 'Desfavorable';
+    if (score < 66) return 'Intermedio';
+    if (score < 81) return 'Favorable';
+    return 'Muy favorable';
   }}
   function _deltaStr(d, dec, suf) {{
     if (d == null) return '—';
@@ -4012,12 +3569,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     if (p.is_reliable) {{
       var elPD = document.getElementById('inicioPD');
       if (elPD) elPD.innerHTML = _deltaStr(p.delta, 1, ' pts');
-      _set('inicioPR', 'Todas las fuentes del mes ya publicaron.');
+      _set('inicioPR', 'Mes cerrado elegible; cambio sobre componentes comunes. Cobertura mínima 70%.');
     }} else {{
       if (elPDW) elPDW.style.display = 'none';
       _set('inicioPR',
         'Lectura provisional: faltan fuentes por publicar, no comparable con el mes previo. ' +
-        'Último mes completo: ' + p.reliable_label_mes + ' ' + p.reliable_year +
+        'Último mes elegible: ' + p.reliable_label_mes + ' ' + p.reliable_year +
         ' con ' + p.reliable_score.toFixed(1) + '.');
     }}
   }}
@@ -4045,13 +3602,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     if (ic.is_reliable) {{
       var elAD = document.getElementById('inicioAD');
       if (elAD) elAD.innerHTML = _deltaStr(ic.delta, 1, ' pts');
-      _set('inicioAR', 'Todas las fuentes del año ya publicaron.');
+      _set('inicioAR', 'Cobertura efectiva mínima 70%; lectura histórica relativa, sujeta a revisiones.');
     }} else {{
       if (elADW) elADW.style.display = 'none';
       _set('inicioAR',
         'Lectura provisional: faltan fuentes por publicar, no comparable con el año ' +
-        'previo. Las que aún no salen son las de peor puntaje, así que este número ' +
-        'tiende a bajar al cerrar el año. Último año completo: ' + ic.reliable_year +
+        'previo. La composición y las revisiones pueden alterar el resultado. Último año con cobertura suficiente: ' + ic.reliable_year +
         ' con ' + ic.reliable_score.toFixed(1) + '.');
     }}
   }}
@@ -4069,10 +3625,10 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
        nota:'West Texas Intermediate, precio spot mensual (FRED).' }},
     {{ key:'petroleo_ven', label:'Producción petrolera',
        fmt:function(v){{return (v/1000).toFixed(2) + 'M'}}, unit:'barriles/día (EIA)',
-       nota:'Crudo incl. condensado de arrendamiento. EIA International, producto 57.' }},
-    {{ key:'inflacion',    label:'Inflación (deflactor PIB)',
+       nota:'Petróleo y otros líquidos totales. EIA International, producto 53.' }},
+    {{ key:'inflacion',    label:'Inflación IPC (FMI)',
        fmt:function(v){{return v.toFixed(0) + '%'}},        unit:'anual · FMI', proy:true,
-       nota:'Deflactor del PIB, no IPC. El dato del año en curso es proyección del World Economic Outlook, no inflación observada.' }},
+       nota:'Variación anual del IPC (PCPIPCH). El dato del año en curso es proyección del World Economic Outlook, no inflación observada.' }},
     {{ key:'migrantes',    label:'Refugiados y asilo',
        fmt:function(v){{return v.toFixed(1) + 'M'}},        unit:'registrados ante ACNUR',
        nota:'UNHCR coo=VEN: refugiados + solicitantes de asilo registrados. NO es la diáspora total, estimada en ~7,9 M por R4V/OIM, que incluye migrantes sin registro.' }},
@@ -4121,24 +3677,9 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 
 def _get_recommendation(score: float) -> str:
-    if score <= 30:
-        return ("Venezuela presenta condiciones de <strong>alto riesgo</strong> para la inversión. "
-                "No se recomienda entrada de capital nuevo. Empresas con presencia existente deben "
-                "evaluar estrategias de protección o salida con mínima exposición adicional.")
-    if score <= 50:
-        return ("El clima de inversión es de <strong>riesgo moderado-alto</strong>. "
-                "Viable únicamente para sectores con alta tolerancia al riesgo (minería, energía) "
-                "con estructuras de máxima protección contractual y seguros de riesgo político.")
-    if score <= 65:
-        return ("Condiciones de <strong>riesgo moderado</strong>. Inversión viable con due diligence "
-                "reforzado, análisis sectorial específico, socios locales sólidos y estructuras de "
-                "mitigación (seguros, arbitraje internacional).")
-    if score <= 80:
-        return ("Condiciones <strong>favorables</strong> para la mayoría de sectores. Se recomienda "
-                "análisis sectorial estándar antes de comprometer capital. Monitorear indicadores "
-                "institucionales para identificar cambios en el entorno.")
-    return ("Clima de inversión <strong>sólido</strong>, comparable a mercados emergentes estables. "
-            "Entrada recomendada con análisis sectorial convencional.")
+    return ("Índice descriptivo relativo a la historia de Venezuela. El puntaje no estima "
+            "rentabilidad, probabilidad de impago ni conveniencia de invertir. Debe leerse "
+            "junto con la cobertura efectiva, la composición y el estado de las fuentes.")
 
 
 # =============================================================================
@@ -4173,6 +3714,7 @@ def main() -> None:
         "--validate-only", action="store_true",
         help="Solo ejecutar la validacion del modelo (requiere datos ya procesados)"
     )
+    parser.add_argument("--release-id", default="latest", help="Nombre de release (distinto de latest: inmutable)")
     args = parser.parse_args()
 
     t0 = time.time()
@@ -4200,9 +3742,16 @@ def main() -> None:
     else:
         logger.info("\n  [i] --no-fetch: usando datos existentes en data/raw/")
 
+    (settings.paths.data_processed / "run_status.json").write_text(json.dumps({
+        "generated_at": datetime.now().isoformat(),
+        "source_mode": "existing_snapshot_no_refresh" if args.no_fetch else "fetch_attempted_see_fetch_status",
+        "methodology_version": "2.0.0",
+        "satellite_policy": "only_blackmarble_qa_good_only_v2_in_score; legacy_display_is_contextual",
+        "historical_publication_dates": "not_archived"}, indent=2), encoding="utf-8")
+
     # -- Fase 2: Pipeline -------------------------------------------------------
     df_raw, df_norm = fase_pipeline(settings)
-    fase_dataset_publico(df_raw, df_norm, settings)
+    wide_path, long_path = fase_dataset_publico(df_raw, df_norm, settings)
 
     # -- Fase 3: Modelo ---------------------------------------------------------
     df_fixed, df_ahp, ahp = fase_modelo(df_norm, settings)
@@ -4214,7 +3763,7 @@ def main() -> None:
     satv_data = fase_satv(settings, pulse_data)
 
     # -- Fase 3d: Correlación ICIV → IED ----------------------------------------
-    correlacion_data = fase_correlacion(df_raw, df_ahp)
+    correlacion_data = {}  # La validación externa común reemplaza el análisis heredado.
 
     # -- Fase 3e: Radar Sectorial -----------------------------------------------
     # Las proyecciones anuales por escenario, Simulacion probabilistica retirada y red de sanciones dejaron de
@@ -4228,6 +3777,11 @@ def main() -> None:
     # -- Fase 3f: Forecast mensual Pulse ----------------------------------------
     ml_forecast = fase_ml_forecast(pulse_data, df_ahp)
 
+    # Validar antes de construir el dashboard y el paquete.
+    import importlib
+    importlib.import_module("scripts.external_validation").main()
+    val_path = fase_validacion(open_browser=False)
+
     # -- Fase 4: Dashboard ------------------------------------------------------
     dashboard_path = fase_dashboard(
         df_raw, df_norm, df_fixed, df_ahp, ahp, settings,
@@ -4236,7 +3790,12 @@ def main() -> None:
     )
 
     # -- Fase 5: Validacion -----------------------------------------------------
-    val_path = fase_validacion(open_browser=False)
+    from iciv.data.dataset_package import build_dataset_package
+    build_dataset_package(df_raw, wide_path, long_path, settings, release_id="latest")
+    if args.release_id != "latest":
+        build_dataset_package(df_raw, wide_path, long_path, settings, release_id=args.release_id)
+    from scripts.write_results_summary import write_summary
+    write_summary(_ROOT.parent)
 
     # -- Resumen final ----------------------------------------------------------
     elapsed = time.time() - t0

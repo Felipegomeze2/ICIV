@@ -1,28 +1,16 @@
-"""
-Definición de las 6 dimensiones del ICIV y sus variables.
+"""Catálogo anual del ICIV: 21 variables en seis dimensiones.
 
-Este módulo es la fuente de verdad sobre la arquitectura del índice:
-qué variables componen cada dimensión y qué peso tiene cada una.
-
-Version core (mayo 2026): 26 variables en 6 dimensiones.
-  D1 Macro:         6 vars  (sum=1.00)
-  D2 Energía:       4 vars  (sum=1.00)
-  D3 Institucional: 5 vars  (sum=1.00)
-  D4 Comercial:     4 vars  (sum=1.00)
-  D5 Capital Humano:5 vars  (sum=1.00)
-  D6 Percepción:    2 vars  (sum=1.00)
-
-Nota sobre variables con cobertura parcial (NaN para muchos años):
-  El aggregator re-normaliza pesos automáticamente cuando una variable
-  tiene NaN en un año dado → los años sin dato no distorsionan el índice.
-
-Pesos iciv_weight: D1=0.25, D2=0.20, D3=0.20, D4=0.15, D5=0.10, D6=0.10
-  (validado con AHP, CR=0.0081 < 0.10)
+DIMENSIONS define los pesos internos declarados. Los pesos entre dimensiones
+publicados se calculan con AHP; iciv_weight conserva el benchmark fijo original
+(25/20/20/15/10/10), que no debe confundirse con los resultados de la matriz AHP.
+Una fuente ausente permanece en el denominador de cobertura de esta versión.
+Redistribuir pesos permite calcular un score parcial, pero puede cambiar su
+composición y exige interpretar la cobertura junto con el valor.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from iciv.data.models import DimensionID
 
 
@@ -69,7 +57,7 @@ class Dimension:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CONFIGURACION DE LAS 6 DIMENSIONES - VERSION CORE (26 variables)
+# CONFIGURACION DE LAS 6 DIMENSIONES - VERSION CORE (21 variables)
 # Los iciv_weight deben sumar 1.0: 0.25+0.20+0.20+0.15+0.10+0.10 = 1.00
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -92,7 +80,7 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         #     2020-2024 en agosto de 2026; la serie muere en 2017.
         # Los pesos restantes se renormalizan sobre 0.70 conservando su proporción.
         variables=[
-            VariableWeight("inflacion_deflactor_pib_pct",  0.40),   # 0.28 / 0.70
+            VariableWeight("inflacion_ipc_imf_pct",  0.40),   # 0.28 / 0.70
             VariableWeight("pib_crecimiento_real_pct",     0.3143), # 0.22 / 0.70
             VariableWeight("wti_precio_usd",               0.1714), # 0.12 / 0.70
             VariableWeight("tasa_fed_funds_pct",           0.1143), # 0.08 / 0.70
@@ -107,8 +95,8 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
             "Venezuela es petro-dependiente. Esta dimensión captura el estado "
             "de la industria petrolera como motor de ingresos fiscales y divisas, "
             "más la luminosidad nocturna satelital como proxy independiente de la "
-            "actividad real y del sistema eléctrico. Ambas variables son de alta "
-            "frecuencia y observación física, no declaraciones."
+            "actividad real y del sistema eléctrico. La luminosidad es una medición "
+            "remota procesada; la producción es una serie publicada por EIA."
         ),
         # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
         #   gas_natural_produccion_bcf (era 0.25) y electricidad_generacion_bkwh
@@ -180,7 +168,7 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
             VariableWeight("esperanza_vida_anos",             0.18),
             VariableWeight("mortalidad_infantil_x1000",       0.18),
             VariableWeight("acceso_electricidad_pct",         0.18),
-            VariableWeight("ilo_empleo_informal_pct",         0.18),
+            VariableWeight("empleo_vulnerable_oit_pct",         0.18),
         ],
     ),
 

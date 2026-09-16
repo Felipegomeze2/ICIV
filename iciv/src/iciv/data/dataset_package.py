@@ -10,6 +10,9 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import re
+import subprocess
+import importlib.metadata
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +22,7 @@ import pandas as pd
 from iciv.config import Settings
 from iciv.data.catalog import CATALOG
 from iciv.index.dimensions import DIMENSIONS
+from iciv.index.weighting import AHPWeights
 from iciv.index.pulse_aggregator import PULSE_WEIGHTS
 
 
@@ -26,7 +30,7 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
     "WDI": {
         "source_name": "World Bank World Development Indicators",
         "origin": "international",
-        "raw_files": "wdi.csv",
+        "raw_files": "wdi.csv; ilostat.csv (OIT modeled estimates); wb_commodities_monthly.csv (Pink Sheet)",
     },
     "WGI": {
         "source_name": "World Bank Worldwide Governance Indicators",
@@ -66,7 +70,7 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
     "FRED": {
         "source_name": "Federal Reserve Bank of St. Louis FRED",
         "origin": "international",
-        "raw_files": "fred.csv; fred_monthly.csv",
+        "raw_files": "fred.csv; fred_monthly.csv; imts_monthly.csv (EIA oil trade via FRED; legacy filename)",
     },
     "FREEDOM_HOUSE": {
         "source_name": "Freedom House",
@@ -84,7 +88,7 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
         # viirs.csv como validador externo no circular del leave-one-out.
         "source_name": "NASA Black Marble VNP46A3 (score); Li et al./Figshare (validacion externa)",
         "origin": "international",
-        "raw_files": "blackmarble_monthly.csv; viirs.csv",
+        "raw_files": "blackmarble_qa_monthly.csv (score); blackmarble_monthly.csv (legacy context); viirs.csv (contrast)",
     },
     "UNCTAD": {
         "source_name": "UNCTAD",
@@ -149,11 +153,7 @@ def _is_pulse_variable(variable: str) -> bool:
 
 
 def _dimension_weight(variable: str) -> float:
-    for dim in DIMENSIONS.values():
-        for item in dim.variables:
-            if item.column == variable:
-                return dim.iciv_weight * item.weight
-    return 0.0
+    return AHPWeights().compute_weights(pd.DataFrame()).get(variable, 0.0)
 
 
 def build_data_dictionary(df_raw: pd.DataFrame) -> pd.DataFrame:
@@ -177,7 +177,7 @@ def build_data_dictionary(df_raw: pd.DataFrame) -> pd.DataFrame:
                 "origen_fuente": source_info.get("origin", "international"),
                 "unidad": meta.unit,
                 "direccion": meta.direction.value,
-                "peso_dimension": meta.dim_weight,
+                "peso_intradimension_declarado": meta.dim_weight,
                 "peso_iciv_total": round(_dimension_weight(variable), 6),
                 "desde_catalogo": meta.available_from,
                 "incluida_en_dataset_wide": present,
@@ -245,7 +245,7 @@ def build_source_provenance(dictionary: pd.DataFrame) -> pd.DataFrame:
                 "n_variables_pulse_mensual": int(group["entra_pulse_mensual"].sum()),
                 "roles": ";".join(roles),
                 "variables": ";".join(variables),
-                "politica": "Solo fuentes externas a Venezuela; sin valores inventados ni fallback sintetico.",
+                "politica": "Distribuidores internacionales; productor primario puede ser nacional. Sin imputación ni sustitución de fuente.",
             }
         )
     return pd.DataFrame(rows)
@@ -278,7 +278,9 @@ replace the raw source files in `iciv/data/raw/`.
 
 ## Source Policy
 
-- No Venezuelan government/local-origin sources are accepted for the score.
+- International distributors may incorporate national primary statistics. Independence is not inferred from the distributor.
+- Provider estimates, projections and partial aggregates are explicitly distinct from observations.
+- Publication dates were not archived for historical snapshots; this is not a real-time vintage backtest.
 - Missing observations remain missing.
 - No synthetic, artificial or invented fallback values are created.
 - GDELT and news feeds are optional/contextual when their public APIs fail.
@@ -318,7 +320,11 @@ def build_dataset_package(
     release_id: str = "latest",
 ) -> DatasetPackageResult:
     """Builds `data/releases/<release_id>` from generated real artifacts."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", release_id) or release_id in {".", ".."}:
+        raise ValueError("release_id debe ser un nombre simple, no una ruta")
     release_dir = settings.paths.data_releases / release_id
+    if release_id != "latest" and release_dir.exists():
+        raise FileExistsError(f"Release inmutable ya existe: {release_id}")
     release_dir.mkdir(parents=True, exist_ok=True)
 
     dictionary = build_data_dictionary(df_raw)
@@ -342,8 +348,13 @@ def build_dataset_package(
     files.append(_write_dictionary_md(dictionary, release_dir))
 
     for optional_name in [
-        "pulse_forecast_backtest_summary.csv",
-        "pulse_forecast_backtest.csv",
+        "pulse_forecast_backtest_summary.csv", "pulse_forecast_backtest.csv",
+        "pulse_forecast_backtest_available_summary.csv", "pulse_forecast_backtest_failures.csv",
+        "iciv_scores.csv", "iciv_scores_ahp.csv", "iciv_normalizado.csv", "iciv_transformado.csv",
+        "normalization_parameters.csv", "anualizacion_parcial.csv",
+        "iciv_pulse_monthly.csv", "iciv_pulse_components.csv",
+        "external_validation.csv", "external_validation_summary.csv", "forecast.json",
+        "run_status.json", "fetch_status.json", "iciv_validacion.html",
     ]:
         src = settings.paths.data_processed / optional_name
         if src.exists():
@@ -351,10 +362,34 @@ def build_dataset_package(
             shutil.copy2(src, dst)
             files.append(dst)
 
+    raw_dir = release_dir / "raw"
+    raw_dir.mkdir(exist_ok=True)
+    for src in sorted(settings.paths.data_raw.glob("*.csv")):
+        dst = raw_dir / src.name
+        shutil.copy2(src, dst)
+        files.append(dst)
+    try:
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=settings.paths.root, text=True).strip()
+        dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=settings.paths.root, text=True).strip())
+    except (OSError, subprocess.CalledProcessError):
+        commit, dirty = None, None
+    code_hashes = {}
+    for folder in (settings.paths.root / "src", settings.paths.root / "scripts"):
+        for path in sorted(folder.rglob("*.py")):
+            code_hashes[path.relative_to(settings.paths.root).as_posix()] = _sha256(path)
+    code_hashes["main.py"] = _sha256(settings.paths.root / "main.py")
     manifest = {
+        "methodology_version": "2.0.0",
+        "git_commit_base": commit, "working_tree_modified": dirty,
+        "code_sha256": code_hashes,
+        "environment": {name: importlib.metadata.version(name) for name in
+                        ("pandas", "numpy", "scipy", "statsmodels", "scikit-learn", "pydantic")},
+        "validation_scope": "retrospective_latest_vintage; no causal or investment-return claim",
+        "publication_dates": "not_archived; period is not a publication timestamp",
+        "sha256_policy": "bytes as packaged; canonical_lf_sha256 also provided for text checkout verification",
         "release_id": release_id,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "source_policy": "external_non_venezuelan_sources_only; no synthetic fallback values",
+        "source_policy": "international_distributors; primary_national_inputs_possible; no_project_imputation_or_source_substitution",
         "annual_year_min": int(df_raw[df_raw.columns[0]].min()),
         "annual_year_max": int(df_raw[df_raw.columns[0]].max()),
         "n_catalog_variables": int(len(CATALOG)),
@@ -373,9 +408,10 @@ def build_dataset_package(
             rows = len(pd.read_csv(path)) if path.suffix.lower() == ".csv" else None
         except Exception:
             rows = None
-        manifest["files"][path.name] = {
+        manifest["files"][path.relative_to(release_dir).as_posix()] = {
             "bytes": path.stat().st_size,
             "sha256": _sha256(path),
+            "canonical_lf_sha256": hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "rows": rows,
         }
 

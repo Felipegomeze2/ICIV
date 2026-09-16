@@ -8,9 +8,8 @@ Requiere:  variable de entorno EIA_API_KEY
            Obtener clave gratuita en: https://www.eia.gov/opendata/register.php
 
 Nota sobre cobertura:
-  Si EIA_API_KEY no está definida o la API falla, las columnas energéticas
-  quedarán como NaN. El pipeline lo propagará y el dashboard indicará
-  "Sin datos: requiere EIA_API_KEY".
+  Si EIA_API_KEY no está definida o una serie falla, la descarga falla
+  explícitamente y no sobrescribe el CSV histórico. No se sustituye la fuente.
 
 Uso:
     export EIA_API_KEY=tu_clave_aqui
@@ -46,13 +45,13 @@ OUTPUT = settings.paths.raw_eia
 
 
 def _get_api_key() -> str:
-    key = os.environ.get(KEY_ENV, "") or _CFG["sources"]["eia"].get("api_key", "")
+    key = os.environ.get(KEY_ENV, "").strip()
     if not key:
         raise EnvironmentError(
             f"API key de EIA no encontrada.\n"
             f"Define la variable de entorno '{KEY_ENV}' con tu clave gratuita.\n"
             f"Regístrate en: https://www.eia.gov/opendata/register.php\n"
-            f"Las variables energéticas quedarán como NaN hasta que se configure."
+            f"El archivo histórico no se actualiza hasta que se configure."
         )
     return key
 
@@ -117,8 +116,7 @@ def fetch_eia() -> pd.DataFrame:
     try:
         api_key = _get_api_key()
     except EnvironmentError as e:
-        print(f"  [ERROR] EIA: {e}")
-        return df.sort_values("año").reset_index(drop=True)
+        raise RuntimeError("EIA: credencial ausente; eia.csv no actualizado.") from e
 
     for series_id, col_name in SERIES.items():
         print(f"  Descargando {series_id} -> {col_name} ...")
@@ -130,9 +128,9 @@ def fetch_eia() -> pd.DataFrame:
                 n_present = len(df) - n_missing
                 print(f"    OK: {n_present} años con datos, {n_missing} sin datos (NaN)")
             else:
-                print(f"    [WARN] {series_id}: API no devolvió datos — columna quedará como NaN")
+                raise ValueError("API sin observaciones para la serie configurada")
         except Exception as exc:
-            print(f"    [ERROR] {series_id}: {exc} — columna quedará como NaN")
+            raise RuntimeError(f"EIA {series_id}: descarga fallida; eia.csv no actualizado.") from exc
 
     return df.sort_values("año").reset_index(drop=True)
 

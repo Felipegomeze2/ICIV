@@ -136,7 +136,7 @@ def _plot(df: pd.DataFrame, dark: bool) -> plt.Figure:
     ax.grid(True, color=grid, linewidth=0.5, alpha=0.7, zorder=1)
 
     fig.text(0.01, 0.012,
-             "Fuente: ICIV (pesos AHP, 26 variables core, fuentes 100% internacionales). "
+             "Fuente: ICIV (pesos AHP, 21 variables core, fuentes 100% internacionales). "
              "Eventos: cronología documentada 2002–2024. Línea punteada: años con cobertura "
              "de datos inferior al 70% (lectura preliminar). Elaboración propia.",
              fontsize=7, color=muted)

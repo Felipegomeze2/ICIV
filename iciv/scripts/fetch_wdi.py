@@ -76,8 +76,7 @@ def fetch_wdi() -> pd.DataFrame:
             n_present = len(df) - n_missing
             print(f"    OK: {n_present} años con datos, {n_missing} sin datos (NaN)")
         except Exception as exc:
-            print(f"    [ERROR] {api_code}: {exc} — columna quedará como NaN")
-            df[col_name] = None
+            raise RuntimeError(f"WDI {api_code}: descarga fallida; CSV no actualizado.") from exc
 
     return df.sort_values("año").reset_index(drop=True)
 

@@ -40,7 +40,11 @@ class _LongFormatLoader(DataLoader):
 
 
 class CPILoader(_LongFormatLoader):
-    """Corruption Perceptions Index, Transparency International."""
+    """CPI comparable desde 2012; el archivo histórico previo se conserva.
+
+    Cambiar la escala 0–10 a 0–100 no resuelve la ruptura metodológica de
+    Transparency International. No se empalman ambos regímenes en el índice.
+    """
 
     _indicator_name = "cpi_score"
     _output_column = "cpi_score"
@@ -51,6 +55,14 @@ class CPILoader(_LongFormatLoader):
 
     def get_source_id(self) -> SourceID:
         return SourceID.CPI
+
+    def load(self) -> DatasetResult:
+        result = super().load()
+        comparable = result.df.loc[result.df["año"] >= 2012].reset_index(drop=True)
+        return DatasetResult(
+            source=self.get_source_id(), df=comparable,
+            missing_cols=[self._output_column] if comparable.empty else [],
+        )
 
 
 class HDILoader(_LongFormatLoader):

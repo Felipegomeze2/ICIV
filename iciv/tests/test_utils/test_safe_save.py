@@ -64,15 +64,34 @@ def test_escribe_cuando_hay_datos_reales(csv_con_datos):
     assert pd.read_csv(csv_con_datos)["guardian_articulos_venezuela"].iloc[-1] == 1000
 
 
-def test_escribe_aunque_falte_algun_anio(csv_con_datos):
-    """Cobertura parcial es valida: el indice ya maneja NaN sueltos."""
+def test_rechaza_perdida_parcial(csv_con_datos):
+    """Una respuesta parcial no debe destruir observaciones existentes."""
     parcial = pd.DataFrame({
         "año": [2024, 2025, 2026],
         "guardian_articulos_venezuela": [308, None, 958],
         "guardian_tono_titulares": [None, None, -0.1585],
     })
 
-    assert save_dataframe(parcial, csv_con_datos) is True
+    before = csv_con_datos.read_bytes()
+    with pytest.raises(NoDataError, match="perdería"):
+        save_dataframe(parcial, csv_con_datos)
+    assert csv_con_datos.read_bytes() == before
+
+
+def test_clave_mensual_y_variable_preserva_todas_las_series(tmp_path):
+    path = tmp_path / "monthly.csv"
+    old = pd.DataFrame({"año": [2025, 2025], "mes": [1, 1],
+                        "variable": ["a", "b"], "valor": [2., 3.]})
+    save_dataframe(old, path)
+    with pytest.raises(NoDataError, match="perdería"):
+        save_dataframe(old.iloc[:1], path)
+    assert len(pd.read_csv(path)) == 2
+
+
+def test_identificadores_textuales_no_ocultan_valores_vacios(tmp_path):
+    with pytest.raises(NoDataError):
+        save_dataframe(pd.DataFrame({"año": [2025], "variable": ["real"],
+                                     "valor": [None]}), tmp_path / "empty.csv")
 
 
 def test_modo_no_estricto_no_lanza(csv_con_datos):

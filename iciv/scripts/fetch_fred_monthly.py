@@ -113,16 +113,18 @@ def _fetch_monthly(series_id: str, col_name: str) -> pd.DataFrame:
 
 
 def fetch_fred_monthly() -> pd.DataFrame:
-    """Descarga las 6 series FRED a granularidad mensual."""
+    """Descarga todas las series FRED; falla antes de escribir si falta una."""
     all_rows: list[pd.DataFrame] = []
     for series_id, col_name in _SERIES.items():
         print(f"  Descargando {series_id} -> {col_name} (mensual)...")
         try:
             m = _fetch_monthly(series_id, col_name)
+            if m.empty:
+                raise ValueError("respuesta sin observaciones")
             print(f"    OK: {len(m)} meses, rango {m['año'].min()}-{m['mes'].min():02d} a {m['año'].max()}-{m['mes'].max():02d}")
             all_rows.append(m)
         except Exception as exc:
-            print(f"    ERR FRED {series_id}: {exc}")
+            raise RuntimeError(f"FRED {series_id}: descarga mensual fallida; CSV no actualizado.") from exc
 
     if not all_rows:
         return pd.DataFrame(columns=["año", "mes", "variable", "valor", "fuente"])
@@ -141,7 +143,8 @@ if __name__ == "__main__":
         print("\n  0 datos. fred_monthly.csv NO actualizado.")
         sys.exit(1)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+    from iciv.utils import save_dataframe
+    save_dataframe(df, OUTPUT)
     print(f"\n  Guardado: {OUTPUT}  ({len(df)} filas)")
     print(df.groupby("variable").agg(
         n_meses=("año", "count"),

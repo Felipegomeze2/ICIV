@@ -13,14 +13,14 @@ Cobertura espacial: Venezuela ocupa 5 tiles de 10x10 grados:
   (h12v07 es oceano/Guyana: 0 pixeles de Venezuela, se omite)
 
 Salidas (dos archivos):
-  data/raw/blackmarble_monthly.csv  (nacional, formato largo año|mes|variable|valor|fuente)
+  data/raw/blackmarble_qa_monthly.csv  (nacional, formato largo año|mes|variable|valor|fuente)
     variables por mes:
       luminosidad_nocturna_mensual_nwcm2sr   media aritmetica (compat historica)
       luminosidad_nocturna_mediana           mediana — robusta al flaring petrolero
       luminosidad_nocturna_logmedia          media geometrica-log — atenua brillos extremos
       luminosidad_nocturna_p90               percentil 90 — nucleos mas iluminados
       luminosidad_nocturna_frac_iluminada    fraccion de pixeles > 1 nW/cm2/sr (proxy urbano)
-  data/raw/blackmarble_states_monthly.csv  (subnacional año|mes|estado|cod|radiancia_media|fuente)
+  data/raw/blackmarble_qa_states_monthly.csv  (subnacional año|mes|estado|cod|radiancia_media|fuente)
     radiancia media por cada uno de los 25 estados/entidades → habilita el mapa mensual.
 
 Por que varias agregaciones: la media puede estar dominada por el flaring de
@@ -77,8 +77,8 @@ _CFG = yaml.safe_load((_ICIV_DIR / "config" / "settings.yaml").read_text(encodin
 DEFAULT_START = "2014-01"
 END_YEAR = _CFG["serie"]["end_year"]
 
-OUTPUT        = _ICIV_DIR / "data" / "raw" / "blackmarble_monthly.csv"
-OUTPUT_STATES = _ICIV_DIR / "data" / "raw" / "blackmarble_states_monthly.csv"
+OUTPUT        = _ICIV_DIR / "data" / "raw" / "blackmarble_qa_monthly.csv"
+OUTPUT_STATES = _ICIV_DIR / "data" / "raw" / "blackmarble_qa_states_monthly.csv"
 GEOJSON       = _ICIV_DIR / "data" / "raw" / "venezuela_states.geojson"
 INTERIM       = _ICIV_DIR / "data" / "interim"
 _MASKS_DIR    = _ICIV_DIR / "data" / "sources" / "bm_masks"
@@ -207,6 +207,10 @@ def _download(url: str, token: str, dest: Path) -> None:
                 f.write(chunk)
 
 
+def _quality_mask(raw, fill, quality, observations, obs_fill):
+    return (raw != fill) & np.isfinite(raw) & (quality == 0) & (observations > 3) & (observations != obs_fill)
+
+
 def _tile_radiance(h5_path: Path) -> np.ndarray:
     """Devuelve la radiancia escalada 2400x2400; los pixeles fill quedan NaN.
 
@@ -227,7 +231,13 @@ def _tile_radiance(h5_path: Path) -> np.ndarray:
         fill  = float(np.ravel(ds.attrs.get("_FillValue", [65535]))[0])
         scale = float(np.ravel(ds.attrs.get("scale_factor", [1.0]))[0])
         offset = float(np.ravel(ds.attrs.get("add_offset", [0.0]))[0])
-    valid_raw = raw != fill
+        group = ds.parent
+        quality = group["NearNadir_Composite_Snow_Free_Quality"][()]
+        observations = group["NearNadir_Composite_Snow_Free_Num"][()]
+        obs_fill = float(np.ravel(group["NearNadir_Composite_Snow_Free_Num"].attrs.get("_FillValue", [65535]))[0])
+    # NASA Collection 2: quality 0=good, 1=poor, 2=gap-filled, 255=fill.
+    # Only measured composites with >3 observations enter the strict product.
+    valid_raw = _quality_mask(raw, fill, quality, observations, obs_fill)
     scaled = np.full(raw.shape, np.nan, dtype=np.float64)
     scaled[valid_raw] = raw[valid_raw] * scale + offset
     return scaled
@@ -266,7 +276,7 @@ def _process_month(year: int, month: int, token: str,
 
     nat_rows = [{
         "año": year, "mes": month, "variable": var,
-        "valor": round(fn(allv), 4), "fuente": _FUENTE,
+        "valor": round(fn(allv), 4), "fuente": _FUENTE, "qa_policy": "good_only_v2", "n_valid_pixels": int(allv.size),
     } for var, fn in _NAT_STATS.items()]
 
     st_rows = []
@@ -275,6 +285,7 @@ def _process_month(year: int, month: int, token: str,
             st_rows.append({
                 "año": year, "mes": month, "estado": nombre, "cod": cod,
                 "radiancia_media": round(float(st_sum[i] / st_cnt[i]), 4),
+                "qa_policy": "good_only_v2", "n_valid_pixels": int(st_cnt[i]),
                 "fuente": _FUENTE,
             })
     mean_v = round(float(np.mean(allv)), 4)
@@ -322,7 +333,7 @@ def main() -> None:
     token = _load_token()
     if token is None:
         print("  [WARN] EARTHDATA_TOKEN no configurado. No se descarga nada.")
-        return
+        raise RuntimeError("EARTHDATA_TOKEN requerido para descargar; no se generaron datos")
     try:
         import h5py  # noqa: F401
     except ImportError:
@@ -343,7 +354,7 @@ def main() -> None:
         _cur = pd.read_csv(OUTPUT)
         _cnt = _cur.groupby(["año", "mes"])["variable"].nunique()
         complete = {f"{int(y)}-{int(m):02d}" for (y, m), n in _cnt.items() if n >= len(_NAT_STATS)}
-    done = complete if args.reprocess else _existing_months(OUTPUT)
+    done = set() if args.reprocess else complete
     pending = [(y, m) for (y, m) in _candidate_months(args.start)
                if f"{y}-{m:02d}" not in done][:args.months]
     if not pending:

@@ -149,6 +149,7 @@ if __name__ == "__main__":
         else:
             print("\n  0 filas. imts_monthly.csv NO creado.")
     else:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"\n  Guardado: {OUTPUT}  ({len(df)} filas, "
               f"{df['variable'].nunique()} variables)")

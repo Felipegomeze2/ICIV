@@ -9,7 +9,7 @@ from .base import DataLoader
 _REQUIRED_COLS = [
     "año",
     "desempleo_pct",
-    "inflacion_deflactor_pib_pct",
+    "inflacion_ipc_imf_pct",
 ]
 
 # cuenta_corriente_pct_pib es opcional: solo llega hasta 2016
@@ -21,8 +21,9 @@ class IMFLoader(DataLoader):
     Carga el archivo pivot del FMI.
 
     Nota metodológica:
-    - `inflacion_deflactor_pib_pct` es la variable de inflación principal
-      del ICIV, ya que el IPC del WDI tiene solo 32% de cobertura.
+    - `inflacion_ipc_imf_pct` es la variable de inflación principal
+      del ICIV: PCPIPCH, precios al consumidor; no es deflactor del PIB.
+      La API incluye estimaciones y proyecciones del proveedor, no solo observaciones.
     - `cuenta_corriente_pct_pib` está disponible solo hasta 2016.
     """
 
@@ -46,7 +47,7 @@ class IMFLoader(DataLoader):
         df = result.df
         if df.empty:
             return False
-        if "inflacion_deflactor_pib_pct" not in df.columns:
+        if "inflacion_ipc_imf_pct" not in df.columns:
             return False
         if "desempleo_pct" not in df.columns:
             return False

@@ -10,7 +10,7 @@ from iciv.data.models import DimensionID
 
 
 def test_dimension_weights_sum_to_one():
-    """Los pesos de las 5 dimensiones deben sumar exactamente 1.0."""
+    """Los pesos de las 6 dimensiones deben sumar exactamente 1.0."""
     validate_dimension_weights()  # lanza ValueError si falla
     total = sum(d.iciv_weight for d in DIMENSIONS.values())
     assert abs(total - 1.0) < 0.01
@@ -56,8 +56,7 @@ def test_aggregator_dimension_columns(sample_normalized_df):
 def test_risk_category_assigned(sample_normalized_df):
     result = ICIVAggregator().compute(sample_normalized_df)
     valid_categories = {
-        "🔴 Alto Riesgo", "🟠 Riesgo Moderado-Alto",
-        "🟡 Riesgo Moderado", "🟢 Bajo Riesgo", "🟢🟢 Muy Bajo Riesgo",
+        "Muy desfavorable", "Desfavorable", "Intermedio", "Favorable", "Muy favorable",
         "Sin datos",
         "Sin categoria",
     }
@@ -93,12 +92,7 @@ def _one_variable_per_dimension_df() -> pd.DataFrame:
     2024: todas las variables publicaron (cobertura 100% en cada dimensión).
     2025: solo la primera variable de cada dimensión; las demás aún no salen.
 
-    El año 2024 es imprescindible: el denominador de cobertura son las variables
-    con AL MENOS un dato en toda la serie. Una variable ausente del dataset
-    entero (fuente retirada) no debe deprimir la cobertura para siempre, así que
-    queda fuera del denominador. Sin 2024, las variables que faltan en 2025 no
-    serían candidatas y la cobertura daría 100% — que es lo correcto, pero no lo
-    que este test quiere ejercitar.
+    El universo completo siempre se conserva en el denominador de cobertura.
     """
     rows = {"año": [2024, 2025]}
     for dim in DIMENSIONS.values():

@@ -6,8 +6,8 @@ mensual CMO-Historical-Data-Monthly.xlsx:
     https://www.worldbank.org/en/research/commodity-markets
 
 El URL del Excel cambia de doc-id cada cierto tiempo, por eso este script
-primero lee la página oficial y extrae el enlace vigente; como fallback
-usa los últimos URLs conocidos.
+lee la página oficial y extrae el enlace vigente. Si no está disponible,
+la actualización falla; no recurre a URLs históricas.
 
 Variable de salida:
   - crudo_dubai_usd (USD/barril, hoja "Monthly Prices", columna
@@ -53,12 +53,6 @@ _CMO_PAGE = "https://www.worldbank.org/en/research/commodity-markets"
 _XLSX_RE  = re.compile(
     r"https://thedocs\.worldbank\.org/[^\"']+CMO-Historical-Data-Monthly\.xlsx"
 )
-# Fallbacks: últimos doc-ids conocidos (el más reciente primero)
-_KNOWN_URLS = [
-    "https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx",
-    "https://thedocs.worldbank.org/en/doc/5d903e848db1d1b83e0ec8f744e55570-0350012021/related/CMO-Historical-Data-Monthly.xlsx",
-]
-
 _SHEET  = "Monthly Prices"
 _COLUMN = "Crude oil, Dubai"
 _VARIABLE = "crudo_dubai_usd"
@@ -66,19 +60,11 @@ _VARIABLE = "crudo_dubai_usd"
 
 def _current_xlsx_url() -> list[str]:
     """Lee la página oficial y devuelve URLs candidatos del Excel mensual."""
-    urls: list[str] = []
-    try:
-        resp = requests.get(_CMO_PAGE, timeout=90, headers=_HEADERS)
-        resp.raise_for_status()
-        found = _XLSX_RE.findall(resp.text)
-        if found:
-            print(f"  Pink Sheet: URL vigente detectado en la pagina oficial")
-            urls.extend(dict.fromkeys(found))  # dedup preservando orden
-    except Exception as exc:
-        print(f"  [WARN] No se pudo leer la pagina de commodity markets: {exc}")
-    for u in _KNOWN_URLS:
-        if u not in urls:
-            urls.append(u)
+    resp = requests.get(_CMO_PAGE, timeout=90, headers=_HEADERS)
+    resp.raise_for_status()
+    urls = list(dict.fromkeys(_XLSX_RE.findall(resp.text)))
+    if not urls:
+        raise RuntimeError("Pink Sheet: enlace vigente ausente; CSV no actualizado.")
     return urls
 
 
@@ -98,8 +84,7 @@ def fetch_wb_commodities_monthly() -> pd.DataFrame:
             print(f"  Pink Sheet fallo: {exc}")
 
     if content is None:
-        print("  [ERROR] Pink Sheet no disponible. No se escribe nada nuevo.")
-        return pd.DataFrame(columns=["año", "mes", "variable", "valor", "fuente"])
+        raise RuntimeError("Pink Sheet no disponible; CSV no actualizado.")
 
     df = pd.read_excel(BytesIO(content), sheet_name=_SHEET, header=4)
     date_col = df.columns[0]
@@ -149,5 +134,6 @@ if __name__ == "__main__":
         else:
             print("\n  0 filas. wb_commodities_monthly.csv NO creado.")
     else:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"\n  Guardado: {OUTPUT}  ({len(df)} filas)")

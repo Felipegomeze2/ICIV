@@ -1,0 +1,47 @@
+﻿año,indicador,valor,pais,fuente
+2000,esperanza_vida_anos,74.0325,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2001,esperanza_vida_anos,73.8965,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2002,esperanza_vida_anos,74.2552,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2003,esperanza_vida_anos,73.6469,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2004,esperanza_vida_anos,74.4102,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2005,esperanza_vida_anos,74.712,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2006,esperanza_vida_anos,74.6909,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2007,esperanza_vida_anos,74.5295,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2008,esperanza_vida_anos,74.2796,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2009,esperanza_vida_anos,74.5689,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2010,esperanza_vida_anos,74.6622,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2011,esperanza_vida_anos,74.5894,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2012,esperanza_vida_anos,74.4448,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2013,esperanza_vida_anos,74.6013,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2014,esperanza_vida_anos,74.0557,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2015,esperanza_vida_anos,73.938,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2016,esperanza_vida_anos,72.3903,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2017,esperanza_vida_anos,72.9837,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2018,esperanza_vida_anos,72.8177,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2019,esperanza_vida_anos,72.714,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2020,esperanza_vida_anos,72.4037,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2021,esperanza_vida_anos,71.2208,Venezuela,WHO GHO — Life Expectancy at Birth (Both Sexes)
+2000,mortalidad_infantil_x1000,17.5327,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2001,mortalidad_infantil_x1000,17.0178,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2002,mortalidad_infantil_x1000,16.6219,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2003,mortalidad_infantil_x1000,16.2119,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2004,mortalidad_infantil_x1000,15.7448,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2005,mortalidad_infantil_x1000,15.2716,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2006,mortalidad_infantil_x1000,14.8486,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2007,mortalidad_infantil_x1000,14.5355,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2008,mortalidad_infantil_x1000,14.3801,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2009,mortalidad_infantil_x1000,14.4001,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2010,mortalidad_infantil_x1000,14.5477,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2011,mortalidad_infantil_x1000,14.7672,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2012,mortalidad_infantil_x1000,15.0522,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2013,mortalidad_infantil_x1000,15.4086,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2014,mortalidad_infantil_x1000,15.8081,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2015,mortalidad_infantil_x1000,16.8261,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2016,mortalidad_infantil_x1000,21.4676,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2017,mortalidad_infantil_x1000,21.4768,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2018,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2019,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2020,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2021,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2022,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"
+2023,mortalidad_infantil_x1000,21.4775,Venezuela,"WHO GHO / UN IGME — Infant Mortality Rate (Both Sexes, 0-11 months)"

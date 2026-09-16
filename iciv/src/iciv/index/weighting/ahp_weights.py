@@ -35,6 +35,7 @@ import numpy as np
 import pandas as pd
 
 from .base import WeightingStrategy
+from iciv.index.dimensions import DIMENSIONS
 
 logger = logging.getLogger(__name__)
 
@@ -114,64 +115,6 @@ def _consistent_ratio_matrix(weights: list[float]) -> np.ndarray:
     return arr[:, None] / arr[None, :]
 
 
-_D1_VARIABLE_LABELS = [
-    "inflacion_deflactor_pib_pct",
-    "pib_crecimiento_real_pct",
-    "wti_precio_usd",
-    "tasa_fed_funds_pct",
-]
-# Pesos core renormalizados tras la purga 2026-08-11 (salieron reservas y tipo
-# de cambio, que sumaban 30%): 40%, 31.43%, 17.14%, 11.43%
-_D1_VARIABLE_MATRIX = _consistent_ratio_matrix([0.40, 0.3143, 0.1714, 0.1143])
-
-_D2_VARIABLE_LABELS = [
-    "petroleo_crudo_produccion_tbpd",
-    "luminosidad_nocturna_idx",
-]
-# Pesos core renormalizados tras la purga 2026-08-11 (salieron gas y
-# electricidad, que sumaban 40%): 75%, 25%
-_D2_VARIABLE_MATRIX = _consistent_ratio_matrix([0.75, 0.25])
-
-_D3_VARIABLE_LABELS = [
-    "cpi_score",
-    "wgi_promedio_sc",
-    "freedom_house_score",
-    "wjp_rule_of_law",
-    "pts_terror_politico",
-]
-# Pesos core: 24%, 24%, 18%, 18%, 16%
-_D3_VARIABLE_MATRIX = _consistent_ratio_matrix([0.24, 0.24, 0.18, 0.18, 0.16])
-
-_D4_VARIABLE_LABELS = [
-    "exportaciones_pct_pib",
-    "migrantes_vzla_millones",
-    "lsci_conectividad_maritima",
-]
-# Pesos core renormalizados tras la purga 2026-08-11 (salio desempleo, 24%):
-# 44.74%, 31.58%, 23.68%
-_D4_VARIABLE_MATRIX = _consistent_ratio_matrix([0.4474, 0.3158, 0.2368])
-
-_D5_VARIABLE_LABELS = [
-    "hdi",
-    "esperanza_vida_anos",
-    "mortalidad_infantil_x1000",
-    "acceso_electricidad_pct",
-    "ilo_empleo_informal_pct",
-]
-# Pesos core: 28%, 18%, 18%, 18%, 18%
-_D5_VARIABLE_MATRIX = _consistent_ratio_matrix([0.28, 0.18, 0.18, 0.18, 0.18])
-
-_D6_VARIABLE_LABELS = [
-    "guardian_tono_titulares",
-    "guardian_articulos_venezuela",
-]
-# Pesos core: 65%, 35%
-_D6_VARIABLE_MATRIX = _consistent_ratio_matrix([0.65, 0.35])
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 def _eigenvector_weights(matrix: np.ndarray) -> np.ndarray:
     """
     Calcula el vector propio principal de una matriz cuadrada positiva.
@@ -182,6 +125,13 @@ def _eigenvector_weights(matrix: np.ndarray) -> np.ndarray:
     Returns:
         Vector normalizado (suma = 1.0) con los pesos AHP.
     """
+    matrix = np.asarray(matrix, dtype=float)
+    if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1] or matrix.shape[0] == 0:
+        raise ValueError("La matriz AHP debe ser cuadrada y no vacía")
+    if not np.isfinite(matrix).all() or (matrix <= 0).any():
+        raise ValueError("La matriz AHP debe tener entradas positivas y finitas")
+    if not np.allclose(np.diag(matrix), 1.0) or not np.allclose(matrix * matrix.T, 1.0):
+        raise ValueError("La matriz AHP debe ser recíproca y tener diagonal unitaria")
     n = matrix.shape[0]
     w = np.ones(n) / n
 
@@ -252,6 +202,8 @@ def compute_ahp(
     consistency = _consistency_ratio(matrix, weights)
 
     keys = labels if labels is not None else [str(i) for i in range(n)]
+    if len(keys) != n or len(set(keys)) != n:
+        raise ValueError("Las etiquetas AHP deben ser únicas y coincidir con la matriz")
 
     weights_dict = {k: round(float(w), 6) for k, w in zip(keys, weights)}
 
@@ -327,14 +279,16 @@ class AHPWeights(WeightingStrategy):
         self,
         dimension_matrix: np.ndarray | None = None,
         variable_matrices: dict[str, tuple[np.ndarray, list[str]]] | None = None,
-        require_consistency: bool = False,
+        require_consistency: bool = True,
     ) -> None:
         self._dim_matrix = (
             dimension_matrix
             if dimension_matrix is not None
             else _DEFAULT_DIMENSION_MATRIX.copy()
         )
-        self._var_matrices = variable_matrices or self._default_variable_matrices()
+        self._var_matrices = self._default_variable_matrices()
+        if variable_matrices is not None:
+            self._var_matrices.update(variable_matrices)
         self.require_consistency = require_consistency
 
         self.dimension_result_: dict | None = None
@@ -351,7 +305,7 @@ class AHPWeights(WeightingStrategy):
         dimensiones; los pesos internos, de las matrices por dimensión.
 
         Returns:
-            dict {columna: peso_final} normalizado a 1.0.
+            dict {columna: peso_final} sobre el universo completo, normalizado a 1.0.
         """
         # 1. Pesos de dimensiones
         self.dimension_result_ = compute_ahp(self._dim_matrix, _DIMENSION_LABELS)
@@ -368,13 +322,12 @@ class AHPWeights(WeightingStrategy):
 
             dim_w = dim_weights.get(dim_label, 0.0)
             for var_label, var_w in result["weights"].items():
-                if var_label in df.columns:
-                    final_weights[var_label] = dim_w * var_w
+                final_weights[var_label] = dim_w * var_w
 
-        # 3. Normalizar por si faltan columnas
+        # 3. Universo fijo: una columna ausente conserva su peso esperado.
         total = sum(final_weights.values())
         if total > 0:
-            final_weights = {k: round(v / total, 6) for k, v in final_weights.items()}
+            final_weights = {k: v / total for k, v in final_weights.items()}
 
         # 4. Construir reporte de CR
         rows = [
@@ -485,14 +438,11 @@ class AHPWeights(WeightingStrategy):
 
     @staticmethod
     def _default_variable_matrices() -> dict[str, tuple[np.ndarray, list[str]]]:
-        return {
-            "D1_macro":          (_D1_VARIABLE_MATRIX, _D1_VARIABLE_LABELS),
-            "D2_energia":        (_D2_VARIABLE_MATRIX, _D2_VARIABLE_LABELS),
-            "D3_institucional":  (_D3_VARIABLE_MATRIX, _D3_VARIABLE_LABELS),
-            "D4_comercial":      (_D4_VARIABLE_MATRIX, _D4_VARIABLE_LABELS),
-            "D5_capital_humano": (_D5_VARIABLE_MATRIX, _D5_VARIABLE_LABELS),
-            "D6_percepcion":     (_D6_VARIABLE_MATRIX, _D6_VARIABLE_LABELS),
-        }
+        # Una sola configuración interna: no duplicar pesos del catálogo.
+        return {dim_id.value: (
+            _consistent_ratio_matrix([v.weight for v in dim.variables]),
+            [v.column for v in dim.variables],
+        ) for dim_id, dim in DIMENSIONS.items()}
 
     def _check_cr(self, consistency: dict, name: str) -> None:
         if self.require_consistency and not consistency["consistent"]:

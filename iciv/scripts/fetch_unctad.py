@@ -13,15 +13,9 @@ Fuente PRIMARIA (2026-07): UNCTADstat Data Centre, bulk download oficial
   año (sin imputar trimestres faltantes). El año en curso usa los trimestres
   disponibles y la fuente lo declara.
 
-Fuente FALLBACK: World Bank WDI IS.SHP.GCNW.XQ (serie congelada en 2021,
-  base antigua). Solo se usa si el bulk de UNCTADstat no responde o si
-  py7zr no está instalado.
-
-IMPORTANTE — no mezclar bases: la serie UNCTADstat (base Q1-2023=100) y la
-serie WDI (base 2006) tienen escalas distintas. Este script escribe SIEMPRE
-una sola fuente para toda la serie; nunca las combina. El pipeline ICIV
-normaliza min-max, por lo que el cambio de base no afecta al score, pero
-mezclar bases dentro de una misma serie sí lo haría — por eso se prohíbe.
+Fuente única: UNCTADstat. Si la descarga no responde o falta py7zr,
+se lanza un error y se conserva el archivo previo. Nunca se sustituye la
+serie por WDI, cuya base y cobertura no son equivalentes.
 
 Principio de datos: si una fuente no tiene datos para un año, ese año queda
 NaN. NO se usan estimaciones manuales ni datos inventados.
@@ -64,18 +58,12 @@ _UNCTAD_CITA = (
     "publicados {qs}. https://unctadstat.unctad.org/datacentre/dataviewer/US.LSCI"
 )
 
-# World Bank WDI (fallback)
-WB_INDICATOR = "IS.SHP.GCNW.XQ"
-WB_COUNTRY   = _CFG["serie"]["country_wb"]
-WB_BASE_URL  = "https://api.worldbank.org/v2/country/{country}/indicator/{indicator}"
-
-
 def _fetch_unctadstat() -> pd.DataFrame | None:
     """Serie anual desde el bulk trimestral oficial de UNCTADstat."""
     try:
         import py7zr
     except ImportError:
-        print("  [WARN] py7zr no instalado (pip install py7zr) — se usara WDI fallback")
+        print("  [ERROR] py7zr no instalado; UNCTAD no actualizado")
         return None
 
     try:
@@ -123,48 +111,11 @@ def _fetch_unctadstat() -> pd.DataFrame | None:
         return None
 
 
-def _fetch_wb_lsci() -> pd.DataFrame | None:
-    """Fallback: LSCI anual del World Bank WDI (congelado en 2021, base antigua)."""
-    url = WB_BASE_URL.format(country=WB_COUNTRY, indicator=WB_INDICATOR)
-    params = {"format": "json", "per_page": 100, "mrv": 30}
-    try:
-        resp = requests.get(url, params=params, timeout=30, headers=_HEADERS)
-        resp.raise_for_status()
-        payload = resp.json()
-        if not isinstance(payload, list) or len(payload) < 2 or not payload[1]:
-            return None
-        rows = []
-        for rec in payload[1]:
-            year_str, value = rec.get("date"), rec.get("value")
-            if year_str is None or value is None:
-                continue
-            yr = int(year_str)
-            if START <= yr <= END:
-                rows.append({
-                    "año": yr,
-                    "lsci_conectividad_maritima": round(float(value), 2),
-                    "fuente": (
-                        "World Bank WDI IS.SHP.GCNW.XQ (LSCI UNCTAD, base antigua; "
-                        "serie congelada en 2021)"
-                    ),
-                })
-        out = pd.DataFrame(rows).sort_values("año").reset_index(drop=True)
-        print(f"  WDI fallback: {len(out)} años")
-        return out if not out.empty else None
-    except Exception as exc:
-        print(f"  [WARN] WDI LSCI fallo: {exc}")
-        return None
-
-
 def fetch_unctad() -> pd.DataFrame:
     """LSCI Venezuela anual. Una sola fuente por serie; jamás se mezclan bases."""
     df = _fetch_unctadstat()
-    if df is None:
-        df = _fetch_wb_lsci()
-    if df is None:
-        print("  ADVERTENCIA: ninguna fuente LSCI respondio.")
-        print("  La variable lsci_conectividad_maritima quedara NaN en el pipeline.")
-        return pd.DataFrame(columns=["año", "lsci_conectividad_maritima", "fuente"])
+    if df is None or df.empty:
+        raise RuntimeError("UNCTADstat no disponible; unctad.csv no actualizado.")
     return df
 
 
@@ -174,7 +125,8 @@ if __name__ == "__main__":
 
     df = fetch_unctad()
     if not df.empty:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"Guardado: {OUTPUT}  ({len(df)} años con datos reales)")
         print(df[["año", "lsci_conectividad_maritima"]].to_string(index=False))
     else:

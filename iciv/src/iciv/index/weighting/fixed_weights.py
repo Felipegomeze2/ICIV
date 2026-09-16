@@ -8,6 +8,7 @@ o los pesos del documento maestro del ICIV como punto de partida.
 from __future__ import annotations
 
 import pandas as pd
+import math
 
 from iciv.index.dimensions import DIMENSIONS
 from iciv.data.models import DimensionID
@@ -44,33 +45,40 @@ class FixedWeights(WeightingStrategy):
 
         for dim in self._dimensions.values():
             for var in dim.variables:
-                if var.column in df.columns:
-                    weights[var.column] = dim.iciv_weight * var.weight
+                weights[var.column] = dim.iciv_weight * var.weight
 
         # Aplicar overrides
+        unknown = set(self._override) - set(weights)
+        if unknown:
+            raise ValueError(f"Overrides fuera del catálogo de variables: {sorted(unknown)}")
         weights.update(self._override)
+        if any(not math.isfinite(w) or w < 0 for w in weights.values()):
+            raise ValueError("Los pesos deben ser finitos y no negativos")
 
-        # Renormalizar para que sumen 1.0 (por si hay columnas faltantes)
+        # El universo no depende de las columnas disponibles en el dataset.
         total = sum(weights.values())
-        if total > 0:
-            weights = {k: v / total for k, v in weights.items()}
+        if total <= 0:
+            raise ValueError("Los pesos deben sumar un valor positivo")
+        weights = {k: v / total for k, v in weights.items()}
 
         self._weights = weights
         return weights
 
     def get_method_name(self) -> str:
-        return "Pesos Fijos (Documento Maestro / AHP)"
+        return "Pesos fijos declarados (incluye overrides explícitos)"
 
     def get_weights_table(self) -> pd.DataFrame:
         """Tabla de pesos con dimensión y peso final — útil para la tesis."""
+        weights = self.compute_weights(pd.DataFrame())
         rows = []
         for dim in self._dimensions.values():
+            dim_weight = sum(weights[v.column] for v in dim.variables)
             for var in dim.variables:
                 rows.append({
                     "dimensión": dim.name,
-                    "peso_dim": dim.iciv_weight,
+                    "peso_dim": dim_weight,
                     "variable": var.column,
-                    "peso_en_dim": var.weight,
-                    "peso_final": round(dim.iciv_weight * var.weight, 4),
+                    "peso_en_dim": weights[var.column] / dim_weight if dim_weight else 0.0,
+                    "peso_final": weights[var.column],
                 })
         return pd.DataFrame(rows).sort_values("peso_final", ascending=False)

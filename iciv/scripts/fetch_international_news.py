@@ -182,8 +182,7 @@ def fetch_international_news() -> pd.DataFrame:
         if errors:
             print("International news: sin filas reales; " + " | ".join(errors[:3]))
         df = _empty()
-        df.to_csv(settings.paths.raw_international_news, index=False, encoding="utf-8-sig")
-        return df
+        raise RuntimeError("Noticias sin filas; snapshot previo conservado y no refrescado")
 
     seen: set[str] = set()
     deduped: list[dict[str, str]] = []
@@ -197,7 +196,8 @@ def fetch_international_news() -> pd.DataFrame:
     df["published_at_sort"] = pd.to_datetime(df["published_at"], errors="coerce", utc=True)
     df = df.sort_values("published_at_sort", ascending=False).drop(columns=["published_at_sort"])
     df = df.head(40).reset_index(drop=True)
-    df.to_csv(settings.paths.raw_international_news, index=False, encoding="utf-8-sig")
+    from iciv.utils import save_dataframe
+    save_dataframe(df, settings.paths.raw_international_news, value_columns=["title"], allow_loss=True)
     print(f"International news: {len(df)} filas reales -> {settings.paths.raw_international_news}")
     if errors:
         print("International news warnings: " + " | ".join(errors[:3]))

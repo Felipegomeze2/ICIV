@@ -71,8 +71,7 @@ def fetch_imf() -> pd.DataFrame:
             n_present = len(df) - n_missing
             print(f"    OK: {n_present} años con datos, {n_missing} sin datos (NaN)")
         except Exception as exc:
-            print(f"    [ERROR] {concept}: {exc} — columna quedará como NaN")
-            df[col_name] = None
+            raise RuntimeError(f"IMF {concept}: descarga fallida; CSV no actualizado.") from exc
 
     return df.sort_values("año").reset_index(drop=True)
 

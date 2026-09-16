@@ -123,6 +123,7 @@ if __name__ == "__main__":
     if df.empty:
         print("Sin datos disponibles. El archivo CSV no será generado.")
     else:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"Guardado: {OUTPUT}  ({len(df)} años)")
         print(df[["año", "valor"]].to_string(index=False))

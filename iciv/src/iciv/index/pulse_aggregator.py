@@ -19,7 +19,7 @@ origen venezolano):
     - ust_10y_yield_pct         (FRED, mensual)
     - em_bond_spread_pct        (FRED BAMLEMCBPIOAS, mensual — estrés financiero EM)
   Energía Venezuela (D2 — 25% peso renormalizado):
-    - petroleo_crudo_produccion_tbpd (EIA International, mensual)
+    - petroleo_liquidos_totales_tbpd (EIA International, mensual)
   Actividad comercial espejo (10%):
     - importaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
     - exportaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
@@ -72,7 +72,7 @@ PULSE_WEIGHTS: dict[str, float] = {
     "ust_10y_yield_pct":               0.030,  # NEGATIVO (yield alto → outflow EM)
     "em_bond_spread_pct":              0.040,  # NEGATIVO (spread alto → estrés EM)
     # D2 Energía VEN (25%) — driver doméstico clave
-    "petroleo_crudo_produccion_tbpd":  0.250,
+    "petroleo_liquidos_totales_tbpd":  0.250,
     # D4 Comercio espejo EEUU-VEN (10%) — aduana de EEUU vía FRED.
     # Sustituye a IMF IMTS desde 2026-08-11: mismo concepto (comercio real
     # observado por el socio) con 2 meses de rezago en vez de 4, volumen físico
@@ -133,7 +133,7 @@ class PulseAggregator:
                 # eia_monthly puede tener formato distinto; estandarizar
                 if "productId" in df.columns and "value" in df.columns:
                     df = df[df["productId"] == 53].rename(columns={"value": "valor"})
-                    df["variable"] = "petroleo_crudo_produccion_tbpd"
+                    df["variable"] = "petroleo_liquidos_totales_tbpd"
             if not {"año", "mes", "variable", "valor"}.issubset(df.columns):
                 logger.warning("  Pulse: %s formato inválido — skipping", fname)
                 continue
@@ -172,39 +172,44 @@ class PulseAggregator:
     # ── Normalización ─────────────────────────────────────────────────────────
 
     def normalize(self, df_wide: pd.DataFrame) -> pd.DataFrame:
+        """Min-max expansivo hasta cada fecha, sin usar observaciones futuras.
+
+        Una serie sin rango aún no tiene escala identificable: permanece NaN.
+        Los faltantes originales nunca se convierten en puntajes. Esta propiedad
+        no elimina revisiones de las fuentes: la evaluación es de último vintage.
         """
-        Min-Max usando el rango histórico de cada variable en este panel.
-        Variables negativas se invierten.
-        """
-        result = df_wide.copy()
+        result = df_wide.sort_values("fecha").copy()
+        self.df_raw_wide = result.copy()
         for var in PULSE_WEIGHTS.keys():
             if var not in result.columns:
                 continue
-            series = result[var].dropna()
-            if series.empty:
-                continue
-            v_min, v_max = float(series.min()), float(series.max())
-            self.min_max_params[var] = (v_min, v_max)
+            series = pd.to_numeric(result[var], errors="coerce").replace([np.inf, -np.inf], np.nan)
+            v_min = series.expanding(min_periods=2).min()
+            v_max = series.expanding(min_periods=2).max()
             rng = v_max - v_min
-            if rng == 0:
-                result[var] = 50.0
-                continue
+            rng = rng.where(rng > 0)
             if var in PULSE_NEGATIVE:
-                result[var] = (v_max - result[var]) / rng * 100.0
+                result[var] = (v_max - series) / rng * 100.0
             else:
-                result[var] = (result[var] - v_min) / rng * 100.0
+                result[var] = (series - v_min) / rng * 100.0
             result[var] = result[var].clip(0, 100)
+            if series.notna().any():
+                self.min_max_params[var] = (float(series.min()), float(series.max()))
         self.df_normalized = result
         return result
 
     # ── Agregación ────────────────────────────────────────────────────────────
 
-    def aggregate(self, df_norm: pd.DataFrame) -> pd.DataFrame:
+    def aggregate(self, df_norm: pd.DataFrame, as_of: str | pd.Timestamp | None = None) -> pd.DataFrame:
         """
         ICIV Pulse = Σ (peso_i × variable_norm_i) con redistribución de pesos
         cuando algunas variables están NaN ese mes.
         """
         rows: list[dict] = []
+        now = pd.Timestamp(as_of) if as_of is not None else pd.Timestamp.now(tz="UTC").tz_localize(None)
+        current_month = now.to_period("M").start_time
+        fixed_weight = sum(PULSE_WEIGHTS.values())
+        raw = getattr(self, "df_raw_wide", df_norm).set_index("fecha")
         for _, row in df_norm.iterrows():
             total_weight = 0.0
             score_sum = 0.0
@@ -222,15 +227,53 @@ class PulseAggregator:
                 pulse_score = None
             else:
                 pulse_score = score_sum / total_weight
+            raw_row = raw.loc[row["fecha"]] if row["fecha"] in raw.index else row
+            available_weight = sum(w for var, w in PULSE_WEIGHTS.items() if pd.notna(raw_row.get(var)))
+            domestic_present = pd.notna(row.get("petroleo_liquidos_totales_tbpd"))
+            closed = pd.Timestamp(row["fecha"]) < current_month
+            eligible = total_weight / fixed_weight >= 0.70 - 1e-10 and domestic_present and closed
             rows.append({
                 "año":           int(row["año"]),
                 "mes":           int(row["mes"]),
                 "fecha":         row["fecha"],
                 "pulse_score":   round(pulse_score, 2) if pulse_score is not None else None,
-                "cobertura_pct": round(total_weight * 100.0, 1),
+                "cobertura_pct": round(total_weight / fixed_weight * 100.0, 1),
+                "disponibilidad_pct": round(available_weight / fixed_weight * 100.0, 1),
                 "n_vars":        n_vars_disponibles,
+                "n_vars_total": len(PULSE_WEIGHTS),
+                "produccion_disponible": bool(domestic_present),
+                "mes_cerrado": bool(closed),
+                "elegible_modelo": bool(eligible),
+                "estado": "utilizable" if eligible else "provisional",
             })
         df_pulse = pd.DataFrame(rows)
+        if not df_pulse.empty:
+            norm_by_date = df_norm.set_index("fecha")
+            score_by_date = df_pulse.set_index("fecha")["pulse_score"]
+            for lag in (1, 3):
+                decompositions = []
+                for _, row in df_pulse.iterrows():
+                    date = pd.Timestamp(row["fecha"])
+                    previous_date = date - pd.DateOffset(months=lag)
+                    item = {f"delta_{lag}m": np.nan, f"delta_comparable_{lag}m": np.nan,
+                            f"efecto_composicion_{lag}m": np.nan, f"cobertura_comun_{lag}m_pct": 0.0,
+                            f"composicion_estable_{lag}m": False}
+                    if previous_date in norm_by_date.index:
+                        current, previous = norm_by_date.loc[date], norm_by_date.loc[previous_date]
+                        current_vars = {v for v in PULSE_WEIGHTS if pd.notna(current.get(v))}
+                        previous_vars = {v for v in PULSE_WEIGHTS if pd.notna(previous.get(v))}
+                        common = current_vars & previous_vars
+                        common_weight = sum(PULSE_WEIGHTS[v] for v in common)
+                        item[f"cobertura_comun_{lag}m_pct"] = round(common_weight / fixed_weight * 100, 1)
+                        item[f"composicion_estable_{lag}m"] = current_vars == previous_vars
+                        if common_weight >= 0.3 and pd.notna(row["pulse_score"]) and pd.notna(score_by_date.loc[previous_date]):
+                            observed = float(row["pulse_score"] - score_by_date.loc[previous_date])
+                            comparable = sum(PULSE_WEIGHTS[v] * (current[v] - previous[v]) for v in common) / common_weight
+                            item[f"delta_{lag}m"] = round(observed, 4)
+                            item[f"delta_comparable_{lag}m"] = round(float(comparable), 4)
+                            item[f"efecto_composicion_{lag}m"] = round(float(observed - comparable), 4)
+                    decompositions.append(item)
+                df_pulse = pd.concat([df_pulse, pd.DataFrame(decompositions)], axis=1)
         self.df_pulse = df_pulse
         return df_pulse
 

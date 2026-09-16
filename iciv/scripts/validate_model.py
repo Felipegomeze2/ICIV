@@ -30,6 +30,8 @@ from scipy import stats as scipy_stats
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _ROOT       = _SCRIPT_DIR.parent
 sys.path.insert(0, str(_ROOT / "src"))
+sys.path.insert(0, str(_ROOT))
+from scripts.external_validation import _correlate
 
 from iciv.config import Settings
 from iciv.index.aggregator import ICIVAggregator
@@ -54,25 +56,12 @@ DIM_COLORS = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"]
 
 def _load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     norm_path = settings.paths.data_processed / "iciv_normalizado.csv"
-    ahp_path  = settings.paths.data_processed / "iciv_scores_ahp.csv"
-
     if not norm_path.exists():
-        raise FileNotFoundError(
-            f"No encontrado: {norm_path}\n"
-            "Ejecuta primero: python main.py --no-fetch"
-        )
-    if not ahp_path.exists():
-        raise FileNotFoundError(
-            f"No encontrado: {ahp_path}\n"
-            "Ejecuta primero: python main.py --no-fetch"
-        )
-
+        raise FileNotFoundError(f"No encontrado: {norm_path}. Ejecuta python main.py --no-fetch")
     df_norm = pd.read_csv(norm_path)
-    df_ahp  = pd.read_csv(ahp_path)
-
-    # Ensure año is int in both
     df_norm["año"] = df_norm["año"].astype(int)
-    df_ahp["año"]  = df_ahp["año"].astype(int)
+    # Recompute with the public model; do not combine artifacts from old runs.
+    df_ahp = ICIVAggregator(strategy=AHPWeights()).compute(df_norm)
 
     return df_norm, df_ahp
 
@@ -112,19 +101,11 @@ def _compute_iciv_with_weights(
 ) -> pd.Series:
     """Calcula ICIV dado unos pesos de dimension y un metodo de agregacion."""
 
-    class _CustomStrategy:
-        """Wrapper para inyectar pesos de dimension arbitrarios."""
-        def compute_weights(self, df):
-            return dim_weights
-
-        def get_method_name(self):
-            return "custom"
-
-        @property
-        def dimension_result_(self):
-            return {"weights": dim_weights}
-
-    agg = ICIVAggregator(method=method, strategy=_CustomStrategy())
+    overrides = {
+        v.column: dim_weights.get(dim_id.value, 0.0) * v.weight
+        for dim_id, dim in DIMENSIONS.items() for v in dim.variables
+    }
+    agg = ICIVAggregator(method=method, strategy=FixedWeights(override=overrides))
     result = agg.compute(df_norm)
     return result.set_index("año")["iciv_score"]
 
@@ -237,6 +218,7 @@ def run_ied_correlation(
         logger.warning("      IED no disponible en datos normalizados. Usando NaN.")
         return {"available": False}
 
+    df_ahp = ICIVAggregator(strategy=AHPWeights()).compute(df_norm)
     merged = df_ahp[["año", "iciv_score"]].merge(
         df_norm[["año", ied_col]], on="año", how="inner"
     ).dropna()
@@ -249,6 +231,11 @@ def run_ied_correlation(
     ied_vals  = merged[ied_col].tolist()
     years_cor = merged["año"].tolist()
 
+    aligned = merged.set_index("año")
+    levels = _correlate(aligned.iciv_score, aligned[ied_col])
+    differences = _correlate(aligned.iciv_score, aligned[ied_col], "primeras_diferencias")
+    if not np.isfinite(levels["pearson_r"]):
+        return {"available": False, "n": len(merged), "reason": "serie constante o muestra insuficiente"}
     pearson_r, pearson_p   = scipy_stats.pearsonr(iciv_vals, ied_vals)
     spearman_r, spearman_p = scipy_stats.spearmanr(iciv_vals, ied_vals)
 
@@ -264,6 +251,9 @@ def run_ied_correlation(
 
     return {
         "available":   True,
+        "scope": "Asociación retrospectiva exploratoria, sin interpretación causal o predictiva",
+        "levels": levels,
+        "first_differences": differences,
         "n":           len(merged),
         "years":       years_cor,
         "iciv":        [round(v, 2) for v in iciv_vals],
@@ -343,28 +333,20 @@ def run_ahp_vs_pca(
     """
     logger.info("  [4/4] AHP vs PCA...")
 
-    # Columnas de dimension disponibles
-    avail_dims = [c for c in DIM_COLS if c in df_ahp_scores.columns]
-
-    # Filtrar dims que tienen al menos 5 valores no nulos
-    avail_dims = [d for d in avail_dims
-                  if df_ahp_scores[d].notna().sum() >= 5]
-
-    if len(avail_dims) < 2:
-        logger.warning("      Menos de 2 dimensiones con datos suficientes para PCA.")
-        return {"available": False}
-
-    dim_scores = df_ahp_scores[["año"] + avail_dims].copy()
-    # Imputar NaN con la media de cada dimension (OCDE Handbook, Cap. 7)
-    for d in avail_dims:
-        dim_scores[d] = dim_scores[d].fillna(dim_scores[d].mean())
-
-    # Filtrar años con todo NaN (año sin ningún dato)
-    dim_scores = dim_scores.dropna(subset=avail_dims)
-
-    if len(dim_scores) < 5:
-        logger.warning("      Muy pocos datos completos para PCA (%d filas).", len(dim_scores))
-        return {"available": False}
+    # All six dimensions, complete cases, adequate weighted availability.
+    # Missingness is never repaired with means or dropped dimensions.
+    avail_dims = DIM_COLS
+    df_ahp_scores = ICIVAggregator(strategy=AHPWeights()).compute(df_norm)
+    valid = df_ahp_scores[avail_dims].notna().all(axis=1)
+    valid &= df_ahp_scores["cobertura_efectiva_pct"].ge(80)
+    dim_scores = df_ahp_scores.loc[valid, ["año"] + avail_dims].copy()
+    min_n = max(5, len(avail_dims) + 1)
+    sample_info = {"n_complete": len(dim_scores), "fit_years": dim_scores["año"].tolist(),
+                   "missing_policy": "casos completos; cobertura efectiva >=80%; sin imputación",
+                   "minimum_n": min_n, "n_excluded": len(df_ahp_scores) - len(dim_scores)}
+    if len(dim_scores) < min_n:
+        logger.warning("PCA no disponible: %d casos completos, mínimo %d", len(dim_scores), min_n)
+        return {"available": False, **sample_info}
 
     pca = PCAWeights(exclude_cols=["año"])
     pca_var_weights = pca.compute_weights(dim_scores)  # pesos en espacio de dimensiones
@@ -379,13 +361,13 @@ def run_ahp_vs_pca(
     pca_series = _compute_iciv_with_weights(df_norm, pca_dim_weights, method="linear")
     ahp_series = _compute_iciv_with_weights(df_norm, base_ahp_weights, method="linear")
 
-    years = sorted(set(pca_series.index) & set(ahp_series.index))
+    years = sorted(set(dim_scores["año"]))
     ahp_vals = [round(float(ahp_series.loc[y]), 2) if not pd.isna(ahp_series.loc[y]) else None for y in years]
     pca_vals = [round(float(pca_series.loc[y]), 2) if not pd.isna(pca_series.loc[y]) else None for y in years]
 
     valid_ahp = [v for v in ahp_vals if v is not None]
     valid_pca = [v for v in pca_vals if v is not None]
-    deltas    = [round(p - a, 2) if (p and a) else None for p, a in zip(pca_vals, ahp_vals)]
+    deltas    = [round(p - a, 2) if (p is not None and a is not None) else None for p, a in zip(pca_vals, ahp_vals)]
     valid_d   = [v for v in deltas if v is not None]
 
     mad = round(float(np.mean(np.abs(valid_d))), 3) if valid_d else 0.0
@@ -408,6 +390,8 @@ def run_ahp_vs_pca(
 
     return {
         "available":       True,
+        **sample_info,
+        "scope": "Sensibilidad descriptiva en la muestra de ajuste, no validación predictiva",
         "variance_pc1":    round(var_expl * 100, 1),
         "years":           years,
         "ahp":             ahp_vals,
@@ -554,14 +538,22 @@ def _build_html(
     else:
         c_pr_cls = "c-accent" if abs(c_pr) >= 0.4 else "c-orange"
         c_sr_cls = "c-accent" if abs(c_sr) >= 0.4 else "c-orange"
+        diff = corr["first_differences"]
+        levels = corr["levels"]
         corr_block = (
+            f'<div class="alert alert-warn"><div class="alert-title">Contraste temporal exploratorio</div>'
+            f'<div class="alert-body">Niveles: n={levels["n"]}; p HAC={levels["hac_p"]:.4g}. '
+            f'Primeras diferencias: n={diff["n"]}; r={diff["pearson_r"]:.4f}; p HAC={diff["hac_p"]:.4g}. '
+            f'HAC ajusta autocorrelación y heterocedasticidad, pero no elimina tendencias espurias. '
+            f'Muestras pequeñas; no demuestra causalidad ni predicción. '
+            f'La batería externa publica además ajuste Holm por múltiples contrastes.</div></div>'
             f'<div class="stats-row">'
             f'<div class="stat"><div class="stat-label">Pearson r</div>'
             f'<div class="stat-val {c_pr_cls}">{c_pr:.4f}</div>'
-            f'<div class="stat-sub">{c_pr_label} · {c_pp}</div></div>'
+            f'<div class="stat-sub">{c_pr_label} · {c_pp} · p supone independencia</div></div>'
             f'<div class="stat"><div class="stat-label">Spearman rho</div>'
             f'<div class="stat-val {c_sr_cls}">{c_sr:.4f}</div>'
-            f'<div class="stat-sub">{c_sr_label} · {c_sp}</div></div>'
+            f'<div class="stat-sub">{c_sr_label} · {c_sp} · p supone independencia</div></div>'
             f'<div class="stat"><div class="stat-label">Observaciones (n)</div>'
             f'<div class="stat-val c-accent">{c_n}</div>'
             f'<div class="stat-sub">anos con ambas variables</div></div>'
@@ -581,11 +573,15 @@ def _build_html(
         weights_block = (
             '<div class="alert alert-warn">'
             '<div class="alert-title">PCA no disponible</div>'
-            '<div class="alert-body">Insuficientes datos completos para el PCA.</div></div>'
+            f'<div class="alert-body">Casos completos: {weights.get("n_complete", 0)}; mínimo: {weights.get("minimum_n", 7)}. Sin imputación.</div></div>'
         )
     else:
         w_mad_cls = "c-accent" if w_mad < 3 else "c-orange"
         weights_block = (
+            f'<div class="alert alert-warn"><div class="alert-body">PCA ajustado y comparado en '
+            f'{weights["n_complete"]} años completos: {weights["fit_years"]}. '
+            f'{weights["n_excluded"]} años excluidos. Cobertura efectiva mínima: 80%. '
+            f'Sin imputación. Comparación dentro de muestra; PCA no aporta validación externa.</div></div>'
             f'<div class="stats-row">'
             f'<div class="stat"><div class="stat-label">PC1 varianza explicada</div>'
             f'<div class="stat-val c-accent">{w_var}%</div>'
@@ -777,7 +773,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     </div>
     <div class="card">
       <div class="ct">Interpretacion del Indice de Sensibilidad</div>
-      <div class="cs">Referencia: Saisana & Tarantola (2002), OCDE Handbook (2008)</div>
+      <div class="cs">Clasificación descriptiva definida para este proyecto; umbrales sin calibración externa</div>
       <table class="vtable" style="margin-top:8px">
         <thead><tr><th>SI</th><th>Clasificacion</th><th>Interpretacion</th></tr></thead>
         <tbody>
@@ -803,7 +799,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="section-header">
     <div class="section-title">Analisis 2 de 4</div>
     <div class="section-h2">Correlacion ICIV vs Inversion Extranjera Directa (IED)</div>
-    <div class="section-sub">Validacion: si el ICIV captura el clima de inversion real, deberia correlacionar con los flujos de IED</div>
+    <div class="section-sub">Asociación exploratoria: la correlación no demuestra validez del constructo, causalidad ni capacidad predictiva</div>
   </div>
 
   {corr_block}
@@ -822,7 +818,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
     <div class="alert-body">
       La agregacion geometrica penaliza dimensiones extremadamente bajas (no permite compensacion plena).
       Para Venezuela, valores muy bajos en D1 (macro) o D3 (institucional) reducen mas el ICIV geometrico.
-      Una diferencia media peqena (MAD &lt; 3 pts) indica que ambos metodos son intercambiables.
+      La MAD resume diferencias en esta muestra; no demuestra que los métodos sean intercambiables. Los ceros se conservan en la media geométrica.
     </div>
   </div>
 
@@ -868,7 +864,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   <div class="section-header">
     <div class="section-title">Analisis 4 de 4</div>
     <div class="section-h2">Comparacion de Estrategias de Ponderacion: AHP vs PCA</div>
-    <div class="section-sub">AHP = juicio experto (Saaty 1980) · PCA = varianza estadistica (OCDE 2008, Cap. 6)</div>
+    <div class="section-sub">AHP = juicios declarados del diseño · PCA = varianza estadística · No sustituye validación de expertos</div>
   </div>
 
   {weights_block}

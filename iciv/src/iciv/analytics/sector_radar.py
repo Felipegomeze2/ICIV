@@ -1,489 +1,60 @@
+"""Escenarios de sensibilidad a pesos, sin rendimientos ni recomendaciones.
+
+Los perfiles son supuestos del autor, no estimaciones sectoriales empíricas.
+No se calculan bonos, sanciones ni ajustes CAPEX sin datos calibrados.
 """
-Investment Entry Radar Sectorial (IERS)
-
-Transforma el ICIV macro en una herramienta de decisión empresarial por sector.
-Para cada sector calcula:
-  - Score base: promedio ponderado de dimension scores según sensibilidad sectorial
-  - Ajustadores: penalizacion regulatoria, penalizacion CAPEX, bonus demanda defensiva
-  - Recomendación categórica (NO ENTRAR → PRIORITARIA)
-  - Riesgo principal dominante
-  - Racional ejecutivo (determinístico, basado en plantillas)
-"""
-
-from __future__ import annotations
-
-import json
-import logging
-import zlib
 from pathlib import Path
-from typing import Any
-
+import json
 import numpy as np
 import pandas as pd
+from iciv.index.aggregator import _get_risk_category
 
-logger = logging.getLogger(__name__)
-
-_CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "data" / "config" / "sector_weights.json"
-
-DIM_COLS = [
-    "D1_macro",
-    "D2_energia",
-    "D3_institucional",
-    "D4_comercial",
-    "D5_capital_humano",
-    "D6_percepcion",
-]
-
-# Dimensiones mínimas con dato para que un año sirva de base al radar (de 6).
-MIN_PROFILE_DIMS = 5
-
-DIM_LABELS = {
-    "D1_macro":          "Estabilidad Macroeconómica",
-    "D2_energia":        "Sector Energético",
-    "D3_institucional":  "Entorno Institucional",
-    "D4_comercial":      "Apertura Comercial",
-    "D5_capital_humano": "Capital Humano",
-    "D6_percepcion":     "Percepción Internacional",
-}
-
-# ── Plantillas de racional ────────────────────────────────────────────────────
-
-_RATIONALE_TEMPLATES: dict[str, list[str]] = {
-    "NO ENTRAR": [
-        (
-            "{label} no presenta condiciones mínimas de entrada en el entorno actual. "
-            "La combinación de {riesgo_dim} ({dim_score:.0f}/100) y exposición {sancion_nivel} "
-            "a sanciones genera un perfil de riesgo que supera el retorno esperado."
-        ),
-        (
-            "La alta intensidad de capital requerida en {descripcion_sector} —sin "
-            "protección contractual robusta— hace inviable la inversión hasta que "
-            "{dim_debil_label} supere al menos los 40 puntos."
-        ),
-    ],
-    "ESPERAR": [
-        (
-            "{label} muestra señales de deterioro que aún no se han estabilizado. "
-            "El principal obstáculo es {riesgo_principal} "
-            "(dimensión {dim_debil_label}: {dim_score:.0f}/100). "
-            "Se recomienda monitoreo trimestral sin compromisos de capital."
-        ),
-        (
-            "Con un ICIV general de {iciv_actual:.1f}/100, las condiciones en "
-            "{descripcion_sector} son restrictivas pero no permanentes. "
-            "El sector podría escalar a 'Piloto' si {dim_debil_label} mejora ≥ 5 puntos."
-        ),
-    ],
-    "PILOTO": [
-        (
-            "{label} ofrece una ventana de entrada con estructura piloto. "
-            "La fortaleza relativa de {dim_fuerte_label} ({dim_fuerte_score:.0f}/100) "
-            "compensa parcialmente el {riesgo_principal}. "
-            "Se recomienda operación dolarizada con exposición de capital limitada."
-        ),
-        (
-            "La demanda {demanda_adj} en {descripcion_sector} genera resiliencia "
-            "ante la volatilidad macroeconómica (ICIV={iciv_actual:.1f}). "
-            "Sin embargo, {riesgo_principal} exige contratos de corto plazo "
-            "y mecanismos de salida definidos."
-        ),
-    ],
-    "ENTRADA": [
-        (
-            "{label} presenta condiciones favorables para entrada con mitigantes de riesgo. "
-            "{dim_fuerte_label} ({dim_fuerte_score:.0f}/100) lidera el perfil positivo del sector. "
-            "Se sugiere estructura de JV local o distribuidor establecido para gestionar "
-            "el {riesgo_principal}."
-        ),
-        (
-            "Con exposición {sancion_nivel} a sanciones y demanda {demanda_adj}, "
-            "{descripcion_sector} representa una oportunidad de posicionamiento anticipado. "
-            "El flujo de caja debe diseñarse para absorber volatilidad cambiaria."
-        ),
-    ],
-    "PRIORITARIA": [
-        (
-            "{label} es el sector con mayor atractivo de entrada en el entorno actual. "
-            "Combina {dim_fuerte_label} sólido ({dim_fuerte_score:.0f}/100), "
-            "demanda {demanda_adj} y exposición {sancion_nivel} a riesgo sancionatorio. "
-            "Momento óptimo para compromisos de mediano plazo."
-        ),
-    ],
-}
-
-_DEMANDA_ADJ_TEXTO = {"alta": "defensiva y estructuralmente resiliente", "media": "moderadamente resiliente", "baja": "cíclica y sensible al entorno"}
-_SANCION_ADJ_TEXTO = {"alta": "alta", "media": "moderada", "baja": "baja"}
-
-
-def _fmt_risk(texto: str) -> str:
-    """Normaliza una etiqueta de riesgo a la forma 'Riesgo <descripcion>'.
-
-    `mapa_riesgo_dimension` guarda las etiquetas ya prefijadas ("Riesgo
-    institucional / contractual") mientras que `riesgos_candidatos` las guarda
-    desnudas y en minúscula ("institucional / contractual"). Como
-    _get_main_risk puede devolver cualquiera de las dos, la columna "Riesgo
-    principal" del dashboard mezclaba ambos formatos en la misma tabla.
-    """
-    t = (texto or "").strip()
-    if not t:
-        return "Riesgo no determinado"
-    return t if t.lower().startswith("riesgo") else f"Riesgo {t[0].lower()}{t[1:]}"
-
-
-def _is_num(v) -> bool:
-    """True si v es un número utilizable (no None, no NaN)."""
-    return v is not None and not (isinstance(v, float) and v != v)
-
+DIM_COLS = ["D1_macro", "D2_energia", "D3_institucional", "D4_comercial", "D5_capital_humano", "D6_percepcion"]
+_CONFIG_PATH = Path(__file__).resolve().parents[3] / "data/config/sector_weights.json"
+COLORS = dict(zip(["Muy desfavorable", "Desfavorable", "Intermedio", "Favorable", "Muy favorable"],
+                  ["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#27ae60"]))
 
 class SectorRadar:
-    """
-    Motor del Investment Entry Radar Sectorial.
+    def __init__(self, df_scores, config=None, **kwargs):
+        self.cfg = config or json.loads(_CONFIG_PATH.read_text(encoding="utf8"))
+        self.df = df_scores.reindex(columns=["año", "iciv_score"] + DIM_COLS).sort_values("año")
+        for sector in self.cfg["sectores"].values():
+            weights = sector["pesos"]
+            if set(weights) != set(DIM_COLS) or any(w < 0 or not np.isfinite(w) for w in weights.values()) or not np.isclose(sum(weights.values()), 1):
+                raise ValueError("Los perfiles deben declarar seis pesos no negativos con suma 1")
 
-    Uso:
-        engine = SectorRadar(df_scores, config)
-        data   = engine.compute_all()
-    """
-
-    def __init__(
-        self,
-        df_scores: pd.DataFrame,
-        config: dict | None = None,
-        riesgo_regulatorio_count: int = 0,
-    ) -> None:
-        """
-        Parameters
-        ----------
-        df_scores : DataFrame con columnas [año, D1_macro, …, D6_percepcion, iciv_score]
-        config    : dict cargado de sector_weights.json (se carga automáticamente si None)
-        riesgo_regulatorio_count : parametro legado; se mantiene en cero en la version vigente
-        """
-        if config is None:
-            config = json.loads(_CONFIG_PATH.read_text(encoding="utf-8"))
-        self.cfg = config
-        self.sectores = config["sectores"]
-        self.params = config["parametros_ajustadores"]
-        self.categorias = config["categorias"]
-        self.riesgo_dim_map = config["mapa_riesgo_dimension"]
-        self.riesgo_regulatorio_count = riesgo_regulatorio_count
-
-        # Asegurar que el DataFrame tenga todas las columnas necesarias
-        df = df_scores.copy()
-        if "año" not in df.columns and df.index.name == "año":
-            df = df.reset_index()
-        # Requiere solo iciv_score para filtrar
-        df = df.dropna(subset=["iciv_score"]).copy()
-        # CERO datos artificiales: dimensiones NaN se mantienen NaN.
-        # El radar visualizará 0/sin dato para esos ejes — comportamiento honesto.
-        # NOTA: anteriormente se imputaba con iciv_score, lo cual creaba datos
-        # artificiales para dimensiones sin información real ese año.
-        for d in DIM_COLS:
-            if d not in df.columns:
-                df[d] = pd.NA
-        df["año"] = df["año"].astype(int)
-        self.df = df.sort_values("año").reset_index(drop=True)
-
-        self.años = self.df["año"].tolist()
-        # Radar sectorial: el perfil dimensional debe estar razonablemente
-        # completo. Antes se exigían las 6 dimensiones; con el piso de cobertura
-        # del agregador (aggregator.MIN_DIMENSION_COVERAGE) una dimensión puede
-        # quedar NaN por baja cobertura y eso empujaba el radar dos años atrás.
-        # Se pide MIN_PROFILE_DIMS de 6 —suficiente para que la redistribución
-        # de pesos de _base_score sea representativa— en vez de las 6 exactas.
-        usable_years = [
-            int(row["año"])
-            for _, row in self.df.iterrows()
-            if sum(1 for d in DIM_COLS if pd.notna(row.get(d))) >= MIN_PROFILE_DIMS
-        ]
-        self.año_actual = usable_years[-1] if usable_years else self.años[-1]
-        self.iciv_actual = float(self.df.loc[self.df["año"] == self.año_actual, "iciv_score"].iloc[0])
-
-    # ── API pública ───────────────────────────────────────────────────────────
-
-    def compute_all(self) -> dict:
-        """Calcula el radar sectorial para todos los años y sectores."""
-
-        # Dimension scores del año actual
-        row_actual = self.df[self.df["año"] == self.año_actual].iloc[0]
-        dim_actual = {d: float(row_actual[d]) for d in DIM_COLS}
-
-        # Histórico por sector (None cuando NaN en alguna dim crítica)
-        series_hist: dict[str, list] = {sid: [] for sid in self.sectores}
-        for _, row in self.df.iterrows():
-            dim_row = {d: (float(row[d]) if (row[d] is not None
-                            and not (isinstance(row[d], float) and row[d] != row[d]))
-                          else None)
-                       for d in DIM_COLS}
-            iciv_row = float(row["iciv_score"])
-            for sid, scfg in self.sectores.items():
-                score = self._final_score(scfg, dim_row, iciv_row)
-                series_hist[sid].append(round(score, 2) if score == score else None)
-
-        # Ranking del año actual
-        ranking = []
-        # Detectar dimensiones con dato real (no NaN) en el año actual
-        dims_disponibles = [d for d, v in dim_actual.items()
-                           if v is not None and not (isinstance(v, float) and v != v)]
-        cobertura_dims = len(dims_disponibles) / len(DIM_COLS)
-
-        for sid, scfg in self.sectores.items():
-            base_raw = self._base_score(scfg, dim_actual)
-            # D3 may be NaN → neutral sanction penalty
-            d3 = dim_actual.get("D3_institucional")
-            if d3 is None or (isinstance(d3, float) and d3 != d3):
-                sp = 0.0
-            else:
-                sp = self._sanction_penalty(scfg, d3)
-            cp = self._capex_penalty(scfg, self.iciv_actual) if base_raw == base_raw else 0.0
-            db = self._defensive_bonus(scfg)
-
-            if base_raw != base_raw:  # NaN — datos insuficientes
-                final = None
-                base = None
-                rec = {"label": "Datos insuficientes", "short": "SIN DATOS",
-                       "color": "#8b949e", "hex": "#8b949e"}
-            else:
-                base = base_raw
-                final = round(max(0.0, min(100.0, base - sp - cp + db)), 2)
-                rec = self._get_recommendation(final)
-
-            weighted = {d: (round(dim_actual[d] * scfg["pesos"][d], 2)
-                            if (dim_actual.get(d) is not None
-                                and not (isinstance(dim_actual.get(d), float) and dim_actual.get(d) != dim_actual.get(d)))
-                            else None)
-                        for d in DIM_COLS}
-            riesgo = self._get_main_risk(sid, scfg, dim_actual, weighted, final or 0)
-            racional = self._generate_rationale(sid, scfg, final or 0, rec, riesgo, dim_actual)
-
-            ranking.append({
-                "sector_id": sid,
-                "label": scfg["label"],
-                "label_corto": scfg["label_corto"],
-                "score": final,
-                "score_base": round(base, 2) if base is not None else None,
-                "penalizacion_sancion": round(sp, 2),
-                "penalizacion_capex": round(cp, 2),
-                "bonus_defensivo": round(db, 2),
-                "recomendacion": rec["label"],
-                "recomendacion_short": rec["short"],
-                "color": rec["color"],
-                "hex": rec["hex"],
-                "riesgo_principal": riesgo,
-                "racional": racional,
-                "pesos": scfg["pesos"],
-                "scores_dim_ponderados": weighted,
-                "ajustadores": scfg["ajustadores"],
-            })
-
-        # Ordenar: scores válidos descendente, SIN DATOS al final
-        ranking.sort(key=lambda x: (x["score"] is None, -(x["score"] or 0)))
-        for i, r in enumerate(ranking, 1):
-            r["rank"] = i
-
-        # Resumen por categoría (incluye SIN DATOS)
-        resumen = {"NO ENTRAR": 0, "ESPERAR": 0, "PILOTO": 0, "ENTRADA": 0,
-                   "PRIORITARIA": 0, "SIN DATOS": 0}
-        for r in ranking:
-            k = r["recomendacion_short"]
-            if k in resumen:
-                resumen[k] += 1
-
-        return {
-            "año_actual": self.año_actual,
-            "iciv_actual": round(self.iciv_actual, 2),
-            "dim_scores_actuales": {d: round(dim_actual[d], 2) for d in DIM_COLS},
-            "ranking": ranking,
-            "resumen_categorias": resumen,
-            "series_historicas": {
-                "años": self.años,
-                "sectores": series_hist,
-            },
-            "sector_labels": {sid: scfg["label"] for sid, scfg in self.sectores.items()},
-            "categorias": self.categorias,
-            "metodologia": (
-                "Investment Entry Radar Sectorial v1.1. "
-                "Score base = Σ DimScore(d) × PesoSectorial(s,d), con los pesos "
-                "renormalizados sobre las dimensiones con dato (mínimo 50% del peso). "
-                "Ajustadores: penalizacion regulatoria, penalizacion CAPEX "
-                "(escala con ICIV < 50), bonus de demanda defensiva. "
-                f"ICIV actual: {self.iciv_actual:.1f}/100. "
-                "Umbrales: <35 No entrar · 35-50 Esperar · 50-65 Piloto · "
-                "65-80 Entrada · ≥80 Prioritaria."
-            ),
-        }
-
-    # ── Score base ────────────────────────────────────────────────────────────
-
-    def _base_score(self, sector_cfg: dict, dim_scores: dict) -> float:
-        """
-        Promedio ponderado de dims con redistribución cuando hay NaN.
-        Si una dimensión es NaN, se EXCLUYE y los pesos se renormalizan
-        sobre las dims disponibles (igual lógica que aggregator ICIV).
-        Si TODAS son NaN, retorna NaN (sin datos suficientes).
-        """
-        total_weight = 0.0
-        weighted_sum = 0.0
-        for d in DIM_COLS:
-            v = dim_scores.get(d)
-            if v is None or (isinstance(v, float) and (v != v)):  # NaN check
-                continue
-            w = sector_cfg["pesos"][d]
-            weighted_sum += v * w
-            total_weight += w
-        if total_weight < 0.5:  # menos del 50% del peso AHP disponible
+    def _base_score(self, sector_cfg, dim_scores):
+        weights = sector_cfg["pesos"]
+        if any(pd.isna(dim_scores.get(d)) for d, w in weights.items() if w > 0):
             return float("nan")
-        return weighted_sum / total_weight
+        return sum(float(dim_scores[d]) * w for d, w in weights.items() if w > 0)
 
-    def _final_score(self, sector_cfg: dict, dim_scores: dict, iciv: float) -> float:
-        base = self._base_score(sector_cfg, dim_scores)
-        if base != base:  # NaN
-            return float("nan")
-        # D3 puede ser NaN → la penalización se asume neutra
-        d3 = dim_scores.get("D3_institucional")
-        if d3 is None or (isinstance(d3, float) and d3 != d3):
-            sp = 0.0
-        else:
-            sp = self._sanction_penalty(sector_cfg, d3)
-        cp = self._capex_penalty(sector_cfg, iciv)
-        db = self._defensive_bonus(sector_cfg)
-        return max(0.0, min(100.0, base - sp - cp + db))
-
-    # ── Ajustadores ──────────────────────────────────────────────────────────
-
-    def _sanction_penalty(self, sector_cfg: dict, d3_score: float) -> float:
-        """
-        Penalizacion por exposicion regulatoria e institucional.
-        Se escala con la debilidad institucional (D3 bajo → mayor impacto).
-        Máx cuando D3 = 0; mínimo cuando D3 ≥ 80.
-        """
-        nivel = sector_cfg["ajustadores"]["sancion"]
-        base_penalty = self.params["sancion"][nivel]
-        # Escalar por debilidad institucional: D3 muy bajo amplifica el riesgo
-        inst_factor = max(0.0, (80.0 - d3_score) / 80.0)
-        return base_penalty * inst_factor
-
-    def _capex_penalty(self, sector_cfg: dict, iciv_score: float) -> float:
-        """
-        Penalización por alta intensidad de capital cuando el ICIV está bajo.
-        Solo activa cuando ICIV < umbral; escala linealmente.
-        """
-        nivel = sector_cfg["ajustadores"]["capex"]
-        max_penalty = self.params["capex"][nivel]
-        umbral = self.params["capex"]["iciv_umbral"]
-        if max_penalty == 0 or iciv_score >= umbral:
-            return 0.0
-        factor = (umbral - iciv_score) / umbral
-        return max_penalty * factor
-
-    def _defensive_bonus(self, sector_cfg: dict) -> float:
-        """Bonus fijo por resiliencia de demanda en contextos de crisis."""
-        nivel = sector_cfg["ajustadores"]["demanda_defensiva"]
-        return float(self.params["demanda_defensiva"][nivel])
-
-    # ── Recomendación ─────────────────────────────────────────────────────────
-
-    def _get_recommendation(self, score: float) -> dict:
-        # Recorre en orden descendente; devuelve la primera categoría cuyo umbral
-        # mínimo el score supera — evita gaps entre rangos enteros con scores decimales.
-        for cat in reversed(self.categorias):
-            if score >= cat["min"]:
-                return cat
-        return self.categorias[0]  # fallback: más conservadora
-
-    # ── Riesgo principal ──────────────────────────────────────────────────────
-
-    def _get_main_risk(
-        self,
-        sector_id: str,
-        sector_cfg: dict,
-        dim_scores: dict,
-        weighted: dict,
-        final_score: float,
-    ) -> str:
-        """
-        Identifica el riesgo dominante combinando:
-        1. Dimensión con menor contribución ponderada (score × peso)
-        2. Exposicion regulatoria del sector
-        3. Candidatos de riesgo propios del sector
-        """
-        # Forzar riesgo sancionatorio cuando la penalizacion por sanciones es,
-        # de hecho, el lastre dominante. Antes bastaba con `final_score < 55`,
-        # un umbral arbitrario que con el ICIV actual se cumplia siempre y hacia
-        # que los tres sectores de exposicion alta mostraran la misma etiqueta
-        # sin que el dato la respaldara.
-        d3 = dim_scores.get("D3_institucional")
-        sp = self._sanction_penalty(sector_cfg, d3) if _is_num(d3) else 0.0
-        if sector_cfg["ajustadores"]["sancion"] == "alta" and sp >= 5.0:
-            return _fmt_risk("sancionatorio")
-
-        # Dimensión con menor contribución ponderada (excluir dimensiones con peso 0 o sin dato)
-        dim_activas = {d: weighted[d] for d in DIM_COLS
-                       if sector_cfg["pesos"][d] > 0 and weighted.get(d) is not None}
-        if not dim_activas:
-            return _fmt_risk(sector_cfg["riesgos_candidatos"][0])
-
-        dim_debil = min(dim_activas, key=dim_activas.get)
-
-        # Usar riesgo del candidato si coincide con la dimensión débil
-        candidatos = sector_cfg["riesgos_candidatos"]
-        riesgo_dim = self.riesgo_dim_map.get(dim_debil, "Riesgo operacional")
-
-        # Heurística: si D3 está entre las 2 peores y hay candidato institucional
-        dim_sorted = sorted(dim_activas, key=dim_activas.get)
-        if "D3_institucional" in dim_sorted[:2] and any("institucional" in c or "contractual" in c for c in candidatos):
-            return _fmt_risk(next(c for c in candidatos if "institucional" in c or "contractual" in c))
-
-        return _fmt_risk(riesgo_dim)
-
-    # ── Racional ejecutivo ────────────────────────────────────────────────────
-
-    def _generate_rationale(
-        self,
-        sector_id: str,
-        sector_cfg: dict,
-        score: float,
-        rec: dict,
-        riesgo: str,
-        dim_scores: dict,
-    ) -> str:
-        short = rec["short"]
-        templates = _RATIONALE_TEMPLATES.get(short, _RATIONALE_TEMPLATES["ESPERAR"])
-        # crc32 en vez de hash(): el hash de strings de Python esta aleatorizado
-        # por proceso (PYTHONHASHSEED), asi que la plantilla elegida cambiaba
-        # entre corridas y producia diffs espurios en el dashboard versionado.
-        template = templates[zlib.crc32(sector_id.encode("utf-8")) % len(templates)]
-
-        # Dimensión más fuerte y más débil (con peso > 0 y dato real).
-        # Sin el filtro _is_num, una dimensión NaN propagaba el NaN al producto
-        # y sorted() la ordenaba de forma arbitraria, dejando "nan/100" en el texto.
-        pesos = sector_cfg["pesos"]
-        activas = [(d, dim_scores[d] * pesos[d]) for d in DIM_COLS
-                   if pesos[d] > 0 and _is_num(dim_scores.get(d))]
-        if not activas:
-            return (
-                f"{sector_cfg['label']}: sin dimensiones con dato suficiente para "
-                f"emitir un racional. Riesgo principal: {riesgo}."
-            )
-        activas_sorted = sorted(activas, key=lambda x: x[1], reverse=True)
-        dim_fuerte_id = activas_sorted[0][0]
-        dim_debil_id = activas_sorted[-1][0]
-
-        context = {
-            "label": sector_cfg["label"],
-            "descripcion_sector": sector_cfg["descripcion_sector"],
-            "riesgo_principal": riesgo,
-            "riesgo_dim": self.riesgo_dim_map.get(dim_debil_id, "riesgo operacional"),
-            "dim_fuerte_label": DIM_LABELS[dim_fuerte_id],
-            "dim_fuerte_score": dim_scores[dim_fuerte_id],
-            "dim_debil_label": DIM_LABELS[dim_debil_id],
-            "dim_score": dim_scores[dim_debil_id],
-            "iciv_actual": self.iciv_actual,
-            "sancion_nivel": _SANCION_ADJ_TEXTO[sector_cfg["ajustadores"]["sancion"]],
-            "demanda_adj": _DEMANDA_ADJ_TEXTO[sector_cfg["ajustadores"]["demanda_defensiva"]],
-        }
-        try:
-            return template.format(**context)
-        except KeyError:
-            return (
-                f"{sector_cfg['label']}: score {score:.1f}/100 — "
-                f"Recomendación: {rec['label']}. Riesgo principal: {riesgo}."
-            )
+    def compute_all(self):
+        eligible = self.df.dropna(subset=DIM_COLS + ["iciv_score"])
+        if eligible.empty:
+            return {"available": False, "ranking": [], "reason": "Sin un año con todas las dimensiones publicadas"}
+        row = eligible.iloc[-1]
+        ranking, series = [], {}
+        counts = {cat: 0 for cat in COLORS}
+        for sid, cfg in self.cfg["sectores"].items():
+            score = self._base_score(cfg, row)
+            cat = _get_risk_category(score)
+            deficit = {d: (100 - row[d]) * w for d, w in cfg["pesos"].items() if w > 0}
+            weak = max(deficit, key=deficit.get)
+            counts[cat] += 1
+            ranking.append({"sector_id": sid, "label": cfg["label"], "label_corto": cfg["label_corto"],
+                            "score": round(score, 2), "score_base": round(score, 2), "hex": COLORS[cat],
+                            "color": COLORS[cat], "recomendacion": cat, "recomendacion_short": cat,
+                            "riesgo_principal": "Mayor déficit ponderado: " + weak,
+                            "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.",
+                            "pesos": cfg["pesos"], "scores_dim_ponderados": {d: row[d]*w for d,w in cfg["pesos"].items()},
+                            "ajustadores": {}})
+            values = [self._base_score(cfg, r) for _, r in self.df.iterrows()]
+            series[sid] = [round(v, 2) if np.isfinite(v) else None for v in values]
+        ranking.sort(key=lambda r: -r["score"])
+        for i, r in enumerate(ranking, 1): r["rank"] = i
+        return {"available": True, "año_actual": int(row["año"]), "iciv_actual": float(row["iciv_score"]),
+                "dim_scores_actuales": {d: float(row[d]) for d in DIM_COLS}, "ranking": ranking,
+                "resumen_categorias": counts, "series_historicas": {"años": self.df["año"].tolist(), "sectores": series},
+                "sector_labels": {sid: cfg["label"] for sid,cfg in self.cfg["sectores"].items()},
+                "categorias": [], "metodologia": "Sensibilidad por perfiles hipotéticos: suma de dimensiones por pesos declarados; exige todas las dimensiones. Sin ajustes manuales ni recomendación de inversión."}

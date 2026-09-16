@@ -13,8 +13,8 @@ Variable: wjp_rule_of_law — Overall Score (0-1, mayor = mejor estado de derech
 
 Cobertura REAL del índice: ediciones 2012-2013 en adelante. El índice WJP
 NO existe antes de 2012; los años 2000-2011 quedan NaN en el pipeline.
-Las ediciones dobles (2012-2013, 2017-2018) se asignan a ambos años
-calendario, tal como las nombra el propio WJP.
+Las ediciones dobles (2012-2013, 2017-2018) se asignan solo al año final.
+Una edición representa una medición, no dos observaciones independientes.
 
 Rango de referencia: Venezuela puntúa ~0.36 (2012) a ~0.26 (2024-2025),
 último lugar del ranking global. Cualquier valor fuera de [0.15, 1.0] se
@@ -26,10 +26,8 @@ NOTA DE AUDITORÍA (2026-07-21):
   (escala distinta, valores cercanos a 0 para Venezuela). Ese fallback
   contaminó wjp.csv con datos de otra fuente etiquetados como WJP
   (2000-2025, valores 0.211→0.009). Se eliminó todo fallback que no sea el
-  archivo oficial WJP o un CSV manual descargado del propio WJP.
-
-Fallback manual: data/raw/wjp_manual.csv con columnas year|score, solo si
-  proviene de worldjusticeproject.org.
+  archivo oficial WJP. El vintage se fija explícitamente; no se cambia
+  automáticamente a otro vintage ni a archivos manuales ante una falla.
 
 Salida: data/raw/wjp.csv
 Formato: año | indicador | valor | pais | fuente
@@ -60,14 +58,11 @@ OUTPUT = settings.paths.raw_wjp
 
 _HEADERS = {"User-Agent": "Mozilla/5.0 (academic research project ICIV)"}
 
-# Archivo histórico oficial WJP — se intenta la edición más reciente primero.
-_WJP_HISTORICAL_URLS = [
-    "https://worldjusticeproject.org/rule-of-law-index/downloads/2026_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
-    "https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
-    "https://worldjusticeproject.org/rule-of-law-index/downloads/2024_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
-]
-
-_MANUAL_CSV = Path(__file__).resolve().parents[1] / "data" / "raw" / "wjp_manual.csv"
+# Vintage oficial fijado explícitamente y coincidente con el archivo raw.
+_WJP_HISTORICAL_URL = (
+    "https://worldjusticeproject.org/rule-of-law-index/downloads/"
+    "2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx"
+)
 
 # Sanidad de escala: el Overall Score WJP nunca baja de ~0.25 (Venezuela es
 # el mínimo global). Valores fuera de este rango indican mezcla de fuentes.
@@ -75,12 +70,12 @@ _SCORE_MIN, _SCORE_MAX = 0.15, 1.0
 
 
 def _expand_edition_years(year_label: str) -> list[int]:
-    """'2012-2013' -> [2012, 2013]; '2019' -> [2019]."""
+    """Una medición por edición: '2012-2013' -> [2013]."""
     label = str(year_label).strip()
     if "-" in label:
         parts = label.split("-")
         try:
-            return list(range(int(parts[0]), int(parts[1]) + 1))
+            return [int(parts[1])]
         except ValueError:
             return []
     try:
@@ -145,54 +140,11 @@ def _try_wjp_historical(url: str) -> pd.DataFrame | None:
         return None
 
 
-def _try_manual_csv() -> pd.DataFrame | None:
-    """CSV manual descargado del propio WJP (year|score)."""
-    if not _MANUAL_CSV.exists():
-        return None
-    try:
-        df = pd.read_csv(_MANUAL_CSV)
-        year_col  = "year" if "year" in df.columns else "año"
-        score_col = "score" if "score" in df.columns else df.columns[1]
-        df = df[[year_col, score_col]].rename(
-            columns={year_col: "año", score_col: "valor"}
-        ).dropna(subset=["valor"])
-        df["año"] = df["año"].astype(int)
-        df = df[(df["año"] >= START) & (df["año"] <= END)]
-        bad = df[(df["valor"] < _SCORE_MIN) | (df["valor"] > _SCORE_MAX)]
-        if not bad.empty:
-            print("  Manual CSV WJP: valores fuera de escala WJP — rechazado")
-            return None
-        df["edicion"] = df["año"].astype(str)
-        df.attrs["source_url"] = "wjp_manual.csv (descarga manual worldjusticeproject.org)"
-        print(f"  Manual CSV WJP: {len(df)} años cargados")
-        return df if not df.empty else None
-    except Exception as exc:
-        print(f"  Manual CSV error: {exc}")
-        return None
-
-
 def fetch_wjp() -> pd.DataFrame:
     """Descarga WJP Rule of Law Venezuela desde el archivo oficial. Sin fallbacks de otras fuentes."""
-    df_vals = None
-    for attempt in [
-        *[lambda u=u: _try_wjp_historical(u) for u in _WJP_HISTORICAL_URLS],
-        _try_manual_csv,
-    ]:
-        candidate = attempt()
-        if candidate is not None and not candidate.empty:
-            df_vals = candidate
-            break
-
+    df_vals = _try_wjp_historical(_WJP_HISTORICAL_URL)
     if df_vals is None or df_vals.empty:
-        print(
-            "\n  ADVERTENCIA: WJP Rule of Law no disponible automaticamente.\n"
-            "  Descargar el Historical Data File desde\n"
-            "  worldjusticeproject.org/rule-of-law-index/ y guardar en\n"
-            "  data/raw/wjp_manual.csv con columnas: year | score\n"
-            "  La variable wjp_rule_of_law quedara NaN en el pipeline.\n"
-            "  NO usar fuentes distintas al WJP (p.ej. V-Dem via OWID)."
-        )
-        return pd.DataFrame(columns=["año", "indicador", "valor", "pais", "fuente"])
+        raise RuntimeError("WJP vintage configurado no disponible; wjp.csv no actualizado.")
 
     src = df_vals.attrs.get("source_url", "worldjusticeproject.org")
     rows = []
@@ -220,6 +172,7 @@ if __name__ == "__main__":
     if df.empty:
         print("\n  0 anos. wjp.csv NO actualizado.")
     else:
-        df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(df, OUTPUT)
         print(f"\n  Guardado: {OUTPUT}  ({len(df)} anos)")
         print(df[["año", "valor"]].to_string(index=False))

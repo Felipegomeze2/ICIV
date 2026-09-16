@@ -15,8 +15,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--include-low-coverage", action="store_true")
     parser.add_argument("--min-train-months", type=int, default=60)
-    parser.add_argument("--step-months", type=int, default=3)
-    parser.add_argument("--sarima-origin-step-months", type=int, default=12)
+    parser.add_argument("--step-months", type=int, default=6,
+                        help="Paso común entre orígenes para todos los modelos")
     args = parser.parse_args()
 
     pulse_path = settings.paths.data_processed / "iciv_pulse_monthly.csv"
@@ -28,7 +28,6 @@ def main() -> int:
     config = BacktestConfig(
         min_train_months=args.min_train_months,
         step_months=args.step_months,
-        sarima_origin_step_months=args.sarima_origin_step_months,
         include_low_coverage=args.include_low_coverage,
     )
     result = run_pulse_backtest(pulse_df, settings.paths.data_processed, config)

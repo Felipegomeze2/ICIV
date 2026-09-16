@@ -1,0 +1,4 @@
+﻿origin_date,target_date,horizon,model,reason
+2015-12-01,2016-01-01,1,sarima,non_convergence_or_invalid_parameters
+2015-12-01,2016-03-01,3,sarima,non_convergence_or_invalid_parameters
+2015-12-01,2016-06-01,6,sarima,non_convergence_or_invalid_parameters

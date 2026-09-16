@@ -141,7 +141,8 @@ if __name__ == "__main__":
         print("\n  0 datos.")
         sys.exit(1)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
+    from iciv.utils import save_dataframe
+    save_dataframe(df, OUTPUT)
     print(f"\n  Guardado: {OUTPUT}  ({len(df)} filas)")
     print(df.groupby("variable").agg(
         n_meses=("año", "count"),

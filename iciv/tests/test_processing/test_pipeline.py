@@ -90,12 +90,12 @@ def test_normalizer_output_range(sample_wdi_df):
 def test_normalizer_inverts_negative_vars():
     df = pd.DataFrame({
         "año": [2000, 2001, 2002],
-        "inflacion_deflactor_pib_pct": [10.0, 50.0, 100.0]
+        "inflacion_ipc_imf_pct": [10.0, 50.0, 100.0]
     })
-    normalizer = MinMaxNormalizer(columns=["inflacion_deflactor_pib_pct"])
+    normalizer = MinMaxNormalizer(columns=["inflacion_ipc_imf_pct"])
     result = normalizer.fit_transform(df)
     # Mayor inflación = peor → debe tener score más BAJO
-    scores = result["inflacion_deflactor_pib_pct"].tolist()
+    scores = result["inflacion_ipc_imf_pct"].tolist()
     assert scores[0] > scores[2], "Inflación baja debe dar score más alto"
 
 
