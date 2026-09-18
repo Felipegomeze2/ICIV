@@ -67,14 +67,15 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 # -- Colores del ICIV ----------------------------------------------------------
+# Paleta editorial: tonos de tinta que se leen sobre papel crema.
 RISK_COLORS = {
-    "Muy desfavorable":          "#e74c3c",
-    "Desfavorable": "#e67e22",
-    "Intermedio":      "#f1c40f",
-    "Favorable":          "#2ecc71",
-    "Muy favorable":      "#27ae60",
+    "Muy desfavorable": "#9e2a2b",
+    "Desfavorable":     "#c2600e",
+    "Intermedio":       "#b07d00",
+    "Favorable":        "#2f7d4f",
+    "Muy favorable":    "#1f6f78",
 }
-DIM_COLORS = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"]
+DIM_COLORS = ["#2b5c9e", "#c2600e", "#6b4c9a", "#1f7a6e", "#9e2a2b", "#b07d00"]
 
 
 # =============================================================================
@@ -743,13 +744,13 @@ def fase_dashboard(
     # <50%       → Provisional (rojo)     — solo fuentes de alta frecuencia
     def _cov_tier(pct: float) -> tuple[str, str]:
         if pct >= 85.0:
-            return ("Histórico",   "#00d4aa")
+            return ("Histórico",   "#1f6f78")
         elif pct >= 70.0:
-            return ("Útil",        "#2ecc71")
+            return ("Útil",        "#2f7d4f")
         elif pct >= 50.0:
-            return ("Parcial",     "#e6a817")
+            return ("Parcial",     "#b07d00")
         else:
-            return ("Provisional", "#e74c3c")
+            return ("Provisional", "#9e2a2b")
 
     _tier_label, _tier_color = _cov_tier(current_coverage)
     coverage_badge = f"{current_coverage:.0f}% · {_tier_label}"
@@ -821,7 +822,7 @@ def fase_dashboard(
                 f'<tr><td>{label}</td>'
                 f'<td>{w:.4f}</td>'
                 f'<td>{pct}</td>'
-                f'<td><div style="background:#00d4aa;height:10px;border-radius:4px;width:{bar}px;max-width:200px"></div></td></tr>\n'
+                f'<td><div style="background:#1c2333;height:10px;border-radius:0;width:{bar}px;max-width:200px"></div></td></tr>\n'
             )
 
     # Historical table rows
@@ -852,20 +853,20 @@ def fase_dashboard(
     dim_detail_cards_html = ""
     for dim_id, dim in DIMENSIONS.items():
         d_score = float(last_row.get(dim_id.value, 0) or 0)
-        d_color = _score_to_color(d_score) if d_score > 0 else "#8b949e"
+        d_color = _score_to_color(d_score) if d_score > 0 else "#8a8d96"
         d_pct   = f"{dim.iciv_weight*100:.0f}%"
         vars_rows = ""
         for vw in dim.variables:
             meta = CATALOG.get(vw.column)
             src  = SOURCE_LABELS.get(meta.source.value, meta.source.value) if meta else "—"
             dirn = "▲ positiva" if (meta and meta.direction.value == "positive") else "▼ negativa"
-            dirn_color = "#00d4aa" if (meta and meta.direction.value == "positive") else "#e05c5c"
+            dirn_color = "#2f7d4f" if (meta and meta.direction.value == "positive") else "#9e2a2b"
             col_label = (meta.description.split("—")[0].strip() if meta else vw.column)
             vars_rows += (
                 f'<tr>'
                 f'<td style="font-size:.75rem">{col_label}</td>'
                 f'<td style="text-align:center;font-weight:600">{vw.weight:.0%}</td>'
-                f'<td><span style="background:#21262d;padding:2px 7px;border-radius:10px;font-size:.68rem">{src}</span></td>'
+                f'<td><span style="background:#efe8d8;padding:2px 7px;border-radius:2px;font-size:.68rem">{src}</span></td>'
                 f'<td style="color:{dirn_color};font-size:.72rem">{dirn}</td>'
                 f'</tr>\n'
             )
@@ -1156,11 +1157,11 @@ def fase_dashboard(
             # Interpretación
             _r_abs = abs(_r)
             if _r_abs >= 0.7:
-                _interp = '<span style="color:#2ecc71">Validado ✓ (correlación fuerte)</span>'
+                _interp = '<span style="color:#2f7d4f">Validado ✓ (correlación fuerte)</span>'
             elif _r_abs >= 0.4:
-                _interp = '<span style="color:#f1c40f">Validado parcialmente (moderada)</span>'
+                _interp = '<span style="color:#b07d00">Validado parcialmente (moderada)</span>'
             else:
-                _interp = '<span style="color:#e67e22">Débil — revisar</span>'
+                _interp = '<span style="color:#c2600e">Débil — revisar</span>'
             _ve_rows_html += (
                 f'<tr><td>{_label}</td>'
                 f'<td>{_r:.3f}</td>'
@@ -1206,18 +1207,18 @@ def fase_dashboard(
             _n_total += 1
             if _es_validado:
                 _n_validados += 1
-                _validacion_cell = f'<span style="color:#2ecc71">✓ Validado ({_dir_observada} observado, {_dir_esp} esperado)</span>'
+                _validacion_cell = f'<span style="color:#2f7d4f">✓ Validado ({_dir_observada} observado, {_dir_esp} esperado)</span>'
             else:
-                _validacion_cell = f'<span style="color:#e67e22">✗ Divergencia ({_dir_observada} obs, {_dir_esp} esp)</span>'
+                _validacion_cell = f'<span style="color:#c2600e">✗ Divergencia ({_dir_observada} obs, {_dir_esp} esp)</span>'
             # Color del delta
-            _delta_color = "#e05c5c" if _delta < 0 else "#2ecc71"
+            _delta_color = "#9e2a2b" if _delta < 0 else "#2f7d4f"
             _delta_str = f'<span style="color:{_delta_color};font-weight:600">{_delta_str}</span>'
         _ev_rows_html += (
             f'<tr><td>{_yr}</td><td>{_evento}</td>'
             f'<td>{_delta_str}</td><td>{_validacion_cell}</td></tr>'
         )
     _eventos_validados_html = _ev_rows_html
-    _eventos_resumen = (f"<strong style='color:#2ecc71'>{_n_validados}/{_n_total}</strong> eventos validados"
+    _eventos_resumen = (f"<strong style='color:#2f7d4f'>{_n_validados}/{_n_total}</strong> eventos validados"
                         if _n_total > 0 else "Sin datos suficientes")
 
     # ── Simulacion probabilistica retirada — JSON ────────────────────────────────────────────────────
@@ -1228,7 +1229,7 @@ def fase_dashboard(
     # ── ICIV Pulse Mensual — preparar JSON para dashboard ────────────────────
     _pulse_payload: dict = {"meses": [], "scores": [], "cobertura": [], "n_vars": []}
     _pulse_summary: dict = {"n_meses": 0, "score_actual": None, "categoria": "",
-                            "color": "#8b949e", "fecha_actual": ""}
+                            "color": "#8a8d96", "fecha_actual": ""}
     if pulse_data is not None and not pulse_data.empty:
         _p = pulse_data.copy()
         _p["mes_str"] = _p["año"].astype(str) + "-" + _p["mes"].astype(str).str.zfill(2)
@@ -1251,13 +1252,13 @@ def fase_dashboard(
             "n_meses":      len(_p),
             "score_actual": round(_ps, 2) if _ps is not None else None,
             "categoria":    (_score_to_label(_ps) if _latest_reliable else "Provisional") if _ps is not None else "Sin datos",
-            "color":        (_score_to_color(_ps) if _latest_reliable else "#e6a817") if _ps is not None else "#8b949e",
+            "color":        (_score_to_color(_ps) if _latest_reliable else "#b07d00") if _ps is not None else "#8a8d96",
             "fecha_actual": _p_latest["mes_str"],
             "cobertura":    round(float(_p_latest["cobertura_pct"]), 1),
             "es_confiable": _latest_reliable,
             "score_confiable": round(_prs, 2) if _prs is not None else None,
             "categoria_confiable": _score_to_label(_prs) if _prs is not None else "Sin datos",
-            "color_confiable": _score_to_color(_prs) if _prs is not None else "#8b949e",
+            "color_confiable": _score_to_color(_prs) if _prs is not None else "#8a8d96",
             "fecha_confiable": _p_ref["mes_str"],
             "cobertura_confiable": round(float(_p_ref["cobertura_pct"]), 1),
         }
@@ -1658,9 +1659,9 @@ def fase_dashboard(
     # no dejar una tarjeta en cero permanente en el caso normal.
     _KPI_CATS = [(label, label, color) for label, color in reversed(list(RISK_COLORS.items()))]
     if _sector_resumen.get("SIN DATOS", 0) > 0:
-        _KPI_CATS.append(("SIN DATOS", "Sin datos", "#8b949e"))
+        _KPI_CATS.append(("SIN DATOS", "Sin datos", "#8a8d96"))
     _kpi_html = "".join(
-        f'<div style="background:var(--card);border:1px solid {hex_}44;border-radius:10px;'
+        f'<div style="background:var(--card);border:1px solid var(--border);border-top:3px solid {hex_};border-radius:2px;'
         f'padding:14px;text-align:center">'
         f'<div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">{label}</div>'
         f'<div style="font-size:1.8rem;font-weight:700;color:{hex_};line-height:1">'
@@ -1672,8 +1673,8 @@ def fase_dashboard(
 
     # Tabla de ranking — filas
     _SECTOR_COLORS = [
-        "#00d4aa","#3498db","#2ecc71","#e67e22","#e74c3c",
-        "#9b59b6","#f1c40f","#1abc9c","#e91e63","#ff5722",
+        "#1c2333","#2b5c9e","#2f7d4f","#c2600e","#9e2a2b",
+        "#6b4c9a","#b07d00","#1f7a6e","#a63d6b","#b3261e",
     ]
     _table_rows_html = ""
     for r in _sector_ranking:
@@ -1681,7 +1682,7 @@ def fase_dashboard(
         score_label = f"{score:.1f}" if score is not None else "N/D"
         bar_width = f"{score:.1f}%" if score is not None else "0"
         bar = (f'<div style="width:{bar_width};max-width:100%;height:6px;'
-               f'background:{r["hex"]};border-radius:3px;margin-top:3px"></div>')
+               f'background:{r["hex"]};border-radius:0;margin-top:3px"></div>')
         # El "racional" se omite en el producto: es texto largo por fila.
         # Sigue disponible en el payload sector_json para documentación.
         _table_rows_html += (
@@ -1764,7 +1765,7 @@ def fase_dashboard(
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ICIV — Indicador de Clima de Inversión Venezuela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
@@ -1778,9 +1779,9 @@ window.addEventListener('DOMContentLoaded', function() {{
   if (typeof d3    === 'undefined') faltan.push('d3');
   if (!faltan.length) return;
   var aviso = document.createElement('div');
-  aviso.style.cssText = 'position:sticky;top:0;z-index:999;background:#3a1d1d;'
-    + 'border-bottom:1px solid #e05c5c;color:#f5c6c6;padding:12px 20px;'
-    + 'font-size:.8rem;line-height:1.5;font-family:Inter,sans-serif';
+  aviso.style.cssText = 'position:sticky;top:0;z-index:999;background:#fbeae8;'
+    + 'border-bottom:2px solid #b3261e;color:#7a1a14;padding:12px 20px;'
+    + 'font-size:.8rem;line-height:1.5;font-family:"Inter Tight",Inter,sans-serif';
   aviso.innerHTML = '<strong>Los graficos no se pudieron cargar.</strong> '
     + 'No se alcanzo el CDN de ' + faltan.join(' y ') + ' (cdn.jsdelivr.net). '
     + 'Revisa la conexion, un bloqueador de anuncios o el filtrado de tu red. '
@@ -1790,116 +1791,123 @@ window.addEventListener('DOMContentLoaded', function() {{
 </script>
 <style>
 :root{{
-  --bg:#0d1117;--card:#1c2128;--border:#30363d;
-  --text:#e6edf3;--muted:#8b949e;--accent:#00d4aa;
-  --red:#e05c5c;--orange:#e67e22;--yellow:#f1c40f;--green:#2ecc71;
+  /* Editorial financiero: papel crema, tinta azul-negra, rojo ladrillo como acento. */
+  --bg:#f6f1e7;--card:#fffdf8;--card-alt:#efe8d8;--border:#d9d2c3;--grid:#e8e1d1;
+  --ink:#1c2333;--text:#1c2333;--muted:#5b5f6b;--faint:#8a8d96;
+  --accent:#b3261e;--accent-soft:rgba(179,38,30,.08);--accent-line:rgba(179,38,30,.35);
+  /* Semántica de riesgo, calibrada para leerse sobre crema. */
+  --red:#9e2a2b;--orange:#c2600e;--yellow:#b07d00;--green:#2f7d4f;--teal:#1f6f78;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --body:'Source Serif 4',Georgia,serif;
 }}
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 html{{scroll-behavior:smooth}}
-body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}}
+body{{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;
+     -webkit-font-smoothing:antialiased}}
+strong{{font-weight:700}}
 
-/* nav — sistema de 2 niveles */
-.nav-wrap{{position:sticky;top:0;z-index:100;background:#161b22;
-           border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.25)}}
-
-/* Top nav: 5 pestañas principales */
-.nav-top{{display:flex;align-items:center;gap:4px;padding:0 32px;height:54px;
-         border-bottom:1px solid #21262d;overflow-x:auto;max-width:100%}}
-.nav-brand{{color:var(--accent);font-weight:700;font-size:1rem;margin-right:28px;
-            letter-spacing:.4px;cursor:pointer;text-decoration:none;
-            transition:opacity .15s}}
-.nav-brand:hover{{opacity:.75}}
-.nav-top a{{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;
+/* nav — barra de cabecera de periódico: regla gruesa de tinta abajo */
+.nav-wrap{{position:sticky;top:0;z-index:100;background:var(--bg);
+           border-bottom:2px solid var(--ink)}}
+.nav-top{{display:flex;align-items:center;gap:2px;padding:0 40px;height:60px;
+         overflow-x:auto;max-width:100%}}
+/* Selector compuesto: .nav-top a (abajo) tiene más especificidad que .nav-brand solo. */
+.nav-top a.nav-brand{{font-family:var(--serif);font-weight:800;font-size:1.5rem;color:var(--ink);
+            margin-right:32px;padding:0;letter-spacing:-.02em;cursor:pointer;text-decoration:none;
+            text-transform:none;border-bottom:none;
+            font-variation-settings:'opsz' 144;transition:color .15s}}
+.nav-top a.nav-brand:hover{{color:var(--accent)}}
+.nav-top a{{color:var(--muted);text-decoration:none;font-size:.74rem;font-weight:600;
             flex:0 0 auto;white-space:nowrap;
-            padding:8px 18px;border-radius:8px;transition:all .18s;
-            text-transform:uppercase;letter-spacing:.6px;border:1px solid transparent}}
-.nav-top a:hover{{color:var(--text);background:rgba(255,255,255,.04);
-                  border-color:var(--border)}}
-.nav-top a.nav-top-active{{color:#0d1117;background:var(--accent);
-                           border-color:var(--accent);font-weight:700}}
+            padding:0 14px;height:60px;display:flex;align-items:center;
+            text-transform:uppercase;letter-spacing:.09em;
+            border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s}}
+.nav-top a:hover{{color:var(--ink)}}
+.nav-top a.nav-top-active{{color:var(--accent);border-bottom-color:var(--accent)}}
 
-/* Sub-nav: contiene las pestañas internas de cada bloque principal */
-.nav-sub{{display:none;align-items:center;gap:0;padding:0 32px;height:42px;
-         background:#0d1117;overflow-x:auto}}
+/* Sub-nav (heredado; hoy no se usa, se conserva por compatibilidad) */
+.nav-sub{{display:none;align-items:center;gap:0;padding:0 40px;height:42px;
+         background:var(--card-alt);overflow-x:auto}}
 .nav-sub.nav-sub-active{{display:flex}}
 .nav-sub a{{color:var(--muted);text-decoration:none;font-size:.74rem;font-weight:500;
            padding:0 14px;height:42px;display:flex;align-items:center;
-           border-bottom:3px solid transparent;
-           transition:color .18s,border-color .22s,background .18s;
-           white-space:nowrap;border-radius:0;position:relative}}
-.nav-sub a:hover{{color:var(--text);background:rgba(255,255,255,.04)}}
-.nav-sub a.active{{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;
-                   background:rgba(0,212,170,.05)}}
+           border-bottom:3px solid transparent;white-space:nowrap}}
+.nav-sub a:hover{{color:var(--ink)}}
+.nav-sub a.active{{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}}
 
-/* header */
-.header{{padding:40px 40px 32px;background:linear-gradient(135deg,#161b22 0%,#1c2128 100%);
-         border-bottom:1px solid var(--border)}}
-.header h1{{font-size:1.9rem;font-weight:700;letter-spacing:-.5px;line-height:1.2}}
-.header h1 span{{color:var(--accent)}}
+/* header (heredado) */
+.header{{padding:40px 40px 32px;border-bottom:1px solid var(--border)}}
+.header h1{{font-family:var(--serif);font-size:2rem;font-weight:600;letter-spacing:-.02em;line-height:1.15}}
+.header h1 span{{color:var(--accent);font-style:italic}}
 .header .sub{{color:var(--muted);font-size:.88rem;margin-top:6px}}
 .badges{{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}}
-.badge{{background:rgba(255,255,255,.06);border:1px solid var(--border);
-        padding:4px 12px;border-radius:20px;font-size:.74rem;color:var(--muted)}}
+.badge{{background:transparent;border:1px solid var(--border);
+        padding:4px 12px;border-radius:2px;font-size:.72rem;color:var(--muted)}}
 
 /* section */
-.section{{padding:32px 40px;border-bottom:1px solid var(--border);scroll-margin-top:100px}}
+.section{{padding:40px 40px 48px;border-bottom:1px solid var(--border);scroll-margin-top:100px;
+         max-width:1240px;margin:0 auto}}
 
-/* Links de bibliografía — color visible, con subrayado */
+/* Enlaces: subrayado fino en rojo, como en prensa */
+a{{color:var(--accent)}}
 #bibliografia a{{color:var(--accent);text-decoration:underline;text-underline-offset:3px;
-                 text-decoration-color:rgba(0,212,170,.4);transition:color .15s,text-decoration-color .15s}}
-#bibliografia a:hover{{color:#00f5c2;text-decoration-color:var(--accent)}}
-.section-header{{display:flex;align-items:baseline;gap:12px;margin-bottom:24px;
-                 flex-wrap:wrap}}
-.section-title{{font-size:.72rem;font-weight:700;color:var(--text);text-transform:uppercase;
-                letter-spacing:.8px;opacity:.85}}
+                 text-decoration-color:var(--accent-line);transition:color .15s,text-decoration-color .15s}}
+#bibliografia a:hover{{color:var(--ink);text-decoration-color:var(--ink)}}
+
+/* Cabecera de sección: kicker rojo en versalitas + fecha, sobre regla de tinta */
+.section-header{{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;
+                 flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid var(--ink)}}
+.section-title{{font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;
+                letter-spacing:.14em}}
 .section-sub{{font-size:.76rem;color:var(--muted);line-height:1.5}}
 
-/* portada pillar cards */
+/* portada pillar cards (heredado) */
 .portada-pillar{{padding:28px 30px;border-right:1px solid var(--border)}}
 .portada-pillar:last-child{{border-right:none}}
-.portada-pillar-bar{{height:3px;border-radius:2px;margin-bottom:14px;width:32px}}
-.portada-pillar-title{{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:8px}}
-.portada-pillar-body{{font-size:.77rem;color:var(--muted);line-height:1.65}}
+.portada-pillar-bar{{height:3px;border-radius:0;margin-bottom:14px;width:32px}}
+.portada-pillar-title{{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:8px}}
+.portada-pillar-body{{font-family:var(--body);font-size:.85rem;color:var(--muted);line-height:1.65}}
 .portada-stat{{padding:22px 28px;text-align:center;border-right:1px solid var(--border)}}
 .portada-stat:last-child{{border-right:none}}
-.portada-stat-num{{font-size:2.2rem;font-weight:800;line-height:1;margin-bottom:5px}}
-.portada-stat-lbl{{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}}
-.portada-cta{{display:inline-flex;align-items:center;gap:8px;background:var(--accent);
-              color:#0d1117;border:none;border-radius:8px;padding:11px 24px;
-              font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;
-              transition:opacity .15s;text-decoration:none}}
-.portada-cta:hover{{opacity:.85}}
+.portada-stat-num{{font-family:var(--serif);font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:5px}}
+.portada-stat-lbl{{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}}
+.portada-cta{{display:inline-flex;align-items:center;gap:8px;background:var(--ink);
+              color:var(--bg);border:none;border-radius:2px;padding:11px 24px;
+              font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--sans);
+              transition:background .15s;text-decoration:none}}
+.portada-cta:hover{{background:var(--accent)}}
 .portada-cta-sec{{display:inline-flex;align-items:center;gap:8px;background:transparent;
-                  color:var(--text);border:1px solid var(--border);border-radius:8px;
+                  color:var(--ink);border:1px solid var(--ink);border-radius:2px;
                   padding:10px 22px;font-size:.85rem;cursor:pointer;
-                  font-family:'Inter',sans-serif;transition:border-color .15s,color .15s;
+                  font-family:var(--sans);transition:border-color .15s,color .15s;
                   text-decoration:none}}
 .portada-cta-sec:hover{{border-color:var(--accent);color:var(--accent)}}
 
 /* stats row */
 .stats-row{{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}}
-.stat{{background:var(--card);border:1px solid var(--border);border-radius:10px;
-       padding:16px 20px;flex:1;min-width:130px}}
-.stat-label{{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}}
-.stat-val{{font-size:1.7rem;font-weight:700;line-height:1}}
+.stat{{background:transparent;border-top:2px solid var(--ink);border-radius:0;
+       padding:14px 0 6px;flex:1;min-width:130px}}
+.stat-label{{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}}
+.stat-val{{font-family:var(--serif);font-size:1.9rem;font-weight:600;line-height:1}}
 .stat-up{{color:var(--green)}}
 .stat-down{{color:var(--red)}}
-.stat-neu{{color:var(--accent)}}
-.stat-sub{{font-size:.72rem;color:var(--muted);margin-top:4px}}
+.stat-neu{{color:var(--ink)}}
+.stat-sub{{font-size:.72rem;color:var(--muted);margin-top:6px}}
 
 /* chart cards */
 .charts-grid{{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
 .charts-grid.single{{grid-template-columns:1fr}}
-.chart-card{{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}}
+.chart-card{{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:20px}}
 .chart-card.wide{{grid-column:span 2}}
-.ct{{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:2px}}
-.cs{{font-size:.7rem;color:var(--muted);margin-bottom:16px}}
+.ct{{font-family:var(--serif);font-size:.98rem;font-weight:600;color:var(--ink);margin-bottom:2px}}
+.cs{{font-size:.72rem;color:var(--muted);margin-bottom:16px}}
 .chart-wrap{{position:relative}}
 
 /* gauge */
 .gauge-wrap{{display:flex;flex-direction:column;align-items:center;padding:24px 0 8px}}
 .gauge-svg{{width:220px;height:130px}}
-.gauge-value{{font-size:2.8rem;font-weight:700;line-height:1;text-align:center;margin-top:8px}}
+.gauge-value{{font-family:var(--serif);font-size:3rem;font-weight:800;line-height:1;text-align:center;margin-top:8px}}
 .gauge-label{{font-size:.78rem;color:var(--muted);text-align:center;margin-top:4px}}
 .gauge-cat{{font-size:.85rem;font-weight:600;text-align:center;margin-top:6px}}
 
@@ -1907,81 +1915,73 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 .score-year-tabs{{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px;
                   border-bottom:1px solid var(--border);padding-bottom:12px}}
 .score-yr-btn{{background:transparent;border:1px solid var(--border);color:var(--muted);
-               border-radius:6px;padding:3px 9px;font-size:.72rem;cursor:pointer;
-               transition:all .15s;white-space:nowrap}}
-.score-yr-btn:hover{{border-color:var(--accent);color:var(--accent)}}
-.score-yr-btn.score-yr-active{{background:var(--accent);border-color:var(--accent);
-                                color:#0d1117;font-weight:600}}
+               border-radius:2px;padding:3px 9px;font-size:.72rem;cursor:pointer;
+               font-family:var(--sans);transition:all .15s;white-space:nowrap}}
+.score-yr-btn:hover{{border-color:var(--ink);color:var(--ink)}}
+.score-yr-btn.score-yr-active{{background:var(--ink);border-color:var(--ink);
+                                color:var(--bg);font-weight:600}}
 
 /* risk bands sidebar */
 .risk-bands{{display:flex;flex-direction:column;gap:4px;margin-top:8px}}
-.rb{{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;
+.rb{{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:2px;
      font-size:.74rem;border:1px solid transparent}}
 .rb-dot{{width:8px;height:8px;border-radius:50%;flex-shrink:0}}
-.rb.active{{border-color:currentColor;background:rgba(255,255,255,.04)}}
+.rb.active{{border-color:currentColor;background:var(--card)}}
 
-/* AHP table */
-.ahp-table{{width:100%;border-collapse:collapse;font-size:.82rem}}
-.ahp-table th{{text-align:left;padding:8px 12px;font-size:.68rem;color:var(--muted);
-               text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}}
-.ahp-table td{{padding:8px 12px;border-bottom:1px solid #21262d;vertical-align:middle}}
-.ahp-table tr:last-child td{{border-bottom:none}}
-.cr-badge{{display:inline-block;background:#00d4aa22;color:var(--accent);border:1px solid #00d4aa44;
-           padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-left:8px}}
-
-/* history table */
-.gap-table{{width:100%;border-collapse:collapse;font-size:.82rem}}
-.gap-table th{{text-align:left;padding:8px 12px;font-size:.68rem;color:var(--muted);
-               text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}}
-.gap-table td{{padding:7px 12px;border-bottom:1px solid #21262d}}
-.gap-table tr:last-child td{{border-bottom:none}}
-.gap-table tbody tr:hover{{background:rgba(255,255,255,.03)}}
-.pill{{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600}}
+/* Tablas: estilo de cuadro estadístico de prensa financiera */
+.ahp-table,.gap-table,.satv-var-table,.dim-var-table{{width:100%;border-collapse:collapse;font-size:.82rem}}
+.ahp-table th,.gap-table th,.satv-var-table th,.dim-var-table th{{
+  text-align:left;padding:8px 12px;font-size:.66rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid var(--ink);font-weight:700}}
+.ahp-table td,.gap-table td,.satv-var-table td,.dim-var-table td{{
+  padding:8px 12px;border-bottom:1px solid var(--grid);vertical-align:middle}}
+.ahp-table tr:last-child td,.gap-table tr:last-child td,.dim-var-table tr:last-child td{{border-bottom:none}}
+.gap-table tbody tr:hover,.dim-var-table tbody tr:hover{{background:var(--card-alt)}}
+.cr-badge{{display:inline-block;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);
+           padding:2px 10px;border-radius:2px;font-size:.72rem;font-weight:600;margin-left:8px}}
+.pill{{display:inline-block;padding:2px 10px;border-radius:2px;font-size:.72rem;font-weight:600}}
 
 /* recommendation alert */
-.alert{{border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid}}
-.alert-warn{{background:#e67e2215;border-color:#e67e2240;color:#e67e22}}
-.alert-info{{background:#00d4aa15;border-color:#00d4aa40;color:#00d4aa}}
-.alert-bad{{background:#e05c5c15;border-color:#e05c5c40;color:#e05c5c}}
-.alert-title{{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}}
-.alert-body{{font-size:.88rem;color:var(--text);line-height:1.55}}
+.alert{{border-radius:2px;padding:16px 20px;margin-bottom:20px;border:1px solid;border-left-width:4px;background:var(--card)}}
+.alert-warn{{border-color:var(--orange);color:var(--orange)}}
+.alert-info{{border-color:var(--ink);color:var(--ink)}}
+.alert-bad{{border-color:var(--red);color:var(--red)}}
+.alert-title{{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}}
+.alert-body{{font-family:var(--body);font-size:.92rem;color:var(--text);line-height:1.55}}
 
 /* satv */
-.satv-kpi{{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;text-align:center}}
-.satv-kpi-val{{font-size:2rem;font-weight:700;line-height:1}}
-.satv-kpi-lbl{{font-size:.72rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.6px}}
+.satv-kpi{{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:16px 20px;text-align:center}}
+.satv-kpi-val{{font-family:var(--serif);font-size:2.1rem;font-weight:600;line-height:1}}
+.satv-kpi-lbl{{font-size:.7rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.08em}}
 .satv-alert{{display:flex;align-items:flex-start;gap:14px;background:var(--card);border:1px solid var(--border);
-             border-radius:10px;padding:14px 18px}}
+             border-radius:2px;padding:14px 18px}}
 .satv-alert.critico{{border-left:4px solid var(--red)}}
 .satv-alert.precaucion{{border-left:4px solid var(--orange)}}
 .satv-alert.normal{{border-left:4px solid var(--green)}}
 .satv-alert-icon{{font-size:1.4rem;line-height:1;padding-top:2px}}
-.satv-alert-tipo{{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}}
-.satv-alert-msg{{font-size:.85rem;color:var(--text);line-height:1.55}}
-.satv-dim-card{{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}}
+.satv-alert-tipo{{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}}
+.satv-alert-msg{{font-family:var(--body);font-size:.9rem;color:var(--text);line-height:1.55}}
+.satv-dim-card{{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:16px}}
 .satv-dim-header{{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}}
 .satv-dim-name{{font-size:.82rem;font-weight:600}}
-.satv-badge{{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase}}
-.satv-badge.critico{{background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55}}
-.satv-badge.precaucion{{background:#e67e2222;color:#e67e22;border:1px solid #e67e2255}}
-.satv-badge.normal{{background:#2ecc7122;color:#2ecc71;border:1px solid #2ecc7155}}
-.satv-badge.sin_dato{{background:#8b949e22;color:#8b949e;border:1px solid #8b949e55}}
-.satv-dim-score{{font-size:1.6rem;font-weight:700;line-height:1}}
+.satv-badge{{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.06em}}
+.satv-badge.critico{{background:rgba(158,42,43,.1);color:var(--red);border:1px solid rgba(158,42,43,.35)}}
+.satv-badge.precaucion{{background:rgba(194,96,14,.1);color:var(--orange);border:1px solid rgba(194,96,14,.35)}}
+.satv-badge.normal{{background:rgba(47,125,79,.1);color:var(--green);border:1px solid rgba(47,125,79,.35)}}
+.satv-badge.sin_dato{{background:rgba(91,95,107,.1);color:var(--muted);border:1px solid rgba(91,95,107,.35)}}
+.satv-dim-score{{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1}}
 .satv-dim-deltas{{display:flex;gap:10px;margin-top:8px;font-size:.72rem;color:var(--muted)}}
 .satv-dim-var{{font-size:.72rem;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted)}}
-.satv-var-table{{width:100%;border-collapse:collapse;font-size:.82rem}}
-.satv-var-table th{{text-align:left;padding:6px 8px;font-size:.68rem;color:var(--muted);
-                   text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}}
-.satv-var-table td{{padding:7px 8px;border-bottom:1px solid #21262d;vertical-align:middle}}
-.satv-bar-mini{{height:6px;border-radius:3px;background:var(--accent);min-width:2px;transition:width .3s}}
+.satv-bar-mini{{height:6px;border-radius:0;background:var(--ink);min-width:2px;transition:width .3s}}
 
-/* news */
-.news-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}}
-.news-card{{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;
-            display:flex;flex-direction:column;transition:border-color .2s}}
-.news-card:hover{{border-color:var(--accent)}}
-.news-thumb{{width:100%;height:160px;object-fit:cover;background:#21262d;display:block}}
-.news-thumb-ph{{width:100%;height:80px;background:linear-gradient(135deg,#161d2b,#1d2430);display:flex;
+/* news — tarjetas de prensa: foto, kicker rojo, titular en serif */
+.news-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}}
+.news-card{{background:var(--card);border:1px solid var(--border);border-radius:2px;overflow:hidden;
+            display:flex;flex-direction:column;transition:border-color .2s,box-shadow .2s}}
+.news-card:hover{{border-color:var(--ink);box-shadow:0 6px 18px rgba(28,35,51,.08)}}
+.news-thumb{{width:100%;height:160px;object-fit:cover;background:var(--card-alt);display:block;
+            filter:saturate(.85)}}
+.news-thumb-ph{{width:100%;height:80px;background:var(--card-alt);display:flex;
                 align-items:center;justify-content:center;font-size:1.5rem;opacity:.7}}
 .news-thumb-ph::after{{content:'📰'}}
 .news-srclinks{{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}}
@@ -1989,21 +1989,23 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
                padding-bottom:1px;transition:color .2s}}
 .news-srclink:hover{{color:var(--accent);border-bottom-color:var(--accent)}}
 .news-srclink::after{{content:' ↗';font-size:.62rem;opacity:.7}}
-.news-body{{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}}
-.news-section{{font-size:.65rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px}}
-.news-title{{font-size:.9rem;font-weight:600;color:var(--text);line-height:1.4}}
+.news-body{{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:6px}}
+.news-section{{font-size:.64rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em}}
+.news-title{{font-family:var(--serif);font-size:1.02rem;font-weight:600;color:var(--ink);line-height:1.3;
+            letter-spacing:-.005em}}
 .news-title a{{color:inherit;text-decoration:none}}
 .news-title a:hover{{color:var(--accent)}}
-.news-trail{{font-size:.78rem;color:var(--muted);line-height:1.5;flex:1}}
-.news-date{{font-size:.68rem;color:var(--muted);margin-top:4px}}
-.news-skeleton{{background:linear-gradient(90deg,#21262d 25%,#2d333b 50%,#21262d 75%);
-                background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px}}
+.news-trail{{font-family:var(--body);font-size:.82rem;color:var(--muted);line-height:1.5;flex:1}}
+.news-date{{font-size:.68rem;color:var(--faint);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}}
+.news-skeleton{{background:linear-gradient(90deg,var(--card-alt) 25%,var(--border) 50%,var(--card-alt) 75%);
+                background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:2px}}
 @keyframes shimmer{{0%{{background-position:200% 0}}100%{{background-position:-200% 0}}}}
 .news-status{{padding:32px;text-align:center;color:var(--muted);font-size:.88rem}}
 .news-filter{{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}}
-.news-chip{{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;
-            padding:4px 14px;font-size:.74rem;color:var(--muted);cursor:pointer;transition:all .2s}}
-.news-chip.active,.news-chip:hover{{background:rgba(0,212,170,.12);border-color:var(--accent);color:var(--accent)}}
+.news-chip{{background:transparent;border:1px solid var(--border);border-radius:2px;
+            padding:4px 14px;font-size:.72rem;color:var(--muted);cursor:pointer;transition:all .2s;
+            text-transform:uppercase;letter-spacing:.06em;font-weight:600}}
+.news-chip.active,.news-chip:hover{{background:var(--ink);border-color:var(--ink);color:var(--bg)}}
 
 /* ── tab switching ── */
 .tab-section{{display:none}}
@@ -2011,27 +2013,24 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* ── dimension detail cards ── */
 .dim-detail-grid{{display:grid;grid-template-columns:1fr 1fr;gap:16px}}
-.dim-detail-card{{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}}
+.dim-detail-card{{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:18px 20px}}
 .dim-detail-header{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px}}
-.dim-detail-id{{display:inline-block;background:rgba(0,212,170,.12);color:var(--accent);
-                border:1px solid rgba(0,212,170,.3);border-radius:6px;
+.dim-detail-id{{display:inline-block;background:var(--accent-soft);color:var(--accent);
+                border:1px solid var(--accent-line);border-radius:2px;
                 font-size:.68rem;font-weight:700;padding:2px 8px;margin-right:8px}}
-.dim-detail-name{{font-size:.85rem;font-weight:600;color:var(--text)}}
-.dim-var-table{{width:100%;border-collapse:collapse;font-size:.78rem}}
-.dim-var-table th{{text-align:left;padding:6px 8px;font-size:.65rem;color:var(--muted);
-                   text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}}
-.dim-var-table td{{padding:6px 8px;border-bottom:1px solid #21262d;vertical-align:middle}}
-.dim-var-table tr:last-child td{{border-bottom:none}}
-.dim-var-table tbody tr:hover{{background:rgba(255,255,255,.02)}}
+.dim-detail-name{{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink)}}
+.dim-var-table{{font-size:.78rem}}
+.dim-var-table th{{padding:6px 8px;font-size:.64rem}}
+.dim-var-table td{{padding:6px 8px}}
 
 /* ── dimension sub-tabs ── */
 .dim-subtabs{{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:24px;padding:4px;
-             background:#161b22;border:1px solid var(--border);border-radius:10px}}
+             background:var(--card-alt);border:1px solid var(--border);border-radius:2px}}
 .dim-stab{{background:transparent;border:1px solid transparent;color:var(--muted);
-           font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;
-           padding:7px 16px;border-radius:7px;cursor:pointer;transition:all .2s;white-space:nowrap}}
-.dim-stab:hover{{color:var(--text);background:rgba(255,255,255,.05)}}
-.dim-stab.dim-stab-active{{background:var(--card);color:var(--text);border-color:var(--border)}}
+           font-family:var(--sans);font-size:.78rem;font-weight:500;
+           padding:7px 16px;border-radius:2px;cursor:pointer;transition:all .2s;white-space:nowrap}}
+.dim-stab:hover{{color:var(--ink)}}
+.dim-stab.dim-stab-active{{background:var(--card);color:var(--ink);border-color:var(--border)}}
 .dim-view{{display:none}}
 .dim-view.dim-view-active{{display:block}}
 
@@ -2041,56 +2040,66 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   .dim-stab{{font-size:.72rem;padding:6px 10px}}
 }}
 
-/* footer */
-.footer{{text-align:center;padding:28px;font-size:.72rem;color:var(--muted);
-         border-top:1px solid var(--border)}}
+/* footer — pie de imprenta */
+.footer{{text-align:center;padding:32px 28px 40px;font-size:.72rem;color:var(--muted);
+         border-top:2px solid var(--ink);max-width:1240px;margin:0 auto;letter-spacing:.02em}}
+.footer a{{text-decoration:none}}
 
-/* ── Diseño minimalista: héroe, KPIs y bloques de la vista de producto ── */
-.lead{{font-size:.9rem;color:var(--muted);line-height:1.6;max-width:640px;margin:0 0 22px}}
-.hero-grid{{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:22px}}
-.hero-card{{background:var(--card);border:1px solid var(--border);border-radius:16px;
+/* ── Héroe, KPIs y bloques de la vista de producto ── */
+.lead{{font-family:var(--body);font-size:1.08rem;color:var(--text);line-height:1.6;max-width:680px;margin:0 0 28px;
+      font-weight:400}}
+.hero-grid{{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-bottom:32px}}
+.hero-card{{background:var(--card);border:1px solid var(--border);border-radius:2px;
             padding:30px 32px;position:relative;overflow:hidden}}
-.hero-card::before{{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-                    background:var(--accent);opacity:.9}}
-.hero-card.is-annual::before{{background:#f1c40f}}
-.hero-tag{{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;
-           color:var(--muted);margin-bottom:14px}}
-.hero-num{{font-size:4.4rem;font-weight:700;line-height:.92;letter-spacing:-2px;color:var(--text)}}
-.hero-card.is-annual .hero-num{{font-size:3.4rem}}
-.hero-lbl{{font-size:1rem;font-weight:600;margin-top:10px;color:var(--text)}}
+.hero-card::before{{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+                    background:var(--accent)}}
+.hero-card.is-annual::before{{background:var(--ink)}}
+.hero-tag{{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+           color:var(--accent);margin-bottom:14px}}
+.hero-card.is-annual .hero-tag{{color:var(--ink)}}
+.hero-num{{font-family:var(--serif);font-size:5rem;font-weight:800;line-height:.9;letter-spacing:-.04em;color:var(--ink);
+          font-variation-settings:'opsz' 144}}
+.hero-card.is-annual .hero-num{{font-size:3.8rem}}
+.hero-lbl{{font-family:var(--serif);font-size:1.15rem;font-weight:600;font-style:italic;margin-top:12px;color:var(--ink)}}
 .hero-meta{{font-size:.74rem;color:var(--muted);margin-top:8px}}
-.hero-note{{font-size:.72rem;color:var(--muted);margin-top:14px;padding-top:12px;
+.hero-note{{font-size:.74rem;color:var(--muted);margin-top:14px;padding-top:12px;
             border-top:1px solid var(--border);line-height:1.5}}
-.kpi-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:22px}}
-.kpi{{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}}
-.kpi-lbl{{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}}
-.kpi-val{{font-size:1.55rem;font-weight:700;color:var(--text);line-height:1}}
-.kpi-sub{{font-size:.65rem;color:#6b7280;margin-top:6px}}
-.block-title{{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:4px}}
-.block-sub{{font-size:.76rem;color:var(--muted);margin-bottom:16px;line-height:1.5}}
-.panel{{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 26px;margin-bottom:20px}}
-.hint{{font-size:.72rem;color:#6b7280;line-height:1.55;margin-top:12px}}
+.kpi-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:0 24px;margin-bottom:32px}}
+.kpi{{background:transparent;border-top:2px solid var(--ink);border-radius:0;padding:14px 0 16px}}
+.kpi-lbl{{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}}
+.kpi-val{{font-family:var(--serif);font-size:1.75rem;font-weight:600;color:var(--ink);line-height:1}}
+.kpi-sub{{font-size:.66rem;color:var(--faint);margin-top:6px}}
+.block-title{{font-family:var(--serif);font-size:1.25rem;font-weight:600;color:var(--ink);margin-bottom:4px;
+             letter-spacing:-.01em}}
+.block-sub{{font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.5}}
+.panel{{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:26px 28px;margin-bottom:20px}}
+.hint{{font-family:var(--body);font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:12px;
+      border-left:2px solid var(--border);padding-left:12px}}
 details.more{{margin-top:14px}}
 details.more summary{{cursor:pointer;color:var(--accent);font-size:.74rem;font-weight:600;list-style:none}}
 details.more summary::-webkit-details-marker{{display:none}}
 details.more summary::before{{content:'ⓘ ';opacity:.8}}
-details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;margin-top:10px}}
+details.more .more-body{{font-family:var(--body);font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:10px}}
 
-/* Sectores. Estas dos rejillas estaban en atributos style= inline, que ningun
-   @media alcanza: a 375px la seccion medía 458px y desbordaba la pagina en
-   horizontal. Pasan a clases para poder colapsarlas en pantallas estrechas. */
+/* Controles de formulario: mismos bordes y tipografía que el resto */
+button{{font-family:var(--sans)}}
+input[type=range]{{accent-color:var(--accent)}}
+
+/* Sectores */
 .sector-kpis{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}}
 .sector-split{{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}}
-.sector-split > *{{min-width:0}}   /* deja que la columna fluida se encoja */
+.sector-split > *{{min-width:0}}
 
 @media(max-width:900px){{
   .charts-grid{{grid-template-columns:1fr}}
   .chart-card.wide{{grid-column:span 1}}
-  .section{{padding:24px 20px}}
+  .section{{padding:28px 20px 36px}}
   .header{{padding:24px 20px}}
-  .nav{{padding:0 16px}}
+  .nav-top{{padding:0 20px}}
+  .nav-top a.nav-brand{{margin-right:16px;font-size:1.3rem}}
   .hero-grid{{grid-template-columns:1fr}}
-  .hero-num{{font-size:3.4rem}}
+  .hero-num{{font-size:3.6rem}}
+  .lead{{font-size:1rem}}
   .sector-split{{grid-template-columns:minmax(0,1fr)}}
   .sector-kpis{{grid-template-columns:repeat(3,1fr)}}
 }}
@@ -2214,17 +2223,17 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <div style="font-size:.72rem;color:var(--muted)">Pulsa Animar para ver el apagón y su recuperación</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap">
-      <div style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
-        <button id="bmModeYear" style="background:var(--accent);color:#0d1117;border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit">Por año</button>
+      <div style="display:inline-flex;border:1px solid var(--ink);border-radius:2px;overflow:hidden">
+        <button id="bmModeYear" style="background:var(--ink);color:var(--bg);border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit">Por año</button>
         <button id="bmModeMonth" style="background:var(--card);color:var(--text);border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-family:inherit">Por mes</button>
       </div>
       <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;min-width:180px;accent-color:var(--accent)">
-      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;font-size:.78rem;font-family:inherit">▶ Animar</button>
+      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--ink);border-radius:2px;padding:7px 16px;cursor:pointer;font-size:.78rem;font-family:inherit">▶ Animar</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
       <div style="flex:2 1 440px;min-width:300px">
         <svg id="bmMapSvg" viewBox="0 0 1000 880" preserveAspectRatio="xMidYMid meet"
-             style="width:100%;max-height:460px;height:auto;display:block;background:#0d1117;border-radius:10px"></svg>
+             style="width:100%;max-height:460px;height:auto;display:block;background:var(--ink);border-radius:2px"></svg>
         <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.68rem;color:var(--muted)">
           <span>Menos luz</span>
           <span id="bmMapGradient" style="flex:1;height:10px;border-radius:5px;display:block"></span>
@@ -2277,8 +2286,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 
   <div style="text-align:center;margin-top:24px">
-    <button id="newsLoadMore" style="display:none;background:rgba(0,212,170,.1);border:1px solid var(--accent);
-      color:var(--accent);padding:9px 26px;border-radius:20px;cursor:pointer;font-size:.82rem;font-family:inherit">
+    <button id="newsLoadMore" style="display:none;background:transparent;border:1px solid var(--ink);
+      color:var(--ink);padding:9px 26px;border-radius:2px;font-weight:600;cursor:pointer;font-size:.82rem;font-family:inherit">
       Ver más
     </button>
   </div>
@@ -2306,7 +2315,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <div style="overflow-x:auto">
         <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
           <thead>
-            <tr style="background:#21262d;color:var(--muted);text-align:left">
+            <tr style="color:var(--muted);text-align:left;border-bottom:2px solid var(--ink)">
               <th style="padding:9px 14px;font-weight:600">#</th>
               <th style="padding:9px 14px;font-weight:600">Sector</th>
               <th style="padding:9px 14px;font-weight:600;text-align:center">Score</th>
@@ -2343,7 +2352,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <span style="font-size:.8rem;font-weight:600">Ajusta cada área</span>
         <button id="simReset" style="background:var(--card);border:1px solid var(--border);
-          color:var(--muted);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.74rem;font-family:inherit">
+          color:var(--muted);padding:5px 14px;border-radius:2px;cursor:pointer;font-size:.74rem;font-family:inherit">
           Volver a {sim_base_year}
         </button>
       </div>
@@ -2351,12 +2360,12 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="sim-preset" data-preset="peak"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+                 padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
           El mejor año
         </button>
         <button class="sim-preset" data-preset="min"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+                 padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
           El peor año
         </button>
       </div>
@@ -2378,7 +2387,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
   <div class="panel" style="margin-top:20px">
     <div class="block-title">Tu escenario frente a la historia</div>
-    <div class="block-sub">La línea amarilla es el valor que acabas de simular.</div>
+    <div class="block-sub">La línea roja punteada es el valor que acabas de simular.</div>
     <div class="chart-wrap" style="height:280px"><canvas id="cSimChart"></canvas></div>
   </div>
 </section>
@@ -2407,7 +2416,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   <div class="panel">
     <div class="block-title">Autoría</div>
     <div class="block-sub">Trabajo de grado de posgrado.</div>
-    <div style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:6px">
+    <div style="font-family:var(--serif);font-size:1.4rem;font-weight:600;color:var(--ink);margin-bottom:6px">
       Felipe Gómez Espinal</div>
     <div style="font-size:.85rem;color:var(--text);line-height:1.7">
       Especialización en Big Data e Inteligencia de Negocios<br>
@@ -2437,7 +2446,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     </div>
   </div>
 
-  <div class="panel" style="border-color:#e6a81755">
+  <div class="panel" style="border-left:4px solid var(--orange)">
     <div class="block-title">Cómo leer la escala</div>
     <div class="block-sub">La advertencia más importante de todo el proyecto.</div>
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
@@ -2459,7 +2468,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
     <div style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;font-size:.78rem">
         <thead>
-          <tr style="background:#21262d;color:var(--muted);text-align:left">
+          <tr style="color:var(--muted);text-align:left;border-bottom:2px solid var(--ink)">
             <th style="padding:8px 12px;font-weight:600">Dimensión</th>
             <th style="padding:8px 12px;font-weight:600;text-align:right">Peso AHP</th>
             <th style="padding:8px 12px;font-weight:600;text-align:right">Variables</th>
@@ -2528,12 +2537,16 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
 
 <script>
 // ── Shared defaults ──────────────────────────────────────────────────────────
-Chart.defaults.color = '#8b949e';
-Chart.defaults.borderColor = '#30363d';
-Chart.defaults.font.family = "'Inter', sans-serif";
+const ACCENT = '#b3261e';   // rojo ladrillo: resaltes y series simuladas
+const INK    = '#1c2333';   // tinta: series principales
+const PAPER  = '#f6f1e7';
+const CARD   = '#fffdf8';
+const MUTED  = '#5b5f6b';
+const GRID   = '#e8e1d1';
 
-const ACCENT = '#00d4aa';
-const CARD   = '#1c2128';
+Chart.defaults.color = MUTED;
+Chart.defaults.borderColor = GRID;
+Chart.defaults.font.family = "'Inter Tight', 'Inter', sans-serif";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 const years     = {years_js};
@@ -2563,7 +2576,7 @@ new Chart(document.getElementById('cHistoria'), {{
           yearsFix.forEach((y,i) => map[y] = scoresFix[i]);
           return years.map(y => map[y] ?? null);
         }})(),
-        borderColor: '#444c56',
+        borderColor: '#9a9483',
         borderWidth: 1.5,
         borderDash: [5,4],
         pointRadius: 0,
@@ -2573,11 +2586,11 @@ new Chart(document.getElementById('cHistoria'), {{
       {{
         label: 'ICIV (AHP)',
         data: scoresAHP,
-        borderColor: ACCENT,
+        borderColor: INK,
         borderWidth: 2.5,
         // Puntos con baja cobertura (<60%) se muestran en naranja pálido con borde punteado
-        pointBackgroundColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#e6981770' : ptColors[i]),
-        pointBorderColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#e69817' : '#0d1117'),
+        pointBackgroundColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e70' : ptColors[i]),
+        pointBorderColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e' : PAPER),
         pointBorderWidth: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 2 : 1),
         pointRadius: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 4 : 5),
         pointStyle: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 'rectRot' : 'circle'),
@@ -2590,10 +2603,10 @@ new Chart(document.getElementById('cHistoria'), {{
         label: 'Cobertura < 70% (provisional)',
         data: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? scoresAHP[i] : null),
         borderColor: 'transparent',
-        backgroundColor: '#e69817',
+        backgroundColor: '#c2600e',
         pointStyle: 'rectRot',
         pointRadius: 5,
-        pointBorderColor: '#e69817',
+        pointBorderColor: '#c2600e',
         pointBorderWidth: 2,
         showLine: false,
       }}
@@ -2607,17 +2620,17 @@ new Chart(document.getElementById('cHistoria'), {{
       legend: {{ position: 'top' }},
       annotation: {{
         annotations: {{
-          band1: {{ type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{{display:true,content:'Muy desfavorable',position:'start',color:'#e05c5c',font:{{size:9}}}}}},
-          band2: {{ type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{{display:true,content:'Desfavorable',position:'start',color:'#e67e22',font:{{size:9}}}}}},
-          band3: {{ type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{{display:true,content:'Intermedio',position:'start',color:'#f1c40f',font:{{size:9}}}}}},
-          band4: {{ type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{{display:true,content:'Favorable',position:'start',color:'#2ecc71',font:{{size:9}}}}}},
-          band5: {{ type:'box', yMin:81, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{{display:true,content:'Muy favorable',position:'start',color:'#00d4aa',font:{{size:9}}}}}},
+          band1: {{ type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(158,42,43,0.07)',  borderWidth:0, label:{{display:true,content:'Muy desfavorable',position:'start',color:'#9e2a2b',font:{{size:9}}}}}},
+          band2: {{ type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(194,96,14,0.06)', borderWidth:0, label:{{display:true,content:'Desfavorable',position:'start',color:'#c2600e',font:{{size:9}}}}}},
+          band3: {{ type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(176,125,0,0.06)', borderWidth:0, label:{{display:true,content:'Intermedio',position:'start',color:'#b07d00',font:{{size:9}}}}}},
+          band4: {{ type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(47,125,79,0.06)', borderWidth:0, label:{{display:true,content:'Favorable',position:'start',color:'#2f7d4f',font:{{size:9}}}}}},
+          band5: {{ type:'box', yMin:81, yMax:100, backgroundColor:'rgba(31,111,120,0.06)',  borderWidth:0, label:{{display:true,content:'Muy favorable',position:'start',color:'#1f6f78',font:{{size:9}}}}}},
         }}
       }}
     }},
     scales: {{
-      y: {{ min:0, max:100, grid:{{color:'#21262d'}}, ticks:{{stepSize:10}} }},
-      x: {{ grid:{{color:'#21262d'}} }}
+      y: {{ min:0, max:100, grid:{{color:GRID}}, ticks:{{stepSize:10}} }},
+      x: {{ grid:{{color:GRID}} }}
     }}
   }}
 }});
@@ -2643,7 +2656,7 @@ const dimValueLabels = {{
     const {{ ctx }} = chart;
     const meta = chart.getDatasetMeta(0);
     ctx.save();
-    ctx.font = '600 11px Inter, sans-serif';
+    ctx.font = '600 11px "Inter Tight", Inter, sans-serif';
     ctx.textBaseline = 'middle';
     meta.data.forEach((bar, i) => {{
       const v   = radarVals[i];
@@ -2694,7 +2707,7 @@ new Chart(document.getElementById('cDimBar'), {{
       }}}}
     }},
     scales: {{
-      x: {{ min:0, max:100, grid:{{color:'#21262d'}} }},
+      x: {{ min:0, max:100, grid:{{color:GRID}} }},
       y: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }}
     }}
   }},
@@ -2750,7 +2763,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   const SATV = {satv_json};
   if (!SATV || !SATV.resumen) return;
 
-  const NIV_COLOR = {{ critico:'#e05c5c', precaucion:'#e67e22', normal:'#2ecc71' }};
+  const NIV_COLOR = {{ critico:'#9e2a2b', precaucion:'#c2600e', normal:'#2f7d4f' }};
 
   // ── Alertas activas — único bloque SATV visible en el producto ──────────────
   const alertasEl = document.getElementById('satvAlertas');
@@ -2762,7 +2775,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       <div class="satv-alert ${{a.nivel}}">
         <div class="satv-alert-icon">${{a.icono}}</div>
         <div>
-          <div class="satv-alert-tipo" style="color:${{NIV_COLOR[a.nivel] || '#8b949e'}}">${{a.tipo}}</div>
+          <div class="satv-alert-tipo" style="color:${{NIV_COLOR[a.nivel] || '#8a8d96'}}">${{a.tipo}}</div>
           <div class="satv-alert-msg">${{a.mensaje}}</div>
         </div>
       </div>`).join('');
@@ -3017,11 +3030,11 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   let simValues = {{}};  // dim_id → current slider value
 
   function scoreToCategory(s) {{
-    if (s <= 30)  return {{ label:'Muy desfavorable',          color:'#e05c5c' }};
-    if (s <= 50)  return {{ label:'Desfavorable', color:'#e67e22' }};
-    if (s <= 65)  return {{ label:'Intermedio',      color:'#f1c40f' }};
-    if (s <= 80)  return {{ label:'Favorable',           color:'#2ecc71' }};
-    return              {{ label:'Muy favorable',        color:'#00d4aa' }};
+    if (s <= 30)  return {{ label:'Muy desfavorable',          color:'#9e2a2b' }};
+    if (s <= 50)  return {{ label:'Desfavorable', color:'#c2600e' }};
+    if (s <= 65)  return {{ label:'Intermedio',      color:'#b07d00' }};
+    if (s <= 80)  return {{ label:'Favorable',           color:'#2f7d4f' }};
+    return              {{ label:'Muy favorable',        color:'#1f6f78' }};
   }}
 
   function computeICIV() {{
@@ -3066,8 +3079,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             <span>${{shortLabel}} (×${{(d.weight*100).toFixed(0)}}%)</span>
             <span>${{contrib.toFixed(1)}} pts</span>
           </div>
-          <div style="background:#333;border-radius:3px;height:8px">
-            <div style="width:${{pct}}%;height:100%;background:var(--accent);border-radius:3px;transition:width .2s"></div>
+          <div style="background:var(--grid);border-radius:0;height:8px">
+            <div style="width:${{pct}}%;height:100%;background:var(--ink);border-radius:0;transition:width .2s"></div>
           </div>
         </div>`;
       }}).join('');
@@ -3130,14 +3143,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           {{
             label: 'Histórico ICIV',
             data: SIM_YEARS.map((y,i) => ({{ x:y, y:SIM_HIST[i] }})),
-            borderColor: '#00d4aa', backgroundColor: 'transparent',
+            borderColor: INK, backgroundColor: 'transparent',
             borderWidth: 2, pointRadius: 2.5, tension: 0.3,
           }},
           {{
             label: 'ICIV Simulado',
             data: SIM_YEARS.map(y => ({{ x:y, y:curICIV }})),
-            borderColor: '#f1c40f', borderDash: [6,3],
-            backgroundColor: 'rgba(241,196,15,.08)',
+            borderColor: ACCENT, borderDash: [6,3],
+            backgroundColor: 'rgba(179,38,30,.07)',
             borderWidth: 2, pointRadius: 0, fill: true, tension: 0,
           }},
         ]
@@ -3145,12 +3158,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       options: {{
         responsive: true, maintainAspectRatio: false, parsing: false,
         plugins: {{
-          legend: {{ labels: {{ color:'#8b949e', boxWidth:20, font:{{size:11}} }} }},
+          legend: {{ labels: {{ color:MUTED, boxWidth:20, font:{{size:11}} }} }},
           tooltip: {{ callbacks: {{ label: c => `${{c.dataset.label}}: ${{c.parsed.y?.toFixed(1)}}` }} }},
         }},
         scales: {{
-          x: {{ type:'linear', min:2000, max:2026.5, ticks:{{color:'#8b949e',stepSize:2,callback:v=>v}}, grid:{{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks:{{color:'#8b949e',stepSize:10}}, grid:{{color:'#21262d'}} }}
+          x: {{ type:'linear', min:2000, max:2026.5, ticks:{{color:MUTED,stepSize:2,callback:v=>v}}, grid:{{color:GRID}} }},
+          y: {{ min:0, max:100, ticks:{{color:MUTED,stepSize:10}}, grid:{{color:GRID}} }}
         }}
       }}
     }});
@@ -3228,8 +3241,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         responsive: true, maintainAspectRatio: false,
         plugins: {{ legend: {{display:false}} }},
         scales: {{
-          x: {{min:0, max:100, grid:{{color:'#21262d'}}, ticks:{{color:'#8b949e'}}}},
-          y: {{grid:{{display:false}}, ticks:{{color:'#c9d1d9', font:{{size:11}}}}}},
+          x: {{min:0, max:100, grid:{{color:GRID}}, ticks:{{color:MUTED}}}},
+          y: {{grid:{{display:false}}, ticks:{{color:INK, font:{{size:11}}}}}},
         }}
       }}
     }});
@@ -3248,7 +3261,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
   function _bmColor(v) {{
     var vmin = BMMAP.vmin || 0.01, vmax = BMMAP.vmax || 1;
-    if (v == null || !isFinite(v)) return '#161b22';
+    if (v == null || !isFinite(v)) return '#2a3247';
     var lv = Math.log(Math.max(v, vmin)), l0 = Math.log(vmin), l1 = Math.log(vmax);
     var t = Math.max(0, Math.min(1, (lv - l0) / (l1 - l0 || 1)));
     var stops = [[10,14,24],[45,32,72],[122,52,80],[200,94,52],[240,168,44],[255,243,205]];
@@ -3274,7 +3287,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     BMMAP.estados.forEach(function(e) {{
       var p = document.createElementNS(NS, 'path');
       p.setAttribute('d', e.d);
-      p.setAttribute('stroke', '#0d1117');
+      p.setAttribute('stroke', '#1c2333');
       p.setAttribute('stroke-width', '0.8');
       p.style.cursor = 'pointer';
       p.addEventListener('mousemove', function() {{
@@ -3317,9 +3330,9 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         var t = (Math.log(Math.max(x.v, BMMAP.vmin)) - l0) / (l1 - l0 || 1);
         var w = Math.max(4, Math.min(100, t * 100));
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">' +
-          '<span style="width:104px;color:#c9d1d9;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
-          '<span style="flex:1;background:#161b22;border-radius:3px"><span style="display:block;height:9px;border-radius:3px;width:'+w+'%;background:'+_bmColor(x.v)+'"></span></span>' +
-          '<span style="width:42px;text-align:right;color:#8b949e;font-size:.72rem">'+x.v.toFixed(2)+'</span></div>';
+          '<span style="width:104px;color:var(--text);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
+          '<span style="flex:1;background:var(--card-alt);border-radius:0"><span style="display:block;height:9px;border-radius:0;width:'+w+'%;background:'+_bmColor(x.v)+'"></span></span>' +
+          '<span style="width:42px;text-align:right;color:var(--muted);font-size:.72rem">'+x.v.toFixed(2)+'</span></div>';
       }}).join('');
     }}
 
@@ -3336,7 +3349,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       slider.max = ks.length - 1;
       slider.value = ks.length - 1;
       var bY = document.getElementById('bmModeYear'), bM = document.getElementById('bmModeMonth');
-      var on = 'var(--accent)', onTxt = '#0d1117', off = 'var(--card)', offTxt = 'var(--text)';
+      var on = 'var(--ink)', onTxt = 'var(--bg)', off = 'var(--card)', offTxt = 'var(--text)';
       bY.style.background = m === 'year' ? on : off;
       bY.style.color      = m === 'year' ? onTxt : offTxt;
       bY.style.fontWeight = m === 'year' ? '600' : '400';
@@ -3404,48 +3417,48 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           {{
             label: 'Banda empírica 95%',
             data: hi95,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.08)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.07)',
             fill: '+1', pointRadius: 0, borderWidth: 0, tension: 0.2,
           }},
           {{
             label: '__lo95',
             data: lo95,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.08)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.07)',
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           }},
           {{
             label: 'Banda empírica 80%',
             data: hi80,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.18)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.15)',
             fill: '+1', pointRadius: 0, borderWidth: 0, tension: 0.2,
           }},
           {{
             label: '__lo80',
             data: lo80,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.18)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.15)',
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           }},
           {{
             label: 'Pulse histórico',
             data: hist_series,
-            borderColor: '#00d4aa', backgroundColor: 'transparent',
+            borderColor: INK, backgroundColor: 'transparent',
             borderWidth: 2.5, pointRadius: 1.5, tension: 0.25, fill: false,
           }},
           {{
             label: 'Pulse provisional / no elegible',
             data: hist_low_cov,
-            borderColor: 'rgba(0,212,170,0.4)', backgroundColor: 'transparent',
+            borderColor: 'rgba(28,35,51,0.4)', backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, tension: 0.25, fill: false,
             borderDash: [4, 3],
           }},
           {{
             label: 'Persistencia (naive)',
             data: fc_series,
-            borderColor: '#f1c40f', backgroundColor: 'transparent',
+            borderColor: ACCENT, backgroundColor: 'transparent',
             borderWidth: 2.5, borderDash: [6, 3], pointRadius: 3, tension: 0.25, fill: false,
           }},
         ]
@@ -3456,14 +3469,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           legend: {{
             position: 'top',
             labels: {{
-              color: '#8b949e', font: {{size: 10}},
+              color: MUTED, font: {{size: 10}},
               filter: function(item) {{ return !item.text.startsWith('__'); }}
             }}
           }},
         }},
         scales: {{
-          x: {{ ticks: {{color:'#8b949e', maxTicksLimit:16}}, grid: {{color:'#21262d'}} }},
-          y: {{ min:0, max:100, ticks: {{color:'#8b949e', stepSize:20}}, grid: {{color:'#21262d'}} }},
+          x: {{ ticks: {{color:MUTED, maxTicksLimit:16}}, grid: {{color:GRID}} }},
+          y: {{ min:0, max:100, ticks: {{color:MUTED, stepSize:20}}, grid: {{color:GRID}} }},
         }}
       }}
     }});
@@ -3487,12 +3500,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   var MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
   function _col(score) {{
-    if (score == null) return '#8b949e';
-    if (score < 31) return '#e74c3c';
-    if (score < 51) return '#e67e22';
-    if (score < 66) return '#f1c40f';
-    if (score < 81) return '#2ecc71';
-    return '#27ae60';
+    if (score == null) return '#8a8d96';
+    if (score < 31) return '#9e2a2b';
+    if (score < 51) return '#c2600e';
+    if (score < 66) return '#b07d00';
+    if (score < 81) return '#2f7d4f';
+    return '#1f6f78';
   }}
   function _lbl(score) {{
     if (score == null) return '—';
@@ -3505,7 +3518,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   function _deltaStr(d, dec, suf) {{
     if (d == null) return '—';
     var flecha = d >= 0 ? '▲ +' : '▼ ';
-    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + ';font-weight:600">'
+    return '<span style="color:' + (d >= 0 ? '#2f7d4f' : '#9e2a2b') + ';font-weight:600">'
            + flecha + Math.abs(d).toFixed(dec) + (suf || '') + '</span>';
   }}
   function _set(id, txt, color) {{
@@ -3518,7 +3531,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   // ── Señal mensual ──
   if (VH.pulse) {{
     var p = VH.pulse;
-    var pColor = p.is_reliable ? _col(p.score) : '#e6a817';
+    var pColor = p.is_reliable ? _col(p.score) : '#b07d00';
     _set('inicioPS', p.score.toFixed(1), pColor);
     _set('inicioPL', p.is_reliable ? _lbl(p.score) : 'Lectura provisional', pColor);
     _set('inicioPF', (p.label_mes || '') + ' ' + (p.year || ''));

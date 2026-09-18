@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>ICIV — Indicador de Clima de Inversión Venezuela</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
@@ -19,9 +19,9 @@ window.addEventListener('DOMContentLoaded', function() {
   if (typeof d3    === 'undefined') faltan.push('d3');
   if (!faltan.length) return;
   var aviso = document.createElement('div');
-  aviso.style.cssText = 'position:sticky;top:0;z-index:999;background:#3a1d1d;'
-    + 'border-bottom:1px solid #e05c5c;color:#f5c6c6;padding:12px 20px;'
-    + 'font-size:.8rem;line-height:1.5;font-family:Inter,sans-serif';
+  aviso.style.cssText = 'position:sticky;top:0;z-index:999;background:#fbeae8;'
+    + 'border-bottom:2px solid #b3261e;color:#7a1a14;padding:12px 20px;'
+    + 'font-size:.8rem;line-height:1.5;font-family:"Inter Tight",Inter,sans-serif';
   aviso.innerHTML = '<strong>Los graficos no se pudieron cargar.</strong> '
     + 'No se alcanzo el CDN de ' + faltan.join(' y ') + ' (cdn.jsdelivr.net). '
     + 'Revisa la conexion, un bloqueador de anuncios o el filtrado de tu red. '
@@ -31,116 +31,123 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>
 <style>
 :root{
-  --bg:#0d1117;--card:#1c2128;--border:#30363d;
-  --text:#e6edf3;--muted:#8b949e;--accent:#00d4aa;
-  --red:#e05c5c;--orange:#e67e22;--yellow:#f1c40f;--green:#2ecc71;
+  /* Editorial financiero: papel crema, tinta azul-negra, rojo ladrillo como acento. */
+  --bg:#f6f1e7;--card:#fffdf8;--card-alt:#efe8d8;--border:#d9d2c3;--grid:#e8e1d1;
+  --ink:#1c2333;--text:#1c2333;--muted:#5b5f6b;--faint:#8a8d96;
+  --accent:#b3261e;--accent-soft:rgba(179,38,30,.08);--accent-line:rgba(179,38,30,.35);
+  /* Semántica de riesgo, calibrada para leerse sobre crema. */
+  --red:#9e2a2b;--orange:#c2600e;--yellow:#b07d00;--green:#2f7d4f;--teal:#1f6f78;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Inter Tight','Inter',system-ui,sans-serif;
+  --body:'Source Serif 4',Georgia,serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;
+     -webkit-font-smoothing:antialiased}
+strong{font-weight:700}
 
-/* nav — sistema de 2 niveles */
-.nav-wrap{position:sticky;top:0;z-index:100;background:#161b22;
-           border-bottom:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.25)}
-
-/* Top nav: 5 pestañas principales */
-.nav-top{display:flex;align-items:center;gap:4px;padding:0 32px;height:54px;
-         border-bottom:1px solid #21262d;overflow-x:auto;max-width:100%}
-.nav-brand{color:var(--accent);font-weight:700;font-size:1rem;margin-right:28px;
-            letter-spacing:.4px;cursor:pointer;text-decoration:none;
-            transition:opacity .15s}
-.nav-brand:hover{opacity:.75}
-.nav-top a{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;
+/* nav — barra de cabecera de periódico: regla gruesa de tinta abajo */
+.nav-wrap{position:sticky;top:0;z-index:100;background:var(--bg);
+           border-bottom:2px solid var(--ink)}
+.nav-top{display:flex;align-items:center;gap:2px;padding:0 40px;height:60px;
+         overflow-x:auto;max-width:100%}
+/* Selector compuesto: .nav-top a (abajo) tiene más especificidad que .nav-brand solo. */
+.nav-top a.nav-brand{font-family:var(--serif);font-weight:800;font-size:1.5rem;color:var(--ink);
+            margin-right:32px;padding:0;letter-spacing:-.02em;cursor:pointer;text-decoration:none;
+            text-transform:none;border-bottom:none;
+            font-variation-settings:'opsz' 144;transition:color .15s}
+.nav-top a.nav-brand:hover{color:var(--accent)}
+.nav-top a{color:var(--muted);text-decoration:none;font-size:.74rem;font-weight:600;
             flex:0 0 auto;white-space:nowrap;
-            padding:8px 18px;border-radius:8px;transition:all .18s;
-            text-transform:uppercase;letter-spacing:.6px;border:1px solid transparent}
-.nav-top a:hover{color:var(--text);background:rgba(255,255,255,.04);
-                  border-color:var(--border)}
-.nav-top a.nav-top-active{color:#0d1117;background:var(--accent);
-                           border-color:var(--accent);font-weight:700}
+            padding:0 14px;height:60px;display:flex;align-items:center;
+            text-transform:uppercase;letter-spacing:.09em;
+            border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s}
+.nav-top a:hover{color:var(--ink)}
+.nav-top a.nav-top-active{color:var(--accent);border-bottom-color:var(--accent)}
 
-/* Sub-nav: contiene las pestañas internas de cada bloque principal */
-.nav-sub{display:none;align-items:center;gap:0;padding:0 32px;height:42px;
-         background:#0d1117;overflow-x:auto}
+/* Sub-nav (heredado; hoy no se usa, se conserva por compatibilidad) */
+.nav-sub{display:none;align-items:center;gap:0;padding:0 40px;height:42px;
+         background:var(--card-alt);overflow-x:auto}
 .nav-sub.nav-sub-active{display:flex}
 .nav-sub a{color:var(--muted);text-decoration:none;font-size:.74rem;font-weight:500;
            padding:0 14px;height:42px;display:flex;align-items:center;
-           border-bottom:3px solid transparent;
-           transition:color .18s,border-color .22s,background .18s;
-           white-space:nowrap;border-radius:0;position:relative}
-.nav-sub a:hover{color:var(--text);background:rgba(255,255,255,.04)}
-.nav-sub a.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;
-                   background:rgba(0,212,170,.05)}
+           border-bottom:3px solid transparent;white-space:nowrap}
+.nav-sub a:hover{color:var(--ink)}
+.nav-sub a.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
 
-/* header */
-.header{padding:40px 40px 32px;background:linear-gradient(135deg,#161b22 0%,#1c2128 100%);
-         border-bottom:1px solid var(--border)}
-.header h1{font-size:1.9rem;font-weight:700;letter-spacing:-.5px;line-height:1.2}
-.header h1 span{color:var(--accent)}
+/* header (heredado) */
+.header{padding:40px 40px 32px;border-bottom:1px solid var(--border)}
+.header h1{font-family:var(--serif);font-size:2rem;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+.header h1 span{color:var(--accent);font-style:italic}
 .header .sub{color:var(--muted);font-size:.88rem;margin-top:6px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.badge{background:rgba(255,255,255,.06);border:1px solid var(--border);
-        padding:4px 12px;border-radius:20px;font-size:.74rem;color:var(--muted)}
+.badge{background:transparent;border:1px solid var(--border);
+        padding:4px 12px;border-radius:2px;font-size:.72rem;color:var(--muted)}
 
 /* section */
-.section{padding:32px 40px;border-bottom:1px solid var(--border);scroll-margin-top:100px}
+.section{padding:40px 40px 48px;border-bottom:1px solid var(--border);scroll-margin-top:100px;
+         max-width:1240px;margin:0 auto}
 
-/* Links de bibliografía — color visible, con subrayado */
+/* Enlaces: subrayado fino en rojo, como en prensa */
+a{color:var(--accent)}
 #bibliografia a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;
-                 text-decoration-color:rgba(0,212,170,.4);transition:color .15s,text-decoration-color .15s}
-#bibliografia a:hover{color:#00f5c2;text-decoration-color:var(--accent)}
-.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:24px;
-                 flex-wrap:wrap}
-.section-title{font-size:.72rem;font-weight:700;color:var(--text);text-transform:uppercase;
-                letter-spacing:.8px;opacity:.85}
+                 text-decoration-color:var(--accent-line);transition:color .15s,text-decoration-color .15s}
+#bibliografia a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+
+/* Cabecera de sección: kicker rojo en versalitas + fecha, sobre regla de tinta */
+.section-header{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;
+                 flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid var(--ink)}
+.section-title{font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;
+                letter-spacing:.14em}
 .section-sub{font-size:.76rem;color:var(--muted);line-height:1.5}
 
-/* portada pillar cards */
+/* portada pillar cards (heredado) */
 .portada-pillar{padding:28px 30px;border-right:1px solid var(--border)}
 .portada-pillar:last-child{border-right:none}
-.portada-pillar-bar{height:3px;border-radius:2px;margin-bottom:14px;width:32px}
-.portada-pillar-title{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:8px}
-.portada-pillar-body{font-size:.77rem;color:var(--muted);line-height:1.65}
+.portada-pillar-bar{height:3px;border-radius:0;margin-bottom:14px;width:32px}
+.portada-pillar-title{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:8px}
+.portada-pillar-body{font-family:var(--body);font-size:.85rem;color:var(--muted);line-height:1.65}
 .portada-stat{padding:22px 28px;text-align:center;border-right:1px solid var(--border)}
 .portada-stat:last-child{border-right:none}
-.portada-stat-num{font-size:2.2rem;font-weight:800;line-height:1;margin-bottom:5px}
-.portada-stat-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-.portada-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);
-              color:#0d1117;border:none;border-radius:8px;padding:11px 24px;
-              font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;
-              transition:opacity .15s;text-decoration:none}
-.portada-cta:hover{opacity:.85}
+.portada-stat-num{font-family:var(--serif);font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:5px}
+.portada-stat-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.portada-cta{display:inline-flex;align-items:center;gap:8px;background:var(--ink);
+              color:var(--bg);border:none;border-radius:2px;padding:11px 24px;
+              font-size:.85rem;font-weight:700;cursor:pointer;font-family:var(--sans);
+              transition:background .15s;text-decoration:none}
+.portada-cta:hover{background:var(--accent)}
 .portada-cta-sec{display:inline-flex;align-items:center;gap:8px;background:transparent;
-                  color:var(--text);border:1px solid var(--border);border-radius:8px;
+                  color:var(--ink);border:1px solid var(--ink);border-radius:2px;
                   padding:10px 22px;font-size:.85rem;cursor:pointer;
-                  font-family:'Inter',sans-serif;transition:border-color .15s,color .15s;
+                  font-family:var(--sans);transition:border-color .15s,color .15s;
                   text-decoration:none}
 .portada-cta-sec:hover{border-color:var(--accent);color:var(--accent)}
 
 /* stats row */
 .stats-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;
-       padding:16px 20px;flex:1;min-width:130px}
-.stat-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
-.stat-val{font-size:1.7rem;font-weight:700;line-height:1}
+.stat{background:transparent;border-top:2px solid var(--ink);border-radius:0;
+       padding:14px 0 6px;flex:1;min-width:130px}
+.stat-label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.stat-val{font-family:var(--serif);font-size:1.9rem;font-weight:600;line-height:1}
 .stat-up{color:var(--green)}
 .stat-down{color:var(--red)}
-.stat-neu{color:var(--accent)}
-.stat-sub{font-size:.72rem;color:var(--muted);margin-top:4px}
+.stat-neu{color:var(--ink)}
+.stat-sub{font-size:.72rem;color:var(--muted);margin-top:6px}
 
 /* chart cards */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .charts-grid.single{grid-template-columns:1fr}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:20px}
 .chart-card.wide{grid-column:span 2}
-.ct{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:2px}
-.cs{font-size:.7rem;color:var(--muted);margin-bottom:16px}
+.ct{font-family:var(--serif);font-size:.98rem;font-weight:600;color:var(--ink);margin-bottom:2px}
+.cs{font-size:.72rem;color:var(--muted);margin-bottom:16px}
 .chart-wrap{position:relative}
 
 /* gauge */
 .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding:24px 0 8px}
 .gauge-svg{width:220px;height:130px}
-.gauge-value{font-size:2.8rem;font-weight:700;line-height:1;text-align:center;margin-top:8px}
+.gauge-value{font-family:var(--serif);font-size:3rem;font-weight:800;line-height:1;text-align:center;margin-top:8px}
 .gauge-label{font-size:.78rem;color:var(--muted);text-align:center;margin-top:4px}
 .gauge-cat{font-size:.85rem;font-weight:600;text-align:center;margin-top:6px}
 
@@ -148,81 +155,73 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .score-year-tabs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:16px;
                   border-bottom:1px solid var(--border);padding-bottom:12px}
 .score-yr-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
-               border-radius:6px;padding:3px 9px;font-size:.72rem;cursor:pointer;
-               transition:all .15s;white-space:nowrap}
-.score-yr-btn:hover{border-color:var(--accent);color:var(--accent)}
-.score-yr-btn.score-yr-active{background:var(--accent);border-color:var(--accent);
-                                color:#0d1117;font-weight:600}
+               border-radius:2px;padding:3px 9px;font-size:.72rem;cursor:pointer;
+               font-family:var(--sans);transition:all .15s;white-space:nowrap}
+.score-yr-btn:hover{border-color:var(--ink);color:var(--ink)}
+.score-yr-btn.score-yr-active{background:var(--ink);border-color:var(--ink);
+                                color:var(--bg);font-weight:600}
 
 /* risk bands sidebar */
 .risk-bands{display:flex;flex-direction:column;gap:4px;margin-top:8px}
-.rb{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;
+.rb{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:2px;
      font-size:.74rem;border:1px solid transparent}
 .rb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.rb.active{border-color:currentColor;background:rgba(255,255,255,.04)}
+.rb.active{border-color:currentColor;background:var(--card)}
 
-/* AHP table */
-.ahp-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.ahp-table th{text-align:left;padding:8px 12px;font-size:.68rem;color:var(--muted);
-               text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
-.ahp-table td{padding:8px 12px;border-bottom:1px solid #21262d;vertical-align:middle}
-.ahp-table tr:last-child td{border-bottom:none}
-.cr-badge{display:inline-block;background:#00d4aa22;color:var(--accent);border:1px solid #00d4aa44;
-           padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600;margin-left:8px}
-
-/* history table */
-.gap-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.gap-table th{text-align:left;padding:8px 12px;font-size:.68rem;color:var(--muted);
-               text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
-.gap-table td{padding:7px 12px;border-bottom:1px solid #21262d}
-.gap-table tr:last-child td{border-bottom:none}
-.gap-table tbody tr:hover{background:rgba(255,255,255,.03)}
-.pill{display:inline-block;padding:2px 10px;border-radius:12px;font-size:.72rem;font-weight:600}
+/* Tablas: estilo de cuadro estadístico de prensa financiera */
+.ahp-table,.gap-table,.satv-var-table,.dim-var-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.ahp-table th,.gap-table th,.satv-var-table th,.dim-var-table th{
+  text-align:left;padding:8px 12px;font-size:.66rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;border-bottom:2px solid var(--ink);font-weight:700}
+.ahp-table td,.gap-table td,.satv-var-table td,.dim-var-table td{
+  padding:8px 12px;border-bottom:1px solid var(--grid);vertical-align:middle}
+.ahp-table tr:last-child td,.gap-table tr:last-child td,.dim-var-table tr:last-child td{border-bottom:none}
+.gap-table tbody tr:hover,.dim-var-table tbody tr:hover{background:var(--card-alt)}
+.cr-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);
+           padding:2px 10px;border-radius:2px;font-size:.72rem;font-weight:600;margin-left:8px}
+.pill{display:inline-block;padding:2px 10px;border-radius:2px;font-size:.72rem;font-weight:600}
 
 /* recommendation alert */
-.alert{border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid}
-.alert-warn{background:#e67e2215;border-color:#e67e2240;color:#e67e22}
-.alert-info{background:#00d4aa15;border-color:#00d4aa40;color:#00d4aa}
-.alert-bad{background:#e05c5c15;border-color:#e05c5c40;color:#e05c5c}
-.alert-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-.alert-body{font-size:.88rem;color:var(--text);line-height:1.55}
+.alert{border-radius:2px;padding:16px 20px;margin-bottom:20px;border:1px solid;border-left-width:4px;background:var(--card)}
+.alert-warn{border-color:var(--orange);color:var(--orange)}
+.alert-info{border-color:var(--ink);color:var(--ink)}
+.alert-bad{border-color:var(--red);color:var(--red)}
+.alert-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.alert-body{font-family:var(--body);font-size:.92rem;color:var(--text);line-height:1.55}
 
 /* satv */
-.satv-kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;text-align:center}
-.satv-kpi-val{font-size:2rem;font-weight:700;line-height:1}
-.satv-kpi-lbl{font-size:.72rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.6px}
+.satv-kpi{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:16px 20px;text-align:center}
+.satv-kpi-val{font-family:var(--serif);font-size:2.1rem;font-weight:600;line-height:1}
+.satv-kpi-lbl{font-size:.7rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.08em}
 .satv-alert{display:flex;align-items:flex-start;gap:14px;background:var(--card);border:1px solid var(--border);
-             border-radius:10px;padding:14px 18px}
+             border-radius:2px;padding:14px 18px}
 .satv-alert.critico{border-left:4px solid var(--red)}
 .satv-alert.precaucion{border-left:4px solid var(--orange)}
 .satv-alert.normal{border-left:4px solid var(--green)}
 .satv-alert-icon{font-size:1.4rem;line-height:1;padding-top:2px}
-.satv-alert-tipo{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
-.satv-alert-msg{font-size:.85rem;color:var(--text);line-height:1.55}
-.satv-dim-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.satv-alert-tipo{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.satv-alert-msg{font-family:var(--body);font-size:.9rem;color:var(--text);line-height:1.55}
+.satv-dim-card{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:16px}
 .satv-dim-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .satv-dim-name{font-size:.82rem;font-weight:600}
-.satv-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase}
-.satv-badge.critico{background:#e05c5c22;color:#e05c5c;border:1px solid #e05c5c55}
-.satv-badge.precaucion{background:#e67e2222;color:#e67e22;border:1px solid #e67e2255}
-.satv-badge.normal{background:#2ecc7122;color:#2ecc71;border:1px solid #2ecc7155}
-.satv-badge.sin_dato{background:#8b949e22;color:#8b949e;border:1px solid #8b949e55}
-.satv-dim-score{font-size:1.6rem;font-weight:700;line-height:1}
+.satv-badge{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.06em}
+.satv-badge.critico{background:rgba(158,42,43,.1);color:var(--red);border:1px solid rgba(158,42,43,.35)}
+.satv-badge.precaucion{background:rgba(194,96,14,.1);color:var(--orange);border:1px solid rgba(194,96,14,.35)}
+.satv-badge.normal{background:rgba(47,125,79,.1);color:var(--green);border:1px solid rgba(47,125,79,.35)}
+.satv-badge.sin_dato{background:rgba(91,95,107,.1);color:var(--muted);border:1px solid rgba(91,95,107,.35)}
+.satv-dim-score{font-family:var(--serif);font-size:1.7rem;font-weight:600;line-height:1}
 .satv-dim-deltas{display:flex;gap:10px;margin-top:8px;font-size:.72rem;color:var(--muted)}
 .satv-dim-var{font-size:.72rem;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--muted)}
-.satv-var-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.satv-var-table th{text-align:left;padding:6px 8px;font-size:.68rem;color:var(--muted);
-                   text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}
-.satv-var-table td{padding:7px 8px;border-bottom:1px solid #21262d;vertical-align:middle}
-.satv-bar-mini{height:6px;border-radius:3px;background:var(--accent);min-width:2px;transition:width .3s}
+.satv-bar-mini{height:6px;border-radius:0;background:var(--ink);min-width:2px;transition:width .3s}
 
-/* news */
-.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.news-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;
-            display:flex;flex-direction:column;transition:border-color .2s}
-.news-card:hover{border-color:var(--accent)}
-.news-thumb{width:100%;height:160px;object-fit:cover;background:#21262d;display:block}
-.news-thumb-ph{width:100%;height:80px;background:linear-gradient(135deg,#161d2b,#1d2430);display:flex;
+/* news — tarjetas de prensa: foto, kicker rojo, titular en serif */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.news-card{background:var(--card);border:1px solid var(--border);border-radius:2px;overflow:hidden;
+            display:flex;flex-direction:column;transition:border-color .2s,box-shadow .2s}
+.news-card:hover{border-color:var(--ink);box-shadow:0 6px 18px rgba(28,35,51,.08)}
+.news-thumb{width:100%;height:160px;object-fit:cover;background:var(--card-alt);display:block;
+            filter:saturate(.85)}
+.news-thumb-ph{width:100%;height:80px;background:var(--card-alt);display:flex;
                 align-items:center;justify-content:center;font-size:1.5rem;opacity:.7}
 .news-thumb-ph::after{content:'📰'}
 .news-srclinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -230,21 +229,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
                padding-bottom:1px;transition:color .2s}
 .news-srclink:hover{color:var(--accent);border-bottom-color:var(--accent)}
 .news-srclink::after{content:' ↗';font-size:.62rem;opacity:.7}
-.news-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
-.news-section{font-size:.65rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px}
-.news-title{font-size:.9rem;font-weight:600;color:var(--text);line-height:1.4}
+.news-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+.news-section{font-size:.64rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.12em}
+.news-title{font-family:var(--serif);font-size:1.02rem;font-weight:600;color:var(--ink);line-height:1.3;
+            letter-spacing:-.005em}
 .news-title a{color:inherit;text-decoration:none}
 .news-title a:hover{color:var(--accent)}
-.news-trail{font-size:.78rem;color:var(--muted);line-height:1.5;flex:1}
-.news-date{font-size:.68rem;color:var(--muted);margin-top:4px}
-.news-skeleton{background:linear-gradient(90deg,#21262d 25%,#2d333b 50%,#21262d 75%);
-                background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px}
+.news-trail{font-family:var(--body);font-size:.82rem;color:var(--muted);line-height:1.5;flex:1}
+.news-date{font-size:.68rem;color:var(--faint);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.news-skeleton{background:linear-gradient(90deg,var(--card-alt) 25%,var(--border) 50%,var(--card-alt) 75%);
+                background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:2px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .news-status{padding:32px;text-align:center;color:var(--muted);font-size:.88rem}
 .news-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.news-chip{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:16px;
-            padding:4px 14px;font-size:.74rem;color:var(--muted);cursor:pointer;transition:all .2s}
-.news-chip.active,.news-chip:hover{background:rgba(0,212,170,.12);border-color:var(--accent);color:var(--accent)}
+.news-chip{background:transparent;border:1px solid var(--border);border-radius:2px;
+            padding:4px 14px;font-size:.72rem;color:var(--muted);cursor:pointer;transition:all .2s;
+            text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.news-chip.active,.news-chip:hover{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 
 /* ── tab switching ── */
 .tab-section{display:none}
@@ -252,27 +253,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ── dimension detail cards ── */
 .dim-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.dim-detail-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+.dim-detail-card{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:18px 20px}
 .dim-detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px}
-.dim-detail-id{display:inline-block;background:rgba(0,212,170,.12);color:var(--accent);
-                border:1px solid rgba(0,212,170,.3);border-radius:6px;
+.dim-detail-id{display:inline-block;background:var(--accent-soft);color:var(--accent);
+                border:1px solid var(--accent-line);border-radius:2px;
                 font-size:.68rem;font-weight:700;padding:2px 8px;margin-right:8px}
-.dim-detail-name{font-size:.85rem;font-weight:600;color:var(--text)}
-.dim-var-table{width:100%;border-collapse:collapse;font-size:.78rem}
-.dim-var-table th{text-align:left;padding:6px 8px;font-size:.65rem;color:var(--muted);
-                   text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border)}
-.dim-var-table td{padding:6px 8px;border-bottom:1px solid #21262d;vertical-align:middle}
-.dim-var-table tr:last-child td{border-bottom:none}
-.dim-var-table tbody tr:hover{background:rgba(255,255,255,.02)}
+.dim-detail-name{font-family:var(--serif);font-size:.95rem;font-weight:600;color:var(--ink)}
+.dim-var-table{font-size:.78rem}
+.dim-var-table th{padding:6px 8px;font-size:.64rem}
+.dim-var-table td{padding:6px 8px}
 
 /* ── dimension sub-tabs ── */
 .dim-subtabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:24px;padding:4px;
-             background:#161b22;border:1px solid var(--border);border-radius:10px}
+             background:var(--card-alt);border:1px solid var(--border);border-radius:2px}
 .dim-stab{background:transparent;border:1px solid transparent;color:var(--muted);
-           font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;
-           padding:7px 16px;border-radius:7px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.dim-stab:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.dim-stab.dim-stab-active{background:var(--card);color:var(--text);border-color:var(--border)}
+           font-family:var(--sans);font-size:.78rem;font-weight:500;
+           padding:7px 16px;border-radius:2px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.dim-stab:hover{color:var(--ink)}
+.dim-stab.dim-stab-active{background:var(--card);color:var(--ink);border-color:var(--border)}
 .dim-view{display:none}
 .dim-view.dim-view-active{display:block}
 
@@ -282,56 +280,66 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .dim-stab{font-size:.72rem;padding:6px 10px}
 }
 
-/* footer */
-.footer{text-align:center;padding:28px;font-size:.72rem;color:var(--muted);
-         border-top:1px solid var(--border)}
+/* footer — pie de imprenta */
+.footer{text-align:center;padding:32px 28px 40px;font-size:.72rem;color:var(--muted);
+         border-top:2px solid var(--ink);max-width:1240px;margin:0 auto;letter-spacing:.02em}
+.footer a{text-decoration:none}
 
-/* ── Diseño minimalista: héroe, KPIs y bloques de la vista de producto ── */
-.lead{font-size:.9rem;color:var(--muted);line-height:1.6;max-width:640px;margin:0 0 22px}
-.hero-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:22px}
-.hero-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+/* ── Héroe, KPIs y bloques de la vista de producto ── */
+.lead{font-family:var(--body);font-size:1.08rem;color:var(--text);line-height:1.6;max-width:680px;margin:0 0 28px;
+      font-weight:400}
+.hero-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-bottom:32px}
+.hero-card{background:var(--card);border:1px solid var(--border);border-radius:2px;
             padding:30px 32px;position:relative;overflow:hidden}
-.hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
-                    background:var(--accent);opacity:.9}
-.hero-card.is-annual::before{background:#f1c40f}
-.hero-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;
-           color:var(--muted);margin-bottom:14px}
-.hero-num{font-size:4.4rem;font-weight:700;line-height:.92;letter-spacing:-2px;color:var(--text)}
-.hero-card.is-annual .hero-num{font-size:3.4rem}
-.hero-lbl{font-size:1rem;font-weight:600;margin-top:10px;color:var(--text)}
+.hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+                    background:var(--accent)}
+.hero-card.is-annual::before{background:var(--ink)}
+.hero-tag{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+           color:var(--accent);margin-bottom:14px}
+.hero-card.is-annual .hero-tag{color:var(--ink)}
+.hero-num{font-family:var(--serif);font-size:5rem;font-weight:800;line-height:.9;letter-spacing:-.04em;color:var(--ink);
+          font-variation-settings:'opsz' 144}
+.hero-card.is-annual .hero-num{font-size:3.8rem}
+.hero-lbl{font-family:var(--serif);font-size:1.15rem;font-weight:600;font-style:italic;margin-top:12px;color:var(--ink)}
 .hero-meta{font-size:.74rem;color:var(--muted);margin-top:8px}
-.hero-note{font-size:.72rem;color:var(--muted);margin-top:14px;padding-top:12px;
+.hero-note{font-size:.74rem;color:var(--muted);margin-top:14px;padding-top:12px;
             border-top:1px solid var(--border);line-height:1.5}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:22px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
-.kpi-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
-.kpi-val{font-size:1.55rem;font-weight:700;color:var(--text);line-height:1}
-.kpi-sub{font-size:.65rem;color:#6b7280;margin-top:6px}
-.block-title{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:4px}
-.block-sub{font-size:.76rem;color:var(--muted);margin-bottom:16px;line-height:1.5}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 26px;margin-bottom:20px}
-.hint{font-size:.72rem;color:#6b7280;line-height:1.55;margin-top:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:0 24px;margin-bottom:32px}
+.kpi{background:transparent;border-top:2px solid var(--ink);border-radius:0;padding:14px 0 16px}
+.kpi-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.kpi-val{font-family:var(--serif);font-size:1.75rem;font-weight:600;color:var(--ink);line-height:1}
+.kpi-sub{font-size:.66rem;color:var(--faint);margin-top:6px}
+.block-title{font-family:var(--serif);font-size:1.25rem;font-weight:600;color:var(--ink);margin-bottom:4px;
+             letter-spacing:-.01em}
+.block-sub{font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:2px;padding:26px 28px;margin-bottom:20px}
+.hint{font-family:var(--body);font-size:.8rem;color:var(--muted);line-height:1.6;margin-top:12px;
+      border-left:2px solid var(--border);padding-left:12px}
 details.more{margin-top:14px}
 details.more summary{cursor:pointer;color:var(--accent);font-size:.74rem;font-weight:600;list-style:none}
 details.more summary::-webkit-details-marker{display:none}
 details.more summary::before{content:'ⓘ ';opacity:.8}
-details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;margin-top:10px}
+details.more .more-body{font-family:var(--body);font-size:.82rem;color:var(--muted);line-height:1.7;margin-top:10px}
 
-/* Sectores. Estas dos rejillas estaban en atributos style= inline, que ningun
-   @media alcanza: a 375px la seccion medía 458px y desbordaba la pagina en
-   horizontal. Pasan a clases para poder colapsarlas en pantallas estrechas. */
+/* Controles de formulario: mismos bordes y tipografía que el resto */
+button{font-family:var(--sans)}
+input[type=range]{accent-color:var(--accent)}
+
+/* Sectores */
 .sector-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
 .sector-split{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
-.sector-split > *{min-width:0}   /* deja que la columna fluida se encoja */
+.sector-split > *{min-width:0}
 
 @media(max-width:900px){
   .charts-grid{grid-template-columns:1fr}
   .chart-card.wide{grid-column:span 1}
-  .section{padding:24px 20px}
+  .section{padding:28px 20px 36px}
   .header{padding:24px 20px}
-  .nav{padding:0 16px}
+  .nav-top{padding:0 20px}
+  .nav-top a.nav-brand{margin-right:16px;font-size:1.3rem}
   .hero-grid{grid-template-columns:1fr}
-  .hero-num{font-size:3.4rem}
+  .hero-num{font-size:3.6rem}
+  .lead{font-size:1rem}
   .sector-split{grid-template-columns:minmax(0,1fr)}
   .sector-kpis{grid-template-columns:repeat(3,1fr)}
 }
@@ -363,7 +371,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <section class="section tab-section tab-active" id="hoy">
   <div class="section-header">
     <span class="section-title">Clima de inversión</span>
-    <span class="section-sub">Venezuela · actualizado 17 de septiembre de 2026 · 20:19</span>
+    <span class="section-sub">Venezuela · actualizado 17 de septiembre de 2026 · 20:45</span>
   </div>
 
   <p class="lead">
@@ -455,17 +463,17 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <div style="font-size:.72rem;color:var(--muted)">Pulsa Animar para ver el apagón y su recuperación</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap">
-      <div style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
-        <button id="bmModeYear" style="background:var(--accent);color:#0d1117;border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit">Por año</button>
+      <div style="display:inline-flex;border:1px solid var(--ink);border-radius:2px;overflow:hidden">
+        <button id="bmModeYear" style="background:var(--ink);color:var(--bg);border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-weight:600;font-family:inherit">Por año</button>
         <button id="bmModeMonth" style="background:var(--card);color:var(--text);border:0;padding:7px 16px;cursor:pointer;font-size:.76rem;font-family:inherit">Por mes</button>
       </div>
       <input type="range" id="bmMapSlider" min="0" max="0" value="0" step="1" style="flex:1;min-width:180px;accent-color:var(--accent)">
-      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 16px;cursor:pointer;font-size:.78rem;font-family:inherit">▶ Animar</button>
+      <button id="bmMapPlay" style="background:var(--card);color:var(--text);border:1px solid var(--ink);border-radius:2px;padding:7px 16px;cursor:pointer;font-size:.78rem;font-family:inherit">▶ Animar</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
       <div style="flex:2 1 440px;min-width:300px">
         <svg id="bmMapSvg" viewBox="0 0 1000 880" preserveAspectRatio="xMidYMid meet"
-             style="width:100%;max-height:460px;height:auto;display:block;background:#0d1117;border-radius:10px"></svg>
+             style="width:100%;max-height:460px;height:auto;display:block;background:var(--ink);border-radius:2px"></svg>
         <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.68rem;color:var(--muted)">
           <span>Menos luz</span>
           <span id="bmMapGradient" style="flex:1;height:10px;border-radius:5px;display:block"></span>
@@ -518,8 +526,8 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   </div>
 
   <div style="text-align:center;margin-top:24px">
-    <button id="newsLoadMore" style="display:none;background:rgba(0,212,170,.1);border:1px solid var(--accent);
-      color:var(--accent);padding:9px 26px;border-radius:20px;cursor:pointer;font-size:.82rem;font-family:inherit">
+    <button id="newsLoadMore" style="display:none;background:transparent;border:1px solid var(--ink);
+      color:var(--ink);padding:9px 26px;border-radius:2px;font-weight:600;cursor:pointer;font-size:.82rem;font-family:inherit">
       Ver más
     </button>
   </div>
@@ -536,7 +544,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
     Cada sector reacciona distinto al clima del país. Estos son perfiles hipotéticos de ponderación; no son estimaciones de atractivo o rentabilidad sectorial.
   </p>
 
-  <div class="sector-kpis"><div style="background:var(--card);border:1px solid #27ae6044;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy favorable</div><div style="font-size:1.8rem;font-weight:700;color:#27ae60;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #2ecc7144;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Favorable</div><div style="font-size:1.8rem;font-weight:700;color:#2ecc71;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #f1c40f44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Intermedio</div><div style="font-size:1.8rem;font-weight:700;color:#f1c40f;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e67e2244;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#e67e22;line-height:1">8</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid #e74c3c44;border-radius:10px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#e74c3c;line-height:1">2</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div></div>
+  <div class="sector-kpis"><div style="background:var(--card);border:1px solid var(--border);border-top:3px solid #1f6f78;border-radius:2px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy favorable</div><div style="font-size:1.8rem;font-weight:700;color:#1f6f78;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid var(--border);border-top:3px solid #2f7d4f;border-radius:2px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Favorable</div><div style="font-size:1.8rem;font-weight:700;color:#2f7d4f;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid var(--border);border-top:3px solid #b07d00;border-radius:2px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Intermedio</div><div style="font-size:1.8rem;font-weight:700;color:#b07d00;line-height:1">0</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid var(--border);border-top:3px solid #c2600e;border-radius:2px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#c2600e;line-height:1">8</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div><div style="background:var(--card);border:1px solid var(--border);border-top:3px solid #9e2a2b;border-radius:2px;padding:14px;text-align:center"><div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Muy desfavorable</div><div style="font-size:1.8rem;font-weight:700;color:#9e2a2b;line-height:1">2</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">sector(es)</div></div></div>
 
   <div class="sector-split">
     <div class="chart-card" style="padding:0;overflow:hidden">
@@ -547,7 +555,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <div style="overflow-x:auto">
         <table id="sectorTable" style="width:100%;border-collapse:collapse;font-size:.78rem">
           <thead>
-            <tr style="background:#21262d;color:var(--muted);text-align:left">
+            <tr style="color:var(--muted);text-align:left;border-bottom:2px solid var(--ink)">
               <th style="padding:9px 14px;font-weight:600">#</th>
               <th style="padding:9px 14px;font-weight:600">Sector</th>
               <th style="padding:9px 14px;font-weight:600;text-align:center">Score</th>
@@ -555,7 +563,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
               <th style="padding:9px 14px;font-weight:600">Déficit ponderado</th>
             </tr>
           </thead>
-          <tbody><tr style="border-bottom:1px solid var(--border)" data-sid="retail"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">1</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Retail</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">42.3</div><div style="width:42.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="consumo_masivo"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">2</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Consumo masivo</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">38.3</div><div style="width:38.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="salud_farmaceutico"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">3</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Salud / Farmacéutico</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="banca_fintech"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">4</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Banca / Fintech</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="agroindustria"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">5</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Agroindustria</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.4</div><div style="width:35.4%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="tecnologia_digital"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">6</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Tecnología / Servicios digitales</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.0</div><div style="width:35.0%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="telecomunicaciones"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">7</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Telecomunicaciones</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">34.7</div><div style="width:34.7%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="logistica_comercio"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">8</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Logística / Comercio exterior</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">32.4</div><div style="width:32.4%;max-width:100%;height:6px;background:#e67e22;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="infraestructura"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">9</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Infraestructura / Construcción</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">30.0</div><div style="width:30.0%;max-width:100%;height:6px;background:#e74c3c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="energia_oil_gas"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">10</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Energía / Oil & Gas</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">23.6</div><div style="width:23.6%;max-width:100%;height:6px;background:#e74c3c;border-radius:3px;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D2_energia</td></tr></tbody>
+          <tbody><tr style="border-bottom:1px solid var(--border)" data-sid="retail"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">1</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Retail</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">42.3</div><div style="width:42.3%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="consumo_masivo"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">2</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Consumo masivo</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">38.3</div><div style="width:38.3%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="salud_farmaceutico"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">3</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Salud / Farmacéutico</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="banca_fintech"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">4</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Banca / Fintech</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">36.3</div><div style="width:36.3%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="agroindustria"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">5</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Agroindustria</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.4</div><div style="width:35.4%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="tecnologia_digital"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">6</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Tecnología / Servicios digitales</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">35.0</div><div style="width:35.0%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="telecomunicaciones"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">7</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Telecomunicaciones</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">34.7</div><div style="width:34.7%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="logistica_comercio"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">8</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Logística / Comercio exterior</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e67e22">32.4</div><div style="width:32.4%;max-width:100%;height:6px;background:#e67e22;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e67e2222;color:#e67e22;border:1px solid #e67e2255;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D4_comercial</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="infraestructura"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">9</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Infraestructura / Construcción</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">30.0</div><div style="width:30.0%;max-width:100%;height:6px;background:#e74c3c;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D3_institucional</td></tr><tr style="border-bottom:1px solid var(--border)" data-sid="energia_oil_gas"><td style="padding:10px 14px;color:var(--muted);font-size:.72rem">10</td><td style="padding:10px 14px;color:var(--text);font-weight:600">Energía / Oil & Gas</td><td style="padding:10px 14px;text-align:center"><div style="font-size:1.05rem;font-weight:700;color:#e74c3c">23.6</div><div style="width:23.6%;max-width:100%;height:6px;background:#e74c3c;border-radius:0;margin-top:3px"></div></td><td style="padding:10px 14px"><span style="background:#e74c3c22;color:#e74c3c;border:1px solid #e74c3c55;border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:600;white-space:nowrap">Muy desfavorable</span></td><td style="padding:10px 14px;color:var(--muted);font-size:.72rem;white-space:nowrap">Mayor déficit ponderado: D2_energia</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -584,7 +592,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <span style="font-size:.8rem;font-weight:600">Ajusta cada área</span>
         <button id="simReset" style="background:var(--card);border:1px solid var(--border);
-          color:var(--muted);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:.74rem;font-family:inherit">
+          color:var(--muted);padding:5px 14px;border-radius:2px;cursor:pointer;font-size:.74rem;font-family:inherit">
           Volver a 2024
         </button>
       </div>
@@ -592,12 +600,12 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <div style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="sim-preset" data-preset="peak"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+                 padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
           El mejor año
         </button>
         <button class="sim-preset" data-preset="min"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
-                 padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit">
+                 padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
           El peor año
         </button>
       </div>
@@ -619,7 +627,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 
   <div class="panel" style="margin-top:20px">
     <div class="block-title">Tu escenario frente a la historia</div>
-    <div class="block-sub">La línea amarilla es el valor que acabas de simular.</div>
+    <div class="block-sub">La línea roja punteada es el valor que acabas de simular.</div>
     <div class="chart-wrap" style="height:280px"><canvas id="cSimChart"></canvas></div>
   </div>
 </section>
@@ -945,7 +953,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   <div class="panel">
     <div class="block-title">Autoría</div>
     <div class="block-sub">Trabajo de grado de posgrado.</div>
-    <div style="font-size:1.15rem;font-weight:700;color:var(--text);margin-bottom:6px">
+    <div style="font-family:var(--serif);font-size:1.4rem;font-weight:600;color:var(--ink);margin-bottom:6px">
       Felipe Gómez Espinal</div>
     <div style="font-size:.85rem;color:var(--text);line-height:1.7">
       Especialización en Big Data e Inteligencia de Negocios<br>
@@ -975,7 +983,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
     </div>
   </div>
 
-  <div class="panel" style="border-color:#e6a81755">
+  <div class="panel" style="border-left:4px solid var(--orange)">
     <div class="block-title">Cómo leer la escala</div>
     <div class="block-sub">La advertencia más importante de todo el proyecto.</div>
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8">
@@ -997,7 +1005,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
     <div style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse;font-size:.78rem">
         <thead>
-          <tr style="background:#21262d;color:var(--muted);text-align:left">
+          <tr style="color:var(--muted);text-align:left;border-bottom:2px solid var(--ink)">
             <th style="padding:8px 12px;font-weight:600">Dimensión</th>
             <th style="padding:8px 12px;font-weight:600;text-align:right">Peso AHP</th>
             <th style="padding:8px 12px;font-weight:600;text-align:right">Variables</th>
@@ -1061,22 +1069,26 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
   &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA · 2026
-  &nbsp;·&nbsp; 17 de septiembre de 2026 · 20:19
+  &nbsp;·&nbsp; 17 de septiembre de 2026 · 20:45
 </footer>
 
 <script>
 // ── Shared defaults ──────────────────────────────────────────────────────────
-Chart.defaults.color = '#8b949e';
-Chart.defaults.borderColor = '#30363d';
-Chart.defaults.font.family = "'Inter', sans-serif";
+const ACCENT = '#b3261e';   // rojo ladrillo: resaltes y series simuladas
+const INK    = '#1c2333';   // tinta: series principales
+const PAPER  = '#f6f1e7';
+const CARD   = '#fffdf8';
+const MUTED  = '#5b5f6b';
+const GRID   = '#e8e1d1';
 
-const ACCENT = '#00d4aa';
-const CARD   = '#1c2128';
+Chart.defaults.color = MUTED;
+Chart.defaults.borderColor = GRID;
+Chart.defaults.font.family = "'Inter Tight', 'Inter', sans-serif";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 const years     = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 const scoresAHP = [66.4, 68.01, 62.9, 59.68, 72.16, 73.43, 78.15, 77.4, 76.1, 73.74, 72.58, 73.3, 82.53, 81.16, 76.06, 72.01, 58.88, 51.9, 43.29, 32.16, 22.76, 31.75, 37.92, 33.93, 34.25, 27.78, 42.73];
-const ptColors  = ["#2ecc71", "#2ecc71", "#f1c40f", "#f1c40f", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#2ecc71", "#27ae60", "#27ae60", "#2ecc71", "#2ecc71", "#f1c40f", "#f1c40f", "#e67e22", "#e67e22", "#e74c3c", "#e67e22", "#e67e22", "#e67e22", "#e67e22", "#e74c3c", "#e67e22"];
+const ptColors  = ["#2f7d4f", "#2f7d4f", "#b07d00", "#b07d00", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#2f7d4f", "#1f6f78", "#1f6f78", "#2f7d4f", "#2f7d4f", "#b07d00", "#b07d00", "#c2600e", "#c2600e", "#9e2a2b", "#c2600e", "#c2600e", "#c2600e", "#c2600e", "#9e2a2b", "#c2600e"];
 const yearsFix  = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 const scoresFix = [64.97, 67.06, 63.97, 59.09, 71.27, 72.19, 78.85, 77.35, 75.47, 75.23, 73.04, 71.31, 83.16, 80.57, 74.78, 74.0, 59.74, 50.05, 47.25, 35.53, 25.63, 33.48, 38.22, 35.49, 35.23, 26.45, 39.68];
 const coverage  = [71.5, 71.5, 71.5, 71.5, 71.5, 71.5, 75.6, 75.6, 75.6, 75.6, 75.6, 75.6, 91.6, 95.1, 95.1, 95.1, 95.1, 91.6, 95.1, 95.1, 95.1, 95.1, 95.1, 95.1, 92.6, 78.2, 41.1];   // cobertura % por año (null si no disponible)
@@ -1084,9 +1096,9 @@ const COV_THRESHOLD = 70.0;  // % mínimo para score confiable
 const dimSeries = {"D1_macro": [61.64, 66.11, 59.61, 60.85, 81.54, 77.77, 77.24, 76.44, 83.77, 73.73, 78.37, 86.19, 87.94, 82.99, 76.54, 61.44, 49.1, 48.12, 23.97, 21.78, 29.47, 58.53, 76.66, 61.0, 70.52, 59.43, 61.69], "D2_energia": [100.0, 96.34, 80.63, 75.06, 86.07, 97.72, 95.41, 96.88, 83.79, 84.21, 79.56, 83.37, 83.37, 83.37, 83.37, 82.92, 72.99, 62.13, 40.5, 14.82, 0.0, 2.86, 8.31, 10.29, 14.22, 18.83, 21.08], "D3_institucional": [null, null, null, null, null, null, null, null, null, null, null, null, 74.04, 81.64, 64.94, 59.45, 46.92, 45.66, 35.02, 21.61, 14.85, 14.5, 18.09, 16.99, 5.08, 0.0, null], "D4_comercial": [41.38, 41.37, 41.36, 41.33, 41.3, 41.26, 54.5, 55.15, 54.96, 52.63, 50.06, 46.35, 77.49, 78.11, 88.26, 81.77, 69.67, 66.28, 69.07, 65.4, 29.37, 25.94, 22.12, 21.63, 18.54, 19.03, null], "D5_capital_humano": [40.25, 43.1, 60.47, 32.9, 63.26, 69.87, 77.21, 87.86, 82.01, 82.87, 82.51, 83.18, 87.83, 88.42, 87.13, 85.81, 60.35, 51.83, 53.84, 44.22, 31.16, 26.53, 35.69, 35.01, 43.22, null, null], "D6_percepcion": [81.58, 88.39, 77.78, 85.33, 84.16, 74.33, 89.89, 70.44, 72.8, 82.71, 74.68, 57.46, 88.28, 68.88, 48.42, 72.61, 59.43, 26.3, 61.1, 45.36, 48.95, 72.51, 68.43, 68.02, 59.81, 34.98, 36.26]};
 const radarVals = [61.69, 21.08, 0.0, 19.03, 43.22, 36.26];
 const radarLbls = ["Macroeconom\u00eda", "Energ\u00eda y petr\u00f3leo", "Instituciones y ley", "Apertura comercial", "Capital humano", "Percepci\u00f3n externa"];
-const radarClrs = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"];
+const radarClrs = ["#2b5c9e", "#c2600e", "#6b4c9a", "#1f7a6e", "#9e2a2b", "#b07d00"];
 const dimLbls   = ["Macroeconom\u00eda", "Energ\u00eda y petr\u00f3leo", "Instituciones y ley", "Apertura comercial", "Capital humano", "Percepci\u00f3n externa"];
-const DIM_COLORS = ["#3498db", "#e67e22", "#9b59b6", "#1abc9c", "#e74c3c", "#f39c12"];
+const DIM_COLORS = ["#2b5c9e", "#c2600e", "#6b4c9a", "#1f7a6e", "#9e2a2b", "#b07d00"];
 
 // ── Chart 1: Historia ────────────────────────────────────────────────────────
 new Chart(document.getElementById('cHistoria'), {
@@ -1101,7 +1113,7 @@ new Chart(document.getElementById('cHistoria'), {
           yearsFix.forEach((y,i) => map[y] = scoresFix[i]);
           return years.map(y => map[y] ?? null);
         })(),
-        borderColor: '#444c56',
+        borderColor: '#9a9483',
         borderWidth: 1.5,
         borderDash: [5,4],
         pointRadius: 0,
@@ -1111,11 +1123,11 @@ new Chart(document.getElementById('cHistoria'), {
       {
         label: 'ICIV (AHP)',
         data: scoresAHP,
-        borderColor: ACCENT,
+        borderColor: INK,
         borderWidth: 2.5,
         // Puntos con baja cobertura (<60%) se muestran en naranja pálido con borde punteado
-        pointBackgroundColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#e6981770' : ptColors[i]),
-        pointBorderColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#e69817' : '#0d1117'),
+        pointBackgroundColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e70' : ptColors[i]),
+        pointBorderColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e' : PAPER),
         pointBorderWidth: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 2 : 1),
         pointRadius: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 4 : 5),
         pointStyle: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 'rectRot' : 'circle'),
@@ -1128,10 +1140,10 @@ new Chart(document.getElementById('cHistoria'), {
         label: 'Cobertura < 70% (provisional)',
         data: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? scoresAHP[i] : null),
         borderColor: 'transparent',
-        backgroundColor: '#e69817',
+        backgroundColor: '#c2600e',
         pointStyle: 'rectRot',
         pointRadius: 5,
-        pointBorderColor: '#e69817',
+        pointBorderColor: '#c2600e',
         pointBorderWidth: 2,
         showLine: false,
       }
@@ -1145,17 +1157,17 @@ new Chart(document.getElementById('cHistoria'), {
       legend: { position: 'top' },
       annotation: {
         annotations: {
-          band1: { type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(224,92,92,0.08)',  borderWidth:0, label:{display:true,content:'Muy desfavorable',position:'start',color:'#e05c5c',font:{size:9}}},
-          band2: { type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(230,126,34,0.06)', borderWidth:0, label:{display:true,content:'Desfavorable',position:'start',color:'#e67e22',font:{size:9}}},
-          band3: { type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(241,196,15,0.06)', borderWidth:0, label:{display:true,content:'Intermedio',position:'start',color:'#f1c40f',font:{size:9}}},
-          band4: { type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(46,204,113,0.06)', borderWidth:0, label:{display:true,content:'Favorable',position:'start',color:'#2ecc71',font:{size:9}}},
-          band5: { type:'box', yMin:81, yMax:100, backgroundColor:'rgba(0,212,170,0.06)',  borderWidth:0, label:{display:true,content:'Muy favorable',position:'start',color:'#00d4aa',font:{size:9}}},
+          band1: { type:'box', yMin:0,  yMax:31,  backgroundColor:'rgba(158,42,43,0.07)',  borderWidth:0, label:{display:true,content:'Muy desfavorable',position:'start',color:'#9e2a2b',font:{size:9}}},
+          band2: { type:'box', yMin:31, yMax:51,  backgroundColor:'rgba(194,96,14,0.06)', borderWidth:0, label:{display:true,content:'Desfavorable',position:'start',color:'#c2600e',font:{size:9}}},
+          band3: { type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(176,125,0,0.06)', borderWidth:0, label:{display:true,content:'Intermedio',position:'start',color:'#b07d00',font:{size:9}}},
+          band4: { type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(47,125,79,0.06)', borderWidth:0, label:{display:true,content:'Favorable',position:'start',color:'#2f7d4f',font:{size:9}}},
+          band5: { type:'box', yMin:81, yMax:100, backgroundColor:'rgba(31,111,120,0.06)',  borderWidth:0, label:{display:true,content:'Muy favorable',position:'start',color:'#1f6f78',font:{size:9}}},
         }
       }
     },
     scales: {
-      y: { min:0, max:100, grid:{color:'#21262d'}, ticks:{stepSize:10} },
-      x: { grid:{color:'#21262d'} }
+      y: { min:0, max:100, grid:{color:GRID}, ticks:{stepSize:10} },
+      x: { grid:{color:GRID} }
     }
   }
 });
@@ -1181,7 +1193,7 @@ const dimValueLabels = {
     const { ctx } = chart;
     const meta = chart.getDatasetMeta(0);
     ctx.save();
-    ctx.font = '600 11px Inter, sans-serif';
+    ctx.font = '600 11px "Inter Tight", Inter, sans-serif';
     ctx.textBaseline = 'middle';
     meta.data.forEach((bar, i) => {
       const v   = radarVals[i];
@@ -1232,7 +1244,7 @@ new Chart(document.getElementById('cDimBar'), {
       }}
     },
     scales: {
-      x: { min:0, max:100, grid:{color:'#21262d'} },
+      x: { min:0, max:100, grid:{color:GRID} },
       y: { grid:{display:false}, ticks:{font:{size:10}} }
     }
   },
@@ -1288,7 +1300,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   const SATV = {"resumen": {"dims_criticas": 0, "dims_precaucion": 0, "dims_normales": 2, "dims_sin_dato": 2, "alertas_criticas": 0, "alertas_precaucion": 2, "alertas_positivas": 0, "iciv_delta_1m": null, "iciv_delta_1y": null, "iciv_tendencia": "sin_comparacion", "fecha": "2026-09"}, "dimensiones": {"macro_global": {"nombre": "Condiciones globales", "score_actual": 68.1, "nivel": "normal", "delta_1m": 3.5, "delta_3m": 5.1, "delta_6m": 6.2, "delta_1y": 3.5, "delta_3y": 5.1, "delta_5y": 6.2, "tendencia": "recuperacion", "tendencia_label": "Aumento", "arrow": "^", "variable_critica": "ust_10y_yield_pct", "variable_critica_score": 0.0, "sparkline": [49.2, 48.4, 49.9, 51.4, 52.5, 59.3, 65.4, 66.6, 58.5, 57.1, 60.0, 68.1], "n_vars_disponibles": 6, "n_vars_total": 8}, "energia": {"nombre": "Petróleo y otros líquidos", "score_actual": null, "nivel": "sin_dato", "delta_1m": null, "delta_3m": null, "delta_6m": null, "delta_1y": null, "delta_3y": null, "delta_5y": null, "tendencia": "sin_comparacion", "tendencia_label": "Sin comparación suficiente", "arrow": "?", "variable_critica": "", "variable_critica_score": null, "sparkline": [28.7, 28.7, 26.6, 21.1, 27.6, 31.1, 32.8, 35.4, null, null, null, null], "n_vars_disponibles": 0, "n_vars_total": 1}, "comercio": {"nombre": "Comercio petrolero con EEUU", "score_actual": null, "nivel": "sin_dato", "delta_1m": null, "delta_3m": null, "delta_6m": null, "delta_1y": null, "delta_3y": null, "delta_5y": null, "tendencia": "sin_comparacion", "tendencia_label": "Sin comparación suficiente", "arrow": "?", "variable_critica": "", "variable_critica_score": null, "sparkline": [73.9, 75.7, 77.9, 78.3, 79.0, 79.0, 76.0, 75.6, 74.7, 73.9, null, null], "n_vars_disponibles": 0, "n_vars_total": 2}, "noticias": {"nombre": "Cobertura internacional", "score_actual": 80.7, "nivel": "normal", "delta_1m": 5.6, "delta_3m": 12.5, "delta_6m": 25.0, "delta_1y": 5.6, "delta_3y": 12.5, "delta_5y": 25.0, "tendencia": "recuperacion_acelerada", "tendencia_label": "Aumento acelerado", "arrow": "^^", "variable_critica": "guardian_tono_titulares", "variable_critica_score": 46.8, "sparkline": [42.9, 35.5, 33.5, 27.7, 59.3, 55.6, 77.1, 71.4, 68.1, 67.4, 75.1, 80.7], "n_vars_disponibles": 4, "n_vars_total": 4}}, "alertas_activas": [{"tipo": "Mes provisional", "nivel": "precaucion", "dimension": "pulse", "icono": "i", "mensaje": "Cobertura utilizable 57%. Se exige producción doméstica disponible y mes cerrado para elegibilidad."}, {"tipo": "Cambio de composición", "nivel": "precaucion", "dimension": "pulse", "icono": "i", "mensaje": "El cambio de componentes aporta +3.1 puntos a la variación mensual. Consulte el cambio comparable."}], "variables_criticas": [{"label": "ust 10y yield pct", "score": 0.0, "delta_1m": -2.7, "delta_1y": -2.7, "dimension": "Condiciones globales"}, {"label": "usd index broad", "score": 24.7, "delta_1m": 1.2, "delta_1y": 1.2, "dimension": "Condiciones globales"}, {"label": "guardian tono titulares", "score": 46.8, "delta_1m": -0.7, "delta_1y": -0.7, "dimension": "Cobertura internacional"}, {"label": "wti precio usd", "score": 78.2, "delta_1m": 9.7, "delta_1y": 9.7, "dimension": "Condiciones globales"}, {"label": "brent precio usd", "score": 78.4, "delta_1m": 10.5, "delta_1y": 10.5, "dimension": "Condiciones globales"}, {"label": "vix volatility", "score": 88.3, "delta_1m": -1.0, "delta_1y": -1.0, "dimension": "Condiciones globales"}, {"label": "guardian articulos venezuela", "score": 96.5, "delta_1m": 4.2, "delta_1y": 4.2, "dimension": "Cobertura internacional"}, {"label": "gdelt tono noticias", "score": 96.8, "delta_1m": 12.5, "delta_1y": 12.5, "dimension": "Cobertura internacional"}], "timeline_historico": [{"año": 2015, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 9, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 10, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 11, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2015, "mes": 12, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 6, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2016, "mes": 11, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 6, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 7, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2017, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2018, "mes": 8, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2018, "mes": 12, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 1, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 2, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2019, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 3, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 4, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}, {"año": 2020, "mes": 5, "dimension": "pulse", "tipo": "Nivel relativo Pulse < 35", "nivel": "critico"}], "metodologia": "Señales descriptivas relativas; umbrales heurísticos, sin probabilidades de riesgo. Cambios sobre componentes comunes y fechas calendario."};
   if (!SATV || !SATV.resumen) return;
 
-  const NIV_COLOR = { critico:'#e05c5c', precaucion:'#e67e22', normal:'#2ecc71' };
+  const NIV_COLOR = { critico:'#9e2a2b', precaucion:'#c2600e', normal:'#2f7d4f' };
 
   // ── Alertas activas — único bloque SATV visible en el producto ──────────────
   const alertasEl = document.getElementById('satvAlertas');
@@ -1300,7 +1312,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       <div class="satv-alert ${a.nivel}">
         <div class="satv-alert-icon">${a.icono}</div>
         <div>
-          <div class="satv-alert-tipo" style="color:${NIV_COLOR[a.nivel] || '#8b949e'}">${a.tipo}</div>
+          <div class="satv-alert-tipo" style="color:${NIV_COLOR[a.nivel] || '#8a8d96'}">${a.tipo}</div>
           <div class="satv-alert-msg">${a.mensaje}</div>
         </div>
       </div>`).join('');
@@ -1555,11 +1567,11 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   let simValues = {};  // dim_id → current slider value
 
   function scoreToCategory(s) {
-    if (s <= 30)  return { label:'Muy desfavorable',          color:'#e05c5c' };
-    if (s <= 50)  return { label:'Desfavorable', color:'#e67e22' };
-    if (s <= 65)  return { label:'Intermedio',      color:'#f1c40f' };
-    if (s <= 80)  return { label:'Favorable',           color:'#2ecc71' };
-    return              { label:'Muy favorable',        color:'#00d4aa' };
+    if (s <= 30)  return { label:'Muy desfavorable',          color:'#9e2a2b' };
+    if (s <= 50)  return { label:'Desfavorable', color:'#c2600e' };
+    if (s <= 65)  return { label:'Intermedio',      color:'#b07d00' };
+    if (s <= 80)  return { label:'Favorable',           color:'#2f7d4f' };
+    return              { label:'Muy favorable',        color:'#1f6f78' };
   }
 
   function computeICIV() {
@@ -1604,8 +1616,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             <span>${shortLabel} (×${(d.weight*100).toFixed(0)}%)</span>
             <span>${contrib.toFixed(1)} pts</span>
           </div>
-          <div style="background:#333;border-radius:3px;height:8px">
-            <div style="width:${pct}%;height:100%;background:var(--accent);border-radius:3px;transition:width .2s"></div>
+          <div style="background:var(--grid);border-radius:0;height:8px">
+            <div style="width:${pct}%;height:100%;background:var(--ink);border-radius:0;transition:width .2s"></div>
           </div>
         </div>`;
       }).join('');
@@ -1668,14 +1680,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           {
             label: 'Histórico ICIV',
             data: SIM_YEARS.map((y,i) => ({ x:y, y:SIM_HIST[i] })),
-            borderColor: '#00d4aa', backgroundColor: 'transparent',
+            borderColor: INK, backgroundColor: 'transparent',
             borderWidth: 2, pointRadius: 2.5, tension: 0.3,
           },
           {
             label: 'ICIV Simulado',
             data: SIM_YEARS.map(y => ({ x:y, y:curICIV })),
-            borderColor: '#f1c40f', borderDash: [6,3],
-            backgroundColor: 'rgba(241,196,15,.08)',
+            borderColor: ACCENT, borderDash: [6,3],
+            backgroundColor: 'rgba(179,38,30,.07)',
             borderWidth: 2, pointRadius: 0, fill: true, tension: 0,
           },
         ]
@@ -1683,12 +1695,12 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       options: {
         responsive: true, maintainAspectRatio: false, parsing: false,
         plugins: {
-          legend: { labels: { color:'#8b949e', boxWidth:20, font:{size:11} } },
+          legend: { labels: { color:MUTED, boxWidth:20, font:{size:11} } },
           tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y?.toFixed(1)}` } },
         },
         scales: {
-          x: { type:'linear', min:2000, max:2026.5, ticks:{color:'#8b949e',stepSize:2,callback:v=>v}, grid:{color:'#21262d'} },
-          y: { min:0, max:100, ticks:{color:'#8b949e',stepSize:10}, grid:{color:'#21262d'} }
+          x: { type:'linear', min:2000, max:2026.5, ticks:{color:MUTED,stepSize:2,callback:v=>v}, grid:{color:GRID} },
+          y: { min:0, max:100, ticks:{color:MUTED,stepSize:10}, grid:{color:GRID} }
         }
       }
     });
@@ -1766,8 +1778,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: {display:false} },
         scales: {
-          x: {min:0, max:100, grid:{color:'#21262d'}, ticks:{color:'#8b949e'}},
-          y: {grid:{display:false}, ticks:{color:'#c9d1d9', font:{size:11}}},
+          x: {min:0, max:100, grid:{color:GRID}, ticks:{color:MUTED}},
+          y: {grid:{display:false}, ticks:{color:INK, font:{size:11}}},
         }
       }
     });
@@ -1786,7 +1798,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
   function _bmColor(v) {
     var vmin = BMMAP.vmin || 0.01, vmax = BMMAP.vmax || 1;
-    if (v == null || !isFinite(v)) return '#161b22';
+    if (v == null || !isFinite(v)) return '#2a3247';
     var lv = Math.log(Math.max(v, vmin)), l0 = Math.log(vmin), l1 = Math.log(vmax);
     var t = Math.max(0, Math.min(1, (lv - l0) / (l1 - l0 || 1)));
     var stops = [[10,14,24],[45,32,72],[122,52,80],[200,94,52],[240,168,44],[255,243,205]];
@@ -1812,7 +1824,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
     BMMAP.estados.forEach(function(e) {
       var p = document.createElementNS(NS, 'path');
       p.setAttribute('d', e.d);
-      p.setAttribute('stroke', '#0d1117');
+      p.setAttribute('stroke', '#1c2333');
       p.setAttribute('stroke-width', '0.8');
       p.style.cursor = 'pointer';
       p.addEventListener('mousemove', function() {
@@ -1855,9 +1867,9 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
         var t = (Math.log(Math.max(x.v, BMMAP.vmin)) - l0) / (l1 - l0 || 1);
         var w = Math.max(4, Math.min(100, t * 100));
         return '<div style="display:flex;align-items:center;gap:6px;margin:2px 0">' +
-          '<span style="width:104px;color:#c9d1d9;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
-          '<span style="flex:1;background:#161b22;border-radius:3px"><span style="display:block;height:9px;border-radius:3px;width:'+w+'%;background:'+_bmColor(x.v)+'"></span></span>' +
-          '<span style="width:42px;text-align:right;color:#8b949e;font-size:.72rem">'+x.v.toFixed(2)+'</span></div>';
+          '<span style="width:104px;color:var(--text);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+x.n+'</span>' +
+          '<span style="flex:1;background:var(--card-alt);border-radius:0"><span style="display:block;height:9px;border-radius:0;width:'+w+'%;background:'+_bmColor(x.v)+'"></span></span>' +
+          '<span style="width:42px;text-align:right;color:var(--muted);font-size:.72rem">'+x.v.toFixed(2)+'</span></div>';
       }).join('');
     }
 
@@ -1874,7 +1886,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       slider.max = ks.length - 1;
       slider.value = ks.length - 1;
       var bY = document.getElementById('bmModeYear'), bM = document.getElementById('bmModeMonth');
-      var on = 'var(--accent)', onTxt = '#0d1117', off = 'var(--card)', offTxt = 'var(--text)';
+      var on = 'var(--ink)', onTxt = 'var(--bg)', off = 'var(--card)', offTxt = 'var(--text)';
       bY.style.background = m === 'year' ? on : off;
       bY.style.color      = m === 'year' ? onTxt : offTxt;
       bY.style.fontWeight = m === 'year' ? '600' : '400';
@@ -1909,8 +1921,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
 // ── PROYECCIÓN A 6 MESES (se dibuja dentro de Historia) ──────────────────────────────────────────
 (function() {
-  var ML = {"forecast": {"model": "naive", "model_label": "Persistencia (naive)", "fecha": ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"], "origin_date": "2026-05", "mean": [61.15, 61.15, 61.15, 61.15, 61.15, 61.15], "n_observed": 185, "n_calendar_months": 197, "horizonte_meses": 6, "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "n_interval_errors": [184, 183, 182, 181, 180, 179], "lo_80": [54.81, 52.56, 50.92, 49.99, 48.08, 48.31], "hi_80": [67.49, 69.74, 71.38, 72.31, 74.22, 73.99], "lo_95": [50.58, 47.45, 44.64, 43.07, 42.95, 40.29], "hi_95": [71.72, 74.85, 77.66, 79.23, 79.35, 82.01]}, "metodologia": {"model_selected": "naive", "selection_rule": "Baseline de persistencia prespecificado; no afirma superioridad predictiva.", "evaluation_type": "retrospective_latest_vintage", "validacion": "Retrospectiva de último vintage; sin archivos históricos de publicación o revisiones.", "training_filter": "Cobertura utilizable >=70%, producción doméstica disponible y mes cerrado cuando existen estas banderas.", "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "normalization": "Min-max expansivo causal hasta cada fecha; no añade observaciones.", "caveat": "El puntaje puede cambiar de composición; las bandas incluyen esa inestabilidad histórica y no son probabilidades de riesgo económico.", "sarima_candidate": "SARIMA(1, 1, 1)x(1, 1, 1, 12)"}, "available": true, "backtest": {"available": true, "evaluation_type": "retrospective_latest_vintage", "reason": null, "limitations": "Sin vintages o fechas históricas de publicación. No es una simulación en tiempo real. Errores condicionados a meses elegibles; composición del índice variable.", "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 6, "min_coverage_pct": 70.0, "include_low_coverage": false, "models": ["naive", "seasonal_naive", "sarima"]}, "sample_policy": "same_origin_and_target_for_every_model", "n_predictions": 183, "n_common_predictions": 177, "n_origins_attempted": 21, "n_origins": 20, "n_failures": 3, "failures": [{"origin_date": "2015-12-01", "target_date": "2016-01-01", "horizon": 1, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-03-01", "horizon": 3, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-06-01", "horizon": 6, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}], "diagnostics": [{"origin_date": "2015-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 60, "n_calendar_months": 72, "converged": false, "warnings": ["Maximum Likelihood optimization failed to converge. Check mle_retvals"], "aic": 1858.3770900022807, "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2016-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 66, "n_calendar_months": 78, "converged": true, "warnings": [], "aic": 376.7625642592677}, {"origin_date": "2016-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 72, "n_calendar_months": 84, "converged": true, "warnings": [], "aic": 421.4530598117754}, {"origin_date": "2017-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 78, "n_calendar_months": 90, "converged": true, "warnings": [], "aic": 459.5993988489268}, {"origin_date": "2017-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 84, "n_calendar_months": 96, "converged": true, "warnings": [], "aic": 504.9188911420238}, {"origin_date": "2018-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 90, "n_calendar_months": 102, "converged": true, "warnings": [], "aic": 542.5125849194911}, {"origin_date": "2018-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 96, "n_calendar_months": 108, "converged": true, "warnings": [], "aic": 581.9004901773002}, {"origin_date": "2019-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 102, "n_calendar_months": 114, "converged": true, "warnings": [], "aic": 619.7292828948623}, {"origin_date": "2019-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 108, "n_calendar_months": 120, "converged": true, "warnings": [], "aic": 655.2352003304806}, {"origin_date": "2020-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 114, "n_calendar_months": 126, "converged": true, "warnings": [], "aic": 695.927797660453}, {"origin_date": "2020-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 120, "n_calendar_months": 132, "converged": true, "warnings": [], "aic": 732.1166791127887}, {"origin_date": "2021-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 126, "n_calendar_months": 138, "converged": true, "warnings": [], "aic": 767.590103628084}, {"origin_date": "2021-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 132, "n_calendar_months": 144, "converged": true, "warnings": [], "aic": 803.0699652633493}, {"origin_date": "2022-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 138, "n_calendar_months": 150, "converged": true, "warnings": [], "aic": 838.0286319014167}, {"origin_date": "2022-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 144, "n_calendar_months": 156, "converged": true, "warnings": [], "aic": 876.14563050432}, {"origin_date": "2023-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 150, "n_calendar_months": 162, "converged": true, "warnings": [], "aic": 910.9744603527888}, {"origin_date": "2023-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 156, "n_calendar_months": 168, "converged": true, "warnings": [], "aic": 946.5914976407437}, {"origin_date": "2024-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 162, "n_calendar_months": 174, "converged": true, "warnings": [], "aic": 981.7893870593211}, {"origin_date": "2024-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 168, "n_calendar_months": 180, "converged": true, "warnings": [], "aic": 1015.8827442153012}, {"origin_date": "2025-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 174, "n_calendar_months": 186, "converged": true, "warnings": [], "aic": 1049.8821989239082}, {"origin_date": "2025-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 180, "n_calendar_months": 192, "converged": true, "warnings": [], "aic": 1084.9447665993762}], "summary": [{"model": "naive", "horizon": 1, "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"model": "naive", "horizon": 3, "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"model": "naive", "horizon": 6, "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}, {"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}, {"model": "seasonal_naive", "horizon": 1, "n": 20, "mae": 8.4655, "rmse": 10.3221, "bias": -2.5555, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 3, "n": 20, "mae": 7.3385, "rmse": 9.3482, "bias": -2.5045, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 6, "n": 19, "mae": 9.2247, "rmse": 10.5335, "bias": -3.0542, "n_intervals": 0, "inside_80": null, "inside_95": null}], "best_by_horizon": [{"horizon": 1, "model": "naive", "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"horizon": 3, "model": "naive", "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"horizon": 6, "model": "naive", "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}], "sarima": [{"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}], "public_model": "naive", "public_model_selection": "prespecified_conservative_baseline"}};
-  var PULSE = {"data": {"meses": ["2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12", "2011-01", "2011-02", "2011-03", "2011-04", "2011-05", "2011-06", "2011-07", "2011-08", "2011-09", "2011-10", "2011-11", "2011-12", "2012-01", "2012-02", "2012-03", "2012-04", "2012-05", "2012-06", "2012-07", "2012-08", "2012-09", "2012-10", "2012-11", "2012-12", "2013-01", "2013-02", "2013-03", "2013-04", "2013-05", "2013-06", "2013-07", "2013-08", "2013-09", "2013-10", "2013-11", "2013-12", "2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12", "2015-01", "2015-02", "2015-03", "2015-04", "2015-05", "2015-06", "2015-07", "2015-08", "2015-09", "2015-10", "2015-11", "2015-12", "2016-01", "2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10", "2016-11", "2016-12", "2017-01", "2017-02", "2017-03", "2017-04", "2017-05", "2017-06", "2017-07", "2017-08", "2017-09", "2017-10", "2017-11", "2017-12", "2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "scores": [null, 42.61, 68.16, 58.25, 46.9, 24.49, 47.81, 39.82, 43.69, 71.07, 73.18, 66.99, 85.19, 84.18, 79.78, 86.64, 79.7, 77.75, 73.85, 78.94, 72.6, 72.96, 73.14, 76.79, 83.03, 83.49, 84.61, 80.17, 70.82, 68.78, 74.36, 71.54, 75.05, 73.68, 78.92, 69.89, 73.51, 78.82, 64.23, 71.03, 70.73, 71.17, 70.68, 78.15, 75.74, 71.16, 70.18, 76.75, 69.04, 65.31, 70.12, 68.34, 76.69, 76.16, 75.51, 72.87, 65.49, 60.53, 62.38, 58.37, 22.44, 28.72, 24.24, 33.24, 40.17, 35.86, 30.92, 26.46, 18.0, 25.55, 25.28, 13.7, 12.48, 17.71, 32.57, 27.01, 22.83, 20.14, 34.8, 31.44, 35.18, 37.44, 26.87, 35.95, 31.42, 37.1, 32.2, 28.94, 25.98, 32.61, 23.73, 21.04, 38.78, 43.49, 46.84, 45.94, 43.56, 40.35, 45.02, 43.14, 39.52, 43.96, 42.36, 31.58, 40.95, 37.8, 42.7, 34.79, 25.8, 25.89, 29.95, 35.03, 29.99, 39.14, 39.16, 38.29, 42.31, 43.83, 45.73, 44.16, 44.29, 42.33, 27.65, 32.69, 32.66, 40.35, 42.76, 44.25, 43.74, 47.56, 45.64, 49.53, 47.06, 51.64, 48.11, 51.03, 52.83, 55.24, 52.45, 55.13, 52.55, 56.29, 57.65, 61.51, 56.42, 56.0, 59.73, 64.59, 59.42, 60.95, 52.2, 55.87, 48.45, 49.31, 53.35, 47.12, 49.05, 47.38, 45.85, 51.54, 50.53, 49.96, 57.01, 54.18, 53.69, 48.93, 53.25, 53.22, 54.06, 54.13, 54.57, 53.21, 57.54, 55.07, 52.2, 47.76, 49.2, 54.45, 54.78, 54.07, 50.56, 52.78, 48.1, 46.65, 50.83, 49.93, 55.09, 51.89, 47.54, 44.67, 42.32, 41.94, 39.42, 50.95, 53.12, 61.83, 61.15, 64.52, 63.47, 66.96, 74.69], "cobertura": [0.0, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 75.0, 75.0, 65.0, 57.0], "elegible": [false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false], "n_vars": [0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 14, 12, 10]}, "summary": {"n_meses": 201, "score_actual": 74.69, "categoria": "Provisional", "color": "#e6a817", "fecha_actual": "2026-09", "cobertura": 57.0, "es_confiable": false, "score_confiable": 61.15, "categoria_confiable": "Intermedio", "color_confiable": "#f1c40f", "fecha_confiable": "2026-05", "cobertura_confiable": 100.0}};
+  var ML = {"forecast": {"model": "naive", "model_label": "Persistencia (naive)", "fecha": ["2026-06", "2026-07", "2026-08", "2026-09", "2026-10", "2026-11"], "origin_date": "2026-05", "mean": [61.15, 61.15, 61.15, 61.15, 61.15, 61.15], "n_observed": 185, "n_calendar_months": 197, "horizonte_meses": 6, "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "n_interval_errors": [184, 183, 182, 181, 180, 179], "lo_80": [54.81, 52.56, 50.92, 49.99, 48.08, 48.31], "hi_80": [67.49, 69.74, 71.38, 72.31, 74.22, 73.99], "lo_95": [50.58, 47.45, 44.64, 43.07, 42.95, 40.29], "hi_95": [71.72, 74.85, 77.66, 79.23, 79.35, 82.01]}, "metodologia": {"model_selected": "naive", "selection_rule": "Baseline de persistencia prespecificado; no afirma superioridad predictiva.", "evaluation_type": "retrospective_latest_vintage", "validacion": "Retrospectiva de último vintage; sin archivos históricos de publicación o revisiones.", "training_filter": "Cobertura utilizable >=70%, producción doméstica disponible y mes cerrado cuando existen estas banderas.", "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.", "normalization": "Min-max expansivo causal hasta cada fecha; no añade observaciones.", "caveat": "El puntaje puede cambiar de composición; las bandas incluyen esa inestabilidad histórica y no son probabilidades de riesgo económico.", "sarima_candidate": "SARIMA(1, 1, 1)x(1, 1, 1, 12)"}, "available": true, "backtest": {"available": true, "evaluation_type": "retrospective_latest_vintage", "reason": null, "limitations": "Sin vintages o fechas históricas de publicación. No es una simulación en tiempo real. Errores condicionados a meses elegibles; composición del índice variable.", "config": {"horizons": [1, 3, 6], "min_train_months": 60, "step_months": 6, "min_coverage_pct": 70.0, "include_low_coverage": false, "models": ["naive", "seasonal_naive", "sarima"]}, "sample_policy": "same_origin_and_target_for_every_model", "n_predictions": 183, "n_common_predictions": 177, "n_origins_attempted": 21, "n_origins": 20, "n_failures": 3, "failures": [{"origin_date": "2015-12-01", "target_date": "2016-01-01", "horizon": 1, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-03-01", "horizon": 3, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2015-12-01", "target_date": "2016-06-01", "horizon": 6, "model": "sarima", "reason": "non_convergence_or_invalid_parameters"}], "diagnostics": [{"origin_date": "2015-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 60, "n_calendar_months": 72, "converged": false, "warnings": ["Maximum Likelihood optimization failed to converge. Check mle_retvals", "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 1858.3770900022807, "reason": "non_convergence_or_invalid_parameters"}, {"origin_date": "2016-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 66, "n_calendar_months": 78, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 376.7625642592677}, {"origin_date": "2016-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 72, "n_calendar_months": 84, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 421.4530598117754}, {"origin_date": "2017-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 78, "n_calendar_months": 90, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 459.5993988489268}, {"origin_date": "2017-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 84, "n_calendar_months": 96, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 504.9188911420238}, {"origin_date": "2018-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 90, "n_calendar_months": 102, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 542.5125849194911}, {"origin_date": "2018-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 96, "n_calendar_months": 108, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 581.9004901773002}, {"origin_date": "2019-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 102, "n_calendar_months": 114, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 619.7292828948623}, {"origin_date": "2019-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 108, "n_calendar_months": 120, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 655.2352003304806}, {"origin_date": "2020-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 114, "n_calendar_months": 126, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 695.927797660453}, {"origin_date": "2020-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 120, "n_calendar_months": 132, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 732.1166791127887}, {"origin_date": "2021-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 126, "n_calendar_months": 138, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 767.590103628084}, {"origin_date": "2021-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 132, "n_calendar_months": 144, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 803.0699652633493}, {"origin_date": "2022-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 138, "n_calendar_months": 150, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 838.0286319014167}, {"origin_date": "2022-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 144, "n_calendar_months": 156, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 876.14563050432}, {"origin_date": "2023-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 150, "n_calendar_months": 162, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 910.9744603527888}, {"origin_date": "2023-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 156, "n_calendar_months": 168, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 946.5914976407437}, {"origin_date": "2024-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 162, "n_calendar_months": 174, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 981.7893870593211}, {"origin_date": "2024-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 168, "n_calendar_months": 180, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 1015.8827442153012}, {"origin_date": "2025-06-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 174, "n_calendar_months": 186, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 1049.8821989239082}, {"origin_date": "2025-12-01", "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)", "n_observed": 180, "n_calendar_months": 192, "converged": true, "warnings": ["Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."], "aic": 1084.9447665993762}], "summary": [{"model": "naive", "horizon": 1, "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"model": "naive", "horizon": 3, "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"model": "naive", "horizon": 6, "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}, {"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}, {"model": "seasonal_naive", "horizon": 1, "n": 20, "mae": 8.4655, "rmse": 10.3221, "bias": -2.5555, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 3, "n": 20, "mae": 7.3385, "rmse": 9.3482, "bias": -2.5045, "n_intervals": 0, "inside_80": null, "inside_95": null}, {"model": "seasonal_naive", "horizon": 6, "n": 19, "mae": 9.2247, "rmse": 10.5335, "bias": -3.0542, "n_intervals": 0, "inside_80": null, "inside_95": null}], "best_by_horizon": [{"horizon": 1, "model": "naive", "n": 20, "mae": 4.329, "rmse": 5.6266, "bias": 1.109, "n_intervals": 20, "inside_80": 0.75, "inside_95": 0.95}, {"horizon": 3, "model": "naive", "n": 20, "mae": 5.3475, "rmse": 7.0449, "bias": 0.9445, "n_intervals": 20, "inside_80": 0.8, "inside_95": 1.0}, {"horizon": 6, "model": "naive", "n": 19, "mae": 5.9705, "rmse": 7.3889, "bias": -1.1474, "n_intervals": 19, "inside_80": 0.8947, "inside_95": 1.0}], "sarima": [{"model": "sarima", "horizon": 1, "n": 20, "mae": 4.9511, "rmse": 6.0647, "bias": -2.06, "n_intervals": 20, "inside_80": 0.9, "inside_95": 1.0}, {"model": "sarima", "horizon": 3, "n": 20, "mae": 6.4635, "rmse": 8.09, "bias": -2.6449, "n_intervals": 20, "inside_80": 0.85, "inside_95": 1.0}, {"model": "sarima", "horizon": 6, "n": 19, "mae": 8.0648, "rmse": 9.907, "bias": -4.6266, "n_intervals": 19, "inside_80": 0.9474, "inside_95": 1.0}], "public_model": "naive", "public_model_selection": "prespecified_conservative_baseline"}};
+  var PULSE = {"data": {"meses": ["2010-01", "2010-02", "2010-03", "2010-04", "2010-05", "2010-06", "2010-07", "2010-08", "2010-09", "2010-10", "2010-11", "2010-12", "2011-01", "2011-02", "2011-03", "2011-04", "2011-05", "2011-06", "2011-07", "2011-08", "2011-09", "2011-10", "2011-11", "2011-12", "2012-01", "2012-02", "2012-03", "2012-04", "2012-05", "2012-06", "2012-07", "2012-08", "2012-09", "2012-10", "2012-11", "2012-12", "2013-01", "2013-02", "2013-03", "2013-04", "2013-05", "2013-06", "2013-07", "2013-08", "2013-09", "2013-10", "2013-11", "2013-12", "2014-01", "2014-02", "2014-03", "2014-04", "2014-05", "2014-06", "2014-07", "2014-08", "2014-09", "2014-10", "2014-11", "2014-12", "2015-01", "2015-02", "2015-03", "2015-04", "2015-05", "2015-06", "2015-07", "2015-08", "2015-09", "2015-10", "2015-11", "2015-12", "2016-01", "2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10", "2016-11", "2016-12", "2017-01", "2017-02", "2017-03", "2017-04", "2017-05", "2017-06", "2017-07", "2017-08", "2017-09", "2017-10", "2017-11", "2017-12", "2018-01", "2018-02", "2018-03", "2018-04", "2018-05", "2018-06", "2018-07", "2018-08", "2018-09", "2018-10", "2018-11", "2018-12", "2019-01", "2019-02", "2019-03", "2019-04", "2019-05", "2019-06", "2019-07", "2019-08", "2019-09", "2019-10", "2019-11", "2019-12", "2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12", "2022-01", "2022-02", "2022-03", "2022-04", "2022-05", "2022-06", "2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "scores": [null, 42.61, 68.16, 58.25, 46.9, 24.49, 47.81, 39.82, 43.69, 71.07, 73.18, 66.99, 85.19, 84.18, 79.78, 86.64, 79.7, 77.75, 73.85, 78.94, 72.6, 72.96, 73.14, 76.79, 83.03, 83.49, 84.61, 80.17, 70.82, 68.78, 74.36, 71.54, 75.05, 73.68, 78.92, 69.89, 73.51, 78.82, 64.23, 71.03, 70.73, 71.17, 70.68, 78.15, 75.74, 71.16, 70.18, 76.75, 69.04, 65.31, 70.12, 68.34, 76.69, 76.16, 75.51, 72.87, 65.49, 60.53, 62.38, 58.37, 22.44, 28.72, 24.24, 33.24, 40.17, 35.86, 30.92, 26.46, 18.0, 25.55, 25.28, 13.7, 12.48, 17.71, 32.57, 27.01, 22.83, 20.14, 34.8, 31.44, 35.18, 37.44, 26.87, 35.95, 31.42, 37.1, 32.2, 28.94, 25.98, 32.61, 23.73, 21.04, 38.78, 43.49, 46.84, 45.94, 43.56, 40.35, 45.02, 43.14, 39.52, 43.96, 42.36, 31.58, 40.95, 37.8, 42.7, 34.79, 25.8, 25.89, 29.95, 35.03, 29.99, 39.14, 39.16, 38.29, 42.31, 43.83, 45.73, 44.16, 44.29, 42.33, 27.65, 32.69, 32.66, 40.35, 42.76, 44.25, 43.74, 47.56, 45.64, 49.53, 47.06, 51.64, 48.11, 51.03, 52.83, 55.24, 52.45, 55.13, 52.55, 56.29, 57.65, 61.51, 56.42, 56.0, 59.73, 64.59, 59.42, 60.95, 52.2, 55.87, 48.45, 49.31, 53.35, 47.12, 49.05, 47.38, 45.85, 51.54, 50.53, 49.96, 57.01, 54.18, 53.69, 48.93, 53.25, 53.22, 54.06, 54.13, 54.57, 53.21, 57.54, 55.07, 52.2, 47.76, 49.2, 54.45, 54.78, 54.07, 50.56, 52.78, 48.1, 46.65, 50.83, 49.93, 55.09, 51.89, 47.54, 44.67, 42.32, 41.94, 39.42, 50.95, 53.12, 61.83, 61.15, 64.52, 63.47, 66.96, 74.69], "cobertura": [0.0, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 57.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 82.5, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 96.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 75.0, 75.0, 65.0, 57.0], "elegible": [false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false], "n_vars": [0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 14, 12, 10]}, "summary": {"n_meses": 201, "score_actual": 74.69, "categoria": "Provisional", "color": "#b07d00", "fecha_actual": "2026-09", "cobertura": 57.0, "es_confiable": false, "score_confiable": 61.15, "categoria_confiable": "Intermedio", "color_confiable": "#b07d00", "fecha_confiable": "2026-05", "cobertura_confiable": 100.0}};
   if (!ML || (!ML.forecast && !ML.nowcast)) return;
 
   // Forecast chart
@@ -1942,48 +1954,48 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           {
             label: 'Banda empírica 95%',
             data: hi95,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.08)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.07)',
             fill: '+1', pointRadius: 0, borderWidth: 0, tension: 0.2,
           },
           {
             label: '__lo95',
             data: lo95,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.08)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.07)',
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           },
           {
             label: 'Banda empírica 80%',
             data: hi80,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.18)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.15)',
             fill: '+1', pointRadius: 0, borderWidth: 0, tension: 0.2,
           },
           {
             label: '__lo80',
             data: lo80,
-            borderColor: 'rgba(0,212,170,0)',
-            backgroundColor: 'rgba(0,212,170,.18)',
+            borderColor: 'rgba(28,35,51,0)',
+            backgroundColor: 'rgba(28,35,51,.15)',
             fill: false, pointRadius: 0, borderWidth: 0, tension: 0.2,
           },
           {
             label: 'Pulse histórico',
             data: hist_series,
-            borderColor: '#00d4aa', backgroundColor: 'transparent',
+            borderColor: INK, backgroundColor: 'transparent',
             borderWidth: 2.5, pointRadius: 1.5, tension: 0.25, fill: false,
           },
           {
             label: 'Pulse provisional / no elegible',
             data: hist_low_cov,
-            borderColor: 'rgba(0,212,170,0.4)', backgroundColor: 'transparent',
+            borderColor: 'rgba(28,35,51,0.4)', backgroundColor: 'transparent',
             borderWidth: 1.5, pointRadius: 2, tension: 0.25, fill: false,
             borderDash: [4, 3],
           },
           {
             label: 'Persistencia (naive)',
             data: fc_series,
-            borderColor: '#f1c40f', backgroundColor: 'transparent',
+            borderColor: ACCENT, backgroundColor: 'transparent',
             borderWidth: 2.5, borderDash: [6, 3], pointRadius: 3, tension: 0.25, fill: false,
           },
         ]
@@ -1994,14 +2006,14 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           legend: {
             position: 'top',
             labels: {
-              color: '#8b949e', font: {size: 10},
+              color: MUTED, font: {size: 10},
               filter: function(item) { return !item.text.startsWith('__'); }
             }
           },
         },
         scales: {
-          x: { ticks: {color:'#8b949e', maxTicksLimit:16}, grid: {color:'#21262d'} },
-          y: { min:0, max:100, ticks: {color:'#8b949e', stepSize:20}, grid: {color:'#21262d'} },
+          x: { ticks: {color:MUTED, maxTicksLimit:16}, grid: {color:GRID} },
+          y: { min:0, max:100, ticks: {color:MUTED, stepSize:20}, grid: {color:GRID} },
         }
       }
     });
@@ -2019,18 +2031,18 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // HOY — dos cifras protagonistas + señales del momento
 // ─────────────────────────────────────────────────────────────────────────────
 (function() {
-  var VH = {"iciv": {"score": 42.73, "year": 2026, "label": "Provisional · Desfavorable", "color": "#e67e22", "delta": 14.95, "coverage": 41.1, "is_reliable": false, "reliable_score": 27.78, "reliable_year": 2025, "reliable_label": "Muy desfavorable", "reliable_coverage": 78.2}, "pulse": {"score": 74.69, "year": 2026, "month": 9, "label_mes": "Sep", "coverage": 57.0, "delta": 4.5943, "is_reliable": false, "reliable_score": 61.15, "reliable_year": 2026, "reliable_month": 5, "reliable_label_mes": "May", "reliable_coverage": 100.0}, "wti": {"valor": 93.39, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 29.43}, "brent": {"valor": 102.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 34.37}, "vix": {"valor": 15.71, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -0.08}, "ust10y": {"valor": 4.82, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 0.7}, "usd_index": {"valor": 118.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -1.68}, "fed_funds": {"valor": 3.63, "año": 2026, "mes": 8, "label_mes": "Ago", "delta_12m": -0.7}, "petroleo_ven": {"valor": 1199.0, "año": 2026, "mes": 5, "label_mes": "May", "delta_12m": 190.0}, "inflacion": {"valor": 387.4, "año": 2026, "delta": 135.4}, "pib_crec": {"valor": 4.0, "año": 2026, "delta": 2.5}, "fh": {"valor": 13.0, "año": 2025, "delta": 0.0}, "cpi": {"valor": 10.0, "año": 2025, "delta": 0.0}, "wgi": {"valor": 23.94, "año": 2024, "delta": -2.24}, "migrantes": {"valor": 1.6, "año": 2025, "delta": -0.13}, "hdi": {"valor": 0.71, "año": 2023, "delta": 0.0}};
+  var VH = {"iciv": {"score": 42.73, "year": 2026, "label": "Provisional · Desfavorable", "color": "#c2600e", "delta": 14.95, "coverage": 41.1, "is_reliable": false, "reliable_score": 27.78, "reliable_year": 2025, "reliable_label": "Muy desfavorable", "reliable_coverage": 78.2}, "pulse": {"score": 74.69, "year": 2026, "month": 9, "label_mes": "Sep", "coverage": 57.0, "delta": 4.5943, "is_reliable": false, "reliable_score": 61.15, "reliable_year": 2026, "reliable_month": 5, "reliable_label_mes": "May", "reliable_coverage": 100.0}, "wti": {"valor": 93.39, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 29.43}, "brent": {"valor": 102.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 34.37}, "vix": {"valor": 15.71, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -0.08}, "ust10y": {"valor": 4.82, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": 0.7}, "usd_index": {"valor": 118.35, "año": 2026, "mes": 9, "label_mes": "Sep", "delta_12m": -1.68}, "fed_funds": {"valor": 3.63, "año": 2026, "mes": 8, "label_mes": "Ago", "delta_12m": -0.7}, "petroleo_ven": {"valor": 1199.0, "año": 2026, "mes": 5, "label_mes": "May", "delta_12m": 190.0}, "inflacion": {"valor": 387.4, "año": 2026, "delta": 135.4}, "pib_crec": {"valor": 4.0, "año": 2026, "delta": 2.5}, "fh": {"valor": 13.0, "año": 2025, "delta": 0.0}, "cpi": {"valor": 10.0, "año": 2025, "delta": 0.0}, "wgi": {"valor": 23.94, "año": 2024, "delta": -2.24}, "migrantes": {"valor": 1.6, "año": 2025, "delta": -0.13}, "hdi": {"valor": 0.71, "año": 2023, "delta": 0.0}};
   if (!VH) return;
 
   var MESES = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
   function _col(score) {
-    if (score == null) return '#8b949e';
-    if (score < 31) return '#e74c3c';
-    if (score < 51) return '#e67e22';
-    if (score < 66) return '#f1c40f';
-    if (score < 81) return '#2ecc71';
-    return '#27ae60';
+    if (score == null) return '#8a8d96';
+    if (score < 31) return '#9e2a2b';
+    if (score < 51) return '#c2600e';
+    if (score < 66) return '#b07d00';
+    if (score < 81) return '#2f7d4f';
+    return '#1f6f78';
   }
   function _lbl(score) {
     if (score == null) return '—';
@@ -2043,7 +2055,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   function _deltaStr(d, dec, suf) {
     if (d == null) return '—';
     var flecha = d >= 0 ? '▲ +' : '▼ ';
-    return '<span style="color:' + (d >= 0 ? '#2ecc71' : '#e05c5c') + ';font-weight:600">'
+    return '<span style="color:' + (d >= 0 ? '#2f7d4f' : '#9e2a2b') + ';font-weight:600">'
            + flecha + Math.abs(d).toFixed(dec) + (suf || '') + '</span>';
   }
   function _set(id, txt, color) {
@@ -2056,7 +2068,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   // ── Señal mensual ──
   if (VH.pulse) {
     var p = VH.pulse;
-    var pColor = p.is_reliable ? _col(p.score) : '#e6a817';
+    var pColor = p.is_reliable ? _col(p.score) : '#b07d00';
     _set('inicioPS', p.score.toFixed(1), pColor);
     _set('inicioPL', p.is_reliable ? _lbl(p.score) : 'Lectura provisional', pColor);
     _set('inicioPF', (p.label_mes || '') + ' ' + (p.year || ''));

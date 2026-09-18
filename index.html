@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="refresh" content="0; url=iciv_dashboard.html">
   <title>ICIV — Indicador de Clima de Inversión Venezuela</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,800;1,9..144,600&family=Inter+Tight:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0d1117;
-      color: #e6edf3;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f6f1e7;
+      color: #1c2333;
+      font-family: 'Inter Tight', -apple-system, 'Segoe UI', sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -18,28 +20,31 @@
       text-align: center;
       padding: 20px;
     }
-    .container { max-width: 520px; }
-    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #00d4aa; }
-    p { color: #8b949e; margin-bottom: 24px; line-height: 1.6; }
+    .container { max-width: 520px; border-top: 2px solid #1c2333; border-bottom: 2px solid #1c2333; padding: 36px 24px; }
+    h1 { font-family: 'Fraunces', Georgia, serif; font-size: 3.2rem; font-weight: 800; letter-spacing: -.04em; line-height: 1; margin-bottom: 10px; color: #1c2333; }
+    p { color: #5b5f6b; margin-bottom: 24px; line-height: 1.6; }
+    p em { font-family: 'Fraunces', Georgia, serif; font-style: italic; color: #b3261e; font-size: 1.05rem; }
     a.btn {
       display: inline-block;
-      background: #00d4aa;
-      color: #0d1117;
+      background: #1c2333;
+      color: #f6f1e7;
       padding: 12px 28px;
-      border-radius: 8px;
+      border-radius: 2px;
       text-decoration: none;
-      font-weight: 700;
-      font-size: .95rem;
-      transition: opacity .15s;
+      font-weight: 600;
+      font-size: .9rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transition: background .15s;
     }
-    a.btn:hover { opacity: .85; }
-    .meta { margin-top: 20px; font-size: .75rem; color: #555; }
+    a.btn:hover { background: #b3261e; }
+    .meta { margin-top: 22px; font-size: .7rem; color: #8a8d96; text-transform: uppercase; letter-spacing: .1em; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>ICIV</h1>
-    <p>Indicador de Clima de Inversión Venezuela<br>
+    <p><em>Indicador de Clima de Inversión Venezuela</em><br>
     Redirigiendo al dashboard…</p>
     <a class="btn" href="iciv_dashboard.html">Abrir Dashboard →</a>
     <div class="meta">Datos 100% internacionales · Sin fuentes del gobierno venezolano</div>
