@@ -13,7 +13,7 @@ Corrección semántica de IPC, empleo vulnerable y petróleo mensual; conservaci
 
 ## Acciones del autor y asesor
 
-- Revocar y reemplazar la clave EIA que estuvo versionada. Quitarla del archivo actual no la elimina del historial Git; solo el titular puede confirmar su revocación.
+- Revocación de la clave EIA anterior confirmada por el titular el 17 de septiembre de 2026, sin comprobación directa con el proveedor. La credencial de reemplazo no fue confirmada. Para futuras descargas, configurar una credencial vigente por entorno, sin versionarla.
 - Justificar y someter a revisión académica los pesos del autor, umbrales de cobertura, transformaciones y alcance. Un CR pequeño no sustituye esa validación.
 - Revisar y aceptar las decisiones del documento de validación. Si la exigencia académica prohíbe estimaciones del proveedor, el universo debe cambiar; etiquetarlas no convierte una estimación en medición directa.
 

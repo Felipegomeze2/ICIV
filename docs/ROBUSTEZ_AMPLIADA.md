@@ -1,6 +1,6 @@
 # Robustez ampliada · revisión de trabajo
 
-Generación UTC: 2026-09-18T01:19:04.064163+00:00. Escenarios: 79.
+Generación UTC: 2026-09-18T02:11:12.513863+00:00. Escenarios: 79.
 
 Alternativas deterministas sobre datos reales; no se generan ni rellenan observaciones. La dispersión entre diseños no es un intervalo de confianza. No se eligieron pesos para maximizar correlación con IED.
 

@@ -34,6 +34,14 @@ jobs:
           cd iciv
           pytest tests/ -v --tb=short
 
+      - name: Set up Node for dashboard calculation tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Verify simulator calculations
+        run: node --test iciv/tests/simulator.test.cjs
+
       - name: Verify pipeline imports
         run: |
           cd iciv

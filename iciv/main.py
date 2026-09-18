@@ -1092,24 +1092,28 @@ def fase_dashboard(
         _ahp_dim_w = dict(_ahp_res["weights"])
 
     def _dim_weight(key: str, dim) -> float:
-        return float(_ahp_dim_w.get(key, dim.iciv_weight))
+        weight = float(_ahp_dim_w[key])
+        if not math.isfinite(weight) or weight <= 0:
+            raise ValueError(f"Peso AHP inválido para {key}")
+        return weight
 
-    _sim_weight_total = sum(_dim_weight(_k, _d) for _k, _d in _sim_usable) or 1.0
+    _sim_weight_total = sum(_dim_weight(_k, _d) for _k, _d in _sim_usable)
     _sim_dims: list[dict] = []
     for _key, _d in _sim_usable:
         _hist_vals = [round(float(v), 2) if v is not None and str(v) != "nan" else None
                       for v in df_plot[_key].tolist()]
         _cur_raw = _sim_base_row.get(_key)
-        _cur = round(float(_cur_raw), 1) if _cur_raw is not None and not pd.isna(_cur_raw) else 0.0
+        _cur = round(float(_cur_raw), 2) if _cur_raw is not None and not pd.isna(_cur_raw) else None
         _sim_dims.append({
             "id":      _key,
             "label":   _d.name,
-            "weight":  round(_dim_weight(_key, _d) / _sim_weight_total, 6),
+            "weight":  _dim_weight(_key, _d) / _sim_weight_total,
             "current": _cur,
             "hist":    _hist_vals,
-            "max_hist": max((v for v in _hist_vals if v is not None), default=100.0),
+            "max_hist": max((v for v in _hist_vals if v is not None), default=None),
         })
-    sim_dims_json = json.dumps(_sim_dims, ensure_ascii=False)
+    simulator_js = (_ROOT / "assets" / "simulator.cjs").read_text(encoding="utf-8")
+    sim_dims_json = json.dumps(_sim_dims, ensure_ascii=False, allow_nan=False)
     sim_years_js  = years_js   # same years already computed
     sim_scores_js = scores_ahp_js  # same AHP scores already computed
 
@@ -2209,7 +2213,7 @@ input[type=range]{{accent-color:var(--accent)}}
 <section class="section tab-section" id="mapa">
   <div class="section-header">
     <span class="section-title">Mapa</span>
-    <span class="section-sub">Actividad nocturna por estado · 2014–{settings.series.end_year}</span>
+    <span class="section-sub">Radiancia nocturna por estado · 2014–{settings.series.end_year}</span>
   </div>
 
   <p class="lead">
@@ -2220,7 +2224,7 @@ input[type=range]{{accent-color:var(--accent)}}
   <div class="panel">
     <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
       <div class="block-title">Venezuela de noche — <span id="bmMapYear">—</span></div>
-      <div style="font-size:.72rem;color:var(--muted)">Pulsa Animar para ver el apagón y su recuperación</div>
+      <div style="font-size:.72rem;color:var(--muted)">Pulsa Animar para explorar la radiancia registrada</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap">
       <div style="display:inline-flex;border:1px solid var(--ink);border-radius:2px;overflow:hidden">
@@ -2242,7 +2246,7 @@ input[type=range]{{accent-color:var(--accent)}}
         </div>
       </div>
       <div style="flex:1 1 240px;min-width:220px">
-        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Estados más activos</div>
+        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Estados con mayor radiancia</div>
         <div id="bmMapRanking" style="font-size:.75rem;line-height:1.5"></div>
       </div>
     </div>
@@ -2344,7 +2348,7 @@ input[type=range]{{accent-color:var(--accent)}}
   </div>
 
   <p class="lead">
-    Mueve cada palanca y mira cómo cambia el índice. Las áreas no pesan igual: mejorar la institucionalidad mueve más la aguja que subir el petróleo.
+    Ajusta los puntajes normalizados de las dimensiones para explorar la sensibilidad del índice a sus pesos AHP. Son escenarios hipotéticos: no representan cambios directos en petróleo u otras variables, efectos causales ni pronósticos. Los botones históricos conservan los datos y faltantes de un único año; la disponibilidad puede variar entre años.
   </p>
 
   <div style="display:flex;gap:22px;flex-wrap:wrap">
@@ -3004,8 +3008,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 // luminosidad por BBOX rectangular (mediana 2x el área real del estado, 56
 // pares de bboxes solapados) y normalizaba cada estado contra su propio máximo,
 // lo que no es comparable entre estados. El mapa Black Marble usa máscara
-// poligonal exacta y radiancia absoluta. La serie NACIONAL de Li et al. sigue
-// alimentando el score anual (cubre 2000-2013, previo a VIIRS).
+// poligonal exacta y radiancia absoluta. Las series satelitales se muestran
+// como diagnóstico y están excluidas del índice anual y del Pulse.
 (function() {{
   function initMapTab() {{
     setTimeout(function() {{ if (window.__buildBMMap) window.__buildBMMap(); }}, 60);
@@ -3019,6 +3023,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   if (window.location.hash === '#mapa') setTimeout(initMapTab, 200);
 }})();
 
+{simulator_js}
+
 // ── LABORATORIO — simulador interactivo ────────────────────────────────────────
 (function() {{
   // ── SIMULADOR ────────────────────────────────────────────────────────────────
@@ -3027,47 +3033,37 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   const SIM_HIST  = {sim_scores_js};
 
   let simChart = null;
-  let simValues = {{}};  // dim_id → current slider value
-
-  function scoreToCategory(s) {{
-    if (s <= 30)  return {{ label:'Muy desfavorable',          color:'#9e2a2b' }};
-    if (s <= 50)  return {{ label:'Desfavorable', color:'#c2600e' }};
-    if (s <= 65)  return {{ label:'Intermedio',      color:'#b07d00' }};
-    if (s <= 80)  return {{ label:'Favorable',           color:'#2f7d4f' }};
-    return              {{ label:'Muy favorable',        color:'#1f6f78' }};
-  }}
-
+  let simValues = Object.fromEntries(SIM_DIMS.map(d => [d.id, d.current]));
+  let selectedYear = {sim_base_year};
+  const scoreToCategory = ICIVSimulator.category;
+  const finite = ICIVSimulator.valid;
   function computeICIV() {{
-    return SIM_DIMS.reduce((acc,d) => acc + (simValues[d.id] || 0) * d.weight, 0);
-  }}
-
-  function findAnalog(score) {{
-    let best = null, bestDiff = 999;
-    SIM_YEARS.forEach((yr,i) => {{
-      const diff = Math.abs(SIM_HIST[i] - score);
-      if (diff < bestDiff) {{ bestDiff = diff; best = yr; }}
-    }});
-    return best;
+    const score = ICIVSimulator.aggregate(SIM_DIMS, simValues);
+    return finite(score) ? Math.round((score + Number.EPSILON) * 100) / 100 : null;
   }}
 
   function updateSimDisplay() {{
     const iciv  = computeICIV();
     const cat   = scoreToCategory(iciv);
-    const analog = findAnalog(iciv);
+    const availableMass = SIM_DIMS.reduce((s,d) => s + (finite(simValues[d.id]) ? d.weight : 0), 0);
 
     const scoreEl = document.getElementById('simScore');
     const catEl   = document.getElementById('simCategory');
     const anaEl   = document.getElementById('simAnalog');
-    if (scoreEl) {{ scoreEl.textContent = iciv.toFixed(1); scoreEl.style.color = cat.color; }}
+    if (scoreEl) {{ scoreEl.textContent = finite(iciv) ? iciv.toFixed(2) : "—"; scoreEl.style.color = cat.color; }}
     if (catEl)   {{ catEl.textContent = cat.label; catEl.style.color = cat.color; }}
-    if (anaEl)   anaEl.textContent = `Históricamente similar a Venezuela en ${{analog}}`;
+    if (anaEl) anaEl.textContent = (selectedYear !== null
+      ? `Año histórico seleccionado: ${{selectedYear}}. Faltantes preservados.`
+      : 'Escenario hipotético: no implica equivalencia histórica, causalidad ni predicción.')
+      + ` Peso dimensional disponible: ${{(availableMass * 100).toFixed(2)}}%. No es la cobertura de indicadores.`;
 
     // Contribution bars
     const cbEl = document.getElementById('simContribBars');
     if (cbEl) {{
       cbEl.innerHTML = SIM_DIMS.map(d => {{
-        const contrib = (simValues[d.id] || 0) * d.weight;
-        const pct     = Math.round((contrib / Math.max(iciv, 0.1)) * 100);
+        const effectiveWeight = finite(simValues[d.id]) && availableMass > 0 ? d.weight / availableMass : 0;
+        const contrib = finite(simValues[d.id]) ? simValues[d.id] * effectiveWeight : null;
+        const pct     = finite(contrib) && iciv > 0 ? Math.round((contrib / iciv) * 100) : 0;
         const shortLabel = d.label.replace('Estabilidad Macroeconómica','Macro')
           .replace('Sector Energético y Petróleo','Energía')
           .replace('Entorno Institucional y Legal','Institucional')
@@ -3076,8 +3072,8 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
           .replace('Percepción Internacional','Percepción');
         return `<div style="margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:3px">
-            <span>${{shortLabel}} (×${{(d.weight*100).toFixed(0)}}%)</span>
-            <span>${{contrib.toFixed(1)}} pts</span>
+            <span>${{shortLabel}} (×${{(effectiveWeight*100).toFixed(2)}}% efectivo)</span>
+            <span>${{finite(contrib) ? contrib.toFixed(2) + " pts" : "Sin dato"}}</span>
           </div>
           <div style="background:var(--grid);border-radius:0;height:8px">
             <div style="width:${{pct}}%;height:100%;background:var(--ink);border-radius:0;transition:width .2s"></div>
@@ -3106,27 +3102,27 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
             .replace('Capital Humano e Infraestructura Social','Capital Humano')
             .replace('Percepción Internacional','Percepción')}}</span>
           <span style="font-size:.76rem;color:var(--accent);font-weight:600;min-width:36px;text-align:right"
-            id="simVal-${{d.id}}">${{d.current.toFixed(1)}}</span>
+            id="simVal-${{d.id}}">${{finite(simValues[d.id]) ? simValues[d.id].toFixed(2) : "Sin dato"}}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:.65rem;color:var(--muted);width:20px">0</span>
-          <input type="range" id="simSlider-${{d.id}}" min="0" max="100" step="0.5"
-            value="${{d.current}}"
+          <input type="range" id="simSlider-${{d.id}}" min="0" max="100" step="0.01" aria-label="${{d.label}}"
+            ${{finite(simValues[d.id]) ? 'value="' + simValues[d.id] + '"' : 'disabled value="0"'}}
             style="flex:1;accent-color:var(--accent)"
             data-dim="${{d.id}}">
           <span style="font-size:.65rem;color:var(--muted);width:24px">100</span>
         </div>
-        <div style="font-size:.65rem;color:var(--muted);margin-top:2px">Peso AHP: ${{(d.weight*100).toFixed(0)}}% · Máx histórico: ${{d.max_hist.toFixed(1)}}</div>
+        <div style="font-size:.65rem;color:var(--muted);margin-top:2px">Peso AHP: ${{(d.weight*100).toFixed(2)}}% · Máx histórico: ${{finite(d.max_hist) ? d.max_hist.toFixed(2) : "Sin dato"}}</div>
       </div>`).join('');
 
     // Initialize values + wire events
     SIM_DIMS.forEach(d => {{
-      simValues[d.id] = d.current;
       const slider = document.getElementById('simSlider-' + d.id);
       const valEl  = document.getElementById('simVal-'    + d.id);
       if (slider) slider.addEventListener('input', () => {{
+        selectedYear = null;
         simValues[d.id] = parseFloat(slider.value);
-        if (valEl) valEl.textContent = parseFloat(slider.value).toFixed(1);
+        if (valEl) valEl.textContent = parseFloat(slider.value).toFixed(2);
         updateSimDisplay();
       }});
     }});
@@ -3170,25 +3166,15 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   }}
 
   function setPreset(preset) {{
-    // preset: 'peak' (mejor año histórico), 'min' (peor año), 'current' (reset)
-    SIM_DIMS.forEach(d => {{
-      let val;
-      if (preset === 'peak') {{
-        // Usar max histórico de cada dimensión
-        val = d.max_hist;
-      }} else if (preset === 'min') {{
-        // Usar el año con ICIV más bajo — buscar valores de ese año
-        const minIdx = SIM_HIST.indexOf(Math.min(...SIM_HIST));
-        val = d.hist[minIdx] !== null ? d.hist[minIdx] : d.current;
-      }} else {{
-        val = d.current;
-      }}
-      simValues[d.id] = parseFloat(val.toFixed(1));
-      const slider = document.getElementById('simSlider-' + d.id);
-      const valEl  = document.getElementById('simVal-'    + d.id);
-      if (slider) slider.value = simValues[d.id];
-      if (valEl)  valEl.textContent = simValues[d.id].toFixed(1);
-    }});
+    if (preset === 'current') {{
+      simValues = Object.fromEntries(SIM_DIMS.map(d => [d.id, d.current]));
+      selectedYear = {sim_base_year};
+    }} else {{
+      const index = ICIVSimulator.historicalIndex(SIM_HIST, preset);
+      simValues = ICIVSimulator.preset(SIM_DIMS, index);
+      selectedYear = index >= 0 ? SIM_YEARS[index] : null;
+    }}
+    buildSliders();
     updateSimDisplay();
   }}
 

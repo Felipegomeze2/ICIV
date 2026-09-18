@@ -13,13 +13,13 @@ Esta revisión ejecuta los pasos 1–4. No congela la entrega final ni redacta l
 | Estimaciones ajenas | Mantenerlas etiquetadas; comparar retirada de estimaciones WEO verificadas. | Si se exige solo medición observada, redefinir universo: OIT, HDI e índices también contienen estimación/modelación. |
 | Lectura 2026 | Provisional: +14,95 publicado, +3,36 en canasta común, residuo +11,59; cobertura común 41,1%. | No describirlo como recuperación económica de la misma magnitud. |
 | Validación | IED exploratoria HAC/Holm; persistencia mensual y backtest común. | Aceptar muestra pequeña, revisiones y falta de vintages históricos; reportar resultados negativos. |
-| Clave EIA | Sin clave incrustada en código actual; secreto no divulgado durante revisión. | Revocar la antigua, configurar reemplazo y confirmar revocación en la cuenta del proveedor. |
+| Clave EIA | Sin clave incrustada en código actual; secreto no divulgado durante revisión. | Revocación de la clave antigua confirmada por el titular el 17 de septiembre de 2026; no verificada directamente con el proveedor. Credencial de reemplazo no confirmada. |
 
 ## Orden de revisión
 
 1. Leer `AUDITORIA_FUENTES_ACTUAL.md`, `REVISION_SATELITAL.md` y la pestaña Evidencia.
 2. Revisar `ROBUSTEZ_AMPLIADA.md` y aceptar o ajustar las decisiones de la tabla.
-3. Confirmar revocación de la clave antigua.
+3. Revocación de la clave antigua: confirmada por el titular el 17 de septiembre de 2026. Para futuras descargas, usar una credencial vigente por variable de entorno; nunca versionarla.
 4. Registrar observaciones del asesor y decisiones aprobadas antes de una congelación futura.
 
 Estas decisiones humanas no impiden terminar las pruebas técnicas y documentación de esta etapa.

@@ -35,4 +35,4 @@ Publicación del vintage: 14 de abril de 2026. No se infiere cuándo estuvo disp
 - Se distinguen índice publicado, estimación OIT, histórico WEO revisable y estimación/proyección WEO acreditada. Si cambia el raw, la verificación anterior deja de aplicarse.
 - Sin sustitución de fuentes ni imputación del proyecto. Las estimaciones publicadas por proveedores permanecen etiquetadas como estimaciones.
 - Este contraste no certifica WDI/WGI/EIA/FRED/UNCTAD/UNHCR/noticias fila por fila. Conservan procedencia y limitaciones, sin recibir la etiqueta de verificación de esta auditoría.
-- La revocación de la clave EIA expuesta anteriormente corresponde al titular. El código actual y una prueba de conexión no confirman su revocación. No se reproduce la credencial.
+- El titular confirmó la revocación de la clave EIA anterior el 17 de septiembre de 2026. Esta confirmación no es una verificación directa con el proveedor. No se reproduce la credencial; el reemplazo no fue confirmado.

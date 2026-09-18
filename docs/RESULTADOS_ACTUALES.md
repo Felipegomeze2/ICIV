@@ -1,6 +1,6 @@
 # Resultados actuales · revisión de trabajo sin congelar
 
-Versión metodológica: 2.0.0. Generación: 2026-09-17T20:18:26.720037.
+Versión metodológica: 2.0.0. Generación: 2026-09-17T21:10:31.532030.
 
 No copiar estos resultados a una entrega sin citar su manifiesto. Anual: retrospectivo; meses provisionales y estimaciones del proveedor no son observaciones cerradas.
 
