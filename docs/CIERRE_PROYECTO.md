@@ -4,13 +4,20 @@
 
 Corrección semántica de IPC, empleo vulnerable y petróleo mensual; conservación de originales; exclusión de CPI no comparable; cobertura de universo fijo y pesos efectivamente consumidos; benchmark igualitario; extracción satelital estricta separada del histórico; eliminación de sustituciones automáticas de fuentes y de ajustes sectoriales no calibrados; Pulse causal con calendario y composición; pronóstico explícito de persistencia; validación externa común en niveles/diferencias con HAC y Holm; release con snapshots y hashes; documentación metodológica unificada.
 
-## Antes de declarar entrega final
+## Revisión de pasos 1–4 ejecutada
 
-- Reprocesar el histórico Black Marble con credenciales NASA y QA estricto si se quiere reincorporar luminosidad al índice. El archivo anterior no se puede certificar retroactivamente sin revisar los granulos. La versión actual acepta menor cobertura y no lo sustituye.
-- Verificar en las publicaciones del proveedor el estado individual de los datos WEO recientes y las transcripciones manuales históricas. Donde falte evidencia se mantiene estado no verificado, nunca “observado”.
+- Fuentes: contraste reproducible con archivos oficiales, hashes y estados WEO por observación; CPI comparable automatizado, historial anterior apartado. Ver [auditoría y límites](AUDITORIA_FUENTES_ACTUAL.md).
+- Satélite: recuperados 16 meses QA, incluido todo 2025. Cobertura espacial 2025 de 0,60–48,09%; exclusión deliberada del índice, sin sustitución. Ver [evidencia](REVISION_SATELITAL.md).
+- Robustez: 79 escenarios deterministas y descomposición anual de composición. Los resultados y categorías dependen del diseño; se publican las diferencias, no una declaración de robustez absoluta.
+- Metodología: decisiones justificadas y alternativas preparadas en [validación pendiente](VALIDACION_PENDIENTE.md). Aprobación académica aún no otorgada.
+
+## Acciones del autor y asesor
+
 - Revocar y reemplazar la clave EIA que estuvo versionada. Quitarla del archivo actual no la elimina del historial Git; solo el titular puede confirmar su revocación.
 - Justificar y someter a revisión académica los pesos del autor, umbrales de cobertura, transformaciones y alcance. Un CR pequeño no sustituye esa validación.
-- Congelar la release y registrar el commit definitivo después de revisar los cambios locales. No se ha publicado automáticamente esta revisión.
+- Revisar y aceptar las decisiones del documento de validación. Si la exigencia académica prohíbe estimaciones del proveedor, el universo debe cambiar; etiquetarlas no convierte una estimación en medición directa.
+
+La congelación de una nueva release y la redacción de tesis quedan excluidas de esta etapa por instrucción del autor. `--no-package` permite reproducir el trabajo sin alterar las releases anteriores.
 
 Estos son pendientes sustantivos de evidencia y gobierno, no simples retoques de estilo. El software mejorado no permite prometer que todos hayan quedado resueltos.
 
@@ -26,4 +33,4 @@ Estos son pendientes sustantivos de evidencia y gobierno, no simples retoques de
 
 ## Extensiones posteriores
 
-Recolectar vintages y fechas reales de publicación; backtesting verdaderamente en tiempo real; calibrar pesos con un protocolo experto externo; validar noticias con anotaciones humanas; comparar normalizadores y rupturas estructurales; ampliar a un panel multipaís solo con fuentes y unidades comparables. Estas extensiones no deben presentarse como implementadas.
+Recolectar vintages y fechas reales de publicación; backtesting verdaderamente en tiempo real; calibrar pesos con un protocolo experto externo; validar noticias con anotaciones humanas; estudiar rupturas estructurales y cobertura espacial satelital; ampliar a un panel multipaís solo con fuentes y unidades comparables. Estas extensiones no están implementadas. La comparación de normalizadores sí forma parte de la revisión actual.

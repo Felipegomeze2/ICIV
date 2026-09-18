@@ -1,0 +1,2 @@
+# Preserve the exact downloaded evidence bytes and their SHA-256 on all OSes.
+iciv/data/sources/audit_20260917/** -text

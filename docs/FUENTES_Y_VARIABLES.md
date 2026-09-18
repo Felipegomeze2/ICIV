@@ -12,10 +12,12 @@ El inventario vigente se genera desde `CATALOG`, `DIMENSIONS` y `PULSE_WEIGHTS` 
 | WJP | Ediciones dobles asignadas al año final una sola vez. |
 | UNHCR | Stock de refugiados y solicitantes de asilo registrados; no diáspora total ni flujo anual. |
 | Guardian | Muestra de titulares y tono VADER; sesgos de idioma, medio y selección. No opinión pública representativa. |
-| Black Marble | Producto QA estricto separado del histórico sin verificación; solo estricto elegible para el índice. |
+| Black Marble | Histórico y muestra QA estricta separados; ambos fuera del índice por representatividad espacial/estacional no acreditada. |
 | Li et al. | Referencia satelital externa exploratoria; comparte sensor VIIRS con Black Marble y tiene cambio DMSP/VIIRS. |
 
 Un distribuidor internacional puede incorporar productores nacionales. La independencia del origen primario no está demostrada por utilizar WDI o FMI. No se afirma exclusión total de estadísticas venezolanas.
+
+La revisión contrasta 164 valores de CPI, WJP, Freedom House, HDI vía OWID y WEO: [evidencia y límites](AUDITORIA_FUENTES_ACTUAL.md). Los CSV procesados incorporan estados verificados por hash; la release previa no se modifica durante esta etapa.
 
 Las fechas de publicación del histórico no están archivadas sistemáticamente. El año o mes del dato y la fecha del archivo no se usan como fechas de publicación. Los archivos de cada release permiten conservar snapshots hacia adelante.
 

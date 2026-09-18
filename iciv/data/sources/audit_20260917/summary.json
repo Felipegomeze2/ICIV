@@ -1,0 +1,8 @@
+{
+  "generated_at": "2026-09-18T01:18:04.294301+00:00",
+  "compared": 164,
+  "matching": 164,
+  "issues": [],
+  "scope": "CPI>=2012; WJP; FH>=2012; HDI via OWID; IMF WEO. Other sources not certified by this audit.",
+  "tolerance_policy": "IMF raw 1 decimal: half rounding unit; WJP 4 decimals; HDI 3 decimals. CPI/FH exact."
+}

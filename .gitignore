@@ -69,6 +69,10 @@ iciv/data/processed/_test_script.js
 !iciv/data/processed/blackmarble_validation.csv
 !iciv/data/processed/external_validation.csv
 !iciv/data/processed/external_validation_summary.csv
+!iciv/data/processed/robustness_summary.csv
+!iciv/data/processed/robustness_scenarios.csv
+!iciv/data/processed/annual_composition.csv
+!iciv/data/processed/satellite_qa_coverage.csv
 
 # ── Archivos grandes / binarios ───────────────────────────────────────
 *.zip

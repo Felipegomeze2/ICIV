@@ -515,14 +515,14 @@ def _build_html(
 
     # Robusto o no?
     robust_msg = (
-        "ROBUSTO: el ICIV es estable ante cambios de pesos (SI < 0.08)"
+        "Sensibilidad baja a las perturbaciones dimensionales evaluadas (SI < 0.08); no certifica robustez ante otros diseños"
         if s_si < 0.08 else
         "MODERADO: el ICIV muestra cierta sensibilidad a los pesos (SI >= 0.08)"
         if s_si < 0.15 else
-        "SENSIBLE: el ICIV varia significativamente segun los pesos (SI >= 0.15)"
+        "Sensibilidad alta a las perturbaciones dimensionales evaluadas (SI >= 0.15); no es una prueba de significancia estadística"
     )
     robust_cls = "alert-good" if s_si < 0.08 else ("alert-warn" if s_si < 0.15 else "alert-bad")
-    si_label   = "Robusto" if s_si < 0.08 else ("Moderado" if s_si < 0.15 else "Sensible")
+    si_label   = "Sensibilidad baja" if s_si < 0.08 else ("Moderada" if s_si < 0.15 else "Alta")
     si_val_cls = "c-accent" if s_si < 0.08 else ("c-orange" if s_si < 0.15 else "c-red")
 
     # -- Pre-build conditional HTML blocks to avoid nested f-string issues -------
@@ -729,7 +729,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 
   <div class="alert {robust_cls}">
-    <div class="alert-title">Conclusion de robustez</div>
+    <div class="alert-title">Sensibilidad a pesos: alcance limitado</div>
     <div class="alert-body">{robust_msg} — Indice de Sensibilidad (SI) = {s_si:.4f}</div>
   </div>
 
@@ -777,7 +777,7 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
       <table class="vtable" style="margin-top:8px">
         <thead><tr><th>SI</th><th>Clasificacion</th><th>Interpretacion</th></tr></thead>
         <tbody>
-          <tr><td>0.00 – 0.08</td><td><span class="badge" style="background:#00d4aa22;color:#00d4aa">Robusto</span></td><td>Pesos tienen efecto marginal</td></tr>
+          <tr><td>0.00 – 0.08</td><td><span class="badge" style="background:#00d4aa22;color:#00d4aa">Sensibilidad baja</span></td><td>Dispersión relativa baja en estas perturbaciones; ver robustez ampliada</td></tr>
           <tr><td>0.08 – 0.15</td><td><span class="badge" style="background:#e67e2222;color:#e67e22">Moderado</span></td><td>Cierta dependencia de los pesos</td></tr>
           <tr><td>&gt; 0.15</td><td><span class="badge" style="background:#e05c5c22;color:#e05c5c">Sensible</span></td><td>Resultado dependiente de pesos</td></tr>
         </tbody>
@@ -1244,7 +1244,7 @@ def run_validation(open_browser: bool = True) -> Path:
     logger.info("=" * 60)
     logger.info("  Sensibilidad  SI = %.4f  (%s)",
                 sens["stability"]["sensitivity_index"],
-                "Robusto" if sens["stability"]["sensitivity_index"] < 0.08 else
+                "Sensibilidad baja a pesos" if sens["stability"]["sensitivity_index"] < 0.08 else
                 "Moderado" if sens["stability"]["sensitivity_index"] < 0.15 else "Sensible")
     if corr.get("available"):
         logger.info("  Correlacion   Pearson r = %.4f  Spearman rho = %.4f  (n=%d)",

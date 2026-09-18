@@ -125,7 +125,7 @@ en [../iciv/data/sources/PROVENANCE.md](../iciv/data/sources/PROVENANCE.md).
 | Fuente | Uso | Enlace |
 |---|---|---|
 | NASA Black Marble VNP46A3 (LAADS DAAC, colección 002) | Mapa subnacional de radiancia nocturna | https://ladsweb.modaps.eosdis.nasa.gov |
-| Li et al. (2020) harmonized NTL | `luminosidad_nocturna_idx` nacional | Figshare DOI: 10.6084/m9.figshare.9828827 |
+| Li et al. (2020) harmonized NTL | Referencia externa exploratoria; fuera del score | Figshare DOI: 10.6084/m9.figshare.9828827 |
 
 ### Prensa
 

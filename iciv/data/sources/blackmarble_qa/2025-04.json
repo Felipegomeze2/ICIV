@@ -1,0 +1,36 @@
+{
+  "qa_policy": "good_only_v2",
+  "granules": [
+    {
+      "tile": "h10v07",
+      "url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/VNP46A3.A2025091.h10v07.002.2026064132508.h5",
+      "sha256": "3486c59125beaf0e8bda9b3723bb397b0e14fc7825ab054528a846dc199d7ca2"
+    },
+    {
+      "tile": "h10v08",
+      "url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/VNP46A3.A2025091.h10v08.002.2026064132522.h5",
+      "sha256": "8f8bae4f268f153da697417ff9f6cdf75c277f94f9c34cf79dde560bc0b27be1"
+    },
+    {
+      "tile": "h11v07",
+      "url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/VNP46A3.A2025091.h11v07.002.2026064132507.h5",
+      "sha256": "acf854a99ff05f642526931ad814c95336f66cc7507460fee24993c23f059b8c"
+    },
+    {
+      "tile": "h11v08",
+      "url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/VNP46A3.A2025091.h11v08.002.2026064132505.h5",
+      "sha256": "036acf36e35a54769ba5116f735064d5a5e85bb984bc50ce3d6fa8e57ef5da8a"
+    },
+    {
+      "tile": "h12v08",
+      "url": "https://data.laadsdaac.earthdatacloud.nasa.gov/prod-lads/VNP46A3/VNP46A3.A2025091.h12v08.002.2026064132501.h5",
+      "sha256": "2ce46d0d33628bdc93df00944a6c69f0c0f3d7d42e8d942e1c7793a729c7badd"
+    }
+  ],
+  "mask_geojson_sha256": "93a8c650f3c8adfe5c2fbaa350cdfcfd7dfdbcea9a596f654433d46672f42d9e",
+  "valid_pixel_pct": 2.8354131199683,
+  "n_total_pixels": 4300361,
+  "n_valid_pixels": 121933,
+  "weighting": "equal_grid_pixels; not area weighted",
+  "annual_use": "requires separate spatial and temporal acceptance"
+}

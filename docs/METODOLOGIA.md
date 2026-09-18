@@ -32,7 +32,7 @@ Las bandas son descriptivas: [0,31) muy desfavorable; [31,51) desfavorable; [51,
 
 Producción anual EIA producto 57 puede derivarse de al menos tres meses del mismo producto. Se registra el número de meses y se conserva la observación anual publicada si existe. Un promedio de año corrido no es un dato anual cerrado. El registro `anualizacion_parcial.csv` se regenera en cada ejecución, incluso vacío.
 
-Black Marble solo entra al score desde `blackmarble_qa_monthly.csv`, con `qa_policy=good_only_v2`. El histórico previo no acredita sus flags y queda excluido; no se usa Li et al. como sustituto. La extracción estricta exige calidad 0, más de tres observaciones válidas y elimina fill values, mala calidad y gap-filled. Los archivos anteriores permanecen como contexto exploratorio del mapa, expresamente sin certificación QA.
+Black Marble queda fuera del score anual y de Pulse por decisión explícita de esta revisión. Se recuperó una muestra de `blackmarble_qa_monthly.csv` con calidad 0 y más de tres observaciones válidas por píxel, excluyendo fill, mala calidad y gap-filled. Sin embargo, la cobertura espacial/estacional no acredita una media nacional comparable. No se usa Li et al. como sustituto. La variable conserva su peso en el denominador de cobertura. El mapa previo es contexto sin QA acreditado. Ver [diagnóstico satelital](REVISION_SATELITAL.md).
 
 ## Pulse
 
@@ -47,3 +47,5 @@ La validación externa aplica el mismo AHP y piso dimensional. Reporta niveles y
 Los perfiles sectoriales son sensibilidad a pesos supuestos. Se eliminaron bonos defensivos, penalizaciones CAPEX y sanciones inferidas de instituciones. Se requieren todas las dimensiones del perfil; no se generan recomendaciones de entrada.
 
 El pronóstico mensual es persistencia prespecificada; los errores se comparan con naive estacional y SARIMA en pares comunes. Ver [backtesting](BACKTESTING_FORECAST.md).
+
+La [robustez ampliada](ROBUSTEZ_AMPLIADA.md) añade 79 escenarios deterministas de pesos, normalizadores, agregación, cobertura, exclusiones e indisponibilidad. No son observaciones sintéticas ni intervalos de confianza. `annual_composition.csv` separa cambio anual con canasta común y residuo de composición manteniendo el piso dimensional. La [auditoría de fuentes](AUDITORIA_FUENTES_ACTUAL.md) acredita el estado WEO por observación solo cuando coincide la evidencia archivada.

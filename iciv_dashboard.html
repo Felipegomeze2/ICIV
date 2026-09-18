@@ -45,12 +45,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* Top nav: 5 pestañas principales */
 .nav-top{display:flex;align-items:center;gap:4px;padding:0 32px;height:54px;
-         border-bottom:1px solid #21262d}
+         border-bottom:1px solid #21262d;overflow-x:auto;max-width:100%}
 .nav-brand{color:var(--accent);font-weight:700;font-size:1rem;margin-right:28px;
             letter-spacing:.4px;cursor:pointer;text-decoration:none;
             transition:opacity .15s}
 .nav-brand:hover{opacity:.75}
 .nav-top a{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;
+            flex:0 0 auto;white-space:nowrap;
             padding:8px 18px;border-radius:8px;transition:all .18s;
             text-transform:uppercase;letter-spacing:.6px;border:1px solid transparent}
 .nav-top a:hover{color:var(--text);background:rgba(255,255,255,.04);
@@ -362,7 +363,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 <section class="section tab-section tab-active" id="hoy">
   <div class="section-header">
     <span class="section-title">Clima de inversión</span>
-    <span class="section-sub">Venezuela · actualizado 16 de septiembre de 2026 · 08:16</span>
+    <span class="section-sub">Venezuela · actualizado 17 de septiembre de 2026 · 20:19</span>
   </div>
 
   <p class="lead">
@@ -625,7 +626,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
 
 <section class="section tab-section" id="evidencia">
   <div class="section-header"><span class="section-title">Evidencia</span><span class="section-sub">Datos · método · validación</span></div>
-  <style>.audit-table{width:100%;border-collapse:collapse;font-size:.78rem}.audit-table td,.audit-table th{padding:10px;text-align:left;border-bottom:1px solid var(--border)}.audit-table th{color:var(--accent)}</style><div class="panel"><div class="block-title">Una versión, una cadena de evidencia</div><p class="block-sub">Versión metodológica 2.0. Los datos originales, transformaciones, cobertura y resultados se exportan juntos. Generar el dashboard no equivale a refrescar las fuentes.</p></div><div class="panel"><div class="block-title">Descargar y reproducir</div><p class="block-sub">Los archivos pertenecen a la release latest. Congela una release antes de citar resultados.</p><ul><li><a style="color:var(--accent)" href="iciv/data/releases/latest/iciv_dataset_largo.csv">Datos originales y trazabilidad</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/data_dictionary.csv">Diccionario y pesos efectivos</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/coverage_annual.csv">Cobertura por variable</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/manifest.json">Manifiesto y hashes</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/run_status.json">Estado de ejecución</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/external_validation_summary.csv">Validación externa</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/pulse_forecast_backtest.csv">Backtest por origen</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/forecast.json">Pronóstico y diagnósticos</a></li><li><a style="color:var(--accent)" href="iciv/data/releases/latest/iciv_validacion.html">Informe de sensibilidad</a></li></ul></div><div class="panel"><div class="block-title">Cobertura efectiva del índice anual</div><p class="block-sub">Es el peso del universo fijo que realmente participa después del piso dimensional. No mide certeza ni independencia de la fuente.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <style>.audit-table{width:100%;border-collapse:collapse;font-size:.78rem}.audit-table td,.audit-table th{padding:10px;text-align:left;border-bottom:1px solid var(--border)}.audit-table th{color:var(--accent)}</style><div class="panel"><div class="block-title">Una versión, una cadena de evidencia</div><p class="block-sub">Versión metodológica 2.0. Los datos originales, transformaciones, cobertura y resultados se exportan juntos. Generar el dashboard no equivale a refrescar las fuentes.</p></div><div class="panel"><div class="block-title">Descargar evidencia de esta ejecución</div><p class="block-sub">Archivos de trabajo en processed. La release anterior se conserva por separado; no representa automáticamente esta revisión.</p><ul><li><a style="color:var(--accent)" href="iciv/data/processed/iciv_dataset_largo.csv">Datos originales y trazabilidad</a></li><li><a style="color:var(--accent)" href="iciv/data/processed/run_status.json">Estado de ejecución</a></li><li><a style="color:var(--accent)" href="iciv/data/processed/external_validation_summary.csv">Validación externa</a></li><li><a style="color:var(--accent)" href="iciv/data/processed/pulse_forecast_backtest.csv">Backtest por origen</a></li><li><a style="color:var(--accent)" href="iciv/data/processed/forecast.json">Pronóstico y diagnósticos</a></li><li><a style="color:var(--accent)" href="iciv/data/processed/iciv_validacion.html">Informe de sensibilidad</a></li></ul><p><a href="iciv/data/releases/latest/manifest.json">Manifiesto de la release anterior</a> · <a href="docs/VALIDACION_PENDIENTE.md">Decisiones para validar</a></p></div><div class="panel"><div class="block-title">Cobertura efectiva del índice anual</div><p class="block-sub">Es el peso del universo fijo que realmente participa después del piso dimensional. No mide certeza ni independencia de la fuente.</p><div style="overflow:auto"><table class="dataframe audit-table">
   <thead>
     <tr style="text-align: right;">
       <th>año</th>
@@ -780,7 +781,149 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <td>10.53</td>
     </tr>
   </tbody>
-</table></div></div><div class="panel"><div class="block-title">Estado del pronóstico</div><p class="block-sub">Persistencia prespecificada desde 2026-05. Sus bandas son empíricas; no son garantía de cobertura futura. No se introduce ninguna predicción en el dataset observado.</p></div><div class="panel"><div class="block-title">Límites abiertos y exclusiones</div><p class="block-sub">Los pesos y umbrales son supuestos del autor. Faltan vintages históricos de publicación. WEO incluye estimaciones y proyecciones cuyo estado individual no siempre está desagregado. El histórico satelital sin QA acreditado está excluido del score; su mapa se conserva como contexto. CPI anterior a 2012 y asignaciones duplicadas de ediciones WJP quedan fuera.</p></div>
+</table></div></div><div class="panel"><div class="block-title">Estado del pronóstico</div><p class="block-sub">Persistencia prespecificada desde 2026-05. Sus bandas son empíricas; no son garantía de cobertura futura. No se introduce ninguna predicción en el dataset observado.</p></div><div class="panel"><div class="block-title">Contraste de fuentes archivado</div><p class="block-sub">164 de 164 valores contrastados coinciden con la precisión declarada. Alcance: CPI desde 2012, WJP, Freedom House, HDI vía OWID y WEO. No certifica todas las fuentes ni su independencia. 0 incidencias de verificación.</p><p><a href="iciv/data/sources/audit_20260917/comparisons.csv">Comparaciones por observación</a> · <a href="docs/AUDITORIA_FUENTES_ACTUAL.md">Interpretación y límites</a></p></div><div class="panel"><div class="block-title">Robustez ante decisiones metodológicas</div><p class="block-sub">79 alternativas deterministas; no son datos simulados ni intervalos de confianza. Esta tabla utiliza años con cobertura base ≥80% y resultados comparables.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>escenario</th>
+      <th>n</th>
+      <th>mae_vs_base</th>
+      <th>max_abs_vs_base</th>
+      <th>spearman</th>
+      <th>cambios_categoria</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>rank</td>
+      <td>13</td>
+      <td>9.671</td>
+      <td>18.32</td>
+      <td>0.989</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <td>geometrico</td>
+      <td>13</td>
+      <td>5.718</td>
+      <td>22.76</td>
+      <td>0.978</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>sin_datos_D1_macro</td>
+      <td>13</td>
+      <td>5.161</td>
+      <td>13.19</td>
+      <td>0.9451</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>excluir_D1_macro</td>
+      <td>13</td>
+      <td>5.161</td>
+      <td>13.19</td>
+      <td>0.9451</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>piso_100%</td>
+      <td>13</td>
+      <td>3.598</td>
+      <td>7.18</td>
+      <td>0.967</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>excluir_petroleo_crudo_produccion_tbpd</td>
+      <td>13</td>
+      <td>3.557</td>
+      <td>7.18</td>
+      <td>0.9835</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>sin_datos_D2_energia</td>
+      <td>13</td>
+      <td>3.557</td>
+      <td>7.18</td>
+      <td>0.9835</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>excluir_D2_energia</td>
+      <td>13</td>
+      <td>3.557</td>
+      <td>7.18</td>
+      <td>0.9835</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table></div><p><a href="iciv/data/processed/robustness_summary.csv">Resultados completos</a> · <a href="docs/ROBUSTEZ_AMPLIADA.md">Protocolo e interpretación</a></p></div><div class="panel"><div class="block-title">Cambio anual y composición</div><p class="block-sub">La canasta común fija los indicadores disponibles en ambos años. El residuo de composición no demuestra causas económicas.</p><div style="overflow:auto"><table class="dataframe audit-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>año</th>
+      <th>año_previo</th>
+      <th>delta_publicado</th>
+      <th>delta_canasta_comun</th>
+      <th>efecto_composicion_neto</th>
+      <th>cobertura_comun_pct</th>
+      <th>n_variables_comunes</th>
+      <th>cambio_signo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2022</td>
+      <td>2021</td>
+      <td>6.17</td>
+      <td>6.17</td>
+      <td>0</td>
+      <td>95.1</td>
+      <td>20</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2023</td>
+      <td>2022</td>
+      <td>-3.99</td>
+      <td>-3.99</td>
+      <td>0</td>
+      <td>95.1</td>
+      <td>20</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2024</td>
+      <td>2023</td>
+      <td>0.32</td>
+      <td>-0.31</td>
+      <td>0.63</td>
+      <td>92.6</td>
+      <td>19</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <td>2025</td>
+      <td>2024</td>
+      <td>-6.47</td>
+      <td>-4.55</td>
+      <td>-1.92</td>
+      <td>78.2</td>
+      <td>14</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <td>2026</td>
+      <td>2025</td>
+      <td>14.95</td>
+      <td>3.36</td>
+      <td>11.59</td>
+      <td>41.1</td>
+      <td>7</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table></div></div><div class="panel"><div class="block-title">Límites abiertos y exclusiones</div><p class="block-sub">Los pesos y umbrales son supuestos del autor pendientes de revisión académica. Faltan vintages históricos de publicación. El estado WEO se acredita por observación cuando coincide con el archivo oficial auditado. Luminosidad queda fuera del score por cobertura espacial y temporal insuficientemente validada, incluso cuando un píxel supera QA. El mapa histórico es contexto sin QA certificado. CPI anterior a 2012 y asignaciones duplicadas de ediciones WJP quedan fuera.</p></div>
 </section>
 
 <!-- ===== EL PROYECTO ===== -->
@@ -794,8 +937,8 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
   </div>
 
   <p class="lead">
-    ICIV mide el clima de inversión de Venezuela con fuentes exclusivamente
-    internacionales. Esta ficha resume quién lo hace, cómo está construido y
+    ICIV describe el entorno venezolano con datos de distribuidores
+    internacionales, que pueden incluir estadísticas nacionales y estimaciones. Esta ficha resume quién lo hace, cómo está construido y
     —sobre todo— qué <em>no</em> se puede concluir de sus cifras.
   </p>
 
@@ -841,7 +984,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
       <strong style="color:var(--text)">cada componente se normaliza entre sus extremos históricos; el agregado combina
       esos componentes y no necesariamente alcanza 0 o 100</strong>. No es un óptimo internacional.<br><br>
       De ahí se siguen dos cosas que conviene tener presentes:
-      un 0 significa «el peor año de su propia serie», no «sin datos»;
+      un componente con 0 está en el extremo histórico menos favorable de su escala, no «sin datos»;
       y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
       país</strong>. Un 60 aquí no equivale a un 60 de Colombia o Perú: haría falta normalizar
       sobre un panel multi-país, que queda pendiente.
@@ -898,13 +1041,13 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
           anuales publican con rezago; los cambios de composición y las revisiones pueden alterar
           el puntaje en cualquiera de las dos direcciones.</li>
       <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
-          no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
+          no se publica</strong>. Una sola variable puede superar ese piso si concentra suficiente peso; la cobertura no mide diversidad.</li>
     </ul>
   </div>
 
   <div class="hint">
     Metodología completa, bitácora de incidencias y decisiones en
-    <a href="https://github.com/Felipegomeze2/ICIV/blob/main/docs/METODOLOGIA.md"
+    <a href="docs/METODOLOGIA.md"
        target="_blank" rel="noopener" style="color:var(--accent)">docs/METODOLOGIA.md</a>.
     El dashboard se regenera solo cada semana mediante GitHub Actions.
   </div>
@@ -918,7 +1061,7 @@ details.more .more-body{font-size:.73rem;color:var(--muted);line-height:1.7;marg
      style="color:var(--accent);text-decoration:none;font-weight:600">ICIV</a>
   &nbsp;·&nbsp; Indicador de Clima de Inversión Venezuela
   &nbsp;·&nbsp; Felipe Gómez Espinal · Universidad EIA · 2026
-  &nbsp;·&nbsp; 16 de septiembre de 2026 · 08:16
+  &nbsp;·&nbsp; 17 de septiembre de 2026 · 20:19
 </footer>
 
 <script>

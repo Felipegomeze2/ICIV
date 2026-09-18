@@ -47,5 +47,6 @@ jobs:
 
       - name: Reproduce snapshot and verify release
         run: |
-          python iciv/main.py --no-fetch --no-open
+          python iciv/scripts/audit_sources.py
+          python iciv/main.py --no-fetch --no-open --no-package
           python iciv/scripts/verify_release.py

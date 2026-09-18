@@ -1,109 +1,37 @@
-# Provenance de datos ICIV
+# Procedencia vigente · revisión septiembre de 2026
 
-Fecha de corte: 2026-07-21.
+Los originales se conservan; un faltante no se rellena ni se sustituye por otra fuente. Un proveedor internacional **no garantiza origen primario independiente de Venezuela**: el WEO auditado identifica al Banco Central y la oficina estadística nacional como fuentes históricas.
 
-Este archivo documenta la trazabilidad vigente. La regla principal es simple:
-ningun score debe depender de fuentes originadas en Venezuela, valores inventados
-o rellenos artificiales.
-
-## Auditoria 2026-07-21 (correccion de fuentes institucionales)
-
-Se detectaron y corrigieron tres problemas de atribucion en archivos manuales
-del bloque institucional/humano. Detalle completo en
-`docs/FUENTES_Y_VARIABLES.md`, seccion "Auditoria de fuentes institucionales":
-
-- `wjp.csv`: contenia la serie V-Dem (fallback OWID) etiquetada como WJP.
-  Reemplazado por el Historical Data File oficial del WJP (2012-2025).
-- `freedom_house.csv`: valores que no coincidian con los publicados.
-  Reemplazado por el Excel oficial All Data FIW + ediciones 2025/2026
-  verificadas. Sin Aggregate Score antes de 2012 (NaN).
-- `hdi.csv`: mezcla de vintages HDR. Reemplazado por un solo vintage
-  (UNDP via OWID, 2000-2023) con nuevo `scripts/fetch_hdi.py`.
-- `pts.csv`: actualizado a la edicion PTS 2025 (hasta 2024).
-
-## Fuentes que alimentan el core anual
-
-| Grupo | Fuente | Archivo principal |
+| Bloque | Proveedor y archivos | Precisión de la atribución |
 |---|---|---|
-| Macro | IMF, World Bank WDI, FRED | `imf.csv`, `wdi.csv`, `fred.csv` |
-| Energia | U.S. EIA, Li et al./Figshare (serie nacional) | `eia.csv`, `viirs.csv` |
-| Institucional | Transparency International, WGI, Freedom House, WJP, PTS | `cpi.csv`, `wgi.csv`, `freedom_house.csv`, `wjp.csv`, `pts.csv` |
-| Comercial | WDI, IMF, UNHCR/R4V, UNCTADstat | `wdi.csv`, `imf.csv`, `unhcr.csv`, `unctad.csv` |
+| Macro | FMI WEO `imf.csv`; WDI `wdi.csv`; FRED `fred.csv` | IPC: PCPIPCH. WEO incluye estimaciones; el último año histórico varía por serie. PIB WDI y PIB FMI son variables distintas. |
+| Energía | EIA `eia.csv`, `eia_monthly.csv`; WDI para acceso eléctrico | Crudo anual, producto 57; líquidos totales mensual, producto 53. No intercambiables. |
+| Instituciones | `wgi.csv`, `cpi.csv`, `freedom_house.csv`, `wjp.csv` | Índices publicados, no mediciones directas libres de error. CPI activo desde 2012. WJP asigna cada edición doble solo al año final. |
+| Comercial | WDI, FMI, `unhcr.csv`, `unctad.csv` | LSCI desde UNCTAD; no hay sustitución por WDI cuando falla. |
+| Capital humano | WDI, `hdi.csv`, `ilostat.csv` | HDI: UNDP distribuido por OWID. Empleo vulnerable: estimación modelada OIT distribuida por WDI, no informalidad. |
+| Percepción | `guardian.csv` | VADER derivado del texto; no encuesta de confianza de inversionistas. |
 
-Nota LSCI (2026-07-21): `unctad.csv` ahora proviene directo del bulk oficial
-de UNCTADstat (US.LSCI trimestral, base Q1-2023=100, promedio anual de
-trimestres publicados, 2006-2026). Reemplaza a la serie WDI congelada en
-2021. Nunca se mezclan ambas bases en una misma serie; el fallback WDI solo
-se usa si UNCTADstat no responde, y en ese caso toda la serie es WDI.
-| Humano | UNDP/HDI, WHO, WDI, ILOSTAT | `hdi.csv`, `who.csv`, `wdi.csv`, `ilostat.csv` |
-| Percepcion | The Guardian Open Platform + VADER | `guardian.csv` |
+El catálogo con peso es `src/iciv/index/dimensions.py`. PTS/WHO/V-Dem y otros archivos auxiliares no entran por el hecho de existir en raw.
 
-## Fuentes que alimentan Pulse
+Pulse utiliza FRED, EIA mensual, Guardian/GDELT, IMTS del FMI (comercio bilateral espejo reportado por EE. UU.) y Pink Sheet del Banco Mundial. Sus diferencias distinguen cambio en componentes comunes y composición. El universo de cobertura es fijo; una fuente fallida no desaparece del denominador.
 
-| Fuente | Archivo |
-|---|---|
-| FRED mensual (incluye spread EM ICE BofA desde 2026-07) | `fred_monthly.csv` |
-| EIA mensual | `eia_monthly.csv` |
-| Guardian mensual | `guardian_monthly.csv` |
-| GDELT mensual | `gdelt_monthly.csv` cuando existe en el pipeline local o de Actions |
-| IMF IMTS — comercio espejo EEUU-VEN (mirror, reporta EEUU) | `imts_monthly.csv` |
-| World Bank Pink Sheet — crudo Dubai | `wb_commodities_monthly.csv` |
+## Evidencia de esta revisión
 
-Ampliacion 2026-07-21: el Pulse paso de 11 a 15 variables con tres fuentes
-nuevas (IMF IMTS, WB Pink Sheet, ICE BofA via FRED). Ninguna es de origen
-venezolano; el comercio espejo usa exclusivamente lo reportado por EEUU.
-Notas de cobertura: IMTS publica con ~3-6 meses de rezago; FRED solo
-redistribuye una ventana movil (~3 anos) del spread ICE BofA, cobertura
-desde 2023-07. Faltante es faltante: los pesos se renormalizan por mes.
+`audit_20260917/` contiene respuestas oficiales, URL, fecha de recuperación, SHA-256, comparación numérica y estados por observación. `scripts/audit_sources.py` reproduce el contraste sin modificar los raw. Alcance: CPI 2012–2025, WJP, Freedom House, HDI vía OWID y WEO; no certifica todas las fuentes.
 
-GDELT se trata como fuente mensual opcional por estabilidad de API/rate limit.
-Si falta, el dashboard debe mostrar menor cobertura, no inventar el dato.
+El estado individual se propaga únicamente cuando coinciden hashes del raw y la evidencia, año, variable y valor. La fecha de publicación es la del vintage auditado, **no la primera disponibilidad histórica**.
 
-## Capas auxiliares (no entran al score ni al Pulse)
+## Satélite y archivos apartados
 
-| Fuente | Archivo | Cobertura | Nota |
-|---|---|---|---|
-| ACLED (API OAuth oficial) | `acled_monthly.csv` | 2018-01 a hoy menos ~12 meses | el tier de cuenta actual entrega datos con ~12 meses de rezago; solo contexto historico |
-| UN Comtrade v1 (5 socios espejo) | `comtrade_monthly.csv` | 2010-01 a ~2 meses atras | ultimos ~3 meses parciales segun socios que hayan reportado |
-| NASA Black Marble VNP46A3 | `blackmarble_monthly.csv`, `blackmarble_states_monthly.csv` | 2014-01 a ~2 meses atras | 5 agregaciones nacionales + 25 estados; alimenta el unico mapa subnacional del dashboard |
+- `blackmarble_monthly.csv` y `blackmarble_states_monthly.csv`: histórico exploratorio sin QA acreditado; mapa contextual.
+- `blackmarble_qa_monthly.csv` y `blackmarble_qa_states_monthly.csv`: muestra diagnóstica de calidad 0 y más de tres observaciones; excluye gap-filled y publica cobertura espacial. No es un histórico completo certificado.
+- **Ambas versiones quedan fuera del score anual y de Pulse**. QA por píxel no acredita representatividad territorial/estacional. Ver `docs/REVISION_SATELITAL.md`.
+- `viirs.csv`: referencia externa Li et al.; no sustituye Black Marble ni entra al score.
+- `data/archive/cpi_pre2012_noncomparable.csv`: valores históricos no comparables apartados del raw; no verificados por esta auditoría.
+- `data/archive/wjp_duplicate_edition_assignments_pre_v2.csv`: asignaciones antiguas fuera del cálculo.
 
-Fuera del pipeline desde 2026-07-29: `viirs_states.csv` (Li et al. por bbox
-estatal). Se conserva el CSV y `scripts/fetch_viirs_states.py` para auditoria,
-pero ninguna vista los consume; el mapa por estado usa Black Marble con
-mascara poligonal. Detalle del porque en `docs/MODEL_CARD.md`.
+## Reproducción sin congelación
 
-Ambas requieren credenciales via secrets/entorno (ACLED_EMAIL,
-ACLED_PASSWORD, COMTRADE_API_KEY); sin credenciales el fetch avisa y no
-escribe nada. Su eventual entrada al Pulse exige decision de peso
-documentada y re-ejecucion del backtest.
+Desde `iciv`: `python scripts/audit_sources.py`, `python main.py --no-fetch --no-open --no-package`, `python -m pytest`.
 
-## Outcome externo
-
-`ied_neta_usd` proviene de WDI y se usa solo para validacion exploratoria
-ICIV -> IED. No entra al score anual.
-
-## Dataset publico
-
-El pipeline genera:
-
-- `iciv/data/processed/iciv_dataset_wide.csv`
-- `iciv/data/processed/iciv_dataset_largo.csv`
-- `iciv/data/releases/latest/`
-
-El paquete `data/releases/latest/` incluye diccionario, cobertura anual,
-provenance por fuente, manifest con hashes y copias de los CSV publicos. No
-sustituye a los datos crudos; es una capa de auditoria reproducible.
-
-## Fuentes apartadas
-
-Pueden existir CSV o scripts historicos de fuentes apartadas para auditoria o
-trabajo futuro. No deben presentarse como parte del score si no aparecen en
-`src/iciv/index/dimensions.py` o `src/iciv/index/pulse_aggregator.py`.
-
-## Controles
-
-- `scripts/check_pulse_inputs.py` revisa vigencia de fuentes mensuales.
-- `scripts/build_dataset_package.py` reconstruye el paquete de dataset desde
-  artefactos procesados.
-- `python main.py --no-fetch --no-open` regenera dashboard y dataset.
-- `python -m pytest` valida loaders y pipeline basico.
+`data/processed` y el dashboard representan el trabajo actual. `data/releases/latest` y la entrega de septiembre 16 se conservan intactos; no deben confundirse con esta revisión. Congelación final y tesis quedan fuera de esta etapa.

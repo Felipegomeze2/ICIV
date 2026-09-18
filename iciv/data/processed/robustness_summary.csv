@@ -1,0 +1,159 @@
+escenario,familia,muestra,n,n_sin_score,mae_vs_base,max_abs_vs_base,sesgo_medio,spearman,cambios_categoria,nota
+peso_D1_macro_-20%,pesos,todos_comparables,27,0,0.8470370370370361,2.6400000000000006,-0.5011111111111112,0.9932844932844932,1,
+peso_D1_macro_-20%,pesos,base_cobertura80,13,0,1.0307692307692302,2.6400000000000006,-0.4676923076923076,0.9780219780219779,1,
+peso_D1_macro_-10%,pesos,todos_comparables,27,0,0.4203703703703698,1.3200000000000003,-0.24925925925926007,0.9974049879600311,1,
+peso_D1_macro_-10%,pesos,base_cobertura80,13,0,0.514615384615386,1.3200000000000003,-0.23461538461538603,0.9986254289035241,1,
+peso_D1_macro_-5%,pesos,todos_comparables,27,0,0.20888888888888837,0.6600000000000037,-0.12370370370370541,0.9987789987789988,0,
+peso_D1_macro_-5%,pesos,base_cobertura80,13,0,0.25692307692307775,0.6600000000000037,-0.11692307692307825,1.0,0,
+peso_D1_macro_+5%,pesos,todos_comparables,27,0,0.21074074074074198,0.6599999999999966,0.12333333333333169,0.9981684981684981,0,
+peso_D1_macro_+5%,pesos,base_cobertura80,13,0,0.2607692307692294,0.6599999999999966,0.11769230769230586,0.9945054945054945,0,
+peso_D1_macro_+10%,pesos,todos_comparables,27,0,0.41888888888888887,1.3200000000000003,0.2462962962962956,0.996947496947497,0,
+peso_D1_macro_+10%,pesos,base_cobertura80,13,0,0.516923076923076,1.3200000000000003,0.23538461538461528,0.9945054945054945,0,
+peso_D1_macro_+20%,pesos,todos_comparables,27,0,0.832962962962965,2.6400000000000006,0.4870370370370366,0.9963369963369964,0,
+peso_D1_macro_+20%,pesos,base_cobertura80,13,0,1.0346153846153854,2.6400000000000006,0.4684615384615398,0.9945054945054945,0,
+peso_D2_energia_-20%,pesos,todos_comparables,27,0,0.8981481481481493,2.0500000000000114,-0.19296296296296378,0.9957264957264956,1,
+peso_D2_energia_-20%,pesos,base_cobertura80,13,0,0.7100000000000014,1.4299999999999997,0.3699999999999991,0.9945054945054945,0,
+peso_D2_energia_-10%,pesos,todos_comparables,27,0,0.4466666666666669,1.0200000000000102,-0.09629629629629648,0.9980155817696179,1,
+peso_D2_energia_-10%,pesos,base_cobertura80,13,0,0.35461538461538566,0.7199999999999989,0.1838461538461528,1.0,0,
+peso_D2_energia_-5%,pesos,todos_comparables,27,0,0.22296296296296372,0.5100000000000051,-0.0481481481481487,0.9993894993894993,1,
+peso_D2_energia_-5%,pesos,base_cobertura80,13,0,0.17692307692307807,0.35999999999999943,0.0923076923076917,1.0,0,
+peso_D2_energia_+5%,pesos,todos_comparables,27,0,0.22185185185185244,0.5,0.04703703703703768,0.9999999999999999,0,
+peso_D2_energia_+5%,pesos,base_cobertura80,13,0,0.17769230769230815,0.35999999999999943,-0.09307692307692286,1.0,0,
+peso_D2_energia_+10%,pesos,todos_comparables,27,0,0.4433333333333321,1.0,0.09370370370370283,0.9993894993894993,0,
+peso_D2_energia_+10%,pesos,base_cobertura80,13,0,0.35692307692307507,0.7199999999999989,-0.18615384615384764,1.0,0,
+peso_D2_energia_+20%,pesos,todos_comparables,27,0,0.8822222222222221,2.0,0.18740740740740736,0.9993894993894993,1,
+peso_D2_energia_+20%,pesos,base_cobertura80,13,0,0.711538461538461,1.4400000000000048,-0.37153846153846193,1.0,1,
+peso_D3_institucional_-20%,pesos,todos_comparables,27,0,0.34370370370370346,1.4800000000000004,0.3422222222222223,0.9975579975579975,0,
+peso_D3_institucional_-20%,pesos,base_cobertura80,13,0,0.5999999999999995,1.4099999999999966,0.596923076923077,1.0,0,
+peso_D3_institucional_-10%,pesos,todos_comparables,27,0,0.17185185185185123,0.7399999999999984,0.17111111111111116,0.9987789987789988,0,
+peso_D3_institucional_-10%,pesos,base_cobertura80,13,0,0.2999999999999988,0.7100000000000009,0.29846153846153867,1.0,0,
+peso_D3_institucional_-5%,pesos,todos_comparables,27,0,0.08555555555555525,0.36999999999999744,0.08555555555555525,0.9992367693887914,0,
+peso_D3_institucional_-5%,pesos,base_cobertura80,13,0,0.14923076923076878,0.3500000000000014,0.14923076923076878,1.0,0,
+peso_D3_institucional_+5%,pesos,todos_comparables,27,0,0.0862962962962965,0.370000000000001,-0.08555555555555537,0.9999999999999999,0,
+peso_D3_institucional_+5%,pesos,base_cobertura80,13,0,0.1507692307692311,0.35999999999999943,-0.14923076923076878,1.0,0,
+peso_D3_institucional_+10%,pesos,todos_comparables,27,0,0.17222222222222255,0.740000000000002,-0.17074074074074033,0.9999999999999999,0,
+peso_D3_institucional_+10%,pesos,base_cobertura80,13,0,0.30076923076923134,0.7100000000000009,-0.2976923076923067,1.0,0,
+peso_D3_institucional_+20%,pesos,todos_comparables,27,0,0.3444444444444446,1.4800000000000004,-0.3422222222222223,0.9993894993894993,1,
+peso_D3_institucional_+20%,pesos,base_cobertura80,13,0,0.6015384615384618,1.4200000000000017,-0.596923076923077,0.9945054945054945,1,
+peso_D4_comercial_-20%,pesos,todos_comparables,27,0,0.8544444444444446,1.6999999999999886,0.5018518518518513,0.9975579975579975,1,
+peso_D4_comercial_-20%,pesos,base_cobertura80,13,0,0.5538461538461549,1.399999999999995,-0.17846153846153875,0.9945054945054945,1,
+peso_D4_comercial_-10%,pesos,todos_comparables,27,0,0.42740740740740657,0.8499999999999943,0.2496296296296284,0.9993894993894993,0,
+peso_D4_comercial_-10%,pesos,base_cobertura80,13,0,0.2784615384615391,0.6999999999999957,-0.09076923076923102,0.9945054945054945,0,
+peso_D4_comercial_-5%,pesos,todos_comparables,27,0,0.21296296296296152,0.4199999999999875,0.12481481481481327,0.9998473631983782,0,
+peso_D4_comercial_-5%,pesos,base_cobertura80,13,0,0.1384615384615388,0.34999999999999787,-0.04461538461538449,0.9986254289035241,0,
+peso_D4_comercial_+5%,pesos,todos_comparables,27,0,0.21148148148148152,0.4200000000000017,-0.12407407407407492,0.9987789987789988,0,
+peso_D4_comercial_+5%,pesos,base_cobertura80,13,0,0.1376923076923071,0.3500000000000014,0.04384615384615277,1.0,0,
+peso_D4_comercial_+10%,pesos,todos_comparables,27,0,0.42296296296296304,0.8400000000000034,-0.24740740740740896,0.996947496947497,1,
+peso_D4_comercial_+10%,pesos,base_cobertura80,13,0,0.2753846153846136,0.7000000000000028,0.08923076923076788,1.0,0,
+peso_D4_comercial_+20%,pesos,todos_comparables,27,0,0.8425925925925924,1.6700000000000017,-0.4907407407407414,0.9902319902319903,1,
+peso_D4_comercial_+20%,pesos,base_cobertura80,13,0,0.5523076923076917,1.4000000000000057,0.1784615384615374,0.9945054945054945,0,
+peso_D5_capital_humano_-20%,pesos,todos_comparables,27,0,0.19111111111111007,0.6700000000000017,-0.008148148148148763,0.9992367693887914,0,
+peso_D5_capital_humano_-20%,pesos,base_cobertura80,13,0,0.13307692307692257,0.28000000000000114,-0.10999999999999971,1.0,0,
+peso_D5_capital_humano_-10%,pesos,todos_comparables,27,0,0.09481481481481333,0.3299999999999983,-0.005185185185185996,0.9999999999999999,0,
+peso_D5_capital_humano_-10%,pesos,base_cobertura80,13,0,0.06692307692307618,0.14000000000000057,-0.056153846153845915,1.0,0,
+peso_D5_capital_humano_-5%,pesos,todos_comparables,27,0,0.04777777777777788,0.1700000000000017,-0.0018518518518526677,0.9999999999999999,0,
+peso_D5_capital_humano_-5%,pesos,base_cobertura80,13,0,0.03384615384615394,0.07000000000000739,-0.027692307692307922,1.0,0,
+peso_D5_capital_humano_+5%,pesos,todos_comparables,27,0,0.04851851851852005,0.1700000000000017,0.002592592592591945,0.9999999999999999,0,
+peso_D5_capital_humano_+5%,pesos,base_cobertura80,13,0,0.03307692307692388,0.06999999999999318,0.028461538461538538,1.0,0,
+peso_D5_capital_humano_+10%,pesos,todos_comparables,27,0,0.09814814814815073,0.3300000000000125,0.004814814814814646,0.9987789987789988,0,
+peso_D5_capital_humano_+10%,pesos,base_cobertura80,13,0,0.06846153846153905,0.14000000000000057,0.05615384615384646,1.0,0,
+peso_D5_capital_humano_+20%,pesos,todos_comparables,27,0,0.1929629629629631,0.6599999999999966,0.009259259259258601,0.9981684981684981,1,
+peso_D5_capital_humano_+20%,pesos,base_cobertura80,13,0,0.1346153846153849,0.269999999999996,0.11153846153846093,1.0,0,
+peso_D6_percepcion_-20%,pesos,todos_comparables,27,0,0.33518518518518614,0.8099999999999987,-0.1707407407407423,0.9963369963369964,1,
+peso_D6_percepcion_-20%,pesos,base_cobertura80,13,0,0.39923076923076933,0.8099999999999987,-0.19769230769230853,1.0,1,
+peso_D6_percepcion_-10%,pesos,todos_comparables,27,0,0.16851851851851973,0.3999999999999986,-0.0855555555555559,0.9987789987789988,0,
+peso_D6_percepcion_-10%,pesos,base_cobertura80,13,0,0.20076923076923153,0.3999999999999986,-0.09923076923076835,1.0,0,
+peso_D6_percepcion_-5%,pesos,todos_comparables,27,0,0.08370370370370521,0.1999999999999993,-0.0429629629629631,0.9993894993894993,0,
+peso_D6_percepcion_-5%,pesos,base_cobertura80,13,0,0.10000000000000006,0.1999999999999993,-0.049230769230768454,1.0,0,
+peso_D6_percepcion_+5%,pesos,todos_comparables,27,0,0.08185185185185136,0.21000000000000085,0.042592592592592016,0.9999999999999999,0,
+peso_D6_percepcion_+5%,pesos,base_cobertura80,13,0,0.10000000000000006,0.21000000000000085,0.04923076923076955,1.0,0,
+peso_D6_percepcion_+10%,pesos,todos_comparables,27,0,0.16481481481481386,0.4099999999999966,0.08481481481481558,0.9999999999999999,0,
+peso_D6_percepcion_+10%,pesos,base_cobertura80,13,0,0.1976923076923066,0.4099999999999966,0.09769230769230902,1.0,0,
+peso_D6_percepcion_+20%,pesos,todos_comparables,27,0,0.3318518518518507,0.8100000000000023,0.17111111111111088,0.9993894993894993,1,
+peso_D6_percepcion_+20%,pesos,base_cobertura80,13,0,0.39846153846153765,0.8100000000000023,0.19846153846153916,0.9945054945054945,1,
+dimensiones_iguales,pesos,todos_comparables,27,0,1.4014814814814822,3.960000000000001,0.22592592592592478,0.9884004884004883,3,
+dimensiones_iguales,pesos,base_cobertura80,13,0,1.6899999999999993,3.960000000000001,1.1176923076923062,0.9780219780219779,2,
+geometrico,agregacion,todos_comparables,27,0,4.9003703703703705,27.78,-4.9003703703703705,0.9894672684354027,8,
+geometrico,agregacion,base_cobertura80,13,0,5.717692307692308,22.76,-5.717692307692308,0.9780219780219779,6,
+winsor05,normalizacion,todos_comparables,27,0,1.8833333333333326,6.349999999999994,-0.9196296296296302,0.9871794871794871,3,Escala alternativa; categorías no recalibradas. No es un intervalo de confianza.
+winsor05,normalizacion,base_cobertura80,13,0,2.546923076923076,5.789999999999996,-1.0853846153846167,0.9945054945054945,3,Escala alternativa; categorías no recalibradas. No es un intervalo de confianza.
+rank,normalizacion,todos_comparables,27,0,10.43148148148148,19.71,-10.43148148148148,0.9352869352869353,20,Escala alternativa; categorías no recalibradas. No es un intervalo de confianza.
+rank,normalizacion,base_cobertura80,13,0,9.670769230769231,18.32,-9.670769230769231,0.989010989010989,10,Escala alternativa; categorías no recalibradas. No es un intervalo de confianza.
+minmax_sin_2026_en_ajuste,normalizacion,todos_comparables,27,0,0.40592592592592663,1.2000000000000028,-0.40592592592592663,0.9987789987789988,1,
+minmax_sin_2026_en_ajuste,normalizacion,base_cobertura80,13,0,0.40692307692307766,0.899999999999995,-0.40692307692307766,0.9945054945054945,1,
+piso_25%,cobertura,todos_comparables,27,0,1.112962962962962,6.559999999999988,-0.45444444444444404,0.9523809523809523,0,
+piso_25%,cobertura,base_cobertura80,13,0,0.0,0.0,0.0,1.0,0,
+piso_75%,cobertura,todos_comparables,27,0,0.9381481481481478,16.839999999999996,-0.3759259259259259,0.9804639804639804,2,
+piso_75%,cobertura,base_cobertura80,13,0,0.06923076923076912,0.8999999999999986,-0.06923076923076912,0.9945054945054945,0,
+piso_100%,cobertura,todos_comparables,27,0,3.941851851851852,13.810000000000002,0.5144444444444438,0.938949938949939,5,
+piso_100%,cobertura,base_cobertura80,13,0,3.598461538461538,7.18,2.113846153846153,0.967032967032967,2,
+excluir_inflacion_ipc_imf_pct,exclusion_variable,todos_comparables,27,0,3.2325925925925936,16.839999999999996,-2.7170370370370387,0.9725274725274725,7,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_inflacion_ipc_imf_pct,exclusion_variable,base_cobertura80,13,0,2.0230769230769243,5.620000000000001,-0.9523076923076936,0.9615384615384615,4,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_pib_crecimiento_real_pct,exclusion_variable,todos_comparables,27,0,1.8562962962962968,3.620000000000001,-0.015555555555555881,0.984126984126984,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_pib_crecimiento_real_pct,exclusion_variable,base_cobertura80,13,0,2.307692307692307,3.5600000000000023,0.32307692307692193,0.967032967032967,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wti_precio_usd,exclusion_variable,todos_comparables,27,0,1.6451851851851842,4.079999999999998,0.34370370370370373,0.9865689865689865,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wti_precio_usd,exclusion_variable,base_cobertura80,13,0,1.095384615384614,2.530000000000001,-0.3953846153846157,1.0,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_tasa_fed_funds_pct,exclusion_variable,todos_comparables,27,0,0.9992592592592585,2.4799999999999898,-0.21481481481481537,0.9981684981684981,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_tasa_fed_funds_pct,exclusion_variable,base_cobertura80,13,0,0.9761538461538468,2.16,-0.8361538461538462,1.0,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_petroleo_crudo_produccion_tbpd,exclusion_variable,todos_comparables,27,0,4.691851851851852,12.270000000000003,-0.9955555555555562,0.9792429792429792,6,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_petroleo_crudo_produccion_tbpd,exclusion_variable,base_cobertura80,13,0,3.556923076923077,7.18,1.8569230769230762,0.9835164835164836,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_luminosidad_nocturna_idx,exclusion_variable,todos_comparables,27,0,0.9507407407407418,2.1700000000000017,-0.20259259259259374,0.9957264957264956,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_luminosidad_nocturna_idx,exclusion_variable,base_cobertura80,13,0,0.7523076923076932,1.519999999999996,0.3923076923076905,0.9945054945054945,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_cpi_score,exclusion_variable,todos_comparables,27,0,1.599999999999999,7.589999999999996,-0.3674074074074084,0.9688644688644688,4,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_cpi_score,exclusion_variable,base_cobertura80,13,0,0.8976923076923076,1.9099999999999966,-0.5946153846153858,0.9945054945054945,3,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wgi_promedio_sc,exclusion_variable,todos_comparables,27,0,0.8559259259259255,2.0999999999999943,0.8559259259259255,0.9884004884004883,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wgi_promedio_sc,exclusion_variable,base_cobertura80,13,0,1.6623076923076914,2.0999999999999943,1.6623076923076914,1.0,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_freedom_house_score,exclusion_variable,todos_comparables,27,0,0.3729629629629638,1.25,0.19148148148148156,0.9999999999999999,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_freedom_house_score,exclusion_variable,base_cobertura80,13,0,0.689230769230771,1.25,0.3123076923076925,1.0,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wjp_rule_of_law,exclusion_variable,todos_comparables,27,0,0.42962962962962903,1.4899999999999949,0.3792592592592592,0.996947496947497,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_wjp_rule_of_law,exclusion_variable,base_cobertura80,13,0,0.8069230769230757,1.4899999999999949,0.7023076923076922,1.0,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_pts_terror_politico,exclusion_variable,todos_comparables,27,0,0.2359259259259261,0.9800000000000004,0.2359259259259261,0.9987789987789988,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_pts_terror_politico,exclusion_variable,base_cobertura80,13,0,0.41461538461538494,0.9699999999999989,0.41461538461538494,1.0,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_exportaciones_pct_pib,exclusion_variable,todos_comparables,27,0,4.84074074074074,11.189999999999998,3.673333333333333,0.9462759462759464,11,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_exportaciones_pct_pib,exclusion_variable,base_cobertura80,13,0,1.446153846153846,5.739999999999995,-0.9230769230769241,0.9945054945054945,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_migrantes_vzla_millones,exclusion_variable,todos_comparables,27,0,2.1348148148148165,5.229999999999997,-1.7185185185185203,0.9926739926739926,4,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_migrantes_vzla_millones,exclusion_variable,base_cobertura80,13,0,1.3469230769230778,2.280000000000001,-0.680769230769232,0.9945054945054945,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_lsci_conectividad_maritima,exclusion_variable,todos_comparables,27,0,0.9129629629629613,1.7399999999999949,0.5670370370370363,0.9865689865689865,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_lsci_conectividad_maritima,exclusion_variable,base_cobertura80,13,0,0.7884615384615373,1.6299999999999955,0.7884615384615373,0.9945054945054945,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_hdi,exclusion_variable,todos_comparables,27,0,0.6537037037037017,1.8599999999999994,0.2403703703703695,0.9938949938949939,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_hdi,exclusion_variable,base_cobertura80,13,0,0.4815384615384606,0.8299999999999983,-0.11076923076923087,0.989010989010989,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_esperanza_vida_anos,exclusion_variable,todos_comparables,27,0,0.32222222222222086,1.3999999999999915,-0.12074074074073975,0.9987789987789988,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_esperanza_vida_anos,exclusion_variable,base_cobertura80,13,0,0.362307692307691,0.8500000000000014,-0.2592307692307682,0.989010989010989,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_mortalidad_infantil_x1000,exclusion_variable,todos_comparables,27,0,0.38444444444444337,0.9799999999999969,0.09925925925925859,0.996947496947497,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_mortalidad_infantil_x1000,exclusion_variable,base_cobertura80,13,0,0.49230769230769195,0.9799999999999969,0.45692307692307593,1.0,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_acceso_electricidad_pct,exclusion_variable,todos_comparables,27,0,0.4907407407407398,1.5799999999999983,-0.3877777777777784,0.9987789987789988,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_acceso_electricidad_pct,exclusion_variable,base_cobertura80,13,0,0.7653846153846153,1.5799999999999983,-0.7653846153846153,0.9945054945054945,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_empleo_vulnerable_oit_pct,exclusion_variable,todos_comparables,27,0,0.24444444444444344,0.9199999999999875,0.1281481481481487,0.9987789987789988,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_empleo_vulnerable_oit_pct,exclusion_variable,base_cobertura80,13,0,0.243846153846154,0.8900000000000006,0.16076923076923214,1.0,0,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_guardian_tono_titulares,exclusion_variable,todos_comparables,27,0,1.0448148148148133,3.25,-0.3196296296296292,0.9914529914529915,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_guardian_tono_titulares,exclusion_variable,base_cobertura80,13,0,1.211538461538461,3.25,-0.12384615384615326,0.9945054945054945,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_guardian_articulos_venezuela,exclusion_variable,todos_comparables,27,0,0.8451851851851856,2.6700000000000017,-0.4977777777777784,0.9975579975579975,2,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_guardian_articulos_venezuela,exclusion_variable,base_cobertura80,13,0,0.8623076923076932,1.7700000000000031,-0.8115384615384627,1.0,1,"Cambio explícito del universo, no una avería de fuente; cobertura recalculada."
+excluir_D1_macro,exclusion_dimension,todos_comparables,27,0,4.468518518518517,16.839999999999996,-2.7092592592592593,0.9645909645909645,7,
+excluir_D1_macro,exclusion_dimension,base_cobertura80,13,0,5.160769230769229,13.190000000000001,-2.3438461538461537,0.945054945054945,6,
+sin_datos_D1_macro,indisponibilidad,todos_comparables,27,0,4.468518518518517,16.839999999999996,-2.7092592592592593,0.9645909645909645,7,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D1_macro,indisponibilidad,base_cobertura80,13,0,5.160769230769229,13.190000000000001,-2.3438461538461537,0.945054945054945,6,Universo fijo; cobertura penaliza la fuente ausente.
+excluir_D2_energia,exclusion_dimension,todos_comparables,27,0,4.691851851851852,12.270000000000003,-0.9955555555555562,0.9792429792429792,6,
+excluir_D2_energia,exclusion_dimension,base_cobertura80,13,0,3.556923076923077,7.18,1.8569230769230762,0.9835164835164836,2,
+sin_datos_D2_energia,indisponibilidad,todos_comparables,27,0,4.691851851851852,12.270000000000003,-0.9955555555555562,0.9792429792429792,6,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D2_energia,indisponibilidad,base_cobertura80,13,0,3.556923076923077,7.18,1.8569230769230762,0.9835164835164836,2,Universo fijo; cobertura penaliza la fuente ausente.
+excluir_D3_institucional,exclusion_dimension,todos_comparables,27,0,1.7255555555555548,7.589999999999996,1.7174074074074068,0.9845825179587083,1,
+excluir_D3_institucional,exclusion_dimension,base_cobertura80,13,0,2.999999999999999,7.079999999999998,2.983076923076922,0.9945054945054945,0,
+sin_datos_D3_institucional,indisponibilidad,todos_comparables,27,0,1.7255555555555548,7.589999999999996,1.7174074074074068,0.9845825179587083,1,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D3_institucional,indisponibilidad,base_cobertura80,13,0,2.999999999999999,7.079999999999998,2.983076923076922,0.9945054945054945,0,Universo fijo; cobertura penaliza la fuente ausente.
+excluir_D4_comercial,exclusion_dimension,todos_comparables,27,0,4.40037037037037,8.889999999999986,2.6366666666666654,0.9658119658119657,7,
+excluir_D4_comercial,exclusion_dimension,base_cobertura80,13,0,2.7684615384615388,7.019999999999996,-0.8946153846153848,0.989010989010989,2,
+sin_datos_D4_comercial,indisponibilidad,todos_comparables,27,0,4.40037037037037,8.889999999999986,2.6366666666666654,0.9658119658119657,7,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D4_comercial,indisponibilidad,base_cobertura80,13,0,2.7684615384615388,7.019999999999996,-0.8946153846153848,0.989010989010989,2,Universo fijo; cobertura penaliza la fuente ausente.
+excluir_D5_capital_humano,exclusion_dimension,todos_comparables,27,0,0.9751851851851855,3.3999999999999986,-0.040370370370371944,0.9926739926739926,2,
+excluir_D5_capital_humano,exclusion_dimension,base_cobertura80,13,0,0.670769230769232,1.3800000000000097,-0.5553846153846167,0.989010989010989,2,
+sin_datos_D5_capital_humano,indisponibilidad,todos_comparables,27,0,0.9751851851851855,3.3999999999999986,-0.040370370370371944,0.9926739926739926,2,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D5_capital_humano,indisponibilidad,base_cobertura80,13,0,0.670769230769232,1.3800000000000097,-0.5553846153846167,0.989010989010989,2,Universo fijo; cobertura penaliza la fuente ausente.
+excluir_D6_percepcion,exclusion_dimension,todos_comparables,27,0,1.6892592592592597,4.059999999999999,-0.8618518518518529,0.9902319902319903,5,
+excluir_D6_percepcion,exclusion_dimension,base_cobertura80,13,0,1.99923076923077,4.059999999999999,-0.9930769230769239,0.989010989010989,3,
+sin_datos_D6_percepcion,indisponibilidad,todos_comparables,27,0,1.6892592592592597,4.059999999999999,-0.8618518518518529,0.9902319902319903,5,Universo fijo; cobertura penaliza la fuente ausente.
+sin_datos_D6_percepcion,indisponibilidad,base_cobertura80,13,0,1.99923076923077,4.059999999999999,-0.9930769230769239,0.989010989010989,3,Universo fijo; cobertura penaliza la fuente ausente.
+inflacion_sin_log,transformacion,todos_comparables,27,0,2.367037037037036,10.850000000000001,2.367037037037036,0.9871794871794871,2,
+inflacion_sin_log,transformacion,base_cobertura80,13,0,3.0753846153846145,5.859999999999999,3.0753846153846145,0.9615384615384615,0,
+sin_estimaciones_WEO_verificadas,estado_proveedor,todos_comparables,27,0,0.6237037037037035,16.839999999999996,-0.6237037037037035,0.9871794871794871,1,Retira únicamente estimaciones FMI con estado acreditado. OIT sigue modelado; no implica conjunto enteramente observado.
+sin_estimaciones_WEO_verificadas,estado_proveedor,base_cobertura80,13,0,0.0,0.0,0.0,1.0,0,Retira únicamente estimaciones FMI con estado acreditado. OIT sigue modelado; no implica conjunto enteramente observado.

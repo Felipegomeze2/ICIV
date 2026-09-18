@@ -1,7 +1,8 @@
 {
-  "generated_at": "2026-09-16T08:15:32.257282",
+  "generated_at": "2026-09-17T20:18:26.720037",
   "source_mode": "existing_snapshot_no_refresh",
   "methodology_version": "2.0.0",
-  "satellite_policy": "only_blackmarble_qa_good_only_v2_in_score; legacy_display_is_contextual",
+  "artifact_mode": "working_review_no_release",
+  "satellite_policy": "excluded_pending_spatial_temporal_validation; strict_QA_is_auxiliary_evidence",
   "historical_publication_dates": "not_archived"
 }

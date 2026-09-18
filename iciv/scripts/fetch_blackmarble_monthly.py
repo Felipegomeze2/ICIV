@@ -57,6 +57,7 @@ from __future__ import annotations
 import argparse
 import calendar
 import json
+import hashlib
 import os
 import sys
 import tempfile
@@ -252,13 +253,18 @@ def _process_month(year: int, month: int, token: str,
 
     nat_vals: list[np.ndarray] = []
     st_sum = np.zeros(len(states)); st_cnt = np.zeros(len(states))
+    st_total = np.zeros(len(states), dtype=int)
+    granule_evidence = []
     with tempfile.TemporaryDirectory() as tmp:
         for tile, url in sorted(granules.items()):
             dest = Path(tmp) / f"{tile}.h5"
             _download(url, token, dest)
+            granule_evidence.append({"tile": tile, "url": url,
+                                     "sha256": hashlib.sha256(dest.read_bytes()).hexdigest()})
             scaled = _tile_radiance(dest)
             labels = _tile_state_labels(tile)
             in_ve = labels >= 0
+            st_total += np.bincount(labels[in_ve], minlength=len(states))
             # el fill ya quedo como NaN dentro de _tile_radiance
             valid = in_ve & np.isfinite(scaled)
             vals = scaled[valid]
@@ -277,6 +283,8 @@ def _process_month(year: int, month: int, token: str,
     nat_rows = [{
         "año": year, "mes": month, "variable": var,
         "valor": round(fn(allv), 4), "fuente": _FUENTE, "qa_policy": "good_only_v2", "n_valid_pixels": int(allv.size),
+        "n_total_pixels": int(st_total.sum()),
+        "valid_pixel_pct": round(100 * allv.size / st_total.sum(), 4),
     } for var, fn in _NAT_STATS.items()]
 
     st_rows = []
@@ -286,10 +294,21 @@ def _process_month(year: int, month: int, token: str,
                 "año": year, "mes": month, "estado": nombre, "cod": cod,
                 "radiancia_media": round(float(st_sum[i] / st_cnt[i]), 4),
                 "qa_policy": "good_only_v2", "n_valid_pixels": int(st_cnt[i]),
+                "n_total_pixels": int(st_total[i]),
+                "valid_pixel_pct": round(100 * st_cnt[i] / st_total[i], 4),
                 "fuente": _FUENTE,
             })
     mean_v = round(float(np.mean(allv)), 4)
     med_v = round(float(np.median(allv)), 4)
+    audit_dir = _ICIV_DIR / "data" / "sources" / "blackmarble_qa"
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    (audit_dir / f"{year}-{month:02d}.json").write_text(json.dumps({
+        "qa_policy": "good_only_v2", "granules": granule_evidence,
+        "mask_geojson_sha256": hashlib.sha256(GEOJSON.read_bytes()).hexdigest(),
+        "valid_pixel_pct": 100 * allv.size / st_total.sum(),
+        "n_total_pixels": int(st_total.sum()), "n_valid_pixels": int(allv.size),
+        "weighting": "equal_grid_pixels; not area weighted", "annual_use": "requires separate spatial and temporal acceptance"
+    }, indent=2), encoding="utf-8")
     print(f"  {year}-{month:02d}: OK — media={mean_v} mediana={med_v} "
           f"nW/cm2/sr sobre {allv.size} px, {len(st_rows)} estados")
     return nat_rows, st_rows
@@ -337,8 +356,7 @@ def main() -> None:
     try:
         import h5py  # noqa: F401
     except ImportError:
-        print("  [WARN] h5py no instalado. No se procesa nada.")
-        return
+        raise RuntimeError("h5py requerido; no se generaron datos")
 
     states = _state_names()
     # Si la salida nacional aun no tiene las nuevas variables, forzar reprocess.
@@ -383,13 +401,13 @@ def main() -> None:
         if not res:
             continue
         # Guardado incremental tras cada mes (reanudable ante cortes)
-        _upsert(OUTPUT, res[0], ["año", "mes", "variable"]).to_csv(OUTPUT, index=False, encoding="utf-8-sig")
-        _upsert(OUTPUT_STATES, res[1], ["año", "mes", "estado"]).to_csv(OUTPUT_STATES, index=False, encoding="utf-8-sig")
+        from iciv.utils import save_dataframe
+        save_dataframe(_upsert(OUTPUT, res[0], ["año", "mes", "variable"]), OUTPUT, value_columns=["valor"])
+        save_dataframe(_upsert(OUTPUT_STATES, res[1], ["año", "mes", "estado"]), OUTPUT_STATES, value_columns=["radiancia_media"])
         processed += 1
 
     if processed == 0:
-        print("\n  Sin filas nuevas.")
-        return
+        raise RuntimeError("Ninguno de los meses pendientes pudo procesarse; revisar calidad/acceso")
     df_nat = pd.read_csv(OUTPUT)
     df_st = pd.read_csv(OUTPUT_STATES)
     n_meses = df_nat[["año", "mes"]].drop_duplicates().shape[0]

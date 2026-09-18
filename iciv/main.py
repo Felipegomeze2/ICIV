@@ -103,6 +103,7 @@ def fase_fetch(settings: Settings) -> None:
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
         ("FRED -- WTI + Fed Funds (St. Louis)",   "scripts.fetch_fred",          "fetch_fred"),
         ("Freedom House -- Libertades políticas", "scripts.fetch_freedom_house", "fetch_freedom_house"),
+        ("CPI -- Transparency International",     "scripts.fetch_cpi",          "fetch_cpi"),
         ("UNHCR/R4V -- Migración venezolana",     "scripts.fetch_unhcr",         "build_unhcr"),
         ("VIIRS/DMSP   -- Luminosidad nocturna",  "scripts.fetch_viirs",         "build_viirs"),
         ("UNCTAD LSCI -- Conectividad marítima",  "scripts.fetch_unctad",        "fetch_unctad"),
@@ -247,52 +248,11 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
         except Exception as _exc:
             logger.warning("  No se pudo anualizar %s: %s", _VAR_ANUAL, _exc)
 
-    # ── Luminosidad nocturna: Li et al. → NASA Black Marble ───────────────────
-    # La serie de Li et al. (viirs.csv) cubre 2000-2024 pero es un dataset
-    # académico de actualización irregular: llega con ~2 años de rezago, así que
-    # no puede describir el año en curso ni el anterior.
-    #
-    # Black Marble (VNP46A3) ya se descarga mensualmente con ~2 meses de rezago y
-    # cubre 2014-2026 con máscara poligonal exacta y unidades físicas reales.
-    # Se sustituye la variable COMPLETA por el promedio anual de Black Marble.
-    # NO se empalman las dos series: son productos distintos con escalas distintas
-    # (Li et al. ~11,6 en índice adimensional; Black Marble ~0,9 nW/cm²/sr).
-    # Mezclarlas sería repetir el error del LSCI.
-    #
-    # Coste asumido y declarado: 2000-2013 pierden esta variable. Se acepta porque
-    # el índice debe poder describir el presente, y D2 conserva la producción
-    # petrolera de EIA con historia completa para esos años.
-    # viirs.csv y fetch_viirs.py se conservan: siguen siendo el validador externo
-    # no circular de la validación leave-one-out.
+    # Exclusión explícita: QA por píxel no acredita una media nacional
+    # comparable. Ver docs/REVISION_SATELITAL.md. Se conserva el universo de
+    # cobertura; ni el histórico ni la muestra QA entran al score.
     _VAR_LUM = "luminosidad_nocturna_idx"
-    _ruta_bm = settings.paths.data_raw / "blackmarble_qa_monthly.csv"
-    master[_VAR_LUM] = np.nan  # Nunca sustituir Black Marble por Li et al.
-    if _ruta_bm.exists():
-        try:
-            _bm = pd.read_csv(_ruta_bm)
-            _bm = _bm[(_bm["variable"] == "luminosidad_nocturna_mensual_nwcm2sr") & _bm["qa_policy"].eq("good_only_v2")]
-            if not _bm.empty:
-                _bm_anual = _bm.groupby("año")["valor"].agg(["mean", "count"])
-                _bm_anual = _bm_anual[_bm_anual["count"] >= _MIN_MESES_ANUALIZAR]
-                master[_VAR_LUM] = master["año"].map(_bm_anual["mean"])
-                _n_ok = int(master[_VAR_LUM].notna().sum())
-                logger.info(
-                    "  %s <- NASA Black Marble: %d años (%d-%d), sustituye a Li et al.",
-                    _VAR_LUM, _n_ok,
-                    int(_bm_anual.index.min()), int(_bm_anual.index.max()),
-                )
-                for _a, _f in _bm_anual.iterrows():
-                    if _f["count"] < 12:
-                        _anualizados.append({
-                            "año": int(_a),
-                            "variable": _VAR_LUM,
-                            "valor": round(float(_f["mean"]), 4),
-                            "meses_usados": int(_f["count"]),
-                            "origen": "NASA Black Marble VNP46A3, media nacional mensual",
-                            "nota": "promedio de los meses publicados; año incompleto",
-                        })
-        except Exception as _exc:
-            logger.warning("  No se pudo construir %s desde Black Marble: %s", _VAR_LUM, _exc)
+    master[_VAR_LUM] = np.nan
 
     pd.DataFrame(_anualizados, columns=["año", "variable", "valor", "meses_usados", "origen", "nota"]).to_csv(
         settings.paths.data_processed / "anualizacion_parcial.csv", index=False, encoding="utf-8-sig")
@@ -1844,12 +1804,13 @@ body{{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-
 
 /* Top nav: 5 pestañas principales */
 .nav-top{{display:flex;align-items:center;gap:4px;padding:0 32px;height:54px;
-         border-bottom:1px solid #21262d}}
+         border-bottom:1px solid #21262d;overflow-x:auto;max-width:100%}}
 .nav-brand{{color:var(--accent);font-weight:700;font-size:1rem;margin-right:28px;
             letter-spacing:.4px;cursor:pointer;text-decoration:none;
             transition:opacity .15s}}
 .nav-brand:hover{{opacity:.75}}
 .nav-top a{{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;
+            flex:0 0 auto;white-space:nowrap;
             padding:8px 18px;border-radius:8px;transition:all .18s;
             text-transform:uppercase;letter-spacing:.6px;border:1px solid transparent}}
 .nav-top a:hover{{color:var(--text);background:rgba(255,255,255,.04);
@@ -2438,8 +2399,8 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
   </div>
 
   <p class="lead">
-    ICIV mide el clima de inversión de Venezuela con fuentes exclusivamente
-    internacionales. Esta ficha resume quién lo hace, cómo está construido y
+    ICIV describe el entorno venezolano con datos de distribuidores
+    internacionales, que pueden incluir estadísticas nacionales y estimaciones. Esta ficha resume quién lo hace, cómo está construido y
     —sobre todo— qué <em>no</em> se puede concluir de sus cifras.
   </p>
 
@@ -2485,7 +2446,7 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
       <strong style="color:var(--text)">cada componente se normaliza entre sus extremos históricos; el agregado combina
       esos componentes y no necesariamente alcanza 0 o 100</strong>. No es un óptimo internacional.<br><br>
       De ahí se siguen dos cosas que conviene tener presentes:
-      un 0 significa «el peor año de su propia serie», no «sin datos»;
+      un componente con 0 está en el extremo histórico menos favorable de su escala, no «sin datos»;
       y <strong style="color:var(--text)">estas cifras no comparan a Venezuela con ningún otro
       país</strong>. Un 60 aquí no equivale a un 60 de Colombia o Perú: haría falta normalizar
       sobre un panel multi-país, que queda pendiente.
@@ -2542,13 +2503,13 @@ details.more .more-body{{font-size:.73rem;color:var(--muted);line-height:1.7;mar
           anuales publican con rezago; los cambios de composición y las revisiones pueden alterar
           el puntaje en cualquiera de las dos direcciones.</li>
       <li><strong style="color:var(--text)">Una dimensión con menos del 50% de su peso cubierto
-          no se publica</strong>, en vez de mostrar un promedio apoyado en una sola variable.</li>
+          no se publica</strong>. Una sola variable puede superar ese piso si concentra suficiente peso; la cobertura no mide diversidad.</li>
     </ul>
   </div>
 
   <div class="hint">
     Metodología completa, bitácora de incidencias y decisiones en
-    <a href="https://github.com/Felipegomeze2/ICIV/blob/main/docs/METODOLOGIA.md"
+    <a href="docs/METODOLOGIA.md"
        target="_blank" rel="noopener" style="color:var(--accent)">docs/METODOLOGIA.md</a>.
     El dashboard se regenera solo cada semana mediante GitHub Actions.
   </div>
@@ -3715,7 +3676,11 @@ def main() -> None:
         help="Solo ejecutar la validacion del modelo (requiere datos ya procesados)"
     )
     parser.add_argument("--release-id", default="latest", help="Nombre de release (distinto de latest: inmutable)")
+    parser.add_argument("--no-package", action="store_true",
+                        help="Revision de trabajo: no modificar latest ni crear una release")
     args = parser.parse_args()
+    if args.no_package and args.release_id != "latest":
+        parser.error("--no-package no admite --release-id")
 
     t0 = time.time()
 
@@ -3746,7 +3711,8 @@ def main() -> None:
         "generated_at": datetime.now().isoformat(),
         "source_mode": "existing_snapshot_no_refresh" if args.no_fetch else "fetch_attempted_see_fetch_status",
         "methodology_version": "2.0.0",
-        "satellite_policy": "only_blackmarble_qa_good_only_v2_in_score; legacy_display_is_contextual",
+        "artifact_mode": "working_review_no_release" if args.no_package else "package_requested",
+        "satellite_policy": "excluded_pending_spatial_temporal_validation; strict_QA_is_auxiliary_evidence",
         "historical_publication_dates": "not_archived"}, indent=2), encoding="utf-8")
 
     # -- Fase 2: Pipeline -------------------------------------------------------
@@ -3781,6 +3747,7 @@ def main() -> None:
     import importlib
     importlib.import_module("scripts.external_validation").main()
     val_path = fase_validacion(open_browser=False)
+    importlib.import_module("scripts.robustness_review").main()
 
     # -- Fase 4: Dashboard ------------------------------------------------------
     dashboard_path = fase_dashboard(
@@ -3790,12 +3757,13 @@ def main() -> None:
     )
 
     # -- Fase 5: Validacion -----------------------------------------------------
-    from iciv.data.dataset_package import build_dataset_package
-    build_dataset_package(df_raw, wide_path, long_path, settings, release_id="latest")
-    if args.release_id != "latest":
-        build_dataset_package(df_raw, wide_path, long_path, settings, release_id=args.release_id)
+    if not args.no_package:
+        from iciv.data.dataset_package import build_dataset_package
+        build_dataset_package(df_raw, wide_path, long_path, settings, release_id="latest")
+        if args.release_id != "latest":
+            build_dataset_package(df_raw, wide_path, long_path, settings, release_id=args.release_id)
     from scripts.write_results_summary import write_summary
-    write_summary(_ROOT.parent)
+    write_summary(_ROOT.parent, working=args.no_package)
 
     # -- Resumen final ----------------------------------------------------------
     elapsed = time.time() - t0

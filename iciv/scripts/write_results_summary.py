@@ -3,16 +3,16 @@ from pathlib import Path
 import json
 import pandas as pd
 
-def write_summary(root=None):
+def write_summary(root=None, working=False):
     root=Path(root) if root else Path(__file__).resolve().parents[2]
-    release=root/'iciv/data/releases/latest'
-    manifest=json.loads((release/'manifest.json').read_text(encoding='utf8'))
+    release=root/('iciv/data/processed' if working else 'iciv/data/releases/latest')
+    manifest=json.loads((release/('run_status.json' if working else 'manifest.json')).read_text(encoding='utf8'))
     annual=pd.read_csv(release/'iciv_scores_ahp.csv')
     pulse=pd.read_csv(release/'iciv_pulse_monthly.csv')
     bt=pd.read_csv(release/'pulse_forecast_backtest_summary.csv')
     external=pd.read_csv(release/'external_validation_summary.csv')
-    lines=['# Resultados actuales · generados desde la release', '',
-           f"Versión metodológica: {manifest['methodology_version']}. Generación UTC: {manifest['generated_at_utc']}.",
+    lines=['# Resultados actuales · '+('revisión de trabajo sin congelar' if working else 'generados desde la release'), '',
+           f"Versión metodológica: {manifest['methodology_version']}. Generación: {manifest.get('generated_at_utc', manifest.get('generated_at'))}.",
            '', 'No copiar estos resultados a una entrega sin citar su manifiesto. Anual: retrospectivo; meses provisionales y estimaciones del proveedor no son observaciones cerradas.', '',
            '| Año | ICIV AHP | Cobertura efectiva % | Categoría relativa |','|---|---:|---:|---|']
     for _,r in annual.tail(5).iterrows(): lines.append(f"| {int(r['año'])} | {r.iciv_score:.2f} | {r.cobertura_pct:.1f} | {r.iciv_categoria} |")

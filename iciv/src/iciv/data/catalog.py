@@ -82,16 +82,16 @@ CATALOG: dict[str, VariableMetadata] = {
     "luminosidad_nocturna_idx": _v(
         "luminosidad_nocturna_idx", "Luminosidad nocturna satelital",
         SourceID.VIIRS, "nW/cm2/sr", Direction.POSITIVE, DimensionID.ENERGY, 0.25, 2014,
-        "NASA Black Marble VNP46A3, media nacional con mascara poligonal exacta. "
-        "Sustituyo a la serie de Li et al. el 2026-08-11: mismo fenomeno con 2 meses "
-        "de rezago en vez de 2 anios. Cubre 2014-2026; no se empalma con la anterior.",
+        "NASA Black Marble VNP46A3: excluido del score por representatividad espacial/estacional "
+        "no acreditada, incluso en la muestra QA estricta. Conserva peso en el universo "
+        "de cobertura; no se sustituye por Li et al. Ver REVISION_SATELITAL.md.",
     ),
 
     # D3 - institucional
     "cpi_score": _v(
         "cpi_score", "Indice de percepcion de corrupcion",
         SourceID.CPI, "0-100", Direction.POSITIVE, DimensionID.INSTITUTIONAL, 0.24, 2012,
-        "CPI comparable solo desde 2012; registros anteriores conservados en raw y excluidos del indice.",
+        "CPI comparable solo desde 2012; registros anteriores apartados en data/archive y excluidos del indice.",
     ),
     "wgi_promedio_sc": _v(
         "wgi_promedio_sc", "Promedio WGI de gobernanza",

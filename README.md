@@ -13,7 +13,8 @@ ICIV es un indicador compuesto **descriptivo** del entorno venezolano. Combina u
 - Pulse con normalización expansiva, calendario regular, elegibilidad y cambios sobre componentes comunes.
 - Persistencia como pronóstico explícito; SARIMA y naive estacional comparados en los mismos pares origen/horizonte.
 - Dataset con valores originales, transformados, normalizados y estados conocidos; release con snapshots y hashes.
-- Histórico satelital sin QA acreditado conservado como contexto y excluido del índice. El recolector estricto produce archivos separados.
+- Satélite excluido del índice: muestra QA estricta recuperada, con cobertura espacial insuficiente para acreditar comparabilidad nacional. Histórico conservado como contexto.
+- Auditoría reproducible de 164 valores institucionales/WEO; 79 escenarios de robustez y descomposición del cambio anual por composición.
 
 ## Reproducción
 
@@ -25,6 +26,8 @@ python -m pytest iciv/tests -q
 python iciv/main.py --no-fetch --no-open
 python iciv/scripts/verify_release.py
 ```
+
+Para reproducir **esta revisión de trabajo sin modificar releases**, ejecutar `python iciv/scripts/audit_sources.py` y `python iciv/main.py --no-fetch --no-open --no-package`. La opción `--no-package` conserva `latest` y las entregas nombradas. Evidencia y dashboard utilizan los archivos actuales de `data/processed`.
 
 `--no-fetch` reproduce los CSV archivados; no significa que estén actualizados. Para intentar refrescarlos se omite esa opción. Las credenciales van en variables de entorno; nunca en archivos versionados. Un fallo no debe reemplazar observaciones con ceros, interpolaciones u otra fuente.
 
@@ -39,5 +42,9 @@ El dashboard se genera en `iciv_dashboard.html`; la validación en `iciv/data/pr
 - [Backtesting](docs/BACKTESTING_FORECAST.md)
 - [Ficha del modelo](docs/MODEL_CARD.md)
 - [Cierre y pendientes](docs/CIERRE_PROYECTO.md)
+- [Auditoría de fuentes](docs/AUDITORIA_FUENTES_ACTUAL.md)
+- [Decisión satelital](docs/REVISION_SATELITAL.md)
+- [Robustez ampliada](docs/ROBUSTEZ_AMPLIADA.md)
+- [Decisiones preparadas para validación humana](docs/VALIDACION_PENDIENTE.md)
 
 Las presentaciones y documentos de avances anteriores son históricos. Sus cifras y descripciones no sustituyen la metodología v2 ni los resultados de la release actual. La tesis aún debe redactarse y justificar las decisiones de diseño; el software por sí solo no acredita validez económica o causal.

@@ -40,3 +40,7 @@ secrets.yaml
 # Registro de que anios del score se completaron con meses del anio corrido y
 # con cuantos meses. Se versiona para que la anualizacion sea auditable.
 !data/processed/anualizacion_parcial.csv
+!data/processed/robustness_summary.csv
+!data/processed/robustness_scenarios.csv
+!data/processed/annual_composition.csv
+!data/processed/satellite_qa_coverage.csv

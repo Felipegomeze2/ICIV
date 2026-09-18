@@ -39,7 +39,8 @@ def _upsert(path: Path, new_rows: list[dict], keys: list[str]) -> None:
         df = df_new
     df = df.drop_duplicates(subset=keys, keep="last").sort_values(
         [k for k in keys if k in df.columns]).reset_index(drop=True)
-    df.to_csv(path, index=False, encoding="utf-8-sig")
+    from iciv.utils import save_dataframe
+    save_dataframe(df, path, value_columns=["valor"] if "valor" in df else ["radiancia_media"])
 
 
 def _complete_months() -> set[str]:
@@ -60,13 +61,11 @@ def main() -> None:
 
     token = bm._load_token()
     if token is None:
-        print("  [WARN] EARTHDATA_TOKEN no configurado. Nada que hacer.")
-        return
+        raise RuntimeError("EARTHDATA_TOKEN requerido; no se generaron datos")
     try:
         import h5py  # noqa: F401
     except ImportError:
-        print("  [WARN] h5py no instalado.")
-        return
+        raise RuntimeError("h5py requerido; no se generaron datos")
 
     states = bm._state_names()
     done = _complete_months()
@@ -100,7 +99,7 @@ def main() -> None:
                 _ym, res = fut.result()
             except Exception as exc:
                 fail += 1
-                print(f"  [ERROR] {ym[0]}-{ym[1]:02d}: {exc}")
+                print(f"  [ERROR] {ym[0]}-{ym[1]:02d}: {type(exc).__name__}: {exc}")
                 continue
             if not res:
                 fail += 1
@@ -112,6 +111,8 @@ def main() -> None:
                 print(f"  [{ok}/{len(pending)}] guardado {ym[0]}-{ym[1]:02d}")
 
     print(f"\n  Listo. OK={ok} fallidos={fail}")
+    if fail:
+        raise RuntimeError(f"Reprocesamiento incompleto: {fail} meses fallidos; meses exitosos conservados")
     if bm.OUTPUT.exists():
         n = pd.read_csv(bm.OUTPUT)[["año", "mes"]].drop_duplicates().shape[0]
         print(f"  Nacional: {n} meses. Subnacional: "

@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 # ── Índice de Consistencia Aleatoria (Saaty, 1980) ───────────────────────────
 # RI[n] es el promedio del CR de 500 matrices aleatorias de tamaño n.
-# CR = CI / RI  →  CR < 0.10 es aceptable académicamente.
+# CR = CI / RI; CR < 0.10 comprueba consistencia interna, no validez económica.
 _RI: dict[int, float] = {
     1: 0.00, 2: 0.00, 3: 0.58, 4: 0.90, 5: 1.12,
     6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49,

@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-09-18T01:19:04.064163+00:00",
+  "scenarios": 79,
+  "inputs": {
+    "data\\processed\\iciv_normalizado.csv": "e1613057123333612d5cf64a39752ef29678ab7cdc2138e9df0e0708198cca6b",
+    "data\\processed\\iciv_transformado.csv": "9ae103750d8fd8396a7c6a8fc6b0a0a51828f8e1fdfd8d05af99c7cd91842698",
+    "data\\sources\\audit_20260917\\verified_observations.csv": "badbeb2e90e495593128ad9f76bd7fc6b50b9b38af73a16a47c176f7b862119a"
+  },
+  "interpretation": "Deterministic design alternatives. Not observations, confidence intervals or expert approval."
+}
