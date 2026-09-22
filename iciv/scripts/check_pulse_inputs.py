@@ -15,7 +15,7 @@ from iciv.config import settings
 class SourceRule:
     filename: str
     label: str
-    max_lag_days: int
+    max_lag_days: int  # Days since the end of the reported month, not its first day.
     required: bool = True
 
 
@@ -75,12 +75,20 @@ def check_inputs(now: pd.Timestamp | None = None) -> int:
             (failures if rule.required else warnings).append(msg)
             continue
 
-        lag_days = int((now - latest).days)
-        msg = f"{rule.label}: ultimo mes {latest:%Y-%m}, lag {lag_days} dias"
-        print(f"OK {msg}")
+        if latest > now.to_period("M").start_time:
+            msg = f"{rule.label}: mes futuro {latest:%Y-%m}; no es una observacion vigente"
+            (failures if rule.required else warnings).append(msg)
+            continue
+        # CSVs encode a month as day 1. That is a period identifier, not the
+        # publication date. A current (partial) month has zero closed-month lag.
+        month_end = latest + pd.offsets.MonthEnd(0)
+        lag_days = max(0, int((now.normalize() - month_end).days))
+        msg = f"{rule.label}: ultimo mes {latest:%Y-%m}, rezago desde cierre {lag_days} dias"
         if lag_days > rule.max_lag_days:
             stale = f"{msg}; maximo permitido {rule.max_lag_days}"
             (failures if rule.required else warnings).append(stale)
+        else:
+            print(f"OK {msg}")
 
     for msg in warnings:
         print(f"WARN {msg}")
