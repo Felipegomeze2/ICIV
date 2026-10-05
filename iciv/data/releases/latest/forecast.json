@@ -3,65 +3,65 @@
     "model": "naive",
     "model_label": "Persistencia (naive)",
     "fecha": [
-      "2026-06",
       "2026-07",
       "2026-08",
       "2026-09",
       "2026-10",
-      "2026-11"
+      "2026-11",
+      "2026-12"
     ],
-    "origin_date": "2026-05",
+    "origin_date": "2026-06",
     "mean": [
-      61.15,
-      61.15,
-      61.15,
-      61.15,
-      61.15,
-      61.15
+      57.26,
+      57.26,
+      57.26,
+      57.26,
+      57.26,
+      57.26
     ],
-    "n_observed": 185,
-    "n_calendar_months": 197,
+    "n_observed": 186,
+    "n_calendar_months": 198,
     "horizonte_meses": 6,
     "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.",
     "n_interval_errors": [
+      185,
       184,
       183,
       182,
       181,
-      180,
-      179
+      180
     ],
     "lo_80": [
-      54.81,
-      52.56,
-      50.93,
-      49.99,
-      48.06,
-      48.17
+      50.92,
+      48.67,
+      47.04,
+      46.1,
+      44.17,
+      44.28
     ],
     "hi_80": [
-      67.49,
-      69.74,
-      71.37,
-      72.31,
-      74.24,
-      74.13
+      63.6,
+      65.85,
+      67.48,
+      68.42,
+      70.35,
+      70.24
     ],
     "lo_95": [
-      50.59,
-      47.44,
-      44.63,
-      43.07,
-      42.89,
-      40.29
+      46.7,
+      43.56,
+      40.74,
+      39.18,
+      39.42,
+      36.4
     ],
     "hi_95": [
-      71.71,
-      74.86,
-      77.67,
-      79.23,
-      79.41,
-      82.01
+      67.82,
+      70.96,
+      73.78,
+      75.34,
+      75.1,
+      78.12
     ]
   },
   "metodologia": {
@@ -98,8 +98,8 @@
       ]
     },
     "sample_policy": "same_origin_and_target_for_every_model",
-    "n_predictions": 183,
-    "n_common_predictions": 177,
+    "n_predictions": 186,
+    "n_common_predictions": 180,
     "n_origins_attempted": 21,
     "n_origins": 20,
     "n_failures": 3,
@@ -136,7 +136,7 @@
         "warnings": [
           "Maximum Likelihood optimization failed to converge. Check mle_retvals"
         ],
-        "aic": 1842.906110692972,
+        "aic": 1929.5846576697593,
         "reason": "non_convergence_or_invalid_parameters"
       },
       {
@@ -146,7 +146,7 @@
         "n_calendar_months": 78,
         "converged": true,
         "warnings": [],
-        "aic": 376.7602192525
+        "aic": 376.71686697110846
       },
       {
         "origin_date": "2016-12-01",
@@ -155,7 +155,7 @@
         "n_calendar_months": 84,
         "converged": true,
         "warnings": [],
-        "aic": 421.44453140169554
+        "aic": 421.40311344415153
       },
       {
         "origin_date": "2017-06-01",
@@ -164,7 +164,7 @@
         "n_calendar_months": 90,
         "converged": true,
         "warnings": [],
-        "aic": 459.60110185232423
+        "aic": 459.556724533755
       },
       {
         "origin_date": "2017-12-01",
@@ -173,7 +173,7 @@
         "n_calendar_months": 96,
         "converged": true,
         "warnings": [],
-        "aic": 504.91459707328175
+        "aic": 504.8708348746935
       },
       {
         "origin_date": "2018-06-01",
@@ -182,7 +182,7 @@
         "n_calendar_months": 102,
         "converged": true,
         "warnings": [],
-        "aic": 542.5195580697931
+        "aic": 542.474087151275
       },
       {
         "origin_date": "2018-12-01",
@@ -191,7 +191,7 @@
         "n_calendar_months": 108,
         "converged": true,
         "warnings": [],
-        "aic": 581.9213031231318
+        "aic": 581.875087053014
       },
       {
         "origin_date": "2019-06-01",
@@ -200,7 +200,7 @@
         "n_calendar_months": 114,
         "converged": true,
         "warnings": [],
-        "aic": 619.7572469670422
+        "aic": 619.7099466561184
       },
       {
         "origin_date": "2019-12-01",
@@ -209,7 +209,7 @@
         "n_calendar_months": 120,
         "converged": true,
         "warnings": [],
-        "aic": 655.2659259033652
+        "aic": 655.2150023701707
       },
       {
         "origin_date": "2020-06-01",
@@ -218,7 +218,7 @@
         "n_calendar_months": 126,
         "converged": true,
         "warnings": [],
-        "aic": 695.9603235798725
+        "aic": 695.9161053480902
       },
       {
         "origin_date": "2020-12-01",
@@ -227,7 +227,7 @@
         "n_calendar_months": 132,
         "converged": true,
         "warnings": [],
-        "aic": 732.1506488032632
+        "aic": 732.1046740360948
       },
       {
         "origin_date": "2021-06-01",
@@ -236,7 +236,7 @@
         "n_calendar_months": 138,
         "converged": true,
         "warnings": [],
-        "aic": 767.6241000795864
+        "aic": 767.5752432671836
       },
       {
         "origin_date": "2021-12-01",
@@ -245,7 +245,7 @@
         "n_calendar_months": 144,
         "converged": true,
         "warnings": [],
-        "aic": 803.106840818418
+        "aic": 803.0534836159408
       },
       {
         "origin_date": "2022-06-01",
@@ -254,7 +254,7 @@
         "n_calendar_months": 150,
         "converged": true,
         "warnings": [],
-        "aic": 838.0729630841317
+        "aic": 838.017930460852
       },
       {
         "origin_date": "2022-12-01",
@@ -263,7 +263,7 @@
         "n_calendar_months": 156,
         "converged": true,
         "warnings": [],
-        "aic": 876.1900295545502
+        "aic": 876.1350084262015
       },
       {
         "origin_date": "2023-06-01",
@@ -272,7 +272,7 @@
         "n_calendar_months": 162,
         "converged": true,
         "warnings": [],
-        "aic": 911.0176577958074
+        "aic": 910.960510911761
       },
       {
         "origin_date": "2023-12-01",
@@ -281,7 +281,7 @@
         "n_calendar_months": 168,
         "converged": true,
         "warnings": [],
-        "aic": 946.6601324227045
+        "aic": 946.6010723426809
       },
       {
         "origin_date": "2024-06-01",
@@ -290,7 +290,7 @@
         "n_calendar_months": 174,
         "converged": true,
         "warnings": [],
-        "aic": 981.8405934682116
+        "aic": 981.7796227780711
       },
       {
         "origin_date": "2024-12-01",
@@ -299,7 +299,7 @@
         "n_calendar_months": 180,
         "converged": true,
         "warnings": [],
-        "aic": 1015.9346810599275
+        "aic": 1015.8715367577693
       },
       {
         "origin_date": "2025-06-01",
@@ -308,7 +308,7 @@
         "n_calendar_months": 186,
         "converged": true,
         "warnings": [],
-        "aic": 1049.9283263822767
+        "aic": 1049.8621161583103
       },
       {
         "origin_date": "2025-12-01",
@@ -317,7 +317,7 @@
         "n_calendar_months": 192,
         "converged": true,
         "warnings": [],
-        "aic": 1084.9979826178733
+        "aic": 1084.9279190438217
       }
     ],
     "summary": [
@@ -326,7 +326,7 @@
         "horizon": 1,
         "n": 20,
         "mae": 4.329,
-        "rmse": 5.6263,
+        "rmse": 5.6259,
         "bias": 1.107,
         "n_intervals": 20,
         "inside_80": 0.75,
@@ -337,8 +337,8 @@
         "horizon": 3,
         "n": 20,
         "mae": 5.3475,
-        "rmse": 7.0457,
-        "bias": 0.9425,
+        "rmse": 7.0451,
+        "bias": 0.9435,
         "n_intervals": 20,
         "inside_80": 0.8,
         "inside_95": 1.0
@@ -346,21 +346,21 @@
       {
         "model": "naive",
         "horizon": 6,
-        "n": 19,
-        "mae": 5.9721,
-        "rmse": 7.3891,
-        "bias": -1.1468,
-        "n_intervals": 19,
-        "inside_80": 0.8947,
+        "n": 20,
+        "mae": 6.4395,
+        "rmse": 7.9754,
+        "bias": -1.8555,
+        "n_intervals": 20,
+        "inside_80": 0.85,
         "inside_95": 1.0
       },
       {
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 4.9493,
-        "rmse": 6.0632,
-        "bias": -2.0626,
+        "mae": 4.9484,
+        "rmse": 6.0625,
+        "bias": -2.0617,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 1.0
@@ -369,9 +369,9 @@
         "model": "sarima",
         "horizon": 3,
         "n": 20,
-        "mae": 6.4607,
-        "rmse": 8.0834,
-        "bias": -2.6467,
+        "mae": 6.4589,
+        "rmse": 8.0793,
+        "bias": -2.6442,
         "n_intervals": 20,
         "inside_80": 0.85,
         "inside_95": 1.0
@@ -379,12 +379,12 @@
       {
         "model": "sarima",
         "horizon": 6,
-        "n": 19,
-        "mae": 8.0578,
-        "rmse": 9.8962,
-        "bias": -4.6224,
-        "n_intervals": 19,
-        "inside_80": 0.9474,
+        "n": 20,
+        "mae": 8.4825,
+        "rmse": 10.3309,
+        "bias": -5.2196,
+        "n_intervals": 20,
+        "inside_80": 0.9,
         "inside_95": 1.0
       },
       {
@@ -392,7 +392,7 @@
         "horizon": 1,
         "n": 20,
         "mae": 8.471,
-        "rmse": 10.3241,
+        "rmse": 10.3249,
         "bias": -2.559,
         "n_intervals": 0,
         "inside_80": null,
@@ -402,9 +402,9 @@
         "model": "seasonal_naive",
         "horizon": 3,
         "n": 20,
-        "mae": 7.341,
-        "rmse": 9.351,
-        "bias": -2.505,
+        "mae": 7.3405,
+        "rmse": 9.3507,
+        "bias": -2.5045,
         "n_intervals": 0,
         "inside_80": null,
         "inside_95": null
@@ -412,10 +412,10 @@
       {
         "model": "seasonal_naive",
         "horizon": 6,
-        "n": 19,
-        "mae": 9.2268,
-        "rmse": 10.5359,
-        "bias": -3.0532,
+        "n": 20,
+        "mae": 9.1315,
+        "rmse": 10.3989,
+        "bias": -3.2675,
         "n_intervals": 0,
         "inside_80": null,
         "inside_95": null
@@ -427,7 +427,7 @@
         "model": "naive",
         "n": 20,
         "mae": 4.329,
-        "rmse": 5.6263,
+        "rmse": 5.6259,
         "bias": 1.107,
         "n_intervals": 20,
         "inside_80": 0.75,
@@ -438,8 +438,8 @@
         "model": "naive",
         "n": 20,
         "mae": 5.3475,
-        "rmse": 7.0457,
-        "bias": 0.9425,
+        "rmse": 7.0451,
+        "bias": 0.9435,
         "n_intervals": 20,
         "inside_80": 0.8,
         "inside_95": 1.0
@@ -447,12 +447,12 @@
       {
         "horizon": 6,
         "model": "naive",
-        "n": 19,
-        "mae": 5.9721,
-        "rmse": 7.3891,
-        "bias": -1.1468,
-        "n_intervals": 19,
-        "inside_80": 0.8947,
+        "n": 20,
+        "mae": 6.4395,
+        "rmse": 7.9754,
+        "bias": -1.8555,
+        "n_intervals": 20,
+        "inside_80": 0.85,
         "inside_95": 1.0
       }
     ],
@@ -461,9 +461,9 @@
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 4.9493,
-        "rmse": 6.0632,
-        "bias": -2.0626,
+        "mae": 4.9484,
+        "rmse": 6.0625,
+        "bias": -2.0617,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 1.0
@@ -472,9 +472,9 @@
         "model": "sarima",
         "horizon": 3,
         "n": 20,
-        "mae": 6.4607,
-        "rmse": 8.0834,
-        "bias": -2.6467,
+        "mae": 6.4589,
+        "rmse": 8.0793,
+        "bias": -2.6442,
         "n_intervals": 20,
         "inside_80": 0.85,
         "inside_95": 1.0
@@ -482,12 +482,12 @@
       {
         "model": "sarima",
         "horizon": 6,
-        "n": 19,
-        "mae": 8.0578,
-        "rmse": 9.8962,
-        "bias": -4.6224,
-        "n_intervals": 19,
-        "inside_80": 0.9474,
+        "n": 20,
+        "mae": 8.4825,
+        "rmse": 10.3309,
+        "bias": -5.2196,
+        "n_intervals": 20,
+        "inside_80": 0.9,
         "inside_95": 1.0
       }
     ],
