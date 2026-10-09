@@ -24,10 +24,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+import sys
 
 _ICIV_DIR = Path(__file__).resolve().parents[1]
 SCORES_CSV = _ICIV_DIR / "data" / "processed" / "iciv_scores_ahp.csv"
 FIG_DIR = _ICIV_DIR.parent / "docs" / "figures"
+sys.path.insert(0, str(_ICIV_DIR / "src"))
+from iciv import METHODOLOGY_VERSION  # noqa: E402
+from iciv.index.aggregator import OFFICIAL_SERIES_START  # noqa: E402
 
 # (año, etiqueta, dirección esperada: -1 baja / +1 sube)
 EVENTOS = [
@@ -39,18 +43,23 @@ EVENTOS = [
     (2020, "COVID-19 ·\ncolapso de demanda", -1),
     (2021, "Dolarización informal ·\nrecuperación gradual", +1),
     (2024, "Elecciones presidenciales ·\nescalada represiva", -1),
+    # 2026: hechos registrados en la propia cobertura internacional del proyecto
+    # (guardian_headlines.csv): salida de Maduro en enero y acuerdo petrolero
+    # con EE.UU. en agosto. Año aún provisional por cobertura.
+    (2026, "Salida de Maduro (ene.) ·\nacuerdo petrolero con EE.UU.", +1),
 ]
 
 # Umbral de cobertura para considerar un año como consolidado
 COBERTURA_MIN = 70.0
 
-# Bandas de riesgo (idénticas a RISK_CATEGORIES del aggregator)
+# Categorías descriptivas (mismos cortes que RISK_CATEGORIES del aggregator).
+# Son posiciones relativas a la historia venezolana, no niveles de riesgo.
 BANDAS = [
-    (0, 30, "Alto Riesgo"),
-    (30, 50, "Riesgo Moderado-Alto"),
-    (50, 65, "Riesgo Moderado"),
-    (65, 80, "Bajo Riesgo"),
-    (80, 100, "Muy Bajo Riesgo"),
+    (0, 31, "Muy desfavorable"),
+    (31, 51, "Desfavorable"),
+    (51, 66, "Intermedio"),
+    (66, 81, "Favorable"),
+    (81, 100, "Muy favorable"),
 ]
 
 
@@ -73,33 +82,40 @@ def _plot(df: pd.DataFrame, dark: bool) -> plt.Figure:
     # Bandas de riesgo de fondo con etiqueta al margen derecho
     for (lo, hi, label), col in zip(BANDAS, band_cols):
         ax.axhspan(lo, hi, color=col, alpha=band_alpha, zorder=0)
-        ax.text(2026.6, (lo + hi) / 2, label, fontsize=7.5, color=muted,
+        ax.text(2027.4, (lo + hi) / 2, label, fontsize=7.5, color=muted,
                 va="center", ha="left", style="italic")
 
-    # Años con cobertura suficiente (>=70% del peso del índice) en línea sólida;
-    # años preliminares en punteado con marcador hueco. Evita que el lector
-    # confunda un artefacto de cobertura (p. ej. 2026 con 19%) con una mejora real.
-    solid = df[df["cobertura_pct"] >= COBERTURA_MIN]
-    # Tramo preliminar: desde el último año sólido para que la línea conecte
-    prelim = df[df["año"] >= solid["año"].max()]
+    # Tres tramos: exploratorio (antes de la serie oficial, sin dimensión
+    # institucional), oficial consolidado (cobertura >= 70%) y provisional.
+    official = df[df["año"] >= OFFICIAL_SERIES_START]
+    explor = df[df["año"] <= OFFICIAL_SERIES_START]   # incluye el empalme visual
+    solid = official[official["cobertura_pct"] >= COBERTURA_MIN]
+    prelim = official[official["año"] >= solid["año"].max()]
 
+    if len(explor) > 1:
+        ax.plot(explor["año"], explor["iciv_score"], color=muted, linewidth=1.6,
+                linestyle=(0, (2, 2)), zorder=2, marker="o", markersize=4,
+                markerfacecolor=bg, markeredgecolor=muted)
+        ax.axvspan(explor["año"].min() - 0.5, OFFICIAL_SERIES_START - 0.5,
+                   color=muted, alpha=0.06, zorder=0)
+        ax.text((explor["año"].min() + OFFICIAL_SERIES_START - 1) / 2, 4,
+                "Tramo exploratorio: sin dimensión institucional",
+                fontsize=7.2, color=muted, ha="center", va="bottom", style="italic")
     ax.plot(solid["año"], solid["iciv_score"], color=line_col, linewidth=2.6,
             zorder=3, marker="o", markersize=4.5, markerfacecolor=line_col)
     if len(prelim) > 1:
         ax.plot(prelim["año"], prelim["iciv_score"], color=line_col,
-                linewidth=1.8, linestyle=(0, (4, 3)), zorder=3, marker="o",
+                linewidth=1.8, linestyle=(0, (4, 3)), zorder=2, marker="o",
                 markersize=4.5, markerfacecolor=bg, markeredgecolor=line_col)
-        x_mid = prelim["año"].mean()
-        y_min = prelim["iciv_score"].min()
-        ax.text(x_mid, max(y_min - 9, 2),
-                f"cobertura < {COBERTURA_MIN:.0f}%\n(lectura preliminar)",
-                fontsize=7.2, color=muted, ha="center", va="top",
+        ax.text(prelim["año"].max() + 0.25, prelim["iciv_score"].max() - 12,
+                f"cobertura < {COBERTURA_MIN:.0f}%\n(provisional)",
+                fontsize=7.2, color=muted, ha="left", va="top",
                 style="italic", linespacing=1.2)
 
     score_by_year = dict(zip(df["año"], df["iciv_score"]))
 
     # Eventos anotados, alternando alturas para evitar choques de texto
-    offsets = [34, 18, 30, 14, 34, 18, -26, 30]
+    offsets = [-22, 12, 22, 32, 34, 18, -26, -15, 24]
     for (yr, label, dir_), dy in zip(EVENTOS, offsets):
         y = score_by_year.get(yr)
         if y is None:
@@ -127,7 +143,7 @@ def _plot(df: pd.DataFrame, dark: bool) -> plt.Figure:
     ax.set_xlabel("Año", color=muted, fontsize=10)
     ax.set_ylabel("ICIV (0–100)", color=muted, fontsize=10)
     ax.set_title(
-        "ICIV 2000–2026 — El índice reacciona a la historia conocida de Venezuela",
+        f"ICIV — serie oficial {OFFICIAL_SERIES_START}–2026 y tramo exploratorio 2000–{OFFICIAL_SERIES_START - 1}",
         color=fg, fontsize=13, fontweight="bold", pad=14,
     )
     ax.tick_params(colors=muted, labelsize=9)
@@ -136,9 +152,9 @@ def _plot(df: pd.DataFrame, dark: bool) -> plt.Figure:
     ax.grid(True, color=grid, linewidth=0.5, alpha=0.7, zorder=1)
 
     fig.text(0.01, 0.012,
-             "Fuente: ICIV (pesos AHP, 21 variables core, fuentes 100% internacionales). "
-             "Eventos: cronología documentada 2002–2024. Línea punteada: años con cobertura "
-             "de datos inferior al 70% (lectura preliminar). Elaboración propia.",
+             f"Fuente: ICIV v{METHODOLOGY_VERSION} (pesos AHP, 21 variables, solo fuentes internacionales). "
+             "Eventos 2026 según la cobertura de prensa internacional del proyecto. Gris punteado: tramo exploratorio; "
+             "verde punteado: cobertura < 70% (provisional). Categorías relativas a la historia de Venezuela.",
              fontsize=7, color=muted)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     return fig

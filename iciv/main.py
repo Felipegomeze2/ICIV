@@ -5,7 +5,7 @@ Ejecuta el pipeline completo del Indicador de Clima de Inversión Venezuela:
 
   Fase 1 -- Descarga de datos (todas las fuentes)
   Fase 2 -- Limpieza y normalización
-  Fase 3 -- Cálculo del ICIV (pesos fijos + AHP)
+  Fase 3 -- Cálculo del ICIV (pesos iguales + AHP)
   Fase 4 -- Generación del dashboard HTML interactivo
   Fase 5 -- Apertura automática del dashboard en el navegador
 
@@ -61,6 +61,7 @@ from iciv.index.aggregator import ICIVAggregator
 from iciv.index.weighting import AHPWeights, FixedWeights
 from iciv.index.dimensions import DIMENSIONS
 from iciv.utils import load_env_key
+from iciv import METHODOLOGY_VERSION
 
 # -- Logging -------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -98,7 +99,8 @@ def fase_fetch(settings: Settings) -> None:
         ("FRED Monthly -- WTI/Brent/Fed/VIX...",   "scripts.fetch_fred_monthly",  "fetch_fred_monthly"),
         ("Guardian Monthly -- VADER mensual",      "scripts.fetch_guardian_monthly", "fetch_guardian_monthly"),
         ("GDELT Monthly -- tono/cobertura global", "scripts.fetch_gdelt_monthly", "fetch_gdelt_monthly"),
-        ("IMF IMTS -- comercio espejo EEUU-VEN",   "scripts.fetch_imts_monthly",  "fetch_imts_monthly"),
+        ("EIA -- importaciones EEUU desde VEN",    "scripts.fetch_eia_imports_monthly", "fetch_eia_imports_monthly"),
+        ("IMF IMTS -- comercio espejo EEUU-VEN (auxiliar)", "scripts.fetch_imts_monthly",  "fetch_imts_monthly"),
         ("WB Pink Sheet -- crudo Dubai mensual",   "scripts.fetch_wb_commodities_monthly", "fetch_wb_commodities_monthly"),
         ("Noticias internacionales -- RSS filtrado", "scripts.fetch_international_news", "fetch_international_news"),
         ("Guardian -- Percepción mediática",      "scripts.fetch_guardian",      "fetch_guardian"),
@@ -137,6 +139,7 @@ def fase_fetch(settings: Settings) -> None:
                 "fetch_fred_monthly":  settings.paths.raw_fred_monthly,
                 "fetch_guardian_monthly": settings.paths.raw_guardian_monthly,
                 "fetch_gdelt_monthly": settings.paths.raw_gdelt_monthly,
+                "fetch_eia_imports_monthly": settings.paths.data_raw / "eia_imports_monthly.csv",
                 "fetch_imts_monthly":  settings.paths.data_raw / "imts_monthly.csv",
                 "fetch_wb_commodities_monthly": settings.paths.data_raw / "wb_commodities_monthly.csv",
                 "fetch_international_news": settings.paths.raw_international_news,
@@ -201,6 +204,18 @@ def fase_pipeline(settings: Settings) -> tuple[pd.DataFrame, pd.DataFrame]:
     # core panel does not patch missing annual observations from alternate files:
     # missing publication is carried into coverage.
     master.drop(columns=["pib_crecimiento_imf_pct"], inplace=True, errors="ignore")
+
+    # ── Control de plausibilidad de valores del proveedor ──────────────────────
+    # Valores imposibles (p. ej. exportaciones = 0% del PIB que publica el Banco
+    # Mundial para 1995-2011) se excluyen: el año queda SIN DATO, nunca se
+    # reemplaza por otra cifra. Rachas repetidas solo se marcan. El registro se
+    # versiona en data/processed/plausibilidad_proveedor.csv.
+    from iciv.data.plausibility import REGISTRY_FILENAME, apply_plausibility
+    master, _plaus = apply_plausibility(master)
+    _plaus.to_csv(settings.paths.data_processed / REGISTRY_FILENAME, index=False, encoding="utf-8-sig")
+    for (_var, _regla), _grp in _plaus.groupby(["variable", "regla"]):
+        logger.warning("  Plausibilidad: %s · %s en %d años (%d-%d)", _var, _regla,
+                       len(_grp), int(_grp["año"].min()), int(_grp["año"].max()))
 
     # ── Año en curso de producción petrolera desde la serie mensual ────────────
     # `petroleo_crudo_produccion_tbpd` pesa 9% del índice, más que ninguna otra
@@ -416,9 +431,9 @@ def fase_modelo(df_norm: pd.DataFrame, settings: Settings) -> tuple[pd.DataFrame
     logger.info("  FASE 3 -- Cálculo del ICIV")
     logger.info("-" * 60)
 
-    # -- Pesos Fijos (línea base — pesos iguales 1/6 por dimensión) ---------------
+    # -- Pesos iguales (línea base: 1/6 por dimensión) ---------------------------
     # Usar 1/6 por dimensión hace la comparación AHP vs Fijos más informativa:
-    # AHP refleja juicio experto; Fijos = benchmark neutral sin preferencias.
+    # AHP refleja los juicios del autor; pesos iguales = benchmark neutral.
     _n_dims = len(DIMENSIONS)
     _equal_overrides: dict[str, float] = {}
     for _d_id, _d in DIMENSIONS.items():
@@ -459,12 +474,14 @@ def fase_modelo(df_norm: pd.DataFrame, settings: Settings) -> tuple[pd.DataFrame
         logger.info("  %-6d  %-6.1f  %s",
                     int(row["año"]), row["iciv_score"], row["iciv_categoria"])
 
-    valid = df_ahp["iciv_score"].dropna()
+    official = df_ahp[df_ahp["tramo_serie"].eq("oficial")]
+    valid = official["iciv_score"].dropna()
     logger.info("  " + "-" * 48)
-    logger.info("  Promedio: %.1f  |  Mín: %.1f (%d)  |  Máx: %.1f (%d)",
-                valid.mean(),
+    logger.info("  Serie oficial %d-%d · Promedio: %.1f  |  Mín: %.1f (%d)  |  Máx: %.1f (%d)",
+                int(official["año"].min()), int(official["año"].max()), valid.mean(),
                 valid.min(), int(df_ahp.loc[valid.idxmin(), "año"]),
                 valid.max(), int(df_ahp.loc[valid.idxmax(), "año"]))
+    logger.info("  Años anteriores: tramo extendido exploratorio, sin dimensión institucional.")
 
     return df_fixed, df_ahp, ahp
 
@@ -683,6 +700,10 @@ def fase_dashboard(
         ])
     else:
         coverage_js = json.dumps([100.0] * len(df_plot))
+
+    from iciv.index.aggregator import OFFICIAL_SERIES_START, TRAMO_OFICIAL, tramo_serie
+    official_start_prev = OFFICIAL_SERIES_START - 1
+    tramo_js = json.dumps([tramo_serie(int(y)) == TRAMO_OFICIAL for y in df_plot["año"].tolist()])
 
     years_fix_js   = json.dumps([int(y) for y in df_fixed_plot["año"].tolist()])
     scores_fix_js  = json.dumps([round(float(s), 2) for s in df_fixed_plot["iciv_score"].tolist()])
@@ -1391,6 +1412,9 @@ def fase_dashboard(
 
             def _pretty(name: str) -> str:
                 # DistritoCapital -> Distrito Capital ; DeltaAmacuro -> Delta Amacuro
+                # Vargas se denomina oficialmente La Guaira desde 2019 (solo etiqueta).
+                if name == "Vargas":
+                    return "La Guaira"
                 return re.sub(r"(?<=[a-záéíóú])(?=[A-ZÁÉÍÓÚ])", " ", name)
 
             for _f in _feats:
@@ -2140,7 +2164,7 @@ input[type=range]{{accent-color:var(--accent)}}
 
   <p class="lead">
     Dos lecturas del mismo país: la señal mensual se mueve rápido, el índice anual mide el fondo estructural.
-    Se consultan distribuidores internacionales; algunas estadísticas pueden incorporar fuentes nacionales.
+    Solo fuentes internacionales: ningún organismo venezolano se usa como fuente.
   </p>
 
   <div class="hero-grid">
@@ -2168,6 +2192,9 @@ input[type=range]{{accent-color:var(--accent)}}
     <div class="block-title">Alertas</div>
     <div class="block-sub">Lo que cambió y merece atención.</div>
     <div id="satvAlertas" style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px"></div>
+    <div class="block-title">Semáforo de la señal mensual</div>
+    <div class="block-sub" id="satvGruposSub">Nivel relativo de cada bloque de la señal mensual en el último mes con cobertura suficiente. Umbrales descriptivos: bajo 30 crítico, bajo 50 precaución.</div>
+    <div id="satvGrupos" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:22px"></div>
   </div>
 
   <div class="panel">
@@ -2198,7 +2225,7 @@ input[type=range]{{accent-color:var(--accent)}}
 
   <div class="panel">
     <div class="block-title">La trayectoria anual</div>
-    <div class="block-sub">Índice anual con las bandas descriptivas de fondo. Los rombos naranjas son años donde aún faltan datos por publicar.</div>
+    <div class="block-sub">Serie oficial {OFFICIAL_SERIES_START}–{current_year_val} con las bandas descriptivas de fondo. Los rombos naranjas son años donde aún faltan datos por publicar. Los puntos huecos (2000–{official_start_prev}) son el tramo extendido exploratorio: sin la dimensión institucional, no comparable con la serie oficial.</div>
     <div class="chart-wrap" style="height:400px"><canvas id="cHistoria"></canvas></div>
   </div>
 
@@ -2365,12 +2392,12 @@ input[type=range]{{accent-color:var(--accent)}}
         <button class="sim-preset" data-preset="peak"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
                  padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
-          El mejor año
+          El mejor año (serie oficial)
         </button>
         <button class="sim-preset" data-preset="min"
           style="background:var(--card);border:1px solid var(--border);color:var(--muted);
                  padding:6px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;font-family:inherit">
-          El peor año
+          El peor año (serie oficial)
         </button>
       </div>
     </div>
@@ -2412,8 +2439,8 @@ input[type=range]{{accent-color:var(--accent)}}
   </div>
 
   <p class="lead">
-    ICIV describe el entorno venezolano con datos de distribuidores
-    internacionales, que pueden incluir estadísticas nacionales y estimaciones. Esta ficha resume quién lo hace, cómo está construido y
+    ICIV describe el entorno venezolano solo con datos de organismos
+    internacionales; ninguna fuente venezolana se usa directamente. Esta ficha resume quién lo hace, cómo está construido y
     —sobre todo— qué <em>no</em> se puede concluir de sus cifras.
   </p>
 
@@ -2491,11 +2518,12 @@ input[type=range]{{accent-color:var(--accent)}}
 
   <div class="panel">
     <div class="block-title">De dónde salen los datos</div>
-    <div class="block-sub">{_ab_n_sources} distribuidores internacionales; origen primario no siempre independiente.</div>
+    <div class="block-sub">{_ab_n_sources} fuentes internacionales; ninguna venezolana.</div>
     <div style="font-size:.82rem;color:var(--muted);line-height:1.8;margin-bottom:14px">
-      Se consultan organismos internacionales y sensores satelitales. Sus series pueden
-      incorporar estadísticas nacionales, estimaciones modeladas y revisiones. Cada cifra
-      conserva su fuente y el estado conocido; no se infiere independencia del distribuidor.
+      Se consultan organismos internacionales y sensores satelitales. No se usa ninguna
+      fuente venezolana (BCV, INE, PDVSA). Algunos organismos compilan sus series con
+      información que reciben de los países y publican estimaciones o revisiones; cada
+      cifra conserva su fuente y su estado conocido.
     </div>
     <ul style="font-size:.78rem;color:var(--muted);line-height:1.6;
                columns:2;column-gap:28px;padding-left:18px;margin:0">
@@ -2559,6 +2587,7 @@ const ptColors  = {pt_colors_js};
 const yearsFix  = {years_fix_js};
 const scoresFix = {scores_fix_js};
 const coverage  = {coverage_js};   // cobertura % por año (null si no disponible)
+const official  = {tramo_js};      // true = serie oficial; false = tramo extendido exploratorio
 const COV_THRESHOLD = {_COVERAGE_THRESHOLD};  // % mínimo para score confiable
 const dimSeries = {dim_series_json};
 const radarVals = {radar_vals_js};
@@ -2568,13 +2597,15 @@ const dimLbls   = {radar_lbls_js};
 const DIM_COLORS = {json.dumps(DIM_COLORS)};
 
 // ── Chart 1: Historia ────────────────────────────────────────────────────────
+const lowCov = i => coverage[i] !== null && coverage[i] < COV_THRESHOLD;
+const firstOfficial = official.indexOf(true);
 new Chart(document.getElementById('cHistoria'), {{
   type: 'line',
   data: {{
     labels: years,
     datasets: [
       {{
-        label: 'ICIV (Pesos Fijos)',
+        label: 'ICIV (pesos iguales por dimensión)',
         data: (() => {{
           const map = {{}};
           yearsFix.forEach((y,i) => map[y] = scoresFix[i]);
@@ -2593,11 +2624,14 @@ new Chart(document.getElementById('cHistoria'), {{
         borderColor: INK,
         borderWidth: 2.5,
         // Puntos con baja cobertura (<60%) se muestran en naranja pálido con borde punteado
-        pointBackgroundColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e70' : ptColors[i]),
-        pointBorderColor: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? '#c2600e' : PAPER),
-        pointBorderWidth: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 2 : 1),
-        pointRadius: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 4 : 5),
-        pointStyle: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? 'rectRot' : 'circle'),
+        // Tramo exploratorio: punto hueco gris. Serie oficial con cobertura <70%: rombo naranja.
+        pointBackgroundColor: years.map((y,i) => !official[i] ? PAPER : (lowCov(i) ? '#c2600e70' : ptColors[i])),
+        pointBorderColor: years.map((y,i) => !official[i] ? '#9a9483' : (lowCov(i) ? '#c2600e' : PAPER)),
+        pointBorderWidth: years.map((y,i) => !official[i] ? 2 : (lowCov(i) ? 2 : 1)),
+        pointRadius: years.map((y,i) => !official[i] ? 4 : (lowCov(i) ? 4 : 5)),
+        pointStyle: years.map((y,i) => official[i] && lowCov(i) ? 'rectRot' : 'circle'),
+        segment: {{ borderColor: ctx => official[ctx.p1DataIndex] ? INK : '#9a9483',
+                    borderDash: ctx => official[ctx.p1DataIndex] ? undefined : [4,3] }},
         pointHoverRadius: 7,
         tension: 0.3,
         fill: false,
@@ -2605,12 +2639,23 @@ new Chart(document.getElementById('cHistoria'), {{
       // Dataset auxiliar para la leyenda de baja cobertura
       {{
         label: 'Cobertura < 70% (provisional)',
-        data: years.map((y,i) => (coverage[i] !== null && coverage[i] < COV_THRESHOLD) ? scoresAHP[i] : null),
+        data: years.map((y,i) => (official[i] && lowCov(i)) ? scoresAHP[i] : null),
         borderColor: 'transparent',
         backgroundColor: '#c2600e',
         pointStyle: 'rectRot',
         pointRadius: 5,
         pointBorderColor: '#c2600e',
+        pointBorderWidth: 2,
+        showLine: false,
+      }},
+      {{
+        label: 'Tramo exploratorio 2000–{official_start_prev} (sin dimensión institucional)',
+        data: years.map((y,i) => official[i] ? null : scoresAHP[i]),
+        borderColor: 'transparent',
+        backgroundColor: PAPER,
+        pointStyle: 'circle',
+        pointRadius: 4,
+        pointBorderColor: '#9a9483',
         pointBorderWidth: 2,
         showLine: false,
       }}
@@ -2629,6 +2674,8 @@ new Chart(document.getElementById('cHistoria'), {{
           band3: {{ type:'box', yMin:51, yMax:66,  backgroundColor:'rgba(176,125,0,0.06)', borderWidth:0, label:{{display:true,content:'Intermedio',position:'start',color:'#b07d00',font:{{size:9}}}}}},
           band4: {{ type:'box', yMin:66, yMax:81,  backgroundColor:'rgba(47,125,79,0.06)', borderWidth:0, label:{{display:true,content:'Favorable',position:'start',color:'#2f7d4f',font:{{size:9}}}}}},
           band5: {{ type:'box', yMin:81, yMax:100, backgroundColor:'rgba(31,111,120,0.06)',  borderWidth:0, label:{{display:true,content:'Muy favorable',position:'start',color:'#1f6f78',font:{{size:9}}}}}},
+          ...(firstOfficial > 0 ? {{ tramo: {{ type:'box', xMin:-0.5, xMax:firstOfficial - 0.5, backgroundColor:'rgba(154,148,131,0.12)', borderWidth:0,
+            label:{{display:true,content:'Tramo exploratorio',position:{{x:'center',y:'end'}},color:'#5b5f6b',font:{{size:9}}}}}} }} : {{}}),
         }}
       }}
     }},
@@ -2679,7 +2726,8 @@ const dimValueLabels = {{
 new Chart(document.getElementById('cDimBar'), {{
   type: 'bar',
   data: {{
-    labels: dimLbls,
+    // Cada barra declara el año de su último dato: el gráfico mezcla años.
+    labels: dimLbls.map((l, i) => l + ' · ' + (dimYears[i] ?? '—')),
     datasets: [{{
       label: 'Puntaje',
       // El valor dibujado nunca baja de DIM_MIN_BAR para que un 0 real siga
@@ -2769,7 +2817,28 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
 
   const NIV_COLOR = {{ critico:'#9e2a2b', precaucion:'#c2600e', normal:'#2f7d4f' }};
 
-  // ── Alertas activas — único bloque SATV visible en el producto ──────────────
+  // ── Semáforo por grupo (último mes elegible) ────────────────────────────────
+  const gruposEl = document.getElementById('satvGrupos');
+  const NIV_LABEL = {{ critico:'Crítico', precaucion:'Precaución', normal:'Normal', sin_dato:'Sin dato' }};
+  if (gruposEl && SATV.dimensiones) {{
+    const ref = SATV.fecha_referencia_grupos;
+    if (ref) {{
+      const sub = document.getElementById('satvGruposSub');
+      if (sub) sub.textContent += ' Mes de referencia: ' + ref + '.';
+    }}
+    gruposEl.innerHTML = Object.values(SATV.dimensiones).map(g => {{
+      const color = NIV_COLOR[g.nivel] || '#8a8d96';
+      const val = (g.score_actual === null || g.score_actual === undefined) ? '—' : g.score_actual.toFixed(1);
+      return `<div class="satv-dim-card" style="border-left:4px solid ${{color}}">
+        <div class="satv-dim-header"><span class="satv-dim-name">${{g.nombre}}</span>
+          <span style="font-size:.7rem;font-weight:700;color:${{color}};text-transform:uppercase;letter-spacing:.08em">${{NIV_LABEL[g.nivel] || g.nivel}}</span></div>
+        <div style="font-family:var(--serif);font-size:1.6rem;font-weight:600">${{val}}</div>
+        <div style="font-size:.75rem;color:var(--muted)">${{g.tendencia_label}} · ${{g.n_vars_disponibles}}/${{g.n_vars_total}} variables</div>
+      </div>`;
+    }}).join('');
+  }}
+
+  // ── Alertas activas ─────────────────────────────────────────────────────────
   const alertasEl = document.getElementById('satvAlertas');
   if (!alertasEl) return;
   if (!SATV.alertas_activas || SATV.alertas_activas.length === 0) {{
@@ -3031,6 +3100,9 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
   const SIM_DIMS  = {sim_dims_json};
   const SIM_YEARS = {sim_years_js};
   const SIM_HIST  = {sim_scores_js};
+  // Mejor/peor año solo dentro de la serie oficial: el tramo exploratorio no
+  // incluye la dimensión institucional y no es comparable.
+  const SIM_OFFICIAL = {tramo_js};
 
   let simChart = null;
   let simValues = Object.fromEntries(SIM_DIMS.map(d => [d.id, d.current]));
@@ -3170,7 +3242,7 @@ window.addEventListener('popstate', () => showSection(location.hash.slice(1) || 
       simValues = Object.fromEntries(SIM_DIMS.map(d => [d.id, d.current]));
       selectedYear = {sim_base_year};
     }} else {{
-      const index = ICIVSimulator.historicalIndex(SIM_HIST, preset);
+      const index = ICIVSimulator.historicalIndex(SIM_HIST.map((v, i) => SIM_OFFICIAL[i] ? v : null), preset);
       simValues = ICIVSimulator.preset(SIM_DIMS, index);
       selectedYear = index >= 0 ? SIM_YEARS[index] : null;
     }}
@@ -3709,7 +3781,7 @@ def main() -> None:
     (settings.paths.data_processed / "run_status.json").write_text(json.dumps({
         "generated_at": datetime.now().isoformat(),
         "source_mode": "existing_snapshot_no_refresh" if args.no_fetch else "fetch_attempted_see_fetch_status",
-        "methodology_version": "2.0.0",
+        "methodology_version": METHODOLOGY_VERSION,
         "artifact_mode": "working_review_no_release" if args.no_package else "package_requested",
         "satellite_policy": "excluded_pending_spatial_temporal_validation; strict_QA_is_auxiliary_evidence",
         "historical_publication_dates": "not_archived"}, indent=2), encoding="utf-8")
@@ -3770,7 +3842,7 @@ def main() -> None:
     print(f"  OK Pipeline completado en {elapsed:.1f}s")
     print(f"  OK Archivos en data/processed/:")
     print(f"      iciv_normalizado.csv")
-    print(f"      iciv_scores.csv           (pesos fijos)")
+    print(f"      iciv_scores.csv           (pesos iguales por dimensión)")
     print(f"      iciv_scores_ahp.csv       (pesos AHP)")
     print(f"      iciv_dashboard.html       (dashboard interactivo)")
     print(f"      iciv_validacion.html      (validacion del modelo)")

@@ -1,6 +1,6 @@
-# Procedencia vigente · revisión septiembre de 2026
+# Procedencia vigente · v2.1 (octubre de 2026)
 
-Los originales se conservan; un faltante no se rellena ni se sustituye por otra fuente. Un proveedor internacional **no garantiza origen primario independiente de Venezuela**: el WEO auditado identifica al Banco Central y la oficina estadística nacional como fuentes históricas.
+Los originales se conservan; un faltante no se rellena ni se sustituye por otra fuente. **Solo se usan fuentes internacionales; ningún organismo venezolano es fuente del proyecto.** Algunos compiladores internacionales (por ejemplo, el WEO del FMI) declaran que sus series históricas se construyen con información de las autoridades nacionales; esa dependencia indirecta se documenta. Los valores imposibles del proveedor se excluyen y se registran en `data/processed/plausibilidad_proveedor.csv`.
 
 | Bloque | Proveedor y archivos | Precisión de la atribución |
 |---|---|---|
@@ -13,7 +13,7 @@ Los originales se conservan; un faltante no se rellena ni se sustituye por otra 
 
 El catálogo con peso es `src/iciv/index/dimensions.py`. PTS/WHO/V-Dem y otros archivos auxiliares no entran por el hecho de existir en raw.
 
-Pulse utiliza FRED, EIA mensual, Guardian/GDELT, IMTS del FMI (comercio bilateral espejo reportado por EE. UU.) y Pink Sheet del Banco Mundial. Sus diferencias distinguen cambio en componentes comunes y composición. El universo de cobertura es fijo; una fuente fallida no desaparece del denominador.
+El Pulse utiliza FRED (condiciones globales), EIA mensual (producción petrolera, producto 53), EIA importaciones de EE.UU. desde Venezuela (`eia_imports_monthly.csv`: MCRIMUSVE2 crudo, MTPIMUSVE2 productos), Guardian/GDELT y Pink Sheet del Banco Mundial. IMF IMTS y UN Comtrade quedan como capas auxiliares de comercio espejo. Entre el 11 de agosto y el 9 de octubre de 2026 el bloque de comercio usó por error las series FRED IR14270/IR14260 (precios de importación de oro y zinc); ver `docs/INCIDENTE_SERIES_COMERCIO.md`. El universo de cobertura es fijo; una fuente fallida no desaparece del denominador.
 
 ## Evidencia de esta revisión
 
@@ -34,4 +34,4 @@ El estado individual se propaga únicamente cuando coinciden hashes del raw y la
 
 Desde `iciv`: `python scripts/audit_sources.py`, `python main.py --no-fetch --no-open --no-package`, `python -m pytest`.
 
-`data/processed` y el dashboard representan el trabajo actual. `data/releases/latest` y la entrega de septiembre 16 se conservan intactos; no deben confundirse con esta revisión. Congelación final y tesis quedan fuera de esta etapa.
+`data/processed`, el dashboard y `data/releases/latest` se regeneran en cada corrida. La entrega del 16 de septiembre (`releases/2026-09-16-v2-review`) se conserva intacta como antecedente y no representa la versión 2.1. La release de la tesis se congela con `--release-id`.

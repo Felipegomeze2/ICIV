@@ -60,19 +60,21 @@ class Fuente:
 # Tolerancias segun el calendario REAL de cada publicador (verificado 2026-08).
 FUENTES: list[Fuente] = [
     # ── Mensuales ────────────────────────────────────────────────────────────
-    Fuente("fred_monthly.csv", "FRED (macro global + aduana EEUU)", "mensual", 3, True,
-           "las globales son diarias; las de aduana llegan a 2 meses"),
+    Fuente("fred_monthly.csv", "FRED (condiciones globales)", "mensual", 3, True,
+           "series diarias agregadas a mensual"),
+    Fuente("eia_imports_monthly.csv", "EIA importaciones EE.UU. desde Venezuela", "mensual", 6, False,
+           "aduana de EE.UU.; la EIA no publica los meses del embargo"),
     Fuente("guardian_monthly.csv", "Guardian", "mensual", 2, True, "API en vivo"),
     Fuente("gdelt_monthly.csv", "GDELT", "mensual", 3, False,
            "opcional: rate limit por frecuencia de peticiones"),
     Fuente("eia_monthly.csv", "EIA International (petroleo)", "mensual", 6, True,
            "EIA publica el mes t alrededor de t+4"),
     Fuente("wb_commodities_monthly.csv", "WB Pink Sheet", "mensual", 3, False, ""),
-    Fuente("blackmarble_monthly.csv", "NASA Black Marble", "mensual", 4, True,
-           "alimenta la luminosidad del score anual"),
+    Fuente("blackmarble_monthly.csv", "NASA Black Marble", "mensual", 4, False,
+           "solo mapa de contexto; excluido del score anual y del Pulse"),
     Fuente("comtrade_monthly.csv", "UN Comtrade", "mensual", 5, False, "capa auxiliar"),
     Fuente("imts_monthly.csv", "IMF IMTS", "mensual", 7, False,
-           "capa auxiliar desde 2026-08: el Pulse usa las series FRED de aduana"),
+           "capa auxiliar: el Pulse usa las importaciones de EE.UU. publicadas por la EIA"),
     Fuente("acled_monthly.csv", "ACLED", "mensual", 14, False,
            "el tier gratuito entrega con ~12 meses de rezago"),
 

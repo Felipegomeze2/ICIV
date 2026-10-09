@@ -196,13 +196,13 @@ CATALOG: dict[str, VariableMetadata] = {
     ),
     "importaciones_eeuu_crudo_ven_tbpd": _v(
         "importaciones_eeuu_crudo_ven_tbpd", "Importaciones de crudo venezolano en EE. UU.",
-        SourceID.FRED, "mil barriles/dia", Direction.POSITIVE, DimensionID.COMMERCIAL, 0.0, 2010,
-        "EIA IR14270 distribuido por FRED. Comercio espejo fisico; no representa comercio total venezolano.",
+        SourceID.EIA, "mil barriles/dia", Direction.POSITIVE, DimensionID.COMMERCIAL, 0.0, 2010,
+        "EIA MCRIMUSVE2 (U.S. Imports from Venezuela of Crude Oil). Registro de aduana de EE.UU.; no representa comercio total venezolano. Meses del embargo sin valor publicado quedan sin dato.",
     ),
     "importaciones_eeuu_productos_ven_tbpd": _v(
         "importaciones_eeuu_productos_ven_tbpd", "Importaciones de productos petroleros venezolanos en EE. UU.",
-        SourceID.FRED, "mil barriles/dia", Direction.POSITIVE, DimensionID.COMMERCIAL, 0.0, 2010,
-        "EIA IR14260 distribuido por FRED. Volumen fisico; no equivale a valor comercial ni a actividad refinadora directa.",
+        SourceID.EIA, "mil barriles/dia", Direction.POSITIVE, DimensionID.COMMERCIAL, 0.0, 2010,
+        "EIA MTPIMUSVE2 (U.S. Imports from Venezuela of Total Petroleum Products). Volumen fisico; no equivale a valor comercial.",
     ),
     "brent_precio_usd": _v(
         "brent_precio_usd", "Precio Brent del petroleo",

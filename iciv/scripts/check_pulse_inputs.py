@@ -25,8 +25,8 @@ RULES = (
     # EIA International commonly publishes Venezuela monthly values with lag.
     SourceRule("eia_monthly.csv", "EIA petroleum monthly", 160),
     SourceRule("gdelt_monthly.csv", "GDELT news monthly", 75, required=False),
-    # IMF IMTS (mirror trade) publica con rezago de varios meses (~6 observado jul-2026).
-    SourceRule("imts_monthly.csv", "IMF IMTS mirror trade monthly", 220, required=False),
+    # Importaciones de EE.UU. desde Venezuela (EIA, aduana): rezago de ~2-3 meses.
+    SourceRule("eia_imports_monthly.csv", "EIA U.S. imports from Venezuela monthly", 160, required=False),
     # WB Pink Sheet publica a inicios de mes el mes anterior.
     SourceRule("wb_commodities_monthly.csv", "WB Pink Sheet monthly", 90, required=False),
 )

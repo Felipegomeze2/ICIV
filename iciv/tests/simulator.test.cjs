@@ -44,3 +44,18 @@ test('dashboard payload reproduces every published annual score', () => {
   });
   assert.match(html,/step="0\.01" aria-label=/);
 });
+
+test('best and worst presets only consider the official series', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const html = fs.readFileSync(path.join(__dirname,'../../iciv_dashboard.html'),'utf8');
+  const read = name => JSON.parse(html.match(new RegExp('const ' + name + '\\s*=\\s*(\\[[^;]+\\]);'))[1]);
+  const scores = read('SIM_HIST'), official = read('SIM_OFFICIAL');
+  assert.equal(official.length, scores.length);
+  assert.ok(official.includes(false) && official.includes(true));
+  const masked = scores.map((v, i) => official[i] ? v : null);
+  for (const mode of ['peak', 'min']) {
+    const index = sim.historicalIndex(masked, mode);
+    assert.ok(index >= 0 && official[index], `${mode} must fall in the official series`);
+  }
+});

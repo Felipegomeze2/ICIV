@@ -32,8 +32,8 @@
 | petroleo_liquidos_totales_tbpd | pulse_mensual | False | True | D2_energia | EIA | mil barriles/dia | positive | 0.0 | Produccion total de petroleo y otros liquidos |
 | crudo_dubai_usd | pulse_mensual | False | True | D1_macro | WDI | USD/barril | positive | 0.0 | Precio del crudo Dubai |
 | em_bond_spread_pct | pulse_mensual | False | True | D1_macro | FRED | puntos porcentuales | negative | 0.0 | Diferencial corporativo de mercados emergentes |
-| importaciones_eeuu_crudo_ven_tbpd | pulse_mensual | False | True | D4_comercial | FRED | mil barriles/dia | positive | 0.0 | Importaciones de crudo venezolano en EE. UU. |
-| importaciones_eeuu_productos_ven_tbpd | pulse_mensual | False | True | D4_comercial | FRED | mil barriles/dia | positive | 0.0 | Importaciones de productos petroleros venezolanos en EE. UU. |
+| importaciones_eeuu_crudo_ven_tbpd | pulse_mensual | False | True | D4_comercial | EIA | mil barriles/dia | positive | 0.0 | Importaciones de crudo venezolano en EE. UU. |
+| importaciones_eeuu_productos_ven_tbpd | pulse_mensual | False | True | D4_comercial | EIA | mil barriles/dia | positive | 0.0 | Importaciones de productos petroleros venezolanos en EE. UU. |
 | brent_precio_usd | pulse_mensual | False | True | D1_macro | FRED | USD/barril | positive | 0.0 | Precio Brent del petroleo |
 | usd_index_broad | pulse_mensual | False | True | D1_macro | FRED | indice | negative | 0.0 | Indice amplio del dolar |
 | vix_volatility | pulse_mensual | False | True | D1_macro | FRED | indice | negative | 0.0 | VIX volatilidad financiera |

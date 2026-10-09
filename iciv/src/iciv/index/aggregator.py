@@ -19,6 +19,19 @@ logger = logging.getLogger(__name__)
 AggregationMethod = Literal["linear", "geometric"]
 MIN_DIMENSION_COVERAGE = 0.50
 
+# Serie oficial: desde 2012 las seis dimensiones superan el piso de cobertura.
+# Antes de 2012 la dimensión institucional no lo alcanza (CPI comparable desde
+# 2012, WJP desde 2012, Freedom House 0-100 desde 2013), así que 2000-2011 se
+# publica como tramo extendido exploratorio con composición distinta.
+OFFICIAL_SERIES_START = 2012
+TRAMO_OFICIAL = "oficial"
+TRAMO_EXPLORATORIO = "extendido_exploratorio"
+
+
+def tramo_serie(year: int) -> str:
+    """Tramo de la serie anual al que pertenece un año."""
+    return TRAMO_OFICIAL if int(year) >= OFFICIAL_SERIES_START else TRAMO_EXPLORATORIO
+
 # Descriptive design cutoffs, not calibrated country-risk thresholds.
 RISK_CATEGORIES = [
     (0, 30, "Muy desfavorable", "Tramo inferior de la escala histórica venezolana."),
@@ -103,6 +116,7 @@ class ICIVAggregator:
         result["cobertura_pct"] = result["cobertura_efectiva_pct"]
         result["peso_dimensiones_publicadas_pct"] = (100 * published_weight).round(1)
         result["dimensiones_publicadas"] = published_count
+        result["tramo_serie"] = result["año"].map(tramo_serie)
         logger.info("ICIVAggregator (%s): %d años con puntaje", self.method, result.iciv_score.notna().sum())
         return result
 

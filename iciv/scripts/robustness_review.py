@@ -32,7 +32,7 @@ def main():
             "interpretation": "Deterministic design alternatives. Not observations, confidence intervals or expert approval."}
     (processed/"robustness_run.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     selected = summary[summary.muestra.eq("base_cobertura80")].sort_values("mae_vs_base", ascending=False)
-    lines = ["# Robustez ampliada · revisión de trabajo", "", f"Generación UTC: {meta['generated_at']}. Escenarios: {meta['scenarios']}.", "",
+    lines = ["# Robustez ampliada · revisión de trabajo", "", "Documento generado automáticamente por `iciv/scripts/robustness_review.py`.", "", f"Generación UTC: {meta['generated_at']}. Escenarios: {meta['scenarios']}.", "",
              "Alternativas deterministas sobre datos reales; no se generan ni rellenan observaciones. La dispersión entre diseños no es un intervalo de confianza. No se eligieron pesos para maximizar correlación con IED.", "",
              "Se varían pesos dimensionales ±5/10/20%, normalización, agregación, transformación de inflación, piso de cobertura, exclusión de cada variable y dimensión, y ausencia de datos por dimensión. Se añade la retirada de estimaciones WEO verificadas cuando existe evidencia.", "",
              "## Mayor diferencia respecto al modelo base", "", "Muestra: años con cobertura base ≥80% y score disponible en ambos diseños. El CSV también muestra todos los años comparables. Comparar n: los pisos más estrictos pueden reducirlo.", "",

@@ -81,7 +81,9 @@ jobs:
           # GDELT DOC — público, rate-limita por frecuencia: se pide por tramos anuales
           # (4 por corrida) y la serie se acumula semana a semana. Gate lo marca opcional.
           python scripts/fetch_gdelt_monthly.py --years 4 || echo "WARN: fetch_gdelt_monthly falló (continuando)"
-          # IMF IMTS — comercio espejo EEUU-VEN (mirror statistics, sin origen venezolano)
+          # IMF IMTS — comercio espejo EEUU-VEN (capa auxiliar, fuera del Pulse)
+          # EIA — importaciones de EE.UU. desde Venezuela (crudo y productos), componente del Pulse
+          python scripts/fetch_eia_imports_monthly.py || echo "WARN: fetch_eia_imports_monthly falló (continuando)"
           python scripts/fetch_imts_monthly.py      || echo "WARN: fetch_imts_monthly falló (continuando)"
           # World Bank Pink Sheet — crudo Dubai mensual
           python scripts/fetch_wb_commodities_monthly.py || echo "WARN: fetch_wb_commodities falló (continuando)"
@@ -178,7 +180,10 @@ jobs:
           git add iciv_dashboard.html
           git add iciv/data/raw/ || true
           git add iciv/data/releases/latest/ || true
-          git add iciv/data/processed/pulse_forecast_backtest*.csv || true
+          # Evidencia de esta ejecución: el dashboard enlaza estos archivos, así
+          # que se publican con él. Solo entran los versionados (.gitignore).
+          git add iciv/data/processed/ || true
+          git add docs/RESULTADOS_ACTUALES.md docs/ROBUSTEZ_AMPLIADA.md || true
 
           # Solo hacer commit si hay cambios
           if git diff --quiet --cached; then

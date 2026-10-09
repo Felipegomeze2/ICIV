@@ -7,6 +7,7 @@ values.
 
 from __future__ import annotations
 
+from iciv import METHODOLOGY_VERSION
 import hashlib
 import json
 import shutil
@@ -38,9 +39,9 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
         "raw_files": "wgi.csv",
     },
     "EIA": {
-        "source_name": "U.S. Energy Information Administration International",
+        "source_name": "U.S. Energy Information Administration (International Energy Statistics; U.S. Imports by Country of Origin)",
         "origin": "international",
-        "raw_files": "eia.csv; eia_monthly.csv",
+        "raw_files": "eia.csv; eia_monthly.csv; eia_imports_monthly.csv (MCRIMUSVE2, MTPIMUSVE2)",
     },
     "IMF": {
         "source_name": "International Monetary Fund",
@@ -70,7 +71,7 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
     "FRED": {
         "source_name": "Federal Reserve Bank of St. Louis FRED",
         "origin": "international",
-        "raw_files": "fred.csv; fred_monthly.csv; imts_monthly.csv (EIA oil trade via FRED; legacy filename)",
+        "raw_files": "fred.csv; fred_monthly.csv",
     },
     "FREEDOM_HOUSE": {
         "source_name": "Freedom House",
@@ -83,12 +84,12 @@ SOURCE_DETAILS: dict[str, dict[str, str]] = {
         "raw_files": "unhcr.csv",
     },
     "VIIRS": {
-        # Desde 2026-08-11 la variable del score se alimenta de NASA Black Marble
-        # (VNP46A3, 2 meses de rezago). La serie de Li et al. se conserva en
-        # viirs.csv como validador externo no circular del leave-one-out.
-        "source_name": "NASA Black Marble VNP46A3 (score); Li et al./Figshare (validacion externa)",
+        # Luminosidad excluida del score anual y del Pulse (docs/REVISION_SATELITAL.md).
+        # Black Marble alimenta solo el mapa de contexto; Li et al. (viirs.csv)
+        # es el validador externo del leave-one-out.
+        "source_name": "NASA Black Marble VNP46A3 (mapa de contexto, fuera del score); Li et al./Figshare (validacion externa)",
         "origin": "international",
-        "raw_files": "blackmarble_qa_monthly.csv (score); blackmarble_monthly.csv (legacy context); viirs.csv (contrast)",
+        "raw_files": "blackmarble_monthly.csv (mapa); blackmarble_qa_monthly.csv (muestra QA); viirs.csv (validacion)",
     },
     "UNCTAD": {
         "source_name": "UNCTAD",
@@ -278,7 +279,8 @@ replace the raw source files in `iciv/data/raw/`.
 
 ## Source Policy
 
-- International distributors may incorporate national primary statistics. Independence is not inferred from the distributor.
+- Only international sources are used; no Venezuelan agency (BCV, INE, PDVSA) is a direct source. Some international compilers build their series from information reported by countries; this is declared, not hidden.
+- Provider values that are impossible for the series (e.g. 0% exports of GDP) are excluded and logged in `plausibilidad_proveedor.csv`; they are never replaced.
 - Provider estimates, projections and partial aggregates are explicitly distinct from observations.
 - Publication dates were not archived for historical snapshots; this is not a real-time vintage backtest.
 - Missing observations remain missing.
@@ -379,7 +381,7 @@ def build_dataset_package(
             code_hashes[path.relative_to(settings.paths.root).as_posix()] = _sha256(path)
     code_hashes["main.py"] = _sha256(settings.paths.root / "main.py")
     manifest = {
-        "methodology_version": "2.0.0",
+        "methodology_version": METHODOLOGY_VERSION,
         "git_commit_base": commit, "working_tree_modified": dirty,
         "code_sha256": code_hashes,
         "environment": {name: importlib.metadata.version(name) for name in

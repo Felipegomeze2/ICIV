@@ -48,7 +48,16 @@ def _date_frame(frame: pd.DataFrame) -> pd.DataFrame:
 class PulseSATVEngine:
     def __init__(self, pulse_df: pd.DataFrame, components_df: pd.DataFrame) -> None:
         self.pulse = _date_frame(pulse_df)
-        self.components = _date_frame(components_df)
+        self.components_all = _date_frame(components_df)
+        # El semáforo por grupo se lee en el último mes ELEGIBLE (cobertura
+        # >=70%, producción doméstica y mes cerrado). En un mes provisional casi
+        # todos los grupos estarían sin dato. Las alertas de cobertura siguen
+        # evaluando el último mes publicado.
+        eligible = self.pulse[self.pulse.get("elegible_modelo", pd.Series(False, index=self.pulse.index)).astype(bool)]             if not self.pulse.empty else self.pulse
+        self.reference_date = eligible.index[-1] if not eligible.empty else (
+            self.pulse.index[-1] if not self.pulse.empty else None)
+        self.components = (self.components_all.loc[:self.reference_date]
+                           if self.reference_date is not None else self.components_all)
 
     def compute_all(self) -> dict:
         groups = self._group_status()
@@ -56,7 +65,9 @@ class PulseSATVEngine:
         return {"resumen": self._summary(groups, alerts), "dimensiones": groups,
                 "alertas_activas": alerts, "variables_criticas": self._critical_variables(),
                 "timeline_historico": self._timeline(),
-                "metodologia": "Señales descriptivas relativas; umbrales heurísticos, sin probabilidades de riesgo. Cambios sobre componentes comunes y fechas calendario."}
+                "fecha_referencia_grupos": (f"{self.reference_date.year}-{self.reference_date.month:02d}"
+                                            if self.reference_date is not None else None),
+                "metodologia": "Señales descriptivas relativas; umbrales heurísticos, sin probabilidades de riesgo. Cambios sobre componentes comunes y fechas calendario. Semáforo por grupo leído en el último mes elegible."}
 
     def _weighted_group_series(self, variables: list[str]) -> pd.Series:
         def score(row: pd.Series) -> float:

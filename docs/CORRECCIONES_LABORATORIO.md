@@ -2,6 +2,8 @@
 
 Revisión del 17 de septiembre de 2026. Se conserva el diseño editorial del autor.
 
+> **Actualización 9 de octubre de 2026 (v2.1).** Los botones de mejor y peor año buscan solo dentro de la serie oficial 2012–2026. Las cifras de la sección *Verificación* son las de esa fecha; las vigentes están en [RESULTADOS_ACTUALES.md](RESULTADOS_ACTUALES.md).
+
 - Los botones de mejor y peor año seleccionan el máximo/mínimo del ICIV publicado y cargan todas las dimensiones de ese mismo año. No combinan máximos de años diferentes.
 - Los faltantes siguen siendo `null`: no se sustituyen por cero ni por el año base. El cálculo renormaliza únicamente los pesos de dimensiones disponibles, como el índice anual. Sin dimensiones disponibles, muestra «Sin datos».
 - Los pesos proceden obligatoriamente del AHP calculado: no existe sustitución silenciosa por pesos fijos. Una ausencia o un peso inválido impide generar el dashboard.

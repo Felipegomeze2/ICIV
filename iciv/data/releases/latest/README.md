@@ -1,7 +1,7 @@
 # ICIV Dataset Package
 
 Release: `latest`
-Generated at UTC: `2026-10-05T15:47:15.369885+00:00`
+Generated at UTC: `2026-10-09T13:56:54.059747+00:00`
 
 This folder is the auditable dataset package for the ICIV project. It contains
 derived project data, metadata, coverage tables and provenance. It does not
@@ -23,7 +23,8 @@ replace the raw source files in `iciv/data/raw/`.
 
 ## Source Policy
 
-- International distributors may incorporate national primary statistics. Independence is not inferred from the distributor.
+- Only international sources are used; no Venezuelan agency (BCV, INE, PDVSA) is a direct source. Some international compilers build their series from information reported by countries; this is declared, not hidden.
+- Provider values that are impossible for the series (e.g. 0% exports of GDP) are excluded and logged in `plausibilidad_proveedor.csv`; they are never replaced.
 - Provider estimates, projections and partial aggregates are explicitly distinct from observations.
 - Publication dates were not archived for historical snapshots; this is not a real-time vintage backtest.
 - Missing observations remain missing.

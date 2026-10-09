@@ -25,7 +25,7 @@ El archivo oficial incluye `LATEST_ACTUAL_ANNUAL_DATA`. Venezuela, abril de 2026
 | Desempleo, LUR | 2011 | Valores disponibles posteriores: estimaciones. Faltantes permanecen vacíos. |
 | Cuenta corriente, BCA_NGDPD | 2018 | Posteriores: estimaciones/proyecciones. |
 
-“Histórico según proveedor” no significa definitivo ni independiente. El WEO identifica Central Bank / National Statistics Office como fuentes históricas. La [FAQ FMI](https://data.imf.org/Datasets/WEO/Frequently-Asked-Questions) explica el campo; el [archivo oficial del vintage](https://data.imf.org/-/media/iData/External-Storage/Documents/2F78EE59F79143A7921E5E203D3AAA80/en/WEOApr2026all.xlsx) aporta evidencia por serie.
+“Histórico según proveedor” no significa definitivo. El proyecto usa el WEO del FMI, no fuentes venezolanas; el FMI declara que compila sus series históricas con información de las autoridades nacionales, y esa dependencia indirecta se documenta. La [FAQ FMI](https://data.imf.org/Datasets/WEO/Frequently-Asked-Questions) explica el campo; el [archivo oficial del vintage](https://data.imf.org/-/media/iData/External-Storage/Documents/2F78EE59F79143A7921E5E203D3AAA80/en/WEOApr2026all.xlsx) aporta evidencia por serie.
 
 Publicación del vintage: 14 de abril de 2026. No se infiere cuándo estuvo disponible cada valor en 2000–2025. Los backtests siguen siendo de último vintage, no evaluaciones históricas en tiempo real.
 
@@ -35,4 +35,10 @@ Publicación del vintage: 14 de abril de 2026. No se infiere cuándo estuvo disp
 - Se distinguen índice publicado, estimación OIT, histórico WEO revisable y estimación/proyección WEO acreditada. Si cambia el raw, la verificación anterior deja de aplicarse.
 - Sin sustitución de fuentes ni imputación del proyecto. Las estimaciones publicadas por proveedores permanecen etiquetadas como estimaciones.
 - Este contraste no certifica WDI/WGI/EIA/FRED/UNCTAD/UNHCR/noticias fila por fila. Conservan procedencia y limitaciones, sin recibir la etiqueta de verificación de esta auditoría.
-- El titular confirmó la revocación de la clave EIA anterior el 17 de septiembre de 2026. Esta confirmación no es una verificación directa con el proveedor. No se reproduce la credencial; el reemplazo no fue confirmado.
+- Credenciales: se leen del entorno o de `iciv/.env`, nunca del repositorio.
+
+## Control de plausibilidad e identidad de series (9 de octubre de 2026)
+
+- El Banco Mundial publica `NE.EXP.GNFS.ZS` = 0 para Venezuela en 1995–2011 (comprobado en su API). Un exportador de petróleo no puede tener exportaciones nulas: el valor se excluye del cálculo y se registra en `data/processed/plausibilidad_proveedor.csv`.
+- `SP.DYN.IMRT.IN` repite 21,2 en 2016–2024: se marca, sin cambiarlo.
+- Las series del bloque de comercio del Pulse estaban mal identificadas (FRED IR14270/IR14260 son precios de importación de oro y zinc). Se reemplazaron por EIA MCRIMUSVE2/MTPIMUSVE2. Los demás códigos FRED y Banco Mundial se verificaron contra el título del proveedor. Ver [incidente](INCIDENTE_SERIES_COMERCIO.md).

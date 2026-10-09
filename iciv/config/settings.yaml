@@ -101,19 +101,10 @@ sources:
     description: "Freedom House — Freedom in the World Index"
     download_url: "https://freedomhouse.org/report/freedom-world"
     notes: >
-      Datos estáticos históricos Venezuela 2000-2024.
-      Aggregate Score (0-100, mayor = más libre).
-      Fuente académica citada en literatura de riesgo político.
+      Aggregate Score 0-100 (mayor = más libre), descargado por
+      scripts/fetch_freedom_house.py desde el Excel oficial (ediciones 2013+)
+      y las páginas oficiales de las ediciones recientes. Año = edición - 1.
     indicator_name: "freedom_house_score"
-
-  ofac:
-    description: "OFAC — Office of Foreign Assets Control (US Treasury)"
-    sdn_csv_url: "https://www.treasury.gov/ofac/downloads/sdn.csv"
-    notes: >
-      Lista SDN actual descargada programáticamente.
-      Conteo de entidades venezolanas (Venezuela / VENEZUELA / VEN).
-      Datos históricos 2000-2023 basados en registro cronológico de designaciones.
-    indicator_name: "ofac_sanciones_count"
 
   unhcr:
     description: "UNHCR — Refugiados y solicitantes de asilo venezolanos registrados"
@@ -136,29 +127,15 @@ sources:
       2000-2013: calDMSP (DMSP-OLS calibrado); 2014-2024: simVIIRS (escala armonica).
       Ambas series en la misma escala DN 0-63 — serie temporal continua.
       Venezuela bbox: [-73.4, 0.6, -59.8, 12.2]. Media de pixeles > 0 (excluye oceano/nubes).
-      El Gran Apagon Nacional de marzo 2019 es visible como minimo historico.
-      NOTA: NOAA EOG (eogdata.mines.edu) migro a Keycloak propio y ya no usa NASA Earthdata.
+      Uso vigente: referencia externa de la validacion leave-one-out. NO entra al score.
     indicator_name: "luminosidad_nocturna_idx"
     cite: "Li, X., Zhou, Y., Zhao, M., & Gao, X. (2020). Scientific Data, 7(1), 168."
-
-  gtrends:
-    description: "Google Trends — Interés de búsqueda relativo"
-    notes: >
-      Requiere 'pip install pytrends'. Datos relativos (0-100).
-      Consultas: 'invertir Venezuela', 'Venezuela inversión', 'Venezuela economy'.
-      Proxy de percepción/interés global en Venezuela como destino inversor.
-    queries:
-      - "Venezuela inversión"
-      - "invertir Venezuela"
-      - "Venezuela economy"
-    indicator_name: "google_trends_vzla"
-    geo: ""   # global
 
   gdelt:
     description: "GDELT Project — Global Database of Events, Language and Tone"
     base_url: "https://api.gdeltproject.org/api/v2/doc/doc"
     notes: >
-      Sin autenticación. Cubre 2015-2024 con la DOC 2.0 API.
+      Sin autenticación. Serie mensual desde 2017 (DOC 2.0 API), componente opcional del Pulse.
       Proporciona tono promedio y volumen de cobertura internacional sobre Venezuela.
     query: "Venezuela"
     # Columnas de salida
@@ -182,11 +159,11 @@ sources:
     notes: >
       Descarga directa CSV. Sin autenticación requerida.
       Escala 1-5: promedio de PTS_A (Amnesty Intl), PTS_H (HRW), PTS_S (State Dept).
-      Cobertura Venezuela: 2000-2023 (24 años).
+      Edición vigente en data/raw/pts.csv.
     indicator_name: "pts_terror_politico"
 
   who:
-    description: "WHO Global Health Observatory (GHO) — OData API"
+    description: "WHO Global Health Observatory (GHO) — fuente anterior de salud; fuera del core desde 2026-08-11 (se usa WDI)"
     base_url: "https://ghoapi.azureedge.net/api"
     notes: >
       API pública sin autenticación. Filtra SpatialDim=VEN.
@@ -202,12 +179,6 @@ sources:
     download_url: "https://www.transparency.org/en/cpi"
     notes: "Archivo histórico preservado; CPILoader usa únicamente 2012+ por ruptura metodológica. Formato: año|indicador|valor|pais|fuente"
     indicator_name: "cpi_score"
-
-  ief:
-    description: "Index of Economic Freedom — Heritage Foundation"
-    download_url: "https://www.heritage.org/index/download"
-    notes: "Descarga manual del Excel anual. Formato: año|indicador|valor|pais|fuente"
-    indicator_name: "ief_overall_score"
 
   hdi:
     description: "Human Development Index — PNUD / UNDP"

@@ -109,7 +109,7 @@ def _consistent_ratio_matrix(weights: list[float]) -> np.ndarray:
     La matriz de DIMENSIONES (`_DEFAULT_DIMENSION_MATRIX`) sí está construida a
     mano con valores Saaty y su CR = 0,0081 sí es un resultado informativo.
 
-    Ver docs/METODOLOGIA.md §2.3.
+    Ver docs/METODOLOGIA.md, sección «Contrato anual».
     """
     arr = np.array(weights, dtype=float)
     return arr[:, None] / arr[None, :]

@@ -19,7 +19,7 @@ from statsmodels.stats.multitest import multipletests
 
 _ICIV_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_ICIV_DIR / "src"))
-from iciv.index.aggregator import ICIVAggregator
+from iciv.index.aggregator import OFFICIAL_SERIES_START, ICIVAggregator
 from iciv.index.dimensions import DIMENSIONS
 from iciv.index.weighting.ahp_weights import AHPWeights
 
@@ -127,12 +127,20 @@ def main() -> None:
     iciv_sin_lumi = _iciv_without(df_norm, "luminosidad_nocturna_idx")
     tests = []
 
+    # Cada contraste se reporta en la serie oficial (desde OFFICIAL_SERIES_START,
+    # las seis dimensiones) y en la serie completa, que incluye el tramo
+    # extendido exploratorio sin dimensión institucional. Holm se aplica dentro
+    # de cada tramo.
+    tramos = (("serie_oficial", OFFICIAL_SERIES_START), ("serie_completa", None))
+
     def add(test, description, hypothesis, method, a, b):
-        for representation in ("niveles", "primeras_diferencias"):
-            tests.append({"test": test, "descripcion": description, "hipotesis": hypothesis,
-                          "metodo": method, "modelo": "AHP público; piso dimensional 50%",
-                          "alcance": "asociación retrospectiva exploratoria; sin inferencia causal o predictiva",
-                          **_correlate(a, b, representation)})
+        for tramo, start in tramos:
+            a_t = a.loc[start:] if start is not None else a
+            for representation in ("niveles", "primeras_diferencias"):
+                tests.append({"test": test, "tramo": tramo, "descripcion": description, "hipotesis": hypothesis,
+                              "metodo": method, "modelo": "AHP público; piso dimensional 50%",
+                              "alcance": "asociación retrospectiva exploratoria; sin inferencia causal o predictiva",
+                              **_correlate(a_t, b, representation)})
 
     add("ICIV_loo_vs_migracion_UNHCR", "ICIV sin migrantes vs stock UNHCR (millones)",
         "negativa", "leave-one-out", iciv_sin_migr, migrantes)
@@ -160,9 +168,10 @@ def main() -> None:
                 hypothesis, "convergencia exploratoria sin D3", iciv_sin_d3, series)
     summary = pd.DataFrame(tests)
     summary["hac_p_holm"] = np.nan
-    eligible = summary.hac_p.notna() & summary.hipotesis.ne("no interpretable")
-    if eligible.any():
-        summary.loc[eligible, "hac_p_holm"] = multipletests(summary.loc[eligible, "hac_p"], method="holm")[1]
+    for tramo, _ in tramos:
+        eligible = summary.hac_p.notna() & summary.hipotesis.ne("no interpretable") & summary.tramo.eq(tramo)
+        if eligible.any():
+            summary.loc[eligible, "hac_p_holm"] = multipletests(summary.loc[eligible, "hac_p"], method="holm")[1]
     summary["veredicto"] = summary.apply(_verdict, axis=1)
     aligned = pd.DataFrame({"iciv_score": iciv_full, "iciv_sin_migrantes": iciv_sin_migr,
                             "iciv_sin_luminosidad": iciv_sin_lumi, "migrantes_vzla_millones": migrantes,
@@ -178,7 +187,7 @@ def main() -> None:
     aligned.to_csv(PROCESSED / "external_validation.csv")
     summary.to_csv(PROCESSED / "external_validation_summary.csv", index=False)
     print("\nVALIDACIÓN EXTERNA: ASOCIACIONES RETROSPECTIVAS EXPLORATORIAS\n")
-    print(summary[["test", "representacion", "n", "pearson_r", "hac_p_holm", "veredicto"]].to_string(index=False))
+    print(summary[["test", "tramo", "representacion", "n", "pearson_r", "hac_p_holm", "veredicto"]].to_string(index=False))
     print("HAC no elimina tendencias espurias; muestras anuales pequeñas. Ver niveles y diferencias conjuntamente.")
 
 

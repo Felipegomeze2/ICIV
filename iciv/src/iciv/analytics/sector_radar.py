@@ -11,6 +11,11 @@ from iciv.index.aggregator import _get_risk_category
 
 DIM_COLS = ["D1_macro", "D2_energia", "D3_institucional", "D4_comercial", "D5_capital_humano", "D6_percepcion"]
 _CONFIG_PATH = Path(__file__).resolve().parents[3] / "data/config/sector_weights.json"
+DIM_LABELS = {
+    "D1_macro": "Macroeconomía", "D2_energia": "Energía y petróleo",
+    "D3_institucional": "Instituciones y ley", "D4_comercial": "Apertura comercial",
+    "D5_capital_humano": "Capital humano", "D6_percepcion": "Percepción externa",
+}
 COLORS = dict(zip(["Muy desfavorable", "Desfavorable", "Intermedio", "Favorable", "Muy favorable"],
                   ["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71", "#27ae60"]))
 
@@ -45,7 +50,7 @@ class SectorRadar:
             ranking.append({"sector_id": sid, "label": cfg["label"], "label_corto": cfg["label_corto"],
                             "score": round(score, 2), "score_base": round(score, 2), "hex": COLORS[cat],
                             "color": COLORS[cat], "recomendacion": cat, "recomendacion_short": cat,
-                            "riesgo_principal": "Mayor déficit ponderado: " + weak,
+                            "riesgo_principal": "Mayor déficit ponderado: " + DIM_LABELS.get(weak, weak),
                             "racional": "Perfil hipotético definido por pesos del autor. No mide desempeño ni atractivo inversor del sector.",
                             "pesos": cfg["pesos"], "scores_dim_ponderados": {d: row[d]*w for d,w in cfg["pesos"].items()},
                             "ajustadores": {}})

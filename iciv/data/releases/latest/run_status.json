@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-05T15:46:59.030373",
+  "generated_at": "2026-10-09T08:56:18.855385",
   "source_mode": "existing_snapshot_no_refresh",
-  "methodology_version": "2.0.0",
+  "methodology_version": "2.1.0",
   "artifact_mode": "package_requested",
   "satellite_policy": "excluded_pending_spatial_temporal_validation; strict_QA_is_auxiliary_evidence",
   "historical_publication_dates": "not_archived"

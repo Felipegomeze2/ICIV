@@ -72,7 +72,7 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
             "Ampliada con precio WTI (driver externo del ciclo fiscal venezolano) "
             "y tasa Fed Funds (costo de oportunidad de capital global)."
         ),
-        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        # Purga 2026-08-11 (versión 2.0):
         #   reservas_internacionales_usd (era 0.18): el WB no publica desde 2017 y
         #     no existe sustituto (probados FI.RES.XGLD.CD, FI.RES.TOTL.MO,
         #     FI.RES.TOTL.DT.ZS). Nueve años de peso muerto.
@@ -93,12 +93,12 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
         iciv_weight=0.20,
         description=(
             "Venezuela es petro-dependiente. Esta dimensión captura el estado "
-            "de la industria petrolera como motor de ingresos fiscales y divisas, "
-            "más la luminosidad nocturna satelital como proxy independiente de la "
-            "actividad real y del sistema eléctrico. La luminosidad es una medición "
-            "remota procesada; la producción es una serie publicada por EIA."
+            "de la industria petrolera como motor de ingresos fiscales y divisas. "
+            "La luminosidad nocturna conserva su peso en el universo de cobertura, "
+            "pero está excluida del cálculo (docs/REVISION_SATELITAL.md): la "
+            "dimensión se publica con la producción de crudo de la EIA."
         ),
-        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        # Purga 2026-08-11 (versión 2.0):
         #   gas_natural_produccion_bcf (era 0.25) y electricidad_generacion_bkwh
         #   (era 0.15) solo existen en EIA con frecuencia ANUAL y llegan con ~2 años
         #   de rezago (último 2024). Se verificó contra la API que NO tienen serie
@@ -140,12 +140,12 @@ DIMENSIONS: dict[DimensionID, Dimension] = {
             "migracion y conectividad logistica. La IED se reserva como outcome "
             "externo para validar el indice, no como componente del score."
         ),
-        # Purga 2026-08-11 — ver docs/METODOLOGIA.md §2.8:
+        # Purga 2026-08-11 (versión 2.0):
         #   desempleo_pct (era 0.24): el IMF WEO dejó de publicarlo en 2018. Se
         #   evaluó sustituirlo por la estimación modelada de la OIT (WB
         #   SL.UEM.TOTL.ZS, con datos hasta 2025) y se DESCARTÓ: las series
         #   difieren hasta un 85% (IMF 35,6% vs OIT 5,5% en 2018). La OIT no
-        #   captura el colapso laboral venezolano. Ver §9.6.
+        #   captura el colapso laboral venezolano.
         # Los pesos restantes se renormalizan sobre 0.76.
         variables=[
             VariableWeight("exportaciones_pct_pib",      0.4474),  # 0.34 / 0.76

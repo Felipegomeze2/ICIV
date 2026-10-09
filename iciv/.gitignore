@@ -44,3 +44,4 @@ secrets.yaml
 !data/processed/robustness_scenarios.csv
 !data/processed/annual_composition.csv
 !data/processed/satellite_qa_coverage.csv
+!data/processed/plausibilidad_proveedor.csv

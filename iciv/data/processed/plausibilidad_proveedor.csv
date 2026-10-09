@@ -1,0 +1,22 @@
+﻿año,variable,valor_proveedor,regla,accion,detalle
+2000,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2001,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2002,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2003,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2004,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2005,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2006,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2007,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2008,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2009,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2010,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2011,exportaciones_pct_pib,0.0,valor_imposible,excluido_del_calculo,Banco Mundial NE.EXP.GNFS.ZS publica 0 para Venezuela 1995-2011; un exportador de petróleo no puede tener exportaciones nulas.
+2016,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2017,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2018,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2019,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2020,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2021,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2022,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2023,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."
+2024,mortalidad_infantil_x1000,21.2,valor_repetido,marcado_sin_cambio,"Banco Mundial SP.DYN.IMRT.IN repite el mismo valor durante años consecutivos; probable arrastre del proveedor, no medición anual. Racha de 9 años (2016-2024)."

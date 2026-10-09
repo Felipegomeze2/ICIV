@@ -7,8 +7,8 @@ de inversión usando solo las variables disponibles con granularidad ≥mensual.
 NO reemplaza el ICIV Anual oficial — es un nowcasting indicator
 (Stock & Watson, 2002; Aruoba, Diebold & Scotti, 2009).
 
-Variables incluidas (15, todas de fuentes internacionales, ninguna de
-origen venezolano):
+Variables incluidas (15, todas de fuentes internacionales; ninguna fuente
+venezolana):
   Macro externo (D1 — 35% peso renormalizado):
     - wti_precio_usd            (FRED, mensual)
     - brent_precio_usd          (FRED, mensual)
@@ -20,9 +20,9 @@ origen venezolano):
     - em_bond_spread_pct        (FRED BAMLEMCBPIOAS, mensual — estrés financiero EM)
   Energía Venezuela (D2 — 25% peso renormalizado):
     - petroleo_liquidos_totales_tbpd (EIA International, mensual)
-  Actividad comercial espejo (10%):
-    - importaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
-    - exportaciones_espejo_usa_musd (IMF IMTS, reportado por EEUU, mensual)
+  Comercio petrolero con EE.UU. (10%):
+    - importaciones_eeuu_crudo_ven_tbpd     (EIA MCRIMUSVE2, aduana de EE.UU., mensual)
+    - importaciones_eeuu_productos_ven_tbpd (EIA MTPIMUSVE2, aduana de EE.UU., mensual)
   Percepción (D6 — 30%):
     - guardian_articulos_venezuela (Guardian, mensual)
     - guardian_tono_titulares      (Guardian, mensual)
@@ -32,10 +32,15 @@ origen venezolano):
 NO incluye D5 (capital humano) — todas sus variables son anuales estructuralmente.
 
 Metodología:
-  1. Normalización Min-Max usando rango histórico del ICIV Anual (consistencia)
-  2. Inversión automática para variables negativas (mismo CATALOG que ICIV Anual)
-  3. Agregación lineal ponderada con pesos renormalizados
-  4. Score 0-100, mismas 5 bandas de riesgo
+  1. Min-max expansivo: cada mes se normaliza con el rango observado hasta ese
+     mes, sin usar datos futuros.
+  2. Inversión de las variables de dirección negativa (PULSE_NEGATIVE).
+  3. Agregación lineal ponderada; los pesos se renormalizan sobre las variables
+     disponibles. Publicación mínima 30% del peso; elegibilidad 70%.
+  4. Score 0-100 con las mismas cinco bandas descriptivas del índice anual.
+
+Lectura: monitor de corto plazo del entorno externo y petrolero y de la
+visibilidad en la prensa internacional. No replica el índice anual.
 
 Referencias:
   Stock & Watson (2002) — Macroeconomic forecasting using diffusion indexes
@@ -73,12 +78,13 @@ PULSE_WEIGHTS: dict[str, float] = {
     "em_bond_spread_pct":              0.040,  # NEGATIVO (spread alto → estrés EM)
     # D2 Energía VEN (25%) — driver doméstico clave
     "petroleo_liquidos_totales_tbpd":  0.250,
-    # D4 Comercio espejo EEUU-VEN (10%) — aduana de EEUU vía FRED.
-    # Sustituye a IMF IMTS desde 2026-08-11: mismo concepto (comercio real
-    # observado por el socio) con 2 meses de rezago en vez de 4, volumen físico
-    # en vez de valor declarado, y 395 meses de historia. Ver METODOLOGIA §3.3.
+    # D4 Comercio petrolero EE.UU.-Venezuela (10%) — aduana de EE.UU. publicada
+    # por la EIA (MCRIMUSVE2 crudo, MTPIMUSVE2 productos), en miles de barriles
+    # diarios. Corrección 2026-10-09: antes se descargaban por error las series
+    # FRED IR14270/IR14260 (precios de importación de oro y zinc).
+    # Ver docs/INCIDENTE_SERIES_COMERCIO.md.
     "importaciones_eeuu_crudo_ven_tbpd":     0.050,  # POSITIVO (flujo exportador VEN)
-    "importaciones_eeuu_productos_ven_tbpd": 0.050,  # POSITIVO (actividad refinadora)
+    "importaciones_eeuu_productos_ven_tbpd": 0.050,  # POSITIVO (flujo de productos)
     # D6 Percepción internacional (30%) — dos sistemas de cobertura
     "guardian_articulos_venezuela":    0.065,  # NEGATIVO (más cobertura → crisis)
     "guardian_tono_titulares":         0.100,  # POSITIVO (tono positivo es bueno)
@@ -118,7 +124,7 @@ class PulseAggregator:
             "fred_monthly.csv":           "FRED monthly aggregation",
             "guardian_monthly.csv":       "Guardian monthly + VADER",
             "gdelt_monthly.csv":          "GDELT DOC timeline monthly",
-            "imts_monthly.csv":           "IMF IMTS mirror trade (EEUU-VEN)",
+            "eia_imports_monthly.csv":    "EIA U.S. imports from Venezuela",
             "wb_commodities_monthly.csv": "WB Pink Sheet crude Dubai",
         }
         frames: list[pd.DataFrame] = []

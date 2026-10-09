@@ -74,8 +74,20 @@ def observation_metadata(variable, year, value, settings):
             months = int(selected.iloc[0]["meses_usados"])
             status = "agregado_mensual_parcial" if months < 12 else "agregado_mensual_12_meses"
             filename = "eia_monthly.csv" if variable.startswith("petroleo_") else filename
+    plausibility = settings.paths.data_processed / "plausibilidad_proveedor.csv"
+    flag = None
+    if plausibility.exists():
+        data = _read_audit(str(plausibility), plausibility.stat().st_mtime_ns)
+        if not data.empty:
+            selected = data[(data["año"] == year) & (data["variable"] == variable)]
+            if not selected.empty:
+                flag = selected.iloc[0]
     if pd.isna(value):
         status = "sin_dato"
+    if flag is not None and flag["regla"] == "valor_imposible":
+        status = "valor_no_plausible_del_proveedor_excluido"
+    elif flag is not None and flag["regla"] == "valor_repetido":
+        status = f"{status}; valor_repetido_por_proveedor"
     result = {
         "unidad_original": "LCU/USD en denominacion del proveedor" if variable == "tipo_cambio_oficial_lcu_usd" else meta.unit,
         "archivo_origen": filename,
