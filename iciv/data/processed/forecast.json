@@ -134,10 +134,9 @@
         "n_calendar_months": 72,
         "converged": false,
         "warnings": [
-          "Maximum Likelihood optimization failed to converge. Check mle_retvals",
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+          "Maximum Likelihood optimization failed to converge. Check mle_retvals"
         ],
-        "aic": 1375.101930111963,
+        "aic": 1587.382477730891,
         "reason": "non_convergence_or_invalid_parameters"
       },
       {
@@ -146,9 +145,7 @@
         "n_observed": 66,
         "n_calendar_months": 78,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
+        "warnings": [],
         "aic": 10.0
       },
       {
@@ -157,10 +154,8 @@
         "n_observed": 72,
         "n_calendar_months": 84,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 423.5662132487302
+        "warnings": [],
+        "aic": 423.56621322932034
       },
       {
         "origin_date": "2017-06-01",
@@ -168,10 +163,8 @@
         "n_observed": 78,
         "n_calendar_months": 90,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 461.8146418815348
+        "warnings": [],
+        "aic": 461.8146418735982
       },
       {
         "origin_date": "2017-12-01",
@@ -179,10 +172,8 @@
         "n_observed": 84,
         "n_calendar_months": 96,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 508.6028661115238
+        "warnings": [],
+        "aic": 508.60286611176684
       },
       {
         "origin_date": "2018-06-01",
@@ -190,10 +181,8 @@
         "n_observed": 90,
         "n_calendar_months": 102,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 547.4242635777066
+        "warnings": [],
+        "aic": 547.424263577597
       },
       {
         "origin_date": "2018-12-01",
@@ -201,10 +190,8 @@
         "n_observed": 96,
         "n_calendar_months": 108,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 586.5822234375408
+        "warnings": [],
+        "aic": 586.5822234371976
       },
       {
         "origin_date": "2019-06-01",
@@ -212,10 +199,8 @@
         "n_observed": 102,
         "n_calendar_months": 114,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 624.8066906858255
+        "warnings": [],
+        "aic": 624.8066906856978
       },
       {
         "origin_date": "2019-12-01",
@@ -223,10 +208,8 @@
         "n_observed": 108,
         "n_calendar_months": 120,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 661.1119411970463
+        "warnings": [],
+        "aic": 661.1119411970116
       },
       {
         "origin_date": "2020-06-01",
@@ -234,10 +217,8 @@
         "n_observed": 114,
         "n_calendar_months": 126,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 702.9912375131931
+        "warnings": [],
+        "aic": 702.9912375159049
       },
       {
         "origin_date": "2020-12-01",
@@ -245,10 +226,8 @@
         "n_observed": 120,
         "n_calendar_months": 132,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 739.609032864124
+        "warnings": [],
+        "aic": 739.6090328648796
       },
       {
         "origin_date": "2021-06-01",
@@ -256,10 +235,8 @@
         "n_observed": 126,
         "n_calendar_months": 138,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 775.9672765798224
+        "warnings": [],
+        "aic": 775.9672765797378
       },
       {
         "origin_date": "2021-12-01",
@@ -267,10 +244,8 @@
         "n_observed": 132,
         "n_calendar_months": 144,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 811.6324594472861
+        "warnings": [],
+        "aic": 811.6324594472063
       },
       {
         "origin_date": "2022-06-01",
@@ -278,10 +253,8 @@
         "n_observed": 138,
         "n_calendar_months": 150,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 846.6919136810129
+        "warnings": [],
+        "aic": 846.6919136814698
       },
       {
         "origin_date": "2022-12-01",
@@ -289,10 +262,8 @@
         "n_observed": 144,
         "n_calendar_months": 156,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 885.3261399286823
+        "warnings": [],
+        "aic": 885.326139928954
       },
       {
         "origin_date": "2023-06-01",
@@ -300,10 +271,8 @@
         "n_observed": 150,
         "n_calendar_months": 162,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 920.1504453129792
+        "warnings": [],
+        "aic": 920.1504453125398
       },
       {
         "origin_date": "2023-12-01",
@@ -311,10 +280,8 @@
         "n_observed": 156,
         "n_calendar_months": 168,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 955.8445791498359
+        "warnings": [],
+        "aic": 955.8445791498082
       },
       {
         "origin_date": "2024-06-01",
@@ -322,10 +289,8 @@
         "n_observed": 162,
         "n_calendar_months": 174,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 991.2823414195182
+        "warnings": [],
+        "aic": 991.2823414192371
       },
       {
         "origin_date": "2024-12-01",
@@ -333,10 +298,8 @@
         "n_observed": 168,
         "n_calendar_months": 180,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 1026.9600524002894
+        "warnings": [],
+        "aic": 1026.9600524008642
       },
       {
         "origin_date": "2025-06-01",
@@ -344,10 +307,8 @@
         "n_observed": 174,
         "n_calendar_months": 186,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 1061.5234760676688
+        "warnings": [],
+        "aic": 1061.5234760677586
       },
       {
         "origin_date": "2025-12-01",
@@ -355,10 +316,8 @@
         "n_observed": 180,
         "n_calendar_months": 192,
         "converged": true,
-        "warnings": [
-          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
-        ],
-        "aic": 1097.4757267187426
+        "warnings": [],
+        "aic": 1097.4757267205932
       }
     ],
     "summary": [
@@ -399,9 +358,9 @@
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 8.0916,
-        "rmse": 15.4609,
-        "bias": 1.5121,
+        "mae": 6.6626,
+        "rmse": 9.805,
+        "bias": -3.4879,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -410,9 +369,9 @@
         "model": "sarima",
         "horizon": 3,
         "n": 20,
-        "mae": 9.3714,
-        "rmse": 16.9826,
-        "bias": 1.2626,
+        "mae": 7.5544,
+        "rmse": 10.33,
+        "bias": -3.7374,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.9
@@ -421,9 +380,9 @@
         "model": "sarima",
         "horizon": 6,
         "n": 20,
-        "mae": 10.9515,
-        "rmse": 17.5761,
-        "bias": -0.6037,
+        "mae": 9.3405,
+        "rmse": 12.1581,
+        "bias": -5.6037,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -502,9 +461,9 @@
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 8.0916,
-        "rmse": 15.4609,
-        "bias": 1.5121,
+        "mae": 6.6626,
+        "rmse": 9.805,
+        "bias": -3.4879,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -513,9 +472,9 @@
         "model": "sarima",
         "horizon": 3,
         "n": 20,
-        "mae": 9.3714,
-        "rmse": 16.9826,
-        "bias": 1.2626,
+        "mae": 7.5544,
+        "rmse": 10.33,
+        "bias": -3.7374,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.9
@@ -524,9 +483,9 @@
         "model": "sarima",
         "horizon": 6,
         "n": 20,
-        "mae": 10.9515,
-        "rmse": 17.5761,
-        "bias": -0.6037,
+        "mae": 9.3405,
+        "rmse": 12.1581,
+        "bias": -5.6037,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
