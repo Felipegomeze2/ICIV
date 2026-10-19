@@ -2,7 +2,7 @@
 
 Documento generado automáticamente por `iciv/scripts/robustness_review.py`.
 
-Generación UTC: 2026-10-12T16:43:26.806400+00:00. Escenarios: 79.
+Generación UTC: 2026-10-19T14:38:01.844326+00:00. Escenarios: 79.
 
 Alternativas deterministas sobre datos reales; no se generan ni rellenan observaciones. La dispersión entre diseños no es un intervalo de confianza. No se eligieron pesos para maximizar correlación con IED.
 
@@ -14,21 +14,21 @@ Muestra: años con cobertura base ≥80% y score disponible en ambos diseños. E
 
 | Escenario | n | MAE puntos | Máximo absoluto | Spearman | Cambios de categoría |
 |---|---:|---:|---:|---:|---:|
-| rank | 14 | 9.506 | 18.120 | 0.982 | 9 |
-| geometrico | 14 | 6.298 | 20.560 | 0.978 | 5 |
+| rank | 14 | 9.484 | 18.130 | 0.982 | 9 |
+| geometrico | 14 | 6.300 | 20.560 | 0.978 | 5 |
 | sin_datos_D1_macro | 14 | 5.960 | 13.870 | 0.947 | 4 |
 | excluir_D1_macro | 14 | 5.960 | 13.870 | 0.947 | 4 |
 | piso_100% | 14 | 4.005 | 11.890 | 0.925 | 3 |
-| excluir_D4_comercial | 14 | 3.334 | 7.000 | 0.969 | 4 |
-| sin_datos_D4_comercial | 14 | 3.334 | 7.000 | 0.969 | 4 |
+| excluir_D4_comercial | 14 | 3.336 | 7.000 | 0.969 | 4 |
+| sin_datos_D4_comercial | 14 | 3.336 | 7.000 | 0.969 | 4 |
 | excluir_petroleo_crudo_produccion_tbpd | 14 | 3.326 | 6.700 | 0.987 | 2 |
 | sin_datos_D2_energia | 14 | 3.326 | 6.700 | 0.987 | 2 |
 | excluir_D2_energia | 14 | 3.326 | 6.700 | 0.987 | 2 |
-| inflacion_sin_log | 14 | 3.132 | 5.850 | 0.974 | 2 |
-| excluir_D3_institucional | 14 | 3.033 | 6.690 | 0.996 | 2 |
-| sin_datos_D3_institucional | 14 | 3.033 | 6.690 | 0.996 | 2 |
-| winsor05 | 14 | 2.886 | 5.870 | 0.987 | 5 |
-| excluir_pib_crecimiento_real_pct | 14 | 2.424 | 3.790 | 0.982 | 3 |
+| inflacion_sin_log | 14 | 3.130 | 5.860 | 0.974 | 2 |
+| excluir_D3_institucional | 14 | 3.035 | 6.690 | 0.996 | 2 |
+| sin_datos_D3_institucional | 14 | 3.035 | 6.690 | 0.996 | 2 |
+| winsor05 | 14 | 2.891 | 5.880 | 0.987 | 5 |
+| excluir_pib_crecimiento_real_pct | 14 | 2.425 | 3.800 | 0.982 | 3 |
 
 ## Composición interanual
 
@@ -36,13 +36,13 @@ La canasta común utiliza los mismos indicadores disponibles en ambos años, man
 
 | Año | Cambio publicado | Cambio canasta común | Residuo composición | Cobertura común % |
 |---|---:|---:|---:|---:|
-| 2020 | -11.67 | -11.67 | 0.00 | 95.1 |
+| 2020 | -11.68 | -11.68 | 0.00 | 95.1 |
 | 2021 | 9.14 | 9.14 | 0.00 | 95.1 |
 | 2022 | 6.23 | 6.23 | 0.00 | 95.1 |
-| 2023 | -3.93 | -3.93 | 0.00 | 95.1 |
+| 2023 | -3.92 | -3.92 | 0.00 | 95.1 |
 | 2024 | 0.35 | -0.29 | 0.64 | 92.6 |
-| 2025 | -6.39 | -4.42 | -1.97 | 82.9 |
-| 2026 | 16.77 | 3.22 | 13.55 | 41.1 |
+| 2025 | -6.38 | -4.41 | -1.97 | 82.9 |
+| 2026 | 16.21 | 2.65 | 13.56 | 41.1 |
 
 Artefactos: `iciv/data/processed/robustness_summary.csv`, `robustness_scenarios.csv`, `annual_composition.csv` y `robustness_run.json`.
 

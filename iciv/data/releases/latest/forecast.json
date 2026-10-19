@@ -36,7 +36,7 @@
       47.3,
       45.4,
       44.32,
-      43.15,
+      43.1,
       42.35
     ],
     "hi_80": [
@@ -44,7 +44,7 @@
       65.22,
       67.12,
       68.2,
-      69.37,
+      69.42,
       70.17
     ],
     "lo_95": [
@@ -136,7 +136,7 @@
         "warnings": [
           "Maximum Likelihood optimization failed to converge. Check mle_retvals"
         ],
-        "aic": 1587.382477730891,
+        "aic": 1330.8352046278785,
         "reason": "non_convergence_or_invalid_parameters"
       },
       {
@@ -155,7 +155,7 @@
         "n_calendar_months": 84,
         "converged": true,
         "warnings": [],
-        "aic": 423.56621322932034
+        "aic": 423.5662133337867
       },
       {
         "origin_date": "2017-06-01",
@@ -164,7 +164,7 @@
         "n_calendar_months": 90,
         "converged": true,
         "warnings": [],
-        "aic": 461.8146418735982
+        "aic": 461.8146418684877
       },
       {
         "origin_date": "2017-12-01",
@@ -173,7 +173,7 @@
         "n_calendar_months": 96,
         "converged": true,
         "warnings": [],
-        "aic": 508.60286611176684
+        "aic": 508.60286611407736
       },
       {
         "origin_date": "2018-06-01",
@@ -182,7 +182,7 @@
         "n_calendar_months": 102,
         "converged": true,
         "warnings": [],
-        "aic": 547.424263577597
+        "aic": 547.4242635772493
       },
       {
         "origin_date": "2018-12-01",
@@ -191,7 +191,7 @@
         "n_calendar_months": 108,
         "converged": true,
         "warnings": [],
-        "aic": 586.5822234371976
+        "aic": 586.5822234379661
       },
       {
         "origin_date": "2019-06-01",
@@ -200,7 +200,7 @@
         "n_calendar_months": 114,
         "converged": true,
         "warnings": [],
-        "aic": 624.8066906856978
+        "aic": 624.8066906857264
       },
       {
         "origin_date": "2019-12-01",
@@ -209,7 +209,7 @@
         "n_calendar_months": 120,
         "converged": true,
         "warnings": [],
-        "aic": 661.1119411970116
+        "aic": 661.1119411970012
       },
       {
         "origin_date": "2020-06-01",
@@ -218,7 +218,7 @@
         "n_calendar_months": 126,
         "converged": true,
         "warnings": [],
-        "aic": 702.9912375159049
+        "aic": 702.99123751267
       },
       {
         "origin_date": "2020-12-01",
@@ -227,7 +227,7 @@
         "n_calendar_months": 132,
         "converged": true,
         "warnings": [],
-        "aic": 739.6090328648796
+        "aic": 739.6090328656159
       },
       {
         "origin_date": "2021-06-01",
@@ -236,7 +236,7 @@
         "n_calendar_months": 138,
         "converged": true,
         "warnings": [],
-        "aic": 775.9672765797378
+        "aic": 775.9672765798772
       },
       {
         "origin_date": "2021-12-01",
@@ -245,7 +245,7 @@
         "n_calendar_months": 144,
         "converged": true,
         "warnings": [],
-        "aic": 811.6324594472063
+        "aic": 811.632459447307
       },
       {
         "origin_date": "2022-06-01",
@@ -254,7 +254,7 @@
         "n_calendar_months": 150,
         "converged": true,
         "warnings": [],
-        "aic": 846.6919136814698
+        "aic": 846.6919136816708
       },
       {
         "origin_date": "2022-12-01",
@@ -263,7 +263,7 @@
         "n_calendar_months": 156,
         "converged": true,
         "warnings": [],
-        "aic": 885.326139928954
+        "aic": 885.3261399287203
       },
       {
         "origin_date": "2023-06-01",
@@ -272,7 +272,7 @@
         "n_calendar_months": 162,
         "converged": true,
         "warnings": [],
-        "aic": 920.1504453125398
+        "aic": 920.150445316046
       },
       {
         "origin_date": "2023-12-01",
@@ -281,7 +281,7 @@
         "n_calendar_months": 168,
         "converged": true,
         "warnings": [],
-        "aic": 955.8445791498082
+        "aic": 955.844579149926
       },
       {
         "origin_date": "2024-06-01",
@@ -290,7 +290,7 @@
         "n_calendar_months": 174,
         "converged": true,
         "warnings": [],
-        "aic": 991.2823414192371
+        "aic": 991.2823414182354
       },
       {
         "origin_date": "2024-12-01",
@@ -299,7 +299,7 @@
         "n_calendar_months": 180,
         "converged": true,
         "warnings": [],
-        "aic": 1026.9600524008642
+        "aic": 1026.9600524009536
       },
       {
         "origin_date": "2025-06-01",
@@ -308,7 +308,7 @@
         "n_calendar_months": 186,
         "converged": true,
         "warnings": [],
-        "aic": 1061.5234760677586
+        "aic": 1061.523476067919
       },
       {
         "origin_date": "2025-12-01",
@@ -317,7 +317,7 @@
         "n_calendar_months": 192,
         "converged": true,
         "warnings": [],
-        "aic": 1097.4757267205932
+        "aic": 1097.4757267213631
       }
     ],
     "summary": [
@@ -325,9 +325,9 @@
         "model": "naive",
         "horizon": 1,
         "n": 20,
-        "mae": 4.662,
-        "rmse": 6.0026,
-        "bias": 1.06,
+        "mae": 4.672,
+        "rmse": 6.0067,
+        "bias": 1.07,
         "n_intervals": 20,
         "inside_80": 0.8,
         "inside_95": 0.95
@@ -358,9 +358,9 @@
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 6.6626,
-        "rmse": 9.805,
-        "bias": -3.4879,
+        "mae": 6.6526,
+        "rmse": 9.803,
+        "bias": -3.4779,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -382,7 +382,7 @@
         "n": 20,
         "mae": 9.3405,
         "rmse": 12.1581,
-        "bias": -5.6037,
+        "bias": -5.6036,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -391,9 +391,9 @@
         "model": "seasonal_naive",
         "horizon": 1,
         "n": 20,
-        "mae": 8.643,
-        "rmse": 10.6587,
-        "bias": -1.953,
+        "mae": 8.653,
+        "rmse": 10.6691,
+        "bias": -1.943,
         "n_intervals": 0,
         "inside_80": null,
         "inside_95": null
@@ -426,9 +426,9 @@
         "horizon": 1,
         "model": "naive",
         "n": 20,
-        "mae": 4.662,
-        "rmse": 6.0026,
-        "bias": 1.06,
+        "mae": 4.672,
+        "rmse": 6.0067,
+        "bias": 1.07,
         "n_intervals": 20,
         "inside_80": 0.8,
         "inside_95": 0.95
@@ -461,9 +461,9 @@
         "model": "sarima",
         "horizon": 1,
         "n": 20,
-        "mae": 6.6626,
-        "rmse": 9.805,
-        "bias": -3.4879,
+        "mae": 6.6526,
+        "rmse": 9.803,
+        "bias": -3.4779,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
@@ -485,7 +485,7 @@
         "n": 20,
         "mae": 9.3405,
         "rmse": 12.1581,
-        "bias": -5.6037,
+        "bias": -5.6036,
         "n_intervals": 20,
         "inside_80": 0.9,
         "inside_95": 0.95
