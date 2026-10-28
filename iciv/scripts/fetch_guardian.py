@@ -205,7 +205,11 @@ if __name__ == "__main__":
         if snap.empty:
             print("AVISO: snapshot de titulares vacío — se conserva el anterior.")
         else:
-            save_dataframe(snap, settings.paths.raw_guardian_headlines)
+            # Colección móvil de texto (últimos _SNAPSHOT_DAYS días): no tiene
+            # columnas numéricas y los titulares viejos salen de la ventana a
+            # propósito. Sin value_columns/allow_loss, safe_save la rechazaba
+            # siempre y el snapshot quedó congelado el 14-sep-2026.
+            save_dataframe(snap, settings.paths.raw_guardian_headlines, value_columns=["title"], allow_loss=True)
             print(f"Guardado: {settings.paths.raw_guardian_headlines}  ({len(snap)} titulares)")
     except Exception as exc:
         print(f"AVISO: no se pudo actualizar el snapshot de titulares: {exc}")

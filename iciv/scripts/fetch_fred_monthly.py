@@ -78,6 +78,32 @@ _FUENTE_BASE = (
     "https://fred.stlouisfed.org/series/{series_id}"
 )
 
+# Series que FRED distribuye solo en ventana móvil (licencia ICE BofA, ~3 años).
+# Cada mes la ventana avanza y el mes más antiguo deja de venir en la descarga.
+# Esos meses ya fueron publicados por FRED y descargados antes: se conservan del
+# snapshot anterior en vez de perderlos. Sin esto, safe_save rechazaba TODO el
+# archivo por "pérdida de observaciones" y FRED dejó de actualizarse entre el
+# 9 y el 28 de octubre de 2026 (FEDFUNDS quedó en agosto; ver
+# docs/INCIDENTE_FRED_VENTANA_MOVIL.md). Las demás series siguen bajo la regla
+# estricta: si pierden un mes publicado, la descarga se rechaza.
+_ROLLING_WINDOW = {"em_bond_spread_pct"}
+
+
+def _retain_rolling_window(df: pd.DataFrame, previous: Path = OUTPUT) -> pd.DataFrame:
+    """Añade los meses ya publicados que salieron de la ventana móvil del distribuidor."""
+    if not previous.exists():
+        return df
+    old = pd.read_csv(previous)
+    old = old[old["variable"].isin(_ROLLING_WINDOW) & pd.to_numeric(old["valor"], errors="coerce").notna()]
+    keys = ["año", "mes", "variable"]
+    kept = old.merge(df[keys], on=keys, how="left", indicator=True)
+    kept = kept[kept["_merge"] == "left_only"].drop(columns="_merge")
+    if kept.empty:
+        return df
+    print(f"    Conservados {len(kept)} meses publicados fuera de la ventana móvil: "
+          f"{', '.join(sorted(kept['variable'].unique()))}")
+    return pd.concat([df, kept[df.columns]], ignore_index=True)
+
 
 def _fetch_monthly(series_id: str, col_name: str) -> pd.DataFrame:
     """Descarga CSV diario y agrega a mensual."""
@@ -114,14 +140,15 @@ def fetch_fred_monthly() -> pd.DataFrame:
             m = _fetch_monthly(series_id, col_name)
             if m.empty:
                 raise ValueError("respuesta sin observaciones")
-            print(f"    OK: {len(m)} meses, rango {m['año'].min()}-{m['mes'].min():02d} a {m['año'].max()}-{m['mes'].max():02d}")
+            first, last = m.iloc[0], m.iloc[-1]
+            print(f"    OK: {len(m)} meses, rango {first['año']}-{first['mes']:02d} a {last['año']}-{last['mes']:02d}")
             all_rows.append(m)
         except Exception as exc:
             raise RuntimeError(f"FRED {series_id}: descarga mensual fallida; CSV no actualizado.") from exc
 
     if not all_rows:
         return pd.DataFrame(columns=["año", "mes", "variable", "valor", "fuente"])
-    df = pd.concat(all_rows, ignore_index=True)
+    df = _retain_rolling_window(pd.concat(all_rows, ignore_index=True))
     df = df.sort_values(["variable", "año", "mes"]).reset_index(drop=True)
     return df
 

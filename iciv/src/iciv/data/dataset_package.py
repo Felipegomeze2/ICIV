@@ -357,6 +357,10 @@ def build_dataset_package(
         "iciv_pulse_monthly.csv", "iciv_pulse_components.csv",
         "external_validation.csv", "external_validation_summary.csv", "forecast.json",
         "run_status.json", "fetch_status.json", "iciv_validacion.html",
+        # Evidencia que citan la tesis y el artículo: sin estos archivos la
+        # release congelada no bastaba para reconstruir sus tablas.
+        "annual_composition.csv", "plausibilidad_proveedor.csv",
+        "robustness_summary.csv", "robustness_scenarios.csv", "robustness_run.json",
     ]:
         src = settings.paths.data_processed / optional_name
         if src.exists():
@@ -373,8 +377,14 @@ def build_dataset_package(
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=settings.paths.root, text=True).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=settings.paths.root, text=True).strip())
+        # El pipeline reescribe datos y documentos versionados, así que el árbol
+        # completo siempre aparece modificado al empaquetar. Este indicador mira
+        # solo el código: False significa que el código es exactamente el del commit.
+        code_dirty = bool(subprocess.check_output(
+            ["git", "status", "--porcelain", "--", "src", "scripts", "main.py", "config", "pyproject.toml"],
+            cwd=settings.paths.root, text=True).strip())
     except (OSError, subprocess.CalledProcessError):
-        commit, dirty = None, None
+        commit, dirty, code_dirty = None, None, None
     code_hashes = {}
     for folder in (settings.paths.root / "src", settings.paths.root / "scripts"):
         for path in sorted(folder.rglob("*.py")):
@@ -382,7 +392,7 @@ def build_dataset_package(
     code_hashes["main.py"] = _sha256(settings.paths.root / "main.py")
     manifest = {
         "methodology_version": METHODOLOGY_VERSION,
-        "git_commit_base": commit, "working_tree_modified": dirty,
+        "git_commit_base": commit, "working_tree_modified": dirty, "code_modified_vs_commit": code_dirty,
         "code_sha256": code_hashes,
         "environment": {name: importlib.metadata.version(name) for name in
                         ("pandas", "numpy", "scipy", "statsmodels", "scikit-learn", "pydantic")},

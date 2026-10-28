@@ -7,6 +7,7 @@
 .claude/
 memory/
 entregables_local/
+entrega_final/
 
 # ── Python ───────────────────────────────────────────────────────────
 __pycache__/
