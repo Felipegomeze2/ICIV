@@ -24,12 +24,18 @@ EVIDENCE = ROOT / "data/sources/audit_20260917"
 URLS = {
     "cpi2025.xlsx": "https://images.transparencycdn.org/images/CPI2025_Results.xlsx",
     "weo_apr2026.xlsx": "https://data.imf.org/-/media/iData/External-Storage/Documents/2F78EE59F79143A7921E5E203D3AAA80/en/WEOApr2026all.xlsx",
+    "weo_oct2026.xlsx": "https://data.imf.org/-/media/iData/External-Storage/Documents/0FA3DC49A04D446E9D69DBEB29979E1C/en/WEOOct2026all.xlsx",
     "wjp2025.xlsx": "https://worldjusticeproject.org/rule-of-law-index/downloads/2025_wjp_rule_of_law_index_HISTORICAL_DATA_FILE.xlsx",
     "fh2013_2024.xlsx": "https://freedomhouse.org/sites/default/files/2024-02/All_data_FIW_2013-2024.xlsx",
     "fh2025.html": "https://freedomhouse.org/country/venezuela/freedom-world/2025",
     "fh2026.html": "https://freedomhouse.org/country/venezuela/freedom-world/2026",
     "hdi_owid.csv": "https://ourworldindata.org/grapher/human-development-index.csv",
 }
+# Vintage WEO contra el que se audita imf.csv. Debe ser el mismo que sirve hoy el
+# DataMapper (fetch_imf.py); el de abril se conserva como evidencia histórica.
+# Cambiado a octubre el 2026-10-28: con el raw del WEO de octubre, 44 valores no
+# coincidían con abril y ninguna observación FMI quedaba verificada.
+WEO_EVIDENCE = "weo_oct2026.xlsx"
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -115,7 +121,7 @@ def main():
             if source == "cpi":
                 compare("cpi.csv", "cpi_score", cpi_values(retrieve("cpi2025.xlsx", args.refresh)), "cpi2025.xlsx", publication="2026-02-10")
             elif source == "weo":
-                data = pd.read_excel(retrieve("weo_apr2026.xlsx", args.refresh), sheet_name="Countries")
+                data = pd.read_excel(retrieve(WEO_EVIDENCE, args.refresh), sheet_name="Countries")
                 ven = data[data["COUNTRY.ID"].eq("VEN")]
                 mapping = {"PCPIPCH": "inflacion_ipc_imf_pct", "LUR": "desempleo_pct",
                            "BCA_NGDPD": "cuenta_corriente_pct_pib", "NGDP_RPCH": "pib_crecimiento_imf_pct"}
@@ -126,7 +132,7 @@ def main():
                     last = int(row["LATEST_ACTUAL_ANNUAL_DATA"])
                     vals = {y: float(row[y]) for y in range(2000, 2027) if pd.notna(row[y])}
                     states = {y: ("WEO_historico_segun_proveedor_revisable" if last > 0 and y <= last else "WEO_estimacion_o_proyeccion_del_FMI") for y in vals}
-                    compare("imf.csv", var, vals, "weo_apr2026.xlsx", tolerance=0.0500001,
+                    compare("imf.csv", var, vals, WEO_EVIDENCE, tolerance=0.0500001,
                             states=states, publication=row["PUBLICATION_DATE"])
             elif source == "wjp":
                 from fetch_wjp import _expand_edition_years
