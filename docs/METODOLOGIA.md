@@ -13,7 +13,7 @@ Medir de forma descriptiva la evolución del entorno macroeconómico e instituci
 
 ## Contrato anual
 
-`iciv/src/iciv/index/dimensions.py` fija 21 variables en seis dimensiones. `AHPWeights` calcula los pesos entre dimensiones desde una matriz de comparación por pares (escala de Saaty). Los pesos internos de cada dimensión son decisiones documentadas del autor; no provienen de un panel de expertos. El CR de la matriz entre dimensiones verifica consistencia interna, no validez económica. Las matrices internas se construyen por cocientes de pesos y son consistentes por construcción (CR = 0), por eso su CR no valida nada.
+`iciv/src/iciv/index/dimensions.py` fija un universo de 21 variables en seis dimensiones (20 pueden contribuir al puntaje; luminosidad solo permanece en cobertura). `AHPWeights` calcula los pesos entre dimensiones desde una matriz de comparación por pares (escala de Saaty). Los pesos internos de cada dimensión son decisiones documentadas del autor; no provienen de un panel de expertos. El CR de la matriz entre dimensiones verifica consistencia interna, no validez económica. Las matrices internas se construyen por cocientes de pesos y son consistentes por construcción (CR = 0), por eso su CR no valida nada.
 
 Matriz entre dimensiones: n = 6, λmax = 6,0501, CI = 0,0100, RI = 1,24, **CR = 0,0081**.
 
@@ -41,7 +41,7 @@ Matriz entre dimensiones: n = 6, λmax = 6,0501, CI = 0,0100, RI = 1,24, **CR = 
 | Percepción internacional | 9,06% | guardian_tono_titulares | 0,6500 | 5,89% | The Guardian + VADER | + |
 | | | guardian_articulos_venezuela | 0,3500 | 3,17% | The Guardian | − |
 
-Los pesos efectivos de cada ejecución se exportan en `data_dictionary.csv`. El comparador de pesos iguales aplica 1/6 a cada dimensión y conserva los pesos internos (`iciv_scores.csv`).
+Los pesos nominales se exportan en `data_dictionary.csv`; la contribución efectiva varía con la renormalización por variables y dimensiones disponibles. Sin luminosidad, el petróleo representa toda la dimensión energética: 19,52 % cuando se publican las seis dimensiones, frente a un peso nominal de 14,64 %. El comparador de pesos iguales aplica 1/6 a cada dimensión y conserva los pesos internos (`iciv_scores.csv`).
 
 **Precio WTI y tasa de la Fed** pertenecen a la dimensión macro como condiciones externas que afectan a una economía petrolera y al costo global del capital. Son iguales para todos los países: su función es capturar el entorno externo que enfrenta Venezuela, no un desempeño propio.
 
@@ -118,3 +118,7 @@ Por decisión del autor (9 de octubre de 2026), quedan fuera de esta entrega y p
 - **28 de octubre de 2026 (mantenimiento, sin cambio metodológico; sigue siendo 2.1.0).** El fetcher mensual de FRED conserva los meses ya publicados que salen de la ventana móvil de la serie ICE BofA (antes, esa salida bloqueaba la actualización de todo el archivo); el snapshot de titulares de The Guardian se guarda como colección móvil; las releases incluyen la evidencia de composición, plausibilidad y robustez, y el manifiesto distingue si el *código* difiere del commit; la auditoría del FMI usa como evidencia el WEO de octubre de 2026. Ver [incidente](INCIDENTE_FRED_VENTANA_MOVIL.md) y [auditoría](AUDITORIA_FUENTES_ACTUAL.md). Release de la tesis: `tesis-2026-10b`.
 - **2.1.0 (9 de octubre de 2026).** Corrección del bloque de comercio del Pulse (las series FRED IR14270/IR14260 eran precios de importación de oro y zinc; se reemplazan por las importaciones de EE.UU. desde Venezuela publicadas por la EIA); control de plausibilidad de valores del proveedor; exclusión de los ceros de exportaciones 2000–2011; serie oficial 2012–2026 con tramo exploratorio declarado; validación externa por tramo; semáforo SATV visible; alcance descartado formalizado.
 - **2.0.0 (16–17 de septiembre de 2026).** Satélite fuera del índice, pronóstico de persistencia, validación HAC + Holm, CPI desde 2012, auditoría de 164 valores, 79 escenarios de robustez, releases con hashes.
+
+## Reproducción de la entrega y alcance de la evidencia
+
+La reproducción de la release congelada usa el procedimiento aislado de [REPRODUCIR_RELEASE.md](REPRODUCIR_RELEASE.md). Las asociaciones externas en niveles son evidencia retrospectiva exploratoria, no una demostración de validez del constructo: HAC y Holm no eliminan tendencias espurias. La estabilidad ordinal no implica invariancia de niveles o categorías. Los signos de exportaciones/PIB, migración y volumen de noticias son hipótesis de diseño con limitaciones semánticas, discutidas en el artículo; su exclusión se evalúa en robustez. No se realizaron estudio de usuarios, panel experto ni validación humana del sentimiento.

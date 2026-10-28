@@ -7,7 +7,7 @@ Proyecto de grado de Felipe Gómez Espinal, Especialización en Big Data e Intel
 
 **Dashboard público:** https://felipegomeze2.github.io/ICIV/
 
-ICIV es un indicador compuesto **descriptivo** del entorno de inversión venezolano. Combina un índice anual de seis dimensiones (21 variables, pesos AHP) con una señal mensual (Pulse, 15 variables), un semáforo de alertas (SATV), controles de cobertura y validación retrospectiva. La escala compara períodos de Venezuela consigo misma; no estima rentabilidad ni probabilidad de riesgo país, y no compara países.
+ICIV es un indicador compuesto **descriptivo** del entorno de inversión venezolano. Combina un índice anual de seis dimensiones (universo de 21 variables, 20 activas, pesos AHP) con una señal mensual (Pulse, 15 variables), un semáforo de alertas (SATV), controles de cobertura y validación retrospectiva. La escala compara períodos de Venezuela consigo misma; no estima rentabilidad ni probabilidad de riesgo país, y no compara países.
 
 ![ICIV 2000–2026](docs/figures/iciv_timeline_eventos.png)
 
@@ -20,7 +20,7 @@ ICIV es un indicador compuesto **descriptivo** del entorno de inversión venezol
 
 ## Release de la tesis
 
-Las cifras del documento de tesis, el artículo y la presentación de sustentación salen de la release congelada **`tesis-2026-10b`** (`iciv/data/releases/tesis-2026-10b/`, datos descargados el 28 de octubre de 2026). Es inmutable: las corridas semanales siguen actualizando `releases/latest` y el dashboard, pero no la tocan. Reemplaza a `tesis-2026-10`, congelada horas antes ese mismo día (ver [cierre](docs/CIERRE_PROYECTO.md)). Su manifiesto cita el commit base `b7c2871`; tras retirar las entregas del historial, ese mismo código está en `a2c9701`. Para verificarla:
+Las cifras del artículo IEEE y la presentación de apoyo salen de la release congelada **`tesis-2026-10b`** (`iciv/data/releases/tesis-2026-10b/`, datos descargados el 28 de octubre de 2026). Es inmutable: las corridas semanales siguen actualizando `releases/latest` y el dashboard, pero no la tocan. Reemplaza a `tesis-2026-10`, congelada horas antes ese mismo día (ver [cierre](docs/CIERRE_PROYECTO.md)). Su manifiesto cita el commit base `b7c2871`; tras retirar las entregas del historial, ese mismo código está en `a2c9701`. Para verificarla:
 
 ```sh
 python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10b
@@ -73,3 +73,5 @@ El dashboard se genera en `iciv_dashboard.html`; la validación en `iciv/data/pr
 - Incidentes: [series de comercio del Pulse](docs/INCIDENTE_SERIES_COMERCIO.md), [ejecución 38](docs/INCIDENTE_ACTIONS_38.md), [FRED en ventana móvil](docs/INCIDENTE_FRED_VENTANA_MOVIL.md)
 
 Las presentaciones de avances anteriores son históricas. Sus cifras no sustituyen la metodología 2.1 ni los resultados de la release vigente.
+
+La entrega académica es el artículo IEEE individual; los archivos de entrega permanecen en local. Para reproducir su release sin usar datos corrientes ni sobrescribir el checkout, consulte [el procedimiento aislado](docs/REPRODUCIR_RELEASE.md).

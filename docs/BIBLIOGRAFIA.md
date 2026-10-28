@@ -1,6 +1,6 @@
 # Bibliografía y fuentes ICIV
 
-Referencias que sostienen el diseño metodológico, el marco teórico de la tesis y el catálogo de datos. Formato APA (7.ª ed.) abreviado. Antes de la entrega final, confirmar páginas y DOI de cada referencia en su fuente original.
+Referencias que sostienen el diseño metodológico, el marco teórico de la tesis y el catálogo de datos. Formato APA (7.ª ed.) abreviado. El artículo identifica el vintage de octubre de 2026 del WEO. La revisión de metadatos y enlaces se registra por separado en la entrega local; no equivale a certificar lectura humana exhaustiva de las fuentes.
 
 ---
 
