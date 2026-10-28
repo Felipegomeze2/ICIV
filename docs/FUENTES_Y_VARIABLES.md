@@ -36,7 +36,7 @@ IMF IMTS y UN Comtrade (comercio espejo), ACLED (eventos de conflicto, ~12 meses
 
 ## Auditoría y fechas
 
-La revisión del 17 de septiembre contrasta 164 valores de CPI, WJP, Freedom House, HDI vía OWID y WEO contra archivos oficiales: [evidencia y límites](AUDITORIA_FUENTES_ACTUAL.md).
+La revisión del 17 de septiembre contrasta 164 valores de CPI, WJP, Freedom House, HDI vía OWID y WEO contra archivos oficiales; con el WEO de octubre de 2026, los valores revisados del FMI dejan de coincidir con la edición archivada de abril: [evidencia, estado y límites](AUDITORIA_FUENTES_ACTUAL.md).
 
 Las fechas de publicación del histórico no están archivadas sistemáticamente. El año o mes del dato y la fecha del archivo no se usan como fechas de publicación. Cada release conserva snapshots hacia adelante.
 

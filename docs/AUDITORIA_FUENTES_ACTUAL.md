@@ -1,6 +1,8 @@
 # Auditoría de fuentes · septiembre de 2026
 
-Se contrastaron **164 valores y todos coinciden** con la precisión almacenada. El resultado se limita al conjunto siguiente; no demuestra que todas las fuentes sean correctas ni que sean observaciones directas.
+Se contrastaron **164 valores y todos coincidieron** con la precisión almacenada (17–18 de septiembre de 2026). El resultado se limita al conjunto siguiente; no demuestra que todas las fuentes sean correctas ni que sean observaciones directas.
+
+> **Estado al 28 de octubre de 2026 (release `tesis-2026-10`).** Al repetir el contraste con los datos de la release, coinciden 120 de 164 valores. Las 44 diferencias son todas del FMI (crecimiento WEO 18, cuenta corriente 20, desempleo 5, inflación 1): el 19 de octubre entró el WEO de octubre de 2026, y la evidencia archivada es el WEO de abril. Es una revisión del proveedor, no un error de carga. CPI, WJP, Freedom House y HDI siguen coincidiendo. Como prevé el diseño, las observaciones del FMI cuyo raw ya no coincide con la evidencia dejan de recibir la etiqueta de verificación. De las cuatro series, solo la inflación entra al índice; su único valor distinto es la proyección 2026 (467,9 % en octubre frente a 387,4 % en abril). Los archivos de esta carpeta conservan el resultado de septiembre; archivar el WEO de octubre como evidencia nueva queda pendiente.
 
 | Fuente | Evidencia archivada | Criterio |
 |---|---|---|
