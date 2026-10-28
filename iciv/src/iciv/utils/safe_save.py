@@ -22,7 +22,7 @@ def save_dataframe(df: pd.DataFrame, path: Path | str, *,
     """
     path = Path(path)
     keys = [c for c in df if c.lower() in {
-        "año", "anio", "year", "mes", "month", "fecha", "date", "variable",
+        "año", "anio", "year", "mes", "month", "fecha", "date", "variable", "indicador",
         "estado", "state", "iso3", "country", "region", "url",
     }]
     if value_columns is None:

@@ -118,3 +118,21 @@ def test_crea_el_archivo_si_no_existia(tmp_path):
 
     assert save_dataframe(df, destino) is True
     assert destino.exists()
+
+
+def test_formato_largo_con_varios_indicadores_por_anio(tmp_path):
+    """vdem.csv trae tres indicadores por año: «indicador» es parte de la clave.
+
+    Sin reconocerla, la guarda veía (año, pais) duplicados y rechazaba siempre la
+    descarga (detectado el 2026-10-28)."""
+    destino = tmp_path / "vdem.csv"
+    df = pd.DataFrame({
+        "año": [2024, 2024, 2025, 2025],
+        "indicador": ["vdem_rule_of_law", "vdem_corrupcion_pol"] * 2,
+        "valor": [0.009, 0.97, 0.009, 0.968],
+        "pais": "Venezuela",
+    })
+    assert save_dataframe(df, destino, value_columns=["valor"])
+    nuevo = df[df["indicador"] == "vdem_rule_of_law"]
+    with pytest.raises(NoDataError):
+        save_dataframe(nuevo, destino, value_columns=["valor"])  # perdería el otro indicador
