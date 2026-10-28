@@ -20,7 +20,7 @@ ICIV es un indicador compuesto **descriptivo** del entorno de inversión venezol
 
 ## Release de la tesis
 
-Las cifras del documento de tesis, el artículo y la presentación de sustentación salen de la release congelada **`tesis-2026-10b`** (`iciv/data/releases/tesis-2026-10b/`, datos descargados el 28 de octubre de 2026). Es inmutable: las corridas semanales siguen actualizando `releases/latest` y el dashboard, pero no la tocan. La release `tesis-2026-10b`, congelada ese mismo día, quedó reemplazada (ver [cierre](docs/CIERRE_PROYECTO.md)). Para verificarla:
+Las cifras del documento de tesis, el artículo y la presentación de sustentación salen de la release congelada **`tesis-2026-10b`** (`iciv/data/releases/tesis-2026-10b/`, datos descargados el 28 de octubre de 2026). Es inmutable: las corridas semanales siguen actualizando `releases/latest` y el dashboard, pero no la tocan. Reemplaza a `tesis-2026-10`, congelada horas antes ese mismo día (ver [cierre](docs/CIERRE_PROYECTO.md)). Su manifiesto cita el commit base `b7c2871`; tras retirar las entregas del historial, ese mismo código está en `a2c9701`. Para verificarla:
 
 ```sh
 python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10b
