@@ -2,6 +2,7 @@
 from pathlib import Path
 from types import SimpleNamespace
 import hashlib
+import os
 import numpy as np
 import pandas as pd
 from iciv.analytics.robustness import alternative_normalization, common_basket_changes, VARIABLES
@@ -58,6 +59,10 @@ def test_canonical_hash_accepts_only_line_ending_equivalence(tmp_path):
     assert _current_sha(path,True)==canonical
     assert _current_sha(path)!=original
     path.write_bytes(b"year,value\n2026,4\n")
+    # El hash se cachea por (mtime, tamaño). En Windows dos escrituras seguidas del
+    # mismo tamaño pueden compartir mtime y la prueba fallaba de forma intermitente;
+    # un archivo real reescrito lo es en otro instante.
+    st = path.stat(); os.utime(path, ns=(st.st_atime_ns, st.st_mtime_ns + 1_000_000))
     assert _current_sha(path,True)!=canonical
 
 def test_official_cpi_strict_workbook_matches_active_years():
