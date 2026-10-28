@@ -1,6 +1,6 @@
 {
   "methodology_version": "2.1.0",
-  "git_commit_base": "bb1689845273d041164a924989a2a36230f95711",
+  "git_commit_base": "b7c287101d4f4180a5948af8d015998a009d1f7b",
   "working_tree_modified": true,
   "code_modified_vs_commit": false,
   "code_sha256": {
@@ -61,7 +61,7 @@
     "src/iciv/utils/env.py": "0a6952b7637d362b10baf01fdc1a30b6dd85999be91db9c68bb21b53363d3e4c",
     "src/iciv/utils/logging_config.py": "e93eec71a4b10a7f214ff1f1778945ffdffe06cb10f21b5a36940b0ff179c2d5",
     "src/iciv/utils/safe_save.py": "f85af0a9d47b7c1099f5fe5e0ee6f009163ef1ced02bacff48fce3b0b30474c8",
-    "scripts/audit_sources.py": "4d21fa56d6278ceb31b558801e3441beba56b9b0c1ecfc04f611969847e0a8ce",
+    "scripts/audit_sources.py": "db3e3b3791b419dac934f8cae66ee9d0dd4afbcae6c2f4ba95804fbf9d514738",
     "scripts/backfill_blackmarble_parallel.py": "501c604813c6bd0629d1c95ec6b3cdad942de8441e3a6af64b8a1404f1e8262c",
     "scripts/backtest_pulse_forecast.py": "ee1e31174bfd213966d70226b02b5a7f9176c6502aab6763fdbaa94727d20bc0",
     "scripts/build_dataset_package.py": "066a3c03c43b876eee72640b74aee0a5d5bc3a233a66312535e0bc4a4b7cb805",
@@ -118,7 +118,7 @@
   "publication_dates": "not_archived; period is not a publication timestamp",
   "sha256_policy": "bytes as packaged; canonical_lf_sha256 also provided for text checkout verification",
   "release_id": "latest",
-  "generated_at_utc": "2026-10-28T20:32:03.722493+00:00",
+  "generated_at_utc": "2026-10-28T20:56:21.380870+00:00",
   "source_policy": "international_distributors; primary_national_inputs_possible; no_project_imputation_or_source_substitution",
   "annual_year_min": 2000,
   "annual_year_max": 2026,
@@ -176,9 +176,9 @@
       "rows": null
     },
     "iciv_dataset_largo.csv": {
-      "bytes": 268232,
-      "sha256": "7c5a92980a61ab6cb8e51a6d3f34543f9d253f351747d12cdd8a166d5fbbdf38",
-      "canonical_lf_sha256": "e808de7e39f4d1445f6b4bbc6e5fc75a36082579848a19b7c148e7598c4ba6a5",
+      "bytes": 273968,
+      "sha256": "640e55f3f4b8195a3279468f5413aadd87b222a63777c75dff1ad3b16565433c",
+      "canonical_lf_sha256": "738a8d6a1f2b2e1dc04ed83f8782e0c7af6807d83e246f1aebe4bad338ef90e0",
       "rows": 837
     },
     "iciv_dataset_wide.csv": {
@@ -225,8 +225,8 @@
     },
     "iciv_validacion.html": {
       "bytes": 29099,
-      "sha256": "f23a5eaa69e9fd2e93822b87cf282519445feeeb1ff2380c57d36696f482de1c",
-      "canonical_lf_sha256": "dde33f34ce21b5f4383e6d0e59647f5ddc92105728b5ba7fd571d5982eacea87",
+      "sha256": "93b420ca6b8f4c36ee2c5c0fb7a9fd0dc17032b7f76a79c28b374cb087277c7a",
+      "canonical_lf_sha256": "c674aac0d4c4aa7fc728b0f54c5c2d2d4cb668885e7be6416568f415ea30e1c5",
       "rows": null
     },
     "normalization_parameters.csv": {
@@ -465,32 +465,32 @@
     },
     "README.md": {
       "bytes": 2129,
-      "sha256": "a34f32a58747dd4dd5904df3d204513eef1cddda08a8ff1e55c58d792d6cf06c",
-      "canonical_lf_sha256": "e43b793b09474ee802c266b381edff4aa42f208f8b6c7e456b2f45b07970e69d",
+      "sha256": "a2de0d49d58ffdef185cc0b2d63e579a7e9bf5dd9a093de11ecac14b201d233c",
+      "canonical_lf_sha256": "aabd9dad7b1457107b0a237646fa00f2611955f33888409ca3c11f1127f81764",
       "rows": null
     },
     "robustness_run.json": {
       "bytes": 578,
-      "sha256": "c7dbbdcf46c236efe87296182bed27570f4e5c4af8553455f9b3953ccef16f86",
-      "canonical_lf_sha256": "6148ba1a59d724af0129f01816930cb318b9376d41e209ddff028907a738d298",
+      "sha256": "04effd2874756929adb3cb546bfae4180108057e1e09c1a93f397a2cabf5958a",
+      "canonical_lf_sha256": "8b45161da4c9ab8915efcfb65a13fb2c4af2033b21ba76c541acaa06d248c558",
       "rows": null
     },
     "robustness_scenarios.csv": {
-      "bytes": 175610,
-      "sha256": "9f5d4c65e47e1bb42f5cb750e89aef3af927388d5af2a9bd88b4951d2de0dfc4",
-      "canonical_lf_sha256": "b17bd90c6affb6a443a5a533d570e36930f96c766a2b85bef08d25536ea16766",
+      "bytes": 175630,
+      "sha256": "45a56a59447be6bae549879a00e9eaeb86af39f46b82798139e4e48eca3debf1",
+      "canonical_lf_sha256": "3be9d28ba63b99efe35523293266edd9847616655abd663f8740e1d9a272d237",
       "rows": 2133
     },
     "robustness_summary.csv": {
-      "bytes": 26160,
-      "sha256": "a7c00ba5dec9493ae53d5038af46305464f5256e61f9849ccfd1858a1adc4236",
-      "canonical_lf_sha256": "41eb6407e9c187e8f3d61b45141d7c27f81ec5196bc398947a982463de71d009",
+      "bytes": 26206,
+      "sha256": "b3f1460fb3b127d1784ba54fc62414f5a2f8dd5c1375a6909104828835a7b16a",
+      "canonical_lf_sha256": "3aa38e9e1e52ac2821a5c7a36a8b42e0fa6ecbfcbcdca213610cd0322c27f68a",
       "rows": 158
     },
     "run_status.json": {
       "bytes": 333,
-      "sha256": "0dc769671926bd96e901569790695717570f7ef63af36dd3f67a2fe338204a1d",
-      "canonical_lf_sha256": "bd461441abf7b7286b3f3d25f173a58c6a3b259608283a096180fb75b2c48766",
+      "sha256": "01e504d929a2de535735f36715bdb6c4c8b75bb0baceea7816ebce80e363ae78",
+      "canonical_lf_sha256": "e1f51115935375c8a1115712d7b01143251aed300ce8ce59ceb42150c9cc992b",
       "rows": null
     },
     "source_provenance.csv": {

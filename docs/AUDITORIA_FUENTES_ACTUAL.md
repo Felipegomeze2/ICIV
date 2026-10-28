@@ -2,7 +2,7 @@
 
 Se contrastaron **164 valores y todos coincidieron** con la precisión almacenada (17–18 de septiembre de 2026). El resultado se limita al conjunto siguiente; no demuestra que todas las fuentes sean correctas ni que sean observaciones directas.
 
-> **Estado al 28 de octubre de 2026 (release `tesis-2026-10`).** Al repetir el contraste con los datos de la release, coinciden 120 de 164 valores. Las 44 diferencias son todas del FMI (crecimiento WEO 18, cuenta corriente 20, desempleo 5, inflación 1): el 19 de octubre entró el WEO de octubre de 2026, y la evidencia archivada es el WEO de abril. Es una revisión del proveedor, no un error de carga. CPI, WJP, Freedom House y HDI siguen coincidiendo. Como prevé el diseño, las observaciones del FMI cuyo raw ya no coincide con la evidencia dejan de recibir la etiqueta de verificación. De las cuatro series, solo la inflación entra al índice; su único valor distinto es la proyección 2026 (467,9 % en octubre frente a 387,4 % en abril). Los archivos de esta carpeta conservan el resultado de septiembre; archivar el WEO de octubre como evidencia nueva queda pendiente.
+> **Actualización 28 de octubre de 2026 (release `tesis-2026-10b`).** El 19 de octubre el DataMapper del FMI pasó a servir el WEO de octubre de 2026, y la evidencia fijada era el de abril: solo coincidían 120 de 164 valores, `audit_sources.py` salía con error (CI rojo) y ninguna observación del FMI quedaba verificada. Las 44 diferencias eran revisiones del proveedor (crecimiento WEO 18, cuenta corriente 20, desempleo 5, inflación 1). Se archivó el archivo oficial `weo_oct2026.xlsx` (WEOOct2026all.xlsx, publicado el 13 de octubre de 2026; descargado con navegador porque data.imf.org rechaza scripts con HTTP 403) y la auditoría del FMI se compara ahora contra ese vintage: **164 de 164 valores coinciden**. La evidencia de abril se conserva.
 
 | Fuente | Evidencia archivada | Criterio |
 |---|---|---|
@@ -10,7 +10,7 @@ Se contrastaron **164 valores y todos coincidieron** con la precisión almacenad
 | World Justice Project | Historical Data File 2025 | Redondeo a cuatro decimales; edición doble asignada al año final. |
 | Freedom House | All Data FIW 2013–2024 y páginas oficiales 2025/2026 | Igualdad del Aggregate Score; año de referencia = edición − 1. |
 | UNDP mediante OWID | CSV completo de HDI | Redondeo a tres decimales. Contraste con el distribuidor utilizado, no auditoría independiente de microdatos UNDP. |
-| FMI | WEO abril de 2026, hoja Countries | Diferencia máxima de media unidad de redondeo del raw a un decimal. |
+| FMI | WEO octubre de 2026, hoja Countries (hasta el 28-oct-2026: WEO abril de 2026) | Diferencia máxima de media unidad de redondeo del raw a un decimal. |
 
 Respuestas, URL y hashes: `iciv/data/sources/audit_20260917`. `comparisons.csv` permite revisar cada celda; `verified_observations.csv` alimenta la trazabilidad. Reproducción: `python iciv/scripts/audit_sources.py`; `--refresh` vuelve a descargar las URL fijadas.
 
@@ -18,18 +18,18 @@ Git conserva sin conversión los bytes de evidencia descargada. Para los raw CSV
 
 ## Estado WEO por serie
 
-El archivo oficial incluye `LATEST_ACTUAL_ANNUAL_DATA`. Venezuela, abril de 2026:
+El archivo oficial incluye `LATEST_ACTUAL_ANNUAL_DATA`. Venezuela, octubre de 2026 (entre paréntesis, abril de 2026):
 
 | Serie | Último año histórico según FMI | Tratamiento posterior |
 |---|---:|---|
-| Inflación IPC, PCPIPCH | 2025 | 2026 es estimación/proyección FMI. |
-| Crecimiento real, NGDP_RPCH | 2018 | Posteriores: estimaciones/proyecciones. No sustituye al crecimiento WDI del score. |
-| Desempleo, LUR | 2011 | Valores disponibles posteriores: estimaciones. Faltantes permanecen vacíos. |
-| Cuenta corriente, BCA_NGDPD | 2018 | Posteriores: estimaciones/proyecciones. |
+| Inflación IPC, PCPIPCH | 2025 (2025) | 2026 es estimación/proyección FMI. |
+| Crecimiento real, NGDP_RPCH | 2025 (2018) | 2026 es proyección. No sustituye al crecimiento WDI del score. |
+| Desempleo, LUR | 2011 (2011) | Valores disponibles posteriores: estimaciones. Faltantes permanecen vacíos. |
+| Cuenta corriente, BCA_NGDPD | 2025 (2018) | 2026 es proyección. |
 
-“Histórico según proveedor” no significa definitivo. El proyecto usa el WEO del FMI, no fuentes venezolanas; el FMI declara que compila sus series históricas con información de las autoridades nacionales, y esa dependencia indirecta se documenta. La [FAQ FMI](https://data.imf.org/Datasets/WEO/Frequently-Asked-Questions) explica el campo; el [archivo oficial del vintage](https://data.imf.org/-/media/iData/External-Storage/Documents/2F78EE59F79143A7921E5E203D3AAA80/en/WEOApr2026all.xlsx) aporta evidencia por serie.
+“Histórico según proveedor” no significa definitivo. El proyecto usa el WEO del FMI, no fuentes venezolanas; el FMI declara que compila sus series históricas con información de las autoridades nacionales, y esa dependencia indirecta se documenta. La [FAQ FMI](https://data.imf.org/Datasets/WEO/Frequently-Asked-Questions) explica el campo; el [archivo oficial del vintage de octubre](https://data.imf.org/-/media/iData/External-Storage/Documents/0FA3DC49A04D446E9D69DBEB29979E1C/en/WEOOct2026all.xlsx) aporta evidencia por serie (el de [abril](https://data.imf.org/-/media/iData/External-Storage/Documents/2F78EE59F79143A7921E5E203D3AAA80/en/WEOApr2026all.xlsx) se conserva).
 
-Publicación del vintage: 14 de abril de 2026. No se infiere cuándo estuvo disponible cada valor en 2000–2025. Los backtests siguen siendo de último vintage, no evaluaciones históricas en tiempo real.
+Publicación del vintage: 13 de octubre de 2026 (abril: 14 de abril de 2026). No se infiere cuándo estuvo disponible cada valor en 2000–2025. Los backtests siguen siendo de último vintage, no evaluaciones históricas en tiempo real.
 
 ## Cambios y límites
 

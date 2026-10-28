@@ -26,14 +26,15 @@ Escenarios prospectivos 2027–2030, simulación Monte Carlo, indicadores líder
 
 ## Entrega (28 de octubre de 2026)
 
-1. **Release de la tesis congelada:** `tesis-2026-10`, con datos descargados el 28 de octubre de 2026. Es inmutable y contiene, además de los datos y el manifiesto, la evidencia que citan los documentos (composición anual, plausibilidad y robustez). Verificación: `python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10`.
+1. **Release de la tesis congelada:** `tesis-2026-10b`, con datos descargados el 28 de octubre de 2026. Es inmutable y contiene, además de los datos y el manifiesto, la evidencia que citan los documentos (composición anual, plausibilidad y robustez). Verificación: `python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10b`.
 2. **Documento de tesis completo** generado desde esa release: [docs/tesis/TESIS_ICIV.md](tesis/TESIS_ICIV.md) en el repositorio; versión con formato (DOCX y PDF) en la carpeta local `entrega_final/`, junto con el artículo IEEE y la presentación de sustentación. Reemplaza al borrador del 9 de octubre.
-3. **Correcciones previas a la congelación** (ver [incidente](INCIDENTE_FRED_VENTANA_MOVIL.md)): el archivo mensual de FRED no se actualizaba desde el 9 de octubre por la ventana móvil de la serie ICE BofA, y el snapshot de titulares de The Guardian no se actualizaba desde el 14 de septiembre. Ninguna observación se modificó.
+3. **Release reemplazada.** `tesis-2026-10` (congelada horas antes) queda en el repositorio, inmutable, pero no se cita: su auditoría del FMI comparaba el WEO de octubre de los datos con la evidencia de abril, así que ninguna observación del FMI quedaba verificada y el escenario de robustez «sin estimaciones WEO verificadas» no retiraba nada. Los puntajes de ambas releases son idénticos. La auditoría ahora usa el WEO de octubre de 2026 como evidencia (164 de 164 valores coinciden).
+4. **Correcciones previas a la congelación** (ver [incidente](INCIDENTE_FRED_VENTANA_MOVIL.md)): el archivo mensual de FRED no se actualizaba desde el 9 de octubre por la ventana móvil de la serie ICE BofA, y el snapshot de titulares de The Guardian no se actualizaba desde el 14 de septiembre. Ninguna observación se modificó.
 
 ## Pendientes antes de la defensa
 
 1. Revisión del autor del documento de tesis, el artículo y la presentación.
-2. Reunión con el asesor: las decisiones marcadas como pendientes en [VALIDACION_PENDIENTE.md](VALIDACION_PENDIENTE.md) siguen sin observaciones registradas. Si el asesor pide cambios metodológicos, hay que generar una release nueva (otro identificador) y regenerar los documentos; `tesis-2026-10` no se sobrescribe.
+2. Reunión con el asesor: las decisiones marcadas como pendientes en [VALIDACION_PENDIENTE.md](VALIDACION_PENDIENTE.md) siguen sin observaciones registradas. Si el asesor pide cambios metodológicos, hay que generar una release nueva (otro identificador) y regenerar los documentos; `tesis-2026-10b` no se sobrescribe.
 3. Datos que solo puede completar el autor: nombre del asesor si el formato lo exige, correo institucional y la declaración de uso de IA ajustada a su caso.
 
 ## Extensiones posteriores

@@ -10,7 +10,7 @@ Los scores anuales incluyen `tramo_serie`: `oficial` (desde 2012) o `extendido_e
 
 El paquete incluye diccionario, cobertura, scores anual/Pulse, parámetros de normalización, validación externa, forecast/backtest, composición anual, registro de plausibilidad, robustez ampliada y copia de CSV de origen. El manifiesto registra versión metodológica, commit base, hashes del código y versiones de librerías, y dos indicadores: `working_tree_modified` (el árbol completo difería del commit; suele ser verdadero tras una corrida, porque el pipeline reescribe datos y documentos versionados) y `code_modified_vs_commit` (solo `src`, `scripts`, `main.py`, `config` y `pyproject.toml`; falso significa que el código es exactamente el del commit base).
 
-La release de la tesis es `tesis-2026-10`: `python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10`.
+La release de la tesis es `tesis-2026-10b`: `python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10b`.
 
 SHA-256 verifica los bytes empaquetados. También se registra hash con finales LF canónicos para distinguir alteraciones reales de la conversión LF/CRLF de Git en Windows. Verificar mediante `python iciv/scripts/verify_release.py`.
 

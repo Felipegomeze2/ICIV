@@ -1,6 +1,6 @@
 # Resultados actuales · generados desde la release
 
-Versión metodológica: 2.1.0. Generación: 2026-10-28T20:32:03.722493+00:00.
+Versión metodológica: 2.1.0. Generación: 2026-10-28T20:56:21.380870+00:00.
 
 Documento generado automáticamente por `iciv/scripts/write_results_summary.py`. No copiar estos resultados a una entrega sin citar su manifiesto. Anual: retrospectivo; meses provisionales y estimaciones del proveedor no son observaciones cerradas.
 

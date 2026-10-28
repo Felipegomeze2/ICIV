@@ -155,5 +155,5 @@ sin_datos_D6_percepcion,indisponibilidad,todos_comparables,27,0,1.80185185185185
 sin_datos_D6_percepcion,indisponibilidad,base_cobertura80,14,0,2.039999999999999,4.300000000000001,-1.154285714285713,0.9912087912087912,5,Universo fijo; cobertura penaliza la fuente ausente.
 inflacion_sin_log,transformacion,todos_comparables,27,0,2.426296296296298,11.43,2.426296296296298,0.9926739926739926,5,
 inflacion_sin_log,transformacion,base_cobertura80,14,0,3.132857142857144,5.850000000000001,3.132857142857144,0.9736263736263736,2,
-sin_estimaciones_WEO_verificadas,estado_proveedor,todos_comparables,27,0,0.0,0.0,0.0,0.9999999999999999,0,Retira únicamente estimaciones FMI con estado acreditado. OIT sigue modelado; no implica conjunto enteramente observado.
+sin_estimaciones_WEO_verificadas,estado_proveedor,todos_comparables,27,0,0.6229629629629628,16.819999999999997,-0.6229629629629628,0.9871794871794871,1,Retira únicamente estimaciones FMI con estado acreditado. OIT sigue modelado; no implica conjunto enteramente observado.
 sin_estimaciones_WEO_verificadas,estado_proveedor,base_cobertura80,14,0,0.0,0.0,0.0,1.0,0,Retira únicamente estimaciones FMI con estado acreditado. OIT sigue modelado; no implica conjunto enteramente observado.

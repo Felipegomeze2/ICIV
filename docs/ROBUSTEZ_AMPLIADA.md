@@ -2,7 +2,7 @@
 
 Documento generado automáticamente por `iciv/scripts/robustness_review.py`.
 
-Generación UTC: 2026-10-28T20:31:57.528419+00:00. Escenarios: 79.
+Generación UTC: 2026-10-28T20:56:19.597589+00:00. Escenarios: 79.
 
 Alternativas deterministas sobre datos reales; no se generan ni rellenan observaciones. La dispersión entre diseños no es un intervalo de confianza. No se eligieron pesos para maximizar correlación con IED.
 

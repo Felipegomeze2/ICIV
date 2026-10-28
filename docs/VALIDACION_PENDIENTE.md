@@ -26,4 +26,4 @@ Decisiones de diseño del ICIV y su estado. "Aprobada por el autor" significa qu
 2. Confirmar el alcance descartado y la serie oficial 2012–2026.
 3. Registrar aquí sus observaciones.
 
-**Estado al 28 de octubre de 2026:** la release de la tesis (`tesis-2026-10`) se congeló sin observaciones del asesor registradas en esta tabla, para cumplir el calendario de entrega. Si la revisión cambia alguna decisión, se genera una release nueva con otro identificador y se regeneran los documentos; la release congelada no se modifica.
+**Estado al 28 de octubre de 2026:** la release de la tesis (`tesis-2026-10b`) se congeló sin observaciones del asesor registradas en esta tabla, para cumplir el calendario de entrega. Si la revisión cambia alguna decisión, se genera una release nueva con otro identificador y se regeneran los documentos; la release congelada no se modifica.
