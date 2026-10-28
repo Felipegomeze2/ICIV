@@ -70,7 +70,6 @@ El dashboard se genera en `iciv_dashboard.html`; la validación en `iciv/data/pr
 - [Registro de decisiones](docs/VALIDACION_PENDIENTE.md)
 - [Cierre y pendientes](docs/CIERRE_PROYECTO.md)
 - [Bibliografía](docs/BIBLIOGRAFIA.md)
-- [Documento de tesis](docs/tesis/TESIS_ICIV.md) (generado desde la release `tesis-2026-10b`)
 - Incidentes: [series de comercio del Pulse](docs/INCIDENTE_SERIES_COMERCIO.md), [ejecución 38](docs/INCIDENTE_ACTIONS_38.md), [FRED en ventana móvil](docs/INCIDENTE_FRED_VENTANA_MOVIL.md)
 
 Las presentaciones de avances anteriores son históricas. Sus cifras no sustituyen la metodología 2.1 ni los resultados de la release vigente.

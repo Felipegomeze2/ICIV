@@ -7,10 +7,6 @@
 .claude/
 memory/
 entregables_local/
-entrega_final/*
-!entrega_final/README.md
-!entrega_final/generador/
-entrega_final/generador/__pycache__/
 
 # ── Python ───────────────────────────────────────────────────────────
 __pycache__/
