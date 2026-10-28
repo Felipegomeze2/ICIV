@@ -199,9 +199,10 @@
 2026,6,brent_precio_usd,85.3990909090909,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
 2026,7,brent_precio_usd,83.75869565217391,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
 2026,8,brent_precio_usd,91.076,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
-2026,9,brent_precio_usd,112.955,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
+2026,9,brent_precio_usd,114.1590909090909,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
+2026,10,brent_precio_usd,124.83,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILBRENTEU
 2023,9,em_bond_spread_pct,2.575,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
-2023,10,em_bond_spread_pct,2.6886363636363635,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
+2023,10,em_bond_spread_pct,2.73,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2023,11,em_bond_spread_pct,2.6445454545454545,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2023,12,em_bond_spread_pct,2.5047619047619047,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2024,1,em_bond_spread_pct,2.4068181818181817,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
@@ -236,7 +237,8 @@
 2026,6,em_bond_spread_pct,1.4363636363636363,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2026,7,em_bond_spread_pct,1.458695652173913,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2026,8,em_bond_spread_pct,1.3952380952380952,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
-2026,9,em_bond_spread_pct,1.3521052631578947,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
+2026,9,em_bond_spread_pct,1.3686363636363637,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
+2026,10,em_bond_spread_pct,1.611578947368421,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/BAMLEMCBPIOAS
 2010,1,tasa_fed_funds_pct,0.11,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
 2010,2,tasa_fed_funds_pct,0.13,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
 2010,3,tasa_fed_funds_pct,0.16,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
@@ -437,6 +439,7 @@
 2026,6,tasa_fed_funds_pct,3.63,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
 2026,7,tasa_fed_funds_pct,3.63,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
 2026,8,tasa_fed_funds_pct,3.63,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
+2026,9,tasa_fed_funds_pct,3.75,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/FEDFUNDS
 2010,1,usd_index_broad,92.44030000000001,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
 2010,2,usd_index_broad,93.88668000000001,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
 2010,3,usd_index_broad,93.14987826086957,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
@@ -637,7 +640,8 @@
 2026,6,usd_index_broad,120.08344761904762,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
 2026,7,usd_index_broad,120.59704545454544,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
 2026,8,usd_index_broad,118.85122857142856,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
-2026,9,usd_index_broad,118.52548461538461,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
+2026,9,usd_index_broad,119.2152238095238,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
+2026,10,usd_index_broad,121.4077375,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DTWEXBGS
 2010,1,ust_10y_yield_pct,3.7331578947368427,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
 2010,2,ust_10y_yield_pct,3.691052631578947,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
 2010,3,ust_10y_yield_pct,3.7273913043478264,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
@@ -838,7 +842,8 @@
 2026,6,ust_10y_yield_pct,4.47047619047619,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
 2026,7,ust_10y_yield_pct,4.599545454545455,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
 2026,8,ust_10y_yield_pct,4.684285714285714,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
-2026,9,ust_10y_yield_pct,4.93,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
+2026,9,ust_10y_yield_pct,4.989047619047619,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
+2026,10,ust_10y_yield_pct,5.1641176470588235,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DGS10
 2010,1,vix_volatility,20.643157894736845,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
 2010,2,vix_volatility,22.54,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
 2010,3,vix_volatility,17.767391304347825,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
@@ -1039,7 +1044,8 @@
 2026,6,vix_volatility,17.90681818181818,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
 2026,7,vix_volatility,17.09086956521739,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
 2026,8,vix_volatility,15.229523809523808,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
-2026,9,vix_volatility,15.805625000000001,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
+2026,9,vix_volatility,15.775454545454545,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
+2026,10,vix_volatility,16.746315789473684,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/VIXCLS
 2010,1,wti_precio_usd,78.32578947368421,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
 2010,2,wti_precio_usd,76.38736842105263,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
 2010,3,wti_precio_usd,81.20347826086957,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
@@ -1240,4 +1246,5 @@
 2026,6,wti_precio_usd,84.80714285714286,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
 2026,7,wti_precio_usd,80.45636363636363,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
 2026,8,wti_precio_usd,83.89761904761905,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
-2026,9,wti_precio_usd,98.41799999999999,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
+2026,9,wti_precio_usd,97.30809523809523,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO
+2026,10,wti_precio_usd,101.37578947368421,Federal Reserve Bank of St. Louis - FRED Economic Data. https://fred.stlouisfed.org/series/DCOILWTICO

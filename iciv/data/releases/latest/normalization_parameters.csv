@@ -2,14 +2,14 @@
 pib_nominal_usd,42837965906.8675,393192354510.653,350354388603.7855,positiva
 pib_crecimiento_real_pct,-29.8246,18.2073,48.0318,positiva
 pib_per_capita_usd,1506.0417,13646.3047,12140.263,positiva
-ied_neta_usd,-1137000000.0,5855000000.0,6992000000.0,positiva
+ied_neta_usd,-2549000000.0,6571000000.0,9120000000.0,positiva
 reservas_internacionales_usd,9794062064.6211,43065463087.2778,33271401022.6567,positiva
 exportaciones_pct_pib,13.0054,47.1957,34.1903,positiva
 acceso_electricidad_pct,95.7,100.0,4.3,positiva
 inflacion_ipc_pct,21.069,254.9485,233.8795,positiva
 tipo_cambio_oficial_lcu_usd,-0.1675,0.9989,1.1664,negativa
 tasa_alfabetizacion_adulta_pct,92.98,97.1837,4.2037,positiva
-remesas_recibidas_usd,17000000.0,279000000.0,262000000.0,positiva
+remesas_recibidas_usd,17000000.0,4305000000.0,4288000000.0,positiva
 esperanza_vida_anos,71.019,73.348,2.329,positiva
 mortalidad_infantil_x1000,14.4,21.2,6.8,negativa
 GOV_WGI_CC.SC,15.6405,34.6434,19.0029,positiva
@@ -27,8 +27,8 @@ desempleo_pct,5.0,18.2,13.2,negativa
 cuenta_corriente_pct_pib,-42.8,28.6,71.4,positiva
 cpi_score,10.0,20.0,10.0,positiva
 hdi,0.696,0.773,0.077,positiva
-guardian_articulos_venezuela,101.0,1044.0,943.0,negativa
-guardian_tono_titulares,-0.3748,0.0371,0.4119,positiva
+guardian_articulos_venezuela,101.0,1058.0,957.0,negativa
+guardian_tono_titulares,-0.3748,0.0366,0.4114,positiva
 wti_precio_usd,26.1396,99.6715,73.5319,positiva
 tasa_fed_funds_pct,0.08,6.2358,6.1558,negativa
 brent_precio_usd,24.5089,111.5707,87.0618,positiva

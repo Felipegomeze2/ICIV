@@ -1,0 +1,538 @@
+{
+  "forecast": {
+    "model": "naive",
+    "model_label": "Persistencia (naive)",
+    "fecha": [
+      "2026-07",
+      "2026-08",
+      "2026-09",
+      "2026-10",
+      "2026-11",
+      "2026-12"
+    ],
+    "origin_date": "2026-06",
+    "mean": [
+      56.26,
+      56.26,
+      56.26,
+      56.26,
+      56.26,
+      56.26
+    ],
+    "n_observed": 186,
+    "n_calendar_months": 198,
+    "horizonte_meses": 6,
+    "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.",
+    "n_interval_errors": [
+      185,
+      184,
+      183,
+      182,
+      181,
+      180
+    ],
+    "lo_80": [
+      48.91,
+      47.3,
+      45.4,
+      44.32,
+      43.16,
+      42.35
+    ],
+    "hi_80": [
+      63.61,
+      65.22,
+      67.12,
+      68.2,
+      69.36,
+      70.17
+    ],
+    "lo_95": [
+      44.97,
+      42.04,
+      40.62,
+      36.57,
+      35.54,
+      35.5
+    ],
+    "hi_95": [
+      67.55,
+      70.48,
+      71.9,
+      75.95,
+      76.98,
+      77.02
+    ]
+  },
+  "metodologia": {
+    "model_selected": "naive",
+    "selection_rule": "Baseline de persistencia prespecificado; no afirma superioridad predictiva.",
+    "evaluation_type": "retrospective_latest_vintage",
+    "validacion": "Retrospectiva de último vintage; sin archivos históricos de publicación o revisiones.",
+    "training_filter": "Cobertura utilizable >=70%, producción doméstica disponible y mes cerrado cuando existen estas banderas.",
+    "interval_method": "Cuantiles empíricos de errores absolutos históricos por horizonte; mínimo 20 pares, sin garantía de cobertura nominal.",
+    "normalization": "Min-max expansivo causal hasta cada fecha; no añade observaciones.",
+    "caveat": "El puntaje puede cambiar de composición; las bandas incluyen esa inestabilidad histórica y no son probabilidades de riesgo económico.",
+    "sarima_candidate": "SARIMA(1, 1, 1)x(1, 1, 1, 12)"
+  },
+  "available": true,
+  "backtest": {
+    "available": true,
+    "evaluation_type": "retrospective_latest_vintage",
+    "reason": null,
+    "limitations": "Sin vintages o fechas históricas de publicación. No es una simulación en tiempo real. Errores condicionados a meses elegibles; composición del índice variable.",
+    "config": {
+      "horizons": [
+        1,
+        3,
+        6
+      ],
+      "min_train_months": 60,
+      "step_months": 6,
+      "min_coverage_pct": 70.0,
+      "include_low_coverage": false,
+      "models": [
+        "naive",
+        "seasonal_naive",
+        "sarima"
+      ]
+    },
+    "sample_policy": "same_origin_and_target_for_every_model",
+    "n_predictions": 186,
+    "n_common_predictions": 180,
+    "n_origins_attempted": 21,
+    "n_origins": 20,
+    "n_failures": 3,
+    "failures": [
+      {
+        "origin_date": "2015-12-01",
+        "target_date": "2016-01-01",
+        "horizon": 1,
+        "model": "sarima",
+        "reason": "non_convergence_or_invalid_parameters"
+      },
+      {
+        "origin_date": "2015-12-01",
+        "target_date": "2016-03-01",
+        "horizon": 3,
+        "model": "sarima",
+        "reason": "non_convergence_or_invalid_parameters"
+      },
+      {
+        "origin_date": "2015-12-01",
+        "target_date": "2016-06-01",
+        "horizon": 6,
+        "model": "sarima",
+        "reason": "non_convergence_or_invalid_parameters"
+      }
+    ],
+    "diagnostics": [
+      {
+        "origin_date": "2015-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 60,
+        "n_calendar_months": 72,
+        "converged": false,
+        "warnings": [
+          "Maximum Likelihood optimization failed to converge. Check mle_retvals",
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 1375.101930111963,
+        "reason": "non_convergence_or_invalid_parameters"
+      },
+      {
+        "origin_date": "2016-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 66,
+        "n_calendar_months": 78,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 10.0
+      },
+      {
+        "origin_date": "2016-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 72,
+        "n_calendar_months": 84,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 423.5662132487302
+      },
+      {
+        "origin_date": "2017-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 78,
+        "n_calendar_months": 90,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 461.8146418815348
+      },
+      {
+        "origin_date": "2017-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 84,
+        "n_calendar_months": 96,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 508.6028661115238
+      },
+      {
+        "origin_date": "2018-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 90,
+        "n_calendar_months": 102,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 547.4242635777066
+      },
+      {
+        "origin_date": "2018-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 96,
+        "n_calendar_months": 108,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 586.5822234375408
+      },
+      {
+        "origin_date": "2019-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 102,
+        "n_calendar_months": 114,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 624.8066906858255
+      },
+      {
+        "origin_date": "2019-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 108,
+        "n_calendar_months": 120,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 661.1119411970463
+      },
+      {
+        "origin_date": "2020-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 114,
+        "n_calendar_months": 126,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 702.9912375131931
+      },
+      {
+        "origin_date": "2020-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 120,
+        "n_calendar_months": 132,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 739.609032864124
+      },
+      {
+        "origin_date": "2021-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 126,
+        "n_calendar_months": 138,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 775.9672765798224
+      },
+      {
+        "origin_date": "2021-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 132,
+        "n_calendar_months": 144,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 811.6324594472861
+      },
+      {
+        "origin_date": "2022-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 138,
+        "n_calendar_months": 150,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 846.6919136810129
+      },
+      {
+        "origin_date": "2022-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 144,
+        "n_calendar_months": 156,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 885.3261399286823
+      },
+      {
+        "origin_date": "2023-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 150,
+        "n_calendar_months": 162,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 920.1504453129792
+      },
+      {
+        "origin_date": "2023-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 156,
+        "n_calendar_months": 168,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 955.9244519082106
+      },
+      {
+        "origin_date": "2024-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 162,
+        "n_calendar_months": 174,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 991.3274058282141
+      },
+      {
+        "origin_date": "2024-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 168,
+        "n_calendar_months": 180,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 1027.0191667255663
+      },
+      {
+        "origin_date": "2025-06-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 174,
+        "n_calendar_months": 186,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 1061.5672528956393
+      },
+      {
+        "origin_date": "2025-12-01",
+        "model_spec": "SARIMA(1, 1, 1)x(1, 1, 1, 12)",
+        "n_observed": 180,
+        "n_calendar_months": 192,
+        "converged": true,
+        "warnings": [
+          "Setting the shape on a NumPy array has been deprecated in NumPy 2.5.\nAs an alternative, you can create a new view using np.reshape (with copy=False if needed)."
+        ],
+        "aic": 1097.5246954556653
+      }
+    ],
+    "summary": [
+      {
+        "model": "naive",
+        "horizon": 1,
+        "n": 20,
+        "mae": 4.661,
+        "rmse": 6.0014,
+        "bias": 1.061,
+        "n_intervals": 20,
+        "inside_80": 0.8,
+        "inside_95": 0.95
+      },
+      {
+        "model": "naive",
+        "horizon": 3,
+        "n": 20,
+        "mae": 5.546,
+        "rmse": 7.3292,
+        "bias": 1.279,
+        "n_intervals": 20,
+        "inside_80": 0.85,
+        "inside_95": 0.95
+      },
+      {
+        "model": "naive",
+        "horizon": 6,
+        "n": 20,
+        "mae": 6.6285,
+        "rmse": 8.3434,
+        "bias": -1.7915,
+        "n_intervals": 20,
+        "inside_80": 0.95,
+        "inside_95": 0.95
+      },
+      {
+        "model": "sarima",
+        "horizon": 1,
+        "n": 20,
+        "mae": 8.0876,
+        "rmse": 15.4588,
+        "bias": 1.5175,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.95
+      },
+      {
+        "model": "sarima",
+        "horizon": 3,
+        "n": 20,
+        "mae": 9.3643,
+        "rmse": 16.9823,
+        "bias": 1.2655,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.9
+      },
+      {
+        "model": "sarima",
+        "horizon": 6,
+        "n": 20,
+        "mae": 10.9464,
+        "rmse": 17.5759,
+        "bias": -0.5997,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.95
+      },
+      {
+        "model": "seasonal_naive",
+        "horizon": 1,
+        "n": 20,
+        "mae": 8.6425,
+        "rmse": 10.6582,
+        "bias": -1.9535,
+        "n_intervals": 0,
+        "inside_80": null,
+        "inside_95": null
+      },
+      {
+        "model": "seasonal_naive",
+        "horizon": 3,
+        "n": 20,
+        "mae": 7.3715,
+        "rmse": 9.2517,
+        "bias": -1.8515,
+        "n_intervals": 0,
+        "inside_80": null,
+        "inside_95": null
+      },
+      {
+        "model": "seasonal_naive",
+        "horizon": 6,
+        "n": 20,
+        "mae": 8.771,
+        "rmse": 9.7614,
+        "bias": -2.659,
+        "n_intervals": 0,
+        "inside_80": null,
+        "inside_95": null
+      }
+    ],
+    "best_by_horizon": [
+      {
+        "horizon": 1,
+        "model": "naive",
+        "n": 20,
+        "mae": 4.661,
+        "rmse": 6.0014,
+        "bias": 1.061,
+        "n_intervals": 20,
+        "inside_80": 0.8,
+        "inside_95": 0.95
+      },
+      {
+        "horizon": 3,
+        "model": "naive",
+        "n": 20,
+        "mae": 5.546,
+        "rmse": 7.3292,
+        "bias": 1.279,
+        "n_intervals": 20,
+        "inside_80": 0.85,
+        "inside_95": 0.95
+      },
+      {
+        "horizon": 6,
+        "model": "naive",
+        "n": 20,
+        "mae": 6.6285,
+        "rmse": 8.3434,
+        "bias": -1.7915,
+        "n_intervals": 20,
+        "inside_80": 0.95,
+        "inside_95": 0.95
+      }
+    ],
+    "sarima": [
+      {
+        "model": "sarima",
+        "horizon": 1,
+        "n": 20,
+        "mae": 8.0876,
+        "rmse": 15.4588,
+        "bias": 1.5175,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.95
+      },
+      {
+        "model": "sarima",
+        "horizon": 3,
+        "n": 20,
+        "mae": 9.3643,
+        "rmse": 16.9823,
+        "bias": 1.2655,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.9
+      },
+      {
+        "model": "sarima",
+        "horizon": 6,
+        "n": 20,
+        "mae": 10.9464,
+        "rmse": 17.5759,
+        "bias": -0.5997,
+        "n_intervals": 20,
+        "inside_80": 0.9,
+        "inside_95": 0.95
+      }
+    ],
+    "public_model": "naive",
+    "public_model_selection": "prespecified_conservative_baseline"
+  }
+}

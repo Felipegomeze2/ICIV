@@ -1,12 +1,12 @@
 # Cierre técnico y académico · v2.1
 
-Estado al 9 de octubre de 2026. Defensa prevista: 28 de noviembre de 2026.
+Estado al 28 de octubre de 2026. Defensa prevista: 28 de noviembre de 2026.
 
 ## Sistema terminado
 
 - Pipeline reproducible: `python iciv/main.py --no-fetch --no-open` regenera índice, Pulse, validación, robustez, dashboard y release; `verify_release.py` comprueba hashes y reproduce normalización, AHP y cobertura.
 - Actualización automática semanal y mensual en GitHub Actions, con control de vigencia de fuentes y publicación en GitHub Pages.
-- 85 pruebas Python y 7 pruebas JavaScript, ejecutadas en CI.
+- 87 pruebas Python y 7 pruebas JavaScript (al 28 de octubre de 2026), ejecutadas en CI.
 - Política de datos aplicada en el código: solo fuentes internacionales, faltantes preservados, valores imposibles del proveedor excluidos y registrados, sin sustitución de fuentes.
 
 ## Cambios de la versión 2.1 (9 de octubre de 2026)
@@ -24,12 +24,17 @@ Estado al 9 de octubre de 2026. Defensa prevista: 28 de noviembre de 2026.
 
 Escenarios prospectivos 2027–2030, simulación Monte Carlo, indicadores líderes y comparación regional (Colombia, Perú, Ecuador, Bolivia). La escala relativa a la historia venezolana no permite comparar niveles entre países sin rediseñar la normalización.
 
+## Entrega (28 de octubre de 2026)
+
+1. **Release de la tesis congelada:** `tesis-2026-10`, con datos descargados el 28 de octubre de 2026. Es inmutable y contiene, además de los datos y el manifiesto, la evidencia que citan los documentos (composición anual, plausibilidad y robustez). Verificación: `python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10`.
+2. **Documento de tesis completo** generado desde esa release: [docs/tesis/TESIS_ICIV.md](tesis/TESIS_ICIV.md) en el repositorio; versión con formato (DOCX y PDF) en la carpeta local `entrega_final/`, junto con el artículo IEEE y la presentación de sustentación. Reemplaza al borrador del 9 de octubre.
+3. **Correcciones previas a la congelación** (ver [incidente](INCIDENTE_FRED_VENTANA_MOVIL.md)): el archivo mensual de FRED no se actualizaba desde el 9 de octubre por la ventana móvil de la serie ICE BofA, y el snapshot de titulares de The Guardian no se actualizaba desde el 14 de septiembre. Ninguna observación se modificó.
+
 ## Pendientes antes de la defensa
 
-1. Reunión con el asesor para las decisiones pendientes de [VALIDACION_PENDIENTE.md](VALIDACION_PENDIENTE.md).
-2. Congelar la release de la tesis: `python iciv/main.py --no-fetch --no-open --release-id tesis-2026-10` (o el nombre que se elija). Desde ahí, todas las cifras de la tesis salen de esa release.
-3. Redactar los capítulos de metodología, resultados y discusión sobre la release congelada. El boceto de los capítulos estables está en [docs/tesis](tesis/BORRADOR_TESIS.md).
-4. Preparar la presentación de defensa. Las presentaciones de avances anteriores contienen cifras que ya no son válidas (pronóstico SARIMA, IED significativa, Pulse con series de comercio equivocadas).
+1. Revisión del autor del documento de tesis, el artículo y la presentación.
+2. Reunión con el asesor: las decisiones marcadas como pendientes en [VALIDACION_PENDIENTE.md](VALIDACION_PENDIENTE.md) siguen sin observaciones registradas. Si el asesor pide cambios metodológicos, hay que generar una release nueva (otro identificador) y regenerar los documentos; `tesis-2026-10` no se sobrescribe.
+3. Datos que solo puede completar el autor: nombre del asesor si el formato lo exige, correo institucional y la declaración de uso de IA ajustada a su caso.
 
 ## Extensiones posteriores
 

@@ -115,5 +115,6 @@ Por decisión del autor (9 de octubre de 2026), quedan fuera de esta entrega y p
 
 ## Historial de versiones
 
+- **28 de octubre de 2026 (mantenimiento, sin cambio metodológico; sigue siendo 2.1.0).** El fetcher mensual de FRED conserva los meses ya publicados que salen de la ventana móvil de la serie ICE BofA (antes, esa salida bloqueaba la actualización de todo el archivo); el snapshot de titulares de The Guardian se guarda como colección móvil; las releases incluyen la evidencia de composición, plausibilidad y robustez, y el manifiesto distingue si el *código* difiere del commit. Ver [incidente](INCIDENTE_FRED_VENTANA_MOVIL.md). Release de la tesis: `tesis-2026-10`.
 - **2.1.0 (9 de octubre de 2026).** Corrección del bloque de comercio del Pulse (las series FRED IR14270/IR14260 eran precios de importación de oro y zinc; se reemplazan por las importaciones de EE.UU. desde Venezuela publicadas por la EIA); control de plausibilidad de valores del proveedor; exclusión de los ceros de exportaciones 2000–2011; serie oficial 2012–2026 con tramo exploratorio declarado; validación externa por tramo; semáforo SATV visible; alcance descartado formalizado.
 - **2.0.0 (16–17 de septiembre de 2026).** Satélite fuera del índice, pronóstico de persistencia, validación HAC + Holm, CPI desde 2012, auditoría de 164 valores, 79 escenarios de robustez, releases con hashes.

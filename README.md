@@ -18,6 +18,14 @@ ICIV es un indicador compuesto **descriptivo** del entorno de inversión venezol
 - **Valores imposibles del proveedor se excluyen y se registran**; nunca se reemplazan.
 - **La identidad de cada serie se verifica** contra el título que publica su proveedor.
 
+## Release de la tesis
+
+Las cifras del documento de tesis, el artículo y la presentación de sustentación salen de la release congelada **`tesis-2026-10`** (`iciv/data/releases/tesis-2026-10/`, datos descargados el 28 de octubre de 2026). Es inmutable: las corridas semanales siguen actualizando `releases/latest` y el dashboard, pero no la tocan. Para verificarla:
+
+```sh
+python iciv/scripts/verify_release.py --release iciv/data/releases/tesis-2026-10
+```
+
 ## Versión metodológica 2.1
 
 - Serie oficial 2012–2026 (las seis dimensiones); 2000–2011 como tramo extendido exploratorio.
@@ -62,7 +70,7 @@ El dashboard se genera en `iciv_dashboard.html`; la validación en `iciv/data/pr
 - [Registro de decisiones](docs/VALIDACION_PENDIENTE.md)
 - [Cierre y pendientes](docs/CIERRE_PROYECTO.md)
 - [Bibliografía](docs/BIBLIOGRAFIA.md)
-- [Borrador de tesis](docs/tesis/BORRADOR_TESIS.md)
-- Incidentes: [series de comercio del Pulse](docs/INCIDENTE_SERIES_COMERCIO.md), [ejecución 38](docs/INCIDENTE_ACTIONS_38.md)
+- [Documento de tesis](docs/tesis/TESIS_ICIV.md) (generado desde la release `tesis-2026-10`)
+- Incidentes: [series de comercio del Pulse](docs/INCIDENTE_SERIES_COMERCIO.md), [ejecución 38](docs/INCIDENTE_ACTIONS_38.md), [FRED en ventana móvil](docs/INCIDENTE_FRED_VENTANA_MOVIL.md)
 
 Las presentaciones de avances anteriores son históricas. Sus cifras no sustituyen la metodología 2.1 ni los resultados de la release vigente.
