@@ -27,8 +27,8 @@ desempleo_pct,5.0,18.2,13.2,negativa
 cuenta_corriente_pct_pib,-42.8,28.6,71.4,positiva
 cpi_score,10.0,20.0,10.0,positiva
 hdi,0.696,0.773,0.077,positiva
-guardian_articulos_venezuela,101.0,1058.0,957.0,negativa
-guardian_tono_titulares,-0.3748,0.0366,0.4114,positiva
+guardian_articulos_venezuela,101.0,1063.0,962.0,negativa
+guardian_tono_titulares,-0.3748,0.0371,0.4119,positiva
 wti_precio_usd,26.1396,99.6715,73.5319,positiva
 tasa_fed_funds_pct,0.08,6.2358,6.1558,negativa
 brent_precio_usd,24.5089,111.5707,87.0618,positiva
