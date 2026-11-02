@@ -201,7 +201,7 @@
 2026,8,guardian_articulos_venezuela,38.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2026,9,guardian_articulos_venezuela,41.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2026,10,guardian_articulos_venezuela,43.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
-2026,11,guardian_articulos_venezuela,0.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
+2026,11,guardian_articulos_venezuela,1.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2010,1,guardian_tono_titulares,-0.15858928571428568,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2010,2,guardian_tono_titulares,0.01634999999999999,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2010,3,guardian_tono_titulares,0.05166153846153847,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
@@ -404,3 +404,4 @@
 2026,8,guardian_tono_titulares,-0.16274,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2026,9,guardian_tono_titulares,-0.1515766666666667,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
 2026,10,guardian_tono_titulares,-0.16401666666666667,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"
+2026,11,guardian_tono_titulares,0.0,"The Guardian Open Platform API + VADER sentiment (Hutto & Gilbert, 2014). https://open-platform.theguardian.com/"

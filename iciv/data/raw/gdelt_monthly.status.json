@@ -2,7 +2,7 @@
   "ok": false,
   "message": "tramos nuevos [2026]; total 118 meses; fallaron ['2016/timelinetone', '2016/timelinevolraw', '2015/timelinetone', '2015/timelinevolraw']",
   "rows": 236,
-  "updated_at_utc": "2026-11-01T15:01:22.839493+00:00",
+  "updated_at_utc": "2026-11-02T16:54:19.874412+00:00",
   "source": "GDELT DOC 2.0 API",
   "policy": "No synthetic fallback; yearly chunks accumulate across runs.",
   "years_complete": [
