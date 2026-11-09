@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-11-02T17:01:59.685092+00:00",
+  "generated_at": "2026-11-09T17:22:20.856428+00:00",
   "scenarios": 79,
   "inputs": {
-    "data/processed/iciv_normalizado.csv": "d099a62c41131518d1c98acf93011fc7eba3688b6331c8ffc072153546db68b7",
-    "data/processed/iciv_transformado.csv": "16061b15f95a5e4bc8b01ca2f00b874e64e93076fa2893d4a17c5379106d00e6",
+    "data/processed/iciv_normalizado.csv": "9a5ea4f6c2633b3bfc421795701ab823ab1a054f82e14f75612165ced6ec8d89",
+    "data/processed/iciv_transformado.csv": "9b66dc54b9cb1d77c75aea24729bff4cf9746aac0e09fa0cb49c5c5c05f5cf5a",
     "data/sources/audit_20260917/verified_observations.csv": "8bc040cbbe1e55dc4e230227119dcb9ec13c440a870b9e84ad7eec06865e2bb2"
   },
   "interpretation": "Deterministic design alternatives. Not observations, confidence intervals or expert approval."

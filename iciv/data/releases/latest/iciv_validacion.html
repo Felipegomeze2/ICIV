@@ -105,7 +105,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <!-- HEADER -->
 <div class="header">
   <h1>ICIV — <span>Validacion del Modelo</span></h1>
-  <p class="sub">Paso 7 de la metodologia · OCDE Handbook on Constructing Composite Indicators (2008) · 02 de November de 2026 · 17:01</p>
+  <p class="sub">Paso 7 de la metodologia · OCDE Handbook on Constructing Composite Indicators (2008) · 09 de November de 2026 · 17:22</p>
 </div>
 
 <!-- ===== 1. SENSIBILIDAD ===== -->
@@ -190,7 +190,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="section-sub">Asociación exploratoria: la correlación no demuestra validez del constructo, causalidad ni capacidad predictiva</div>
   </div>
 
-  <div class="alert alert-warn"><div class="alert-title">Contraste temporal exploratorio</div><div class="alert-body">Niveles: n=26; p HAC=0.004547. Primeras diferencias: n=25; r=0.1654; p HAC=0.1472. HAC ajusta autocorrelación y heterocedasticidad, pero no elimina tendencias espurias. Muestras pequeñas; no demuestra causalidad ni predicción. La batería externa publica además ajuste Holm por múltiples contrastes.</div></div><div class="stats-row"><div class="stat"><div class="stat-label">Pearson r</div><div class="stat-val c-accent">0.5386</div><div class="stat-sub">Moderada · p < 0.01 ** · p supone independencia</div></div><div class="stat"><div class="stat-label">Spearman rho</div><div class="stat-val c-accent">0.4496</div><div class="stat-sub">Moderada · p < 0.05 * · p supone independencia</div></div><div class="stat"><div class="stat-label">Observaciones (n)</div><div class="stat-val c-accent">26</div><div class="stat-sub">anos con ambas variables</div></div></div><div class="grid-2"><div class="card"><div class="ct">Scatter: ICIV vs IED normalizada</div><div class="cs">Cada punto = un ano · Linea roja = regresion lineal</div><div style="height:300px;position:relative"><canvas id="cCorrScatter"></canvas></div></div><div class="card"><div class="ct">Serie temporal comparada</div><div class="cs">ICIV (eje izq.) vs IED normalizada (eje der.)</div><div style="height:300px;position:relative"><canvas id="cCorrTime"></canvas></div></div></div>
+  <div class="alert alert-warn"><div class="alert-title">Contraste temporal exploratorio</div><div class="alert-body">Niveles: n=26; p HAC=0.004547. Primeras diferencias: n=25; r=0.1657; p HAC=0.1464. HAC ajusta autocorrelación y heterocedasticidad, pero no elimina tendencias espurias. Muestras pequeñas; no demuestra causalidad ni predicción. La batería externa publica además ajuste Holm por múltiples contrastes.</div></div><div class="stats-row"><div class="stat"><div class="stat-label">Pearson r</div><div class="stat-val c-accent">0.5386</div><div class="stat-sub">Moderada · p < 0.01 ** · p supone independencia</div></div><div class="stat"><div class="stat-label">Spearman rho</div><div class="stat-val c-accent">0.4466</div><div class="stat-sub">Moderada · p < 0.05 * · p supone independencia</div></div><div class="stat"><div class="stat-label">Observaciones (n)</div><div class="stat-val c-accent">26</div><div class="stat-sub">anos con ambas variables</div></div></div><div class="grid-2"><div class="card"><div class="ct">Scatter: ICIV vs IED normalizada</div><div class="cs">Cada punto = un ano · Linea roja = regresion lineal</div><div style="height:300px;position:relative"><canvas id="cCorrScatter"></canvas></div></div><div class="card"><div class="ct">Serie temporal comparada</div><div class="cs">ICIV (eje izq.) vs IED normalizada (eje der.)</div><div style="height:300px;position:relative"><canvas id="cCorrTime"></canvas></div></div></div>
 </section>
 
 <!-- ===== 3. LINEAL vs GEOMETRICO ===== -->
@@ -213,7 +213,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   <div class="stats-row">
     <div class="stat">
       <div class="stat-label">MAD (Desv. Absoluta Media)</div>
-      <div class="stat-val c-orange">3.776 pts</div>
+      <div class="stat-val c-orange">3.779 pts</div>
       <div class="stat-sub">Diferencia promedio entre metodos</div>
     </div>
     <div class="stat">
@@ -223,12 +223,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     </div>
     <div class="stat">
       <div class="stat-label">Media Lineal</div>
-      <div class="stat-val c-accent">61.71</div>
+      <div class="stat-val c-accent">61.72</div>
       <div class="stat-sub">Promedio historico</div>
     </div>
     <div class="stat">
       <div class="stat-label">Media Geometrica</div>
-      <div class="stat-val c-orange">57.94</div>
+      <div class="stat-val c-orange">57.95</div>
       <div class="stat-sub">Promedio historico</div>
     </div>
   </div>
@@ -255,8 +255,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="section-sub">AHP = juicios declarados del diseño · PCA = varianza estadística · No sustituye validación de expertos</div>
   </div>
 
-  <div class="alert alert-warn"><div class="alert-body">PCA ajustado y comparado en 13 años completos: [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]. 14 años excluidos. Cobertura efectiva mínima: 80%. Sin imputación. Comparación dentro de muestra; PCA no aporta validación externa.</div></div><div class="stats-row"><div class="stat"><div class="stat-label">PC1 varianza explicada</div><div class="stat-val c-accent">65.2%</div><div class="stat-sub">Del total de varianza dimensional</div></div><div class="stat"><div class="stat-label">MAD (AHP vs PCA)</div><div class="stat-val c-orange">5.222 pts</div><div class="stat-sub">Diferencia promedio en ICIV</div></div><div class="stat"><div class="stat-label">Correlacion AHP-PCA</div><div class="stat-val c-accent">0.9807</div><div class="stat-sub">Pearson entre series</div></div></div><div class="grid-2"><div class="card"><div class="ct">Tabla de pesos: AHP vs PCA</div><div class="cs">PC1 varianza explicada = 65.2%</div><table class="vtable"><thead><tr><th>Dimension</th><th>Peso AHP</th><th>Peso PCA</th><th>Diferencia</th></tr></thead><tbody><tr><td>Estabilidad Macroeconómica</td><td>0.2540 (25.4%)</td><td>0.0655 (6.6%)</td><td style="color:#e05c5c;font-weight:600">-0.1885</td></tr>
-<tr><td>Sector Energético y Petróleo</td><td>0.1952 (19.5%)</td><td>0.2411 (24.1%)</td><td style="color:#e67e22;font-weight:600">+0.0459</td></tr>
+  <div class="alert alert-warn"><div class="alert-body">PCA ajustado y comparado en 13 años completos: [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]. 14 años excluidos. Cobertura efectiva mínima: 80%. Sin imputación. Comparación dentro de muestra; PCA no aporta validación externa.</div></div><div class="stats-row"><div class="stat"><div class="stat-label">PC1 varianza explicada</div><div class="stat-val c-accent">65.3%</div><div class="stat-sub">Del total de varianza dimensional</div></div><div class="stat"><div class="stat-label">MAD (AHP vs PCA)</div><div class="stat-val c-orange">5.218 pts</div><div class="stat-sub">Diferencia promedio en ICIV</div></div><div class="stat"><div class="stat-label">Correlacion AHP-PCA</div><div class="stat-val c-accent">0.9807</div><div class="stat-sub">Pearson entre series</div></div></div><div class="grid-2"><div class="card"><div class="ct">Tabla de pesos: AHP vs PCA</div><div class="cs">PC1 varianza explicada = 65.3%</div><table class="vtable"><thead><tr><th>Dimension</th><th>Peso AHP</th><th>Peso PCA</th><th>Diferencia</th></tr></thead><tbody><tr><td>Estabilidad Macroeconómica</td><td>0.2540 (25.4%)</td><td>0.0655 (6.6%)</td><td style="color:#e05c5c;font-weight:600">-0.1885</td></tr>
+<tr><td>Sector Energético y Petróleo</td><td>0.1952 (19.5%)</td><td>0.2411 (24.1%)</td><td style="color:#e67e22;font-weight:600">+0.0458</td></tr>
 <tr><td>Entorno Institucional y Legal</td><td>0.1952 (19.5%)</td><td>0.2446 (24.5%)</td><td style="color:#e67e22;font-weight:600">+0.0494</td></tr>
 <tr><td>Apertura Comercial y Financiera</td><td>0.1743 (17.4%)</td><td>0.1847 (18.5%)</td><td style="color:#00d4aa;font-weight:600">+0.0104</td></tr>
 <tr><td>Capital Humano e Infraestructura Social</td><td>0.0906 (9.1%)</td><td>0.2476 (24.8%)</td><td style="color:#e05c5c;font-weight:600">+0.1569</td></tr>
@@ -276,27 +276,27 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 
 // ── Data ────────────────────────────────────────────────────────────────────
 const sYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-const sBase     = [73.32, 75.37, 68.88, 64.79, 80.8, 82.32, 87.77, 87.19, 85.84, 83.03, 81.41, 81.42, 81.69, 80.36, 76.06, 71.82, 58.06, 51.17, 43.04, 32.27, 20.58, 29.71, 35.94, 32.02, 32.37, 26.66, 42.33];
-const sEnvMin   = [71.2, 73.7, 67.92, 63.8, 80.25, 81.1, 86.9, 86.3, 85.12, 82.26, 80.93, 80.85, 81.24, 80.01, 75.52, 71.11, 57.33, 50.64, 41.74, 30.87, 19.58, 27.75, 33.17, 30.05, 29.78, 24.19, 39.79];
-const sEnvMax   = [75.31, 76.94, 69.92, 65.81, 81.36, 83.48, 88.68, 88.11, 86.55, 83.83, 81.89, 82.01, 82.13, 80.71, 76.6, 72.53, 58.78, 51.7, 44.34, 33.67, 21.58, 31.67, 38.71, 33.99, 34.97, 29.09, 44.58];
+const sBase     = [73.33, 75.37, 68.89, 64.8, 80.81, 82.33, 87.78, 87.21, 85.86, 83.04, 81.43, 81.43, 81.7, 80.37, 76.07, 71.83, 58.07, 51.18, 43.05, 32.29, 20.58, 29.72, 35.95, 32.03, 32.38, 26.68, 42.37];
+const sEnvMin   = [71.21, 73.71, 67.93, 63.81, 80.26, 81.12, 86.9, 86.31, 85.14, 82.27, 80.94, 80.86, 81.25, 80.02, 75.53, 71.12, 57.34, 50.64, 41.75, 30.89, 19.59, 27.76, 33.18, 30.05, 29.79, 24.21, 39.83];
+const sEnvMax   = [75.32, 76.94, 69.93, 65.82, 81.37, 83.49, 88.69, 88.13, 86.56, 83.85, 81.9, 82.01, 82.14, 80.72, 76.61, 72.54, 58.79, 51.71, 44.35, 33.68, 21.58, 31.68, 38.72, 34.0, 34.98, 29.11, 44.63];
 const sImpLbls  = ["Estabilidad Macroecon\u00f3mica", "Sector Energ\u00e9tico y Petr\u00f3leo", "Entorno Institucional y Legal", "Apertura Comercial y Financiera", "Capital Humano e Infraestructura Social", "Percepci\u00f3n Internacional"];
-const sImpVals  = [0.11, 0.034, 0.175, 0.035, 0.061, 0.065];
+const sImpVals  = [0.11, 0.033, 0.175, 0.034, 0.061, 0.067];
 
 const cYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
-const cIciv     = [73.32, 75.37, 68.88, 64.79, 80.8, 82.32, 87.77, 87.19, 85.84, 83.03, 81.41, 81.42, 81.69, 80.36, 76.06, 71.82, 58.06, 51.17, 43.04, 32.27, 20.58, 29.71, 35.94, 32.02, 32.37, 26.66];
+const cIciv     = [73.33, 75.37, 68.89, 64.8, 80.81, 82.33, 87.78, 87.21, 85.86, 83.04, 81.43, 81.43, 81.7, 80.37, 76.07, 71.83, 58.07, 51.18, 43.05, 32.29, 20.58, 29.72, 35.95, 32.03, 32.38, 26.68];
 const cIed      = [79.52, 68.56, 36.29, 45.2, 44.28, 54.81, 30.12, 75.73, 50.79, 13.44, 52.19, 100.0, 82.35, 65.36, 40.12, 59.56, 40.15, 24.58, 42.61, 45.26, 25.78, 36.4, 54.98, 16.58, 0.0, 22.23];
-const cRegX     = [20.58, 87.77];
+const cRegX     = [20.58, 87.78];
 const cRegY     = [23.45, 60.3];
 
 const mYears    = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-const mLin      = [73.32, 75.37, 68.88, 64.79, 80.8, 82.32, 87.77, 87.19, 85.84, 83.03, 81.41, 81.42, 81.69, 80.36, 76.06, 71.82, 58.06, 51.17, 43.04, 32.27, 20.58, 29.71, 35.94, 32.02, 32.37, 26.66, 42.33];
-const mGeom     = [70.12, 72.83, 68.17, 62.44, 80.42, 81.67, 87.26, 86.48, 85.5, 82.67, 81.26, 80.9, 81.4, 80.15, 75.08, 71.08, 57.27, 49.97, 40.13, 27.91, 0.0, 18.31, 24.59, 23.82, 19.69, 17.01, 38.14];
-const mDeltas   = [-3.2, -2.54, -0.71, -2.35, -0.38, -0.65, -0.51, -0.71, -0.34, -0.36, -0.15, -0.52, -0.29, -0.21, -0.98, -0.74, -0.79, -1.2, -2.91, -4.36, -20.58, -11.4, -11.35, -8.2, -12.68, -9.65, -4.19];
+const mLin      = [73.33, 75.37, 68.89, 64.8, 80.81, 82.33, 87.78, 87.21, 85.86, 83.04, 81.43, 81.43, 81.7, 80.37, 76.07, 71.83, 58.07, 51.18, 43.05, 32.29, 20.58, 29.72, 35.95, 32.03, 32.38, 26.68, 42.37];
+const mGeom     = [70.13, 72.84, 68.18, 62.44, 80.43, 81.68, 87.27, 86.5, 85.52, 82.69, 81.27, 80.92, 81.4, 80.16, 75.09, 71.09, 57.28, 49.98, 40.14, 27.92, 0.0, 18.31, 24.59, 23.82, 19.69, 17.02, 38.17];
+const mDeltas   = [-3.2, -2.53, -0.71, -2.36, -0.38, -0.65, -0.51, -0.71, -0.34, -0.35, -0.16, -0.51, -0.3, -0.21, -0.98, -0.74, -0.79, -1.2, -2.91, -4.37, -20.58, -11.41, -11.36, -8.21, -12.69, -9.66, -4.2];
 
 const wYears    = [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
-const wAhp      = [81.69, 80.36, 76.06, 71.82, 58.06, 51.17, 43.04, 32.27, 20.58, 29.71, 35.94, 32.02, 32.37];
-const wPca      = [80.6, 82.09, 79.64, 75.89, 60.17, 54.02, 46.7, 34.08, 17.14, 18.42, 23.36, 22.34, 22.37];
-const wDeltas   = [-1.09, 1.73, 3.58, 4.07, 2.11, 2.85, 3.66, 1.81, -3.44, -11.29, -12.58, -9.68, -10.0];
+const wAhp      = [81.7, 80.37, 76.07, 71.83, 58.07, 51.18, 43.05, 32.29, 20.58, 29.72, 35.95, 32.03, 32.38];
+const wPca      = [80.6, 82.1, 79.64, 75.89, 60.17, 54.02, 46.7, 34.08, 17.14, 18.43, 23.37, 22.35, 22.37];
+const wDeltas   = [-1.1, 1.73, 3.57, 4.06, 2.1, 2.84, 3.65, 1.79, -3.44, -11.29, -12.58, -9.68, -10.01];
 const wLbls     = ["Estabilidad Macroecon\u00f3mica", "Sector Energ\u00e9tico y Petr\u00f3leo", "Entorno Institucional y Legal", "Apertura Comercial y Financiera", "Capital Humano e Infraestructura Social", "Percepci\u00f3n Internacional"];
 const wAhpArr   = [0.254, 0.1952, 0.1952, 0.1743, 0.0906, 0.0906];
 const wPcaArr   = [0.0655, 0.2411, 0.2446, 0.1847, 0.2476, 0.0165];
